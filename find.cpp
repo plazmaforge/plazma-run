@@ -5,7 +5,9 @@
 #include <string>
 
 #include <cctype>
+
 #include "iolib.h"
+#include "getopt.h"
 
 struct Position {
     int index;
@@ -24,8 +26,9 @@ struct Positions {
 };
 
 struct FindConfig {
-    int mode;
+    bool binaryMode;
     bool findFirstOnly;
+    bool ignoreCase;
 };
 
 void printUsage() {
@@ -453,8 +456,34 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    char* input = argv[1];
-    char* fileName = argv[2];
+    // Config
+    bool binaryMode = false;
+    bool findFirstOnly = false;
+    bool ignoreCase = false;
+
+    int opt;
+    while ((opt = getopt(argc, argv, ":b")) != -1) {
+        switch (opt) {
+        case 'b':
+            binaryMode = true;
+            break;
+        case 'l':
+            findFirstOnly = true;
+            break;
+        case 'i':
+            ignoreCase = true;
+            break;
+        }
+    }
+
+    if (argc - optind < 1) {
+        printUsage();
+        return 0;
+    }
+
+    char* input = argv[optind];
+    char* fileName = argv[++optind];
+
     size_t inputSize = strlen(input);
     size_t fileSize = 0;
  
@@ -470,10 +499,6 @@ int main(int argc, char* argv[]) {
         free(data);
         return 0;
     }
-
-    // Config
-    bool binaryMode = false;
-    bool findFirstOnly = false;
 
     Positions* positions = NULL;
 
