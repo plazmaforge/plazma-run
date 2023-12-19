@@ -81,7 +81,7 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
     //////
 
     // Long option: '-abc'
-    int multi_short = 0;
+    int multi_short = 1;
 
     //////
 

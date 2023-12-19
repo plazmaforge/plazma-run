@@ -462,17 +462,20 @@ int main(int argc, char* argv[]) {
     bool ignoreCase = false;
 
     int opt;
-    while ((opt = getopt(argc, argv, ":b")) != -1) {
+    while ((opt = getopt(argc, argv, "bil")) != -1) {
         switch (opt) {
         case 'b':
             binaryMode = true;
             break;
-        case 'l':
-            findFirstOnly = true;
-            break;
         case 'i':
             ignoreCase = true;
             break;
+        case 'l':
+            findFirstOnly = true;
+            break;
+        case '?':
+            printUsage();
+            return 0;
         }
     }
 
