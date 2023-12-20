@@ -11,6 +11,53 @@ int opterr = 1;
 static char *input = NULL;
 static int restopt = 0;
 
+
+const char* find_short_option(const char* short_option, char c) {
+    if (short_option == NULL) {
+        return NULL;
+    }
+    return strchr(short_option, c);
+}
+
+const option* find_long_option(const option* long_option, int* long_index, const char* name, int len)  {
+    const option* p = long_option;
+    int i = *long_index;
+
+    // search option in long_option list
+    while (p != NULL && p->name != NULL) {
+        if (!strncmp(name, p->name, len)) {
+            *long_index = i;
+            return p;
+        }
+        //printf(">> option %d, %s\n", i, p->name);
+        i++;
+        p++;
+    }
+    return NULL;
+}
+
+int check_next_value(int argc, char* const argv[], int optind) {
+    if (optind >= argc) {
+        return 0;
+    }
+    char *next = argv[optind + 1];
+    return next[0] != '-';
+}
+
+int check_multi_short_option(const char* short_option, const char* input, int start, int end) {
+    const char* opt;
+    for (int i = start; i < end; i++) {
+        opt = strchr(short_option, input[i]);
+        if (opt == NULL) {
+            return 1;  // not found
+        }
+        if (*(++opt) == ':') {
+            return 2; // found, but require value. an option in 'multi_short' mode has not value
+        }
+    }
+    return 0;
+}
+
 void getopt_init() {
     optinput = NULL;
     optind = 1;
@@ -25,7 +72,7 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
         return -1;
     }
 
-    // Fixed optind
+    // init
     if (optind <= 0) {
         getopt_init();
     }
@@ -74,14 +121,15 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
     }
 
     if (prefix_len == 0) {
-       // TODO: optarg
+       // optarg
        return -1;
     }
 
     //////
 
-    // Long option: '-abc'
-    int multi_short = 1;
+    // Multi short option: '-abc' -> '-a -b -c'
+    int multi_short = long_option == NULL ? 1 : 0;
+    //printf("multi_short: %d\n", multi_short);
 
     //////
 
@@ -94,11 +142,11 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
 
     optopt = ch; // by default
 
-    int name_len = restopt > 0 ? 1 : input_len - prefix_len;
+    int str_len = restopt > 0 ? 1 : input_len - prefix_len;
  
     //printf(">> optind %d, input %s, name_len %d, print_error %d\n", optind, input, name_len, print_error);
 
-    if (name_len > 1) {
+    if (str_len > 1) {
 
         // '-abc', '-abc=24'
         int start = prefix_len;
@@ -115,7 +163,7 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
         if (eq_pos == start || eq_pos == end - 1) {
             // '-=10', '-name=', -='
             if (print_error) {
-                fprintf(stderr, "%s: illegal input %s\n", argv[0], input);
+                fprintf(stderr, "%s: Illegal input %s\n", argv[0], input);
             }            
             optind++;
             return '?';
@@ -125,36 +173,50 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
             end = eq_pos;
         }
 
-        if (multi_short && short_option != NULL) {
+        char* name = input + start;
+        int len = end - start;
+
+        if (multi_short && short_option != NULL && prefix_len == 1) {
 
             // multi short option cannot be with '=': '-abc=10'
+            int error = 0;
             if (eq_pos > 0) {
+
+                if (eq_pos - start == 1) {
+                    // '-a=10
+                    error = check_multi_short_option(short_option, input, start, end);
+                    if (error > 0) {
+                        if (print_error) {
+                            if (error == 1) {
+                                fprintf(stderr, "%s: Illegal multi option %s\n", argv[0], input);
+                            } else {
+                                fprintf(stderr, "%s: Incorrect multi option %s\n", argv[0], input);
+                            }
+                        }
+                        optind++;
+                        return '?';
+                    }
+                    optarg = name + len + 1;
+                    optind++;
+                    return optopt;
+                }
+
                 if (print_error) {
-                  fprintf(stderr, "%s: illegal multi option %s\n", argv[0], input);
+                  fprintf(stderr, "%s: Illegal multi option %s\n", argv[0], input);
                 }            
                 optind++;
                 return '?';
             }
 
             // search option in short_option list
-            int error = 0;
-            for (int i = start; i < end; i++) {
-                const char* opt = strchr(short_option, input[i]);
-                if (opt == NULL) {
-                    error = 1; // not found
-                    break;
-                }
-                if (*(++opt) == ':') {
-                    error = 2; // found, but require value. an option in 'multi_short' mode has not value
-                }
-            }
+            error = check_multi_short_option(short_option, input, start, end);
 
             if (error > 0) {
                 if (print_error) {
                     if (error == 1) {
-                        fprintf(stderr, "%s: illegal multi option %s\n", argv[0], input);
+                        fprintf(stderr, "%s: Illegal multi option %s\n", argv[0], input);
                     } else {
-                        fprintf(stderr, "%s: incorrect multi option %s\n", argv[0], input);
+                        fprintf(stderr, "%s: Incorrect multi option %s\n", argv[0], input);
                     }                  
                 }            
                 optind++;
@@ -164,34 +226,18 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
 
         } else {
 
-            char* name = input + start;
-            int len = end - start;
+            int index = 0;
+            const option* p = find_long_option(long_option, &index, name, len);
 
-            const option* p = long_option;
-            const option* pfound = NULL;
-            int i = 0;
-
-            // search option in long_option list
-            //while ((p = long_option) != NULL && p->name != NULL) {
-            while (p != NULL && p->name != NULL) {
-                if (!strncmp(name, p->name, len)) {
-                    pfound = p;
-                    break;
-                }
-                //printf(">> option %d, %s\n", i, p->name);
-                i++;
-                p++;
-            }
-
-            if (pfound == NULL) {
+            if (p == NULL) {
                 if (print_error) {
-                    fprintf(stderr, "%s: illegal long option %s\n", argv[0], input);
+                    fprintf(stderr, "%s: Illegal long option %s\n", argv[0], input);
                 }            
                 optind++;
                 return '?';
             }
 
-            *long_ind = i;
+            *long_ind = index;
 
             if (p->has_arg == no_argument) {
                 //printf("optarg - no arg\n");
@@ -204,43 +250,38 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
 
             if (p->has_arg == required_argument || p->has_arg == optional_argument) {
                 //printf("optarg - has arg\n");
-                // Require arg
-                char *next = optind >= argc ? NULL : argv[optind + 1];
-                if (next == NULL || next[0] == '-') {
-                    //if (print_error && p->has_arg == required_argument) {
-                    //    fprintf(stderr, "%s: option requires an argument %s\n", argv[0], input);
-                    //}
+
+                // optarg by '='
+                if (eq_pos > 0) {
+                    optarg = name + len + 1;
                     optind++;
+                    if (p->flag != NULL) {
+                        *(p->flag) = p->val;
+                    }
+                    return p->val;
+                }
+
+                // otparg by next 'argv'                    
+                if (!check_next_value(argc, argv, optind)) {
+
                     if (p->has_arg == required_argument) {
                         if (print_error) {
-                           fprintf(stderr, "%s: option requires an argument %s\n", argv[0], input);
+                           fprintf(stderr, "%s: Option requires an argument %s\n", argv[0], input);
                         }
+                        optind++;
                         return ':';
                     }
 
-                    if (eq_pos > 0) {
-                      //printf(">> optarg with = \n");
-                      optarg = name + len + 1;                    
-                    }
-
+                    optind++;
                     if (p->flag != NULL) {
                        *(p->flag) = p->val;
                     }
                     return p->val;
                 }
 
-                //printf(">> eq_pos %d\n", eq_pos);
-
-                optind++; // arg
-                if (eq_pos > 0) {
-                    //printf(">> optarg with = \n");
-                    optarg = name + len + 1;                    
-                } else {
-                    optarg = argv[optind];
-                    optind++; // next
-                }
-
-                //printf(">> optarg %s\n", optarg);
+                optind++;
+                optarg = argv[optind];
+                optind++; // next
 
                 if (p->flag != NULL) {
                     *(p->flag) = p->val;
@@ -248,9 +289,9 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
                 return p->val;
             }
 
-            // TODO
+            // TODO: Incorrect p->has_arg. It must be: [0,1,2]
             if (print_error) {
-                fprintf(stderr, "%s: illegal long option %s\n", argv[0], input);
+                fprintf(stderr, "%s: Illegal long option %s\n", argv[0], input);
             }            
             optind++;
             return '?';
@@ -272,11 +313,11 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
     }
     
     // Short option: '-a'
-    const char* opt = short_option ? strchr(short_option, ch) : NULL;
+    const char* opt = find_short_option(short_option, ch);
 
     if (opt == NULL) {
         if (print_error) {
-            fprintf(stderr, "%s: illegal option %s\n", argv[0], input);
+            fprintf(stderr, "%s: Illegal option %s\n", argv[0], input);
         }
         optind++;
         return '?';
@@ -284,12 +325,17 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
 
     if (*(++opt) == ':') {
 
-        // Require arg
-        char *next = optind >= argc ? NULL : argv[optind + 1];
+        // optional arg
+        if (*(++opt) == ':') {
+            // '::'
+            optind++;
+            return optopt;
+        }
 
-        if (next == NULL || next[0] == '-') {
+        // required arg
+        if (!check_next_value(argc, argv, optind)) {
             if (print_error) {
-                fprintf(stderr, "%s: option requires an argument %s\n", argv[0], input);
+                fprintf(stderr, "%s: Option requires an argument %s\n", argv[0], input);
             }
             optind++;
             return ':';
@@ -299,14 +345,10 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
         optarg = argv[optind];
         optind++; // next
         return optopt;
-    } else {
-        optind++;
-        return optopt;
-    }
-
-    // TODO
-    return -1;
-
+    } 
+    
+    optind++;
+    return optopt;
 
 }
 

@@ -1,5 +1,5 @@
-#ifndef PLAZMA_LIB_ARG_H
-#define PLAZMA_LIB_ARG_H
+#ifndef PLAZMA_LIB_GETOPT_H
+#define PLAZMA_LIB_GETOPT_H
 
 #define no_argument        0
 #define required_argument  1
@@ -40,4 +40,4 @@ int getopt_long(int argc, char* const argv[], const char* short_option, const st
 
 int getopt_long_only(int argc, char* const argv[], const char* short_option, const struct option* long_option, int* long_ind);
 
-#endif // PLAZMA_LIB_ARG_H
+#endif // PLAZMA_LIB_GETOPT_H
