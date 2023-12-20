@@ -110,7 +110,7 @@ int skipLine(char* data, size_t data_size, size_t pos) {
 
 ////
 
-Positions* findBinary(char* data, size_t data_size, char* input, size_t input_size) {
+Positions* findBinary(char* data, size_t data_size, char* input, size_t input_size, FindConfig* config) {
     if (data == NULL || input == NULL || data_size == 0 || input_size == 0) {
         return NULL;
     }
@@ -119,7 +119,13 @@ Positions* findBinary(char* data, size_t data_size, char* input, size_t input_si
         return NULL;
     }
 
-    bool findFirstOnly = true;
+    // by default
+    bool findFirstOnly = false;
+
+    // by config
+    if (config != NULL) {
+        findFirstOnly = config->findFirstOnly;
+    }
 
     Positions* positions = NULL;
     Position* curr = NULL;
@@ -171,7 +177,25 @@ Positions* findBinary(char* data, size_t data_size, char* input, size_t input_si
 
 ////
 
-Positions* findText(char* data, size_t data_size, char* input, size_t input_size) {
+bool contains(const char* data, const char* input, int start, int size) {
+    for (size_t j = 0; j < size; j++) {
+        if (data[start + j] != input[j]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool icontains(const char* data, const char* input, int start, int size) {
+    for (size_t j = 0; j < size; j++) {
+        if (std::tolower(data[start + j]) != std::tolower(input[j])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+Positions* findText(char* data, size_t data_size, char* input, size_t input_size, FindConfig* config) {
     if (data == NULL || input == NULL || data_size == 0 || input_size == 0) {
         return NULL;
     }
@@ -180,7 +204,15 @@ Positions* findText(char* data, size_t data_size, char* input, size_t input_size
         return NULL;
     }
 
+    // by default
     bool findFirstOnly = false;
+    bool ignoreCase = false;
+
+    // by config
+    if (config != NULL) {
+        findFirstOnly = config->findFirstOnly;
+        ignoreCase = config->ignoreCase;
+    }
 
     int row = 1;
     int col = 1;
@@ -221,14 +253,14 @@ Positions* findText(char* data, size_t data_size, char* input, size_t input_size
             col++;
         }
 
-        bool found = true;
+        bool found = ignoreCase ? icontains(data, input, pos, input_size) : contains(data, input, pos, input_size);
 
-        for (size_t j = 0; j < input_size; j++) {
-            if (data[pos + j] != input[j]) {
-                found = false;
-                break;
-            }
-        }
+        // for (size_t j = 0; j < input_size; j++) {
+        //     if (data[pos + j] != input[j]) {
+        //         found = false;
+        //         break;
+        //     }
+        // }
 
         if (found) {
             Position* position = new Position();
@@ -451,16 +483,18 @@ void destroy(Positions* positions) {
 
 int main(int argc, char* argv[]) {
 
-    if (argc < 3) {
+    int min_arg = 2; // <text> <file>
+    if (argc < min_arg + 1) {
+        printf("%s: Incorrect argument count\n", argv[0]);
         printUsage();
         return 0;
     }
-
     // Config
     bool binaryMode = false;
     bool findFirstOnly = false;
     bool ignoreCase = false;
 
+    bool error = false;
     int opt;
     while ((opt = getopt(argc, argv, "bil")) != -1) {
         switch (opt) {
@@ -474,12 +508,18 @@ int main(int argc, char* argv[]) {
             findFirstOnly = true;
             break;
         case '?':
-            printUsage();
-            return 0;
+            error = true;
+            break;
         }
     }
 
-    if (argc - optind < 1) {
+    if (error) {
+        printUsage();
+        return 0;
+    }
+
+    if (argc - optind != min_arg) {
+        printf("%s: Incorrect argument count\n", argv[0]);
         printUsage();
         return 0;
     }
@@ -504,11 +544,15 @@ int main(int argc, char* argv[]) {
     }
 
     Positions* positions = NULL;
+    FindConfig* config = new FindConfig();
+    config->binaryMode = binaryMode;
+    config->findFirstOnly = findFirstOnly;
+    config->ignoreCase = ignoreCase;
 
     if (binaryMode) {
-        positions = findBinary(data, fileSize, input, inputSize);
+        positions = findBinary(data, fileSize, input, inputSize, config);
     } else {
-        positions = findText(data, fileSize, input, inputSize);
+        positions = findText(data, fileSize, input, inputSize, config);
     }
     
     if (positions == NULL) {
