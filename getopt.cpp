@@ -5,11 +5,12 @@
 #include "getopt.h"
 
 char* optinput;
-int optind = 0;
-int opterr = 1;
+//int optind = 0;
+//int opterr = 1;
 
 static char *input = NULL;
 static int restopt = 0;
+static int init = 0;
 
 
 const char* find_short_option(const char* short_option, char c) {
@@ -72,9 +73,14 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
         return -1;
     }
 
+    //printf("optind: %d\n",optind);
+    //printf("opterr: %d\n",opterr);
+ 
+
     // init
-    if (optind <= 0) {
+    if (!init) {
         getopt_init();
+        init = 1;
     }
 
     if (optind >= argc) {
