@@ -6,6 +6,9 @@
 
 #include <cctype>
 
+#include <fnmatch.h>
+#include <dirent.h>
+
 #include "iolib.h"
 #include "getopt.h"
 
@@ -469,16 +472,49 @@ void destroy(Positions* positions) {
     if (positions == NULL) {
         return;
     }
-    Position* curr = positions->last;
+    Position* curr = positions->first;
+    Position* next = NULL;
     while (curr != NULL) {
+        next = curr->next;
         curr->prev = NULL;
         curr->next = NULL;
         free(curr);
-        curr = curr->prev;
+        curr = next;
     }
     positions->first = NULL;
     positions->last = NULL;
     free(positions);
+}
+
+int match_file(const char* pattern, const char* name, int mode) {
+    // PathMatchSpecA
+    //printf(" %s %s\n", pattern, name);
+    return fnmatch(pattern, name, FNM_PERIOD) == 0; // true id '0'
+}
+
+int match_file(const char* pattern, const char* name) {
+    return match_file(pattern, name, FNM_PERIOD);
+}
+
+int check_wildcard(const char* pattern) {
+    if (pattern == NULL) {
+        return 0;
+    }
+    int len = strlen(pattern);
+    char c;
+    for (int i = 0; i < len; i++) {
+        c = pattern[i];
+        if (c == '*' || c == '?' || c == '[' || c == ']') {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+char* filter_pattern;
+
+int filter(const struct dirent *entry) {
+	return match_file(filter_pattern, entry->d_name);
 }
 
 int main(int argc, char* argv[]) {
@@ -527,6 +563,31 @@ int main(int argc, char* argv[]) {
     char* input = argv[optind];
     char* fileName = argv[++optind];
 
+    if (check_wildcard(fileName)) {
+        printf("%s: Find operation doesn't support wildcard\n", argv[0]);
+        //filter_pattern = fileName;
+        //char* dirname = "../";
+
+        //struct dirent **files;
+	    //int n = scandir(dirname, &files, filter, alphasort);
+        //for (int i = 0; i < n; i++) {
+        //    printf("%s\n", files[i]->d_name);
+        //}
+
+        // char* name;
+        // int r = 0;
+
+        // name = "file.cpp";
+        // r = match_file(filter_pattern, name);
+        // printf("match: %s %s %d\n", filter_pattern, name, r);
+
+        // name = "dump.cpp";
+        // r = match_file(filter_pattern, name);
+        // printf("match: %s %s %d\n", filter_pattern, name, r);
+
+        return 0;
+    }
+
     size_t inputSize = strlen(input);
     size_t fileSize = 0;
  
@@ -536,6 +597,11 @@ int main(int argc, char* argv[]) {
     }
 
     char* data = readBytes(fileName, fileSize);
+
+    if (data == NULL) {
+        //printf("File '%s' not found\n", fileName);
+        return 0;
+    }
 
     if (fileSize == 0) {
         printf("File '%s' is empty\n", fileName);
