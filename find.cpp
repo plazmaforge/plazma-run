@@ -3,14 +3,12 @@
 #include <stdlib.h>
 #include <cstring>
 #include <string>
-
 #include <cctype>
+#include <vector>
 
-#include <fnmatch.h>
-#include <dirent.h>
-
-#include "iolib.h"
 #include "getopt.h"
+#include "fslib.h"
+#include "iolib.h"
 
 struct Position {
     int index;
@@ -32,6 +30,7 @@ struct FindConfig {
     bool binaryMode;
     bool findFirstOnly;
     bool ignoreCase;
+    bool useFileList;
 };
 
 void printUsage() {
@@ -95,7 +94,7 @@ void calcWidth(Positions* positions, int& rowWidth, int& colWidth) {
     }
 }
 
-int skipLine(char* data, size_t data_size, size_t pos) {
+int skipLine(const char* data, size_t data_size, size_t pos) {
     char c = data[pos];
     if (c == '\r') {
         if (pos + 1 < data_size && data[pos + 1] == '\n') {
@@ -113,7 +112,7 @@ int skipLine(char* data, size_t data_size, size_t pos) {
 
 ////
 
-Positions* findBinary(char* data, size_t data_size, char* input, size_t input_size, FindConfig* config) {
+Positions* findBinary(const char* data, size_t data_size, const char* input, size_t input_size, FindConfig* config) {
     if (data == NULL || input == NULL || data_size == 0 || input_size == 0) {
         return NULL;
     }
@@ -198,7 +197,7 @@ bool icontains(const char* data, const char* input, int start, int size) {
     return true;
 }
 
-Positions* findText(char* data, size_t data_size, char* input, size_t input_size, FindConfig* config) {
+Positions* findText(const char* data, size_t data_size, const char* input, size_t input_size, FindConfig* config) {
     if (data == NULL || input == NULL || data_size == 0 || input_size == 0) {
         return NULL;
     }
@@ -486,17 +485,7 @@ void destroy(Positions* positions) {
     free(positions);
 }
 
-int match_file(const char* pattern, const char* name, int mode) {
-    // PathMatchSpecA
-    //printf(" %s %s\n", pattern, name);
-    return fnmatch(pattern, name, FNM_PERIOD) == 0; // true id '0'
-}
-
-int match_file(const char* pattern, const char* name) {
-    return match_file(pattern, name, FNM_PERIOD);
-}
-
-int check_wildcard(const char* pattern) {
+int get_wildcard_index(const char* pattern) {
     if (pattern == NULL) {
         return 0;
     }
@@ -505,16 +494,59 @@ int check_wildcard(const char* pattern) {
     for (int i = 0; i < len; i++) {
         c = pattern[i];
         if (c == '*' || c == '?' || c == '[' || c == ']') {
-            return 1;
+            return i;
         }
     }
-    return 0;
+    return -1;
 }
 
-char* filter_pattern;
+int check_wildcard(const char* pattern) {
+    return get_wildcard_index(pattern) != -1;
+}
 
-int filter(const struct dirent *entry) {
-	return match_file(filter_pattern, entry->d_name);
+void find(const char* fileName, const char* input, int inputSize, FindConfig* config) {
+
+    size_t fileSize = 0;
+    char* data = readBytes(fileName, fileSize);
+
+    if (data == NULL) {
+        //printf("File '%s' not found\n", fileName);
+        return;
+    }
+
+    if (fileSize == 0) {
+        //printf("File '%s' is empty\n", fileName);
+        free(data);
+        return;
+    }
+
+    Positions* positions = NULL;
+
+    if (config->binaryMode) {
+        positions = findBinary(data, fileSize, input, inputSize, config);
+    } else {
+        positions = findText(data, fileSize, input, inputSize, config);
+    }
+    
+    if (positions == NULL) {
+        //printf("Not found\n");
+        free(data);
+        return;
+    }
+
+    if (config->useFileList) {
+        printf(">> %s\n", fileName);
+    }
+
+    if (config->binaryMode) {
+        printBynaryPositions(positions, data, fileSize, inputSize);
+    } else {
+        printTextPositions(positions, data, fileSize, inputSize);
+    }
+
+    destroy(positions);
+    free(data);
+
 }
 
 int main(int argc, char* argv[]) {
@@ -563,77 +595,78 @@ int main(int argc, char* argv[]) {
     char* input = argv[optind];
     char* fileName = argv[++optind];
 
-    if (check_wildcard(fileName)) {
-        printf("%s: Find operation doesn't support wildcard\n", argv[0]);
-        //filter_pattern = fileName;
-        //char* dirname = "../";
-
-        //struct dirent **files;
-	    //int n = scandir(dirname, &files, filter, alphasort);
-        //for (int i = 0; i < n; i++) {
-        //    printf("%s\n", files[i]->d_name);
-        //}
-
-        // char* name;
-        // int r = 0;
-
-        // name = "file.cpp";
-        // r = match_file(filter_pattern, name);
-        // printf("match: %s %s %d\n", filter_pattern, name, r);
-
-        // name = "dump.cpp";
-        // r = match_file(filter_pattern, name);
-        // printf("match: %s %s %d\n", filter_pattern, name, r);
-
-        return 0;
-    }
-
     size_t inputSize = strlen(input);
-    size_t fileSize = 0;
- 
     if (inputSize == 0) {
-        printf("Input is empty\n");
+        //printf("Input is empty\n");
         return 0;
     }
 
-    char* data = readBytes(fileName, fileSize);
-
-    if (data == NULL) {
-        //printf("File '%s' not found\n", fileName);
-        return 0;
-    }
-
-    if (fileSize == 0) {
-        printf("File '%s' is empty\n", fileName);
-        free(data);
-        return 0;
-    }
-
-    Positions* positions = NULL;
     FindConfig* config = new FindConfig();
     config->binaryMode = binaryMode;
     config->findFirstOnly = findFirstOnly;
     config->ignoreCase = ignoreCase;
 
-    if (binaryMode) {
-        positions = findBinary(data, fileSize, input, inputSize, config);
-    } else {
-        positions = findText(data, fileSize, input, inputSize, config);
-    }
-    
-    if (positions == NULL) {
-        printf("Not found\n");
-        free(data);
+    int wildcardIndex = get_wildcard_index(fileName);
+
+    if (wildcardIndex > -1) {
+
+        //printf("%s: Find operation doesn't support wildcard\n", argv[0]);
+
+        int i = wildcardIndex;
+        bool found = false;
+        while(i >= 0) {
+            if (fileName[i] == '\\' || fileName[i] == '/') {
+                found = true;
+                break;
+            }
+            i--;
+        }
+
+        char* dirName;
+
+        if (found) {
+            //printf("found '/': %d\n", i);
+            dirName = strndup(fileName, i + 1);
+            fileName = fileName + i + 1;            
+        } else {
+            dirName = ".";
+        }
+
+        //printf("dir  : %s\n", dirName);
+        //printf("file : %s\n", fileName);
+
+        config->useFileList = true;
+        char* pattern = fileName;
+
+        std::vector<std::string> files = getFiles(dirName, pattern);
+        for (int i = 0; i < files.size(); i++) {
+            //printf("%s\n", files[i].c_str());
+            char* f;
+            if (found) {
+                f = (char*) malloc(strlen(dirName) + files[i].size() + 1);
+                strcpy(f, dirName);
+                strcat(f, files[i].c_str());
+            } else {
+                f = strdup(files[i].c_str());
+            }
+            //printf("%s\n", f);
+            find(f, input, inputSize, config);
+
+            free(f);
+        }
+
+        if (found) {
+            free(dirName);
+        }
+        
+        free(config);
         return 0;
     }
 
-    if (binaryMode) {
-        printBynaryPositions(positions, data, fileSize, inputSize);
-    } else {
-        printTextPositions(positions, data, fileSize, inputSize);
-    }
+    config->useFileList = false;
+    find(fileName, input, inputSize, config);
+    free(config);
 
-    destroy(positions);
-    free(data);
+    return 0;
 
 }

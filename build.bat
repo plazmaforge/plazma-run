@@ -5,6 +5,7 @@ del test-*
 
 rem compile
 
+g++ -c fslib.cpp -o fslib.o
 g++ -c iolib.cpp -o iolib.o
 g++ -c getopt.cpp -o getopt.o
 
@@ -16,4 +17,4 @@ rem link
 
 g++ iolib.o dump.o -o run-dump.exe
 g++ iolib.o cat.o -o run-cat.exe
-g++ getopt.o iolib.o find.o -o run-find.exe
+g++ getopt.o fslib.o iolib.o find.o -o run-find.exe
