@@ -1,27 +1,83 @@
 #include <cstring>
 #include "fslib.h"
 
-static const char* filter_pattern;
+#ifdef _WIN32
+#else
+
+#include <fnmatch.h>
+#include <dirent.h>
+
+#endif
 
 ////
 
 #ifdef _WIN32
 #else
 
-
 static int match_file_nix(const char* pattern, const char* name, int mode);
 
 static int match_file_nix(const char* pattern, const char* name);
-
-static int filter_file_nix(const struct dirent *entry);
-
-static int default_filter_file_nix(const struct dirent *entry);
 
 #endif
 
 static std::vector<std::string> _getFiles(const char* dirName, const char* pattern);
 
 ////
+
+bool isWildcardChar(char ch) {
+    return (ch == '*' || ch == '?' || ch == '[' || ch == ']');
+}
+
+int isWildcard(const char* pattern) {
+    return getWildcardIndex(pattern) != -1;
+}
+
+int getWildcardIndex(const char* pattern) {
+    if (pattern == NULL) {
+        return -1;
+    }
+    int len = strlen(pattern);
+    if (len == 0) {
+        return -1;
+    }
+    char ch;
+    for (int i = 0; i < len; i++) {
+        ch = pattern[i];
+        if (isWildcardChar(ch)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// ../a/name*.text - > 4 -> '/'
+int getWildcardPathIndex(const char* pattern, const char* fileName) {
+    if (pattern == NULL || fileName == NULL) {
+        return -1;
+    }
+    int wildcardIndex = getWildcardIndex(pattern);
+    if (wildcardIndex < 0) {
+        return -1;
+    }
+    return getWildcardPathIndex(wildcardIndex, fileName);
+}
+
+int getWildcardPathIndex(int wildcardIndex, const char* fileName) {
+    if (fileName == NULL) {
+        return -1;
+    }
+    int i = wildcardIndex;
+    // go from end to start
+    bool found = false;
+    while (i >= 0) {
+        if (fileName[i] == '\\' || fileName[i] == '/') {
+            found = true;
+            break;
+        }
+        i--;
+    }
+    return found ? i : -1;
+}
 
 std::vector<std::string> getFiles(const char* dirName) {
     return getFiles(dirName, NULL);
@@ -43,15 +99,31 @@ static std::vector<std::string> _getFiles(const char* dirName, const char* patte
     // TODO: Stub
     return result;
     #else
+
+    /*
     filter_pattern = pattern;
     //char* dirname = "../";
-
     struct dirent **files;
 	int n = scandir(dirName, &files, pattern ? filter_file_nix : NULL, alphasort);
     for (int i = 0; i < n; i++) {
-        result.push_back(files[i]->d_name);
         //printf("%s\n", files[i]->d_name);
+        result.push_back(files[i]->d_name);
     }
+    */
+
+    DIR* dir = NULL;
+    struct dirent *file;
+    dir = opendir(dirName);
+    if (dir == NULL) {
+        return result;
+    }
+    while ((file = readdir(dir)) != NULL) {
+        //printf("%s\n", file->d_name);
+        if ((pattern == NULL || match_file_nix(pattern, file->d_name)) && file->d_type != DT_DIR) {
+            result.push_back(file->d_name);
+        }        
+    }
+    closedir(dir);
     #endif
 
     return result;
@@ -68,21 +140,6 @@ static int match_file_nix(const char* pattern, const char* name, int mode) {
 
 static int match_file_nix(const char* pattern, const char* name) {
     return match_file_nix(pattern, name, FNM_PERIOD);
-}
-
-static int filter_file_nix(const struct dirent *entry) {
-    // TODO: stub for file only
-    if (entry->d_type == DT_DIR) {
-        return 0;
-    }
-	return match_file_nix(filter_pattern, entry->d_name);
-}
-
-static int default_filter_file_nix(const struct dirent *entry) {
-    //if (entry->d_name ==  "." || entry->d_name = "..") {
-    //    return 0;
-    //}
-	return 1;
 }
 
 #endif

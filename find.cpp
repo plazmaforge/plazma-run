@@ -485,25 +485,6 @@ void destroy(Positions* positions) {
     free(positions);
 }
 
-int get_wildcard_index(const char* pattern) {
-    if (pattern == NULL) {
-        return 0;
-    }
-    int len = strlen(pattern);
-    char c;
-    for (int i = 0; i < len; i++) {
-        c = pattern[i];
-        if (c == '*' || c == '?' || c == '[' || c == ']') {
-            return i;
-        }
-    }
-    return -1;
-}
-
-int check_wildcard(const char* pattern) {
-    return get_wildcard_index(pattern) != -1;
-}
-
 void find(const char* fileName, const char* input, int inputSize, FindConfig* config) {
 
     size_t fileSize = 0;
@@ -606,30 +587,20 @@ int main(int argc, char* argv[]) {
     config->findFirstOnly = findFirstOnly;
     config->ignoreCase = ignoreCase;
 
-    int wildcardIndex = get_wildcard_index(fileName);
+    int wildcardIndex = getWildcardIndex(fileName);
 
-    if (wildcardIndex > -1) {
+    if (wildcardIndex >= 0) {
 
         //printf("%s: Find operation doesn't support wildcard\n", argv[0]);
+        int pathIndex = getWildcardPathIndex(wildcardIndex, fileName);
+        char* dirName = NULL;
 
-        int i = wildcardIndex;
-        bool found = false;
-        while(i >= 0) {
-            if (fileName[i] == '\\' || fileName[i] == '/') {
-                found = true;
-                break;
-            }
-            i--;
-        }
-
-        char* dirName;
-
-        if (found) {
-            //printf("found '/': %d\n", i);
-            dirName = strndup(fileName, i + 1);
-            fileName = fileName + i + 1;            
+        if (pathIndex >= 0) {
+            //printf("found '/': %d\n", pathIndex);
+            dirName = strndup(fileName, pathIndex + 1);
+            fileName = fileName + pathIndex + 1;
         } else {
-            dirName = ".";
+            dirName = strdup("."); // ".";
         }
 
         //printf("dir  : %s\n", dirName);
@@ -639,34 +610,41 @@ int main(int argc, char* argv[]) {
         char* pattern = fileName;
 
         std::vector<std::string> files = getFiles(dirName, pattern);
+        if (files.size() == 0) {
+            if (pathIndex >= 0) {
+                fileName = fileName - pathIndex - 1;
+            }
+            printf("%s: %s: No such file or directory\n", argv[0], fileName);
+
+            free(dirName);
+            free(config);
+            return 0;
+        }
+
         for (int i = 0; i < files.size(); i++) {
             //printf("%s\n", files[i].c_str());
-            char* f;
-            if (found) {
-                f = (char*) malloc(strlen(dirName) + files[i].size() + 1);
-                strcpy(f, dirName);
-                strcat(f, files[i].c_str());
+            char* fullName;
+            if (pathIndex >= 0) {
+                fullName = (char*) malloc(strlen(dirName) + files[i].size() + 1);
+                strcpy(fullName, dirName);
+                strcat(fullName, files[i].c_str());
             } else {
-                f = strdup(files[i].c_str());
+                fullName = strdup(files[i].c_str());
             }
             //printf("%s\n", f);
-            find(f, input, inputSize, config);
-
-            free(f);
+            find(fullName, input, inputSize, config);
+            free(fullName);
         }
 
-        if (found) {
-            free(dirName);
-        }
-        
+        free(dirName);
         free(config);
         return 0;
     }
 
     config->useFileList = false;
     find(fileName, input, inputSize, config);
-    free(config);
 
+    free(config);
     return 0;
 
 }

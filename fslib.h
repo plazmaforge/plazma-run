@@ -1,13 +1,16 @@
 #include <string>
 #include <vector>
 
-#ifdef _WIN32
-#else
+bool isWildcardChar(char ch);
 
-#include <fnmatch.h>
-#include <dirent.h>
+int isWildcard(const char* pattern);
 
-#endif
+int getWildcardIndex(const char* pattern);
+
+// ../a/name*.text - > 4 -> '/'
+int getWildcardPathIndex(const char* pattern, const char* fileName);
+
+int getWildcardPathIndex(int wildcardIndex, const char* fileName);
 
 std::vector<std::string> getFiles(const char* dirName);
 

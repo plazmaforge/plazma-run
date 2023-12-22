@@ -212,14 +212,14 @@ while (1)
     //       break;
 
         case '?':
-          printf("A: Unknown option %d\n", optopt);
+          //printf("A: Unknown option %d\n", optopt);
           //printf("Unknown option %c\n", optopt);
           //printf("Unknown option '%s'\n", long_options[option_index].name);
           printf("A: Unknown option %s\n", optinput);
           break;
 
         case ':':
-          printf("A: Missing option for %d\n", optopt);
+          //printf("A: Missing option for %d\n", optopt);
           //printf("Missing option for %c\n", optopt);
           printf("A: Missing option for %s\n", long_options[option_index].name);
           break;
