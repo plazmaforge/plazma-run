@@ -609,6 +609,11 @@ int main(int argc, char* argv[]) {
         config->useFileList = true;
         char* pattern = fileName;
 
+        std::vector<std::string> files;
+
+        scandir(dirName, pattern, files);
+
+        /*
         std::vector<std::string> files = getFiles(dirName, pattern);
         if (files.size() == 0) {
             if (pathIndex >= 0) {
@@ -635,6 +640,15 @@ int main(int argc, char* argv[]) {
             find(fullName, input, inputSize, config);
             free(fullName);
         }
+        */
+
+        for (int i = 0; i < files.size(); i++) {
+            //printf("%s\n", files[i].c_str());
+            //printf("%s\n", f);
+            find(files[i].c_str(), input, inputSize, config);
+            //free(fullName);
+        }
+
 
         free(dirName);
         free(config);
