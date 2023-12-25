@@ -25,6 +25,156 @@ static std::vector<std::string> _getFiles(const char* dirName, const char* patte
 
 ////
 
+bool isPatchChar(char ch) {
+    return ch  == '\\' || ch == '/';
+}
+
+int countPathLevel(const char* path) {
+    if (path == NULL || path[0] == '\0') {
+        return 0;
+    }
+    int start = 0;
+    if (isPatchChar(path[start])) {
+        start++;
+    }
+    if (path[start] == '\0') {
+        return 0;
+    }
+    char ch;
+    int i = start;
+    int level = 1;
+    int end = -1;
+
+    // find start level
+    while ((ch = path[i]) != '\0') {
+        if (isPatchChar(ch)) {
+            level++;
+        }
+        i++;
+    }
+    return level;
+}
+
+char* getLevelPath(const char* path, int level) {
+    if (path == NULL || path[0] == '\0' || level < 0) {
+        return NULL;
+    }
+    int start = 0;
+    if (isPatchChar(path[start])) {
+        start++;
+    }
+    if (path[start] == '\0') {
+        return NULL;
+    }
+    char ch;
+    int i = start;
+    int curr_level = -1;
+    int end = -1;
+
+    // find start level
+    while ((ch = path[i]) != '\0') {
+        if (isPatchChar(ch)) {
+            curr_level++;
+            if (level - curr_level == 1) {
+                start = i + 1;
+            }
+            if (curr_level == level) {
+                end = i;
+                break;
+            }            
+        }
+        i++;
+    }
+
+    //printf("curr level: %d\n", curr_level);
+    //printf("start path: %d\n", start);
+
+    if (curr_level < 0) {
+        // No level in pattern
+        end = i;
+    } else if (curr_level < level) {
+        if (level - curr_level == 1) {
+            end = i;
+        } else {
+            // Incorrect deep level in pattern
+            return NULL;
+        }
+    }
+
+    //printf("end path  : %d\n", end);
+
+    if (start == end) {
+        end++;
+    }    
+
+    int len = end - start;
+    char* p = (char*) malloc(len + 1);
+    strncpy(p, path + start, len);
+    p[len] = '\0';
+    return p;
+
+}
+
+char* getFilePath(const char* dirName, const char* fileName) {
+    return getFilePath(dirName, -1, fileName, -1);
+}
+
+char* getFilePath(const char* dirName, int dirNameLen, const char* fileName, int fileNameLen) {
+    if (dirName == NULL && fileName == NULL) {
+        return NULL;
+    }
+    if (dirName == NULL) {
+        return strdup(fileName);
+    }
+    if (fileName == NULL) {
+        return strdup(dirName);
+    }
+
+    if (dirNameLen < 0) {
+        dirNameLen = strlen(dirName);
+    }
+    if (dirNameLen == 0) {
+        return strdup(fileName);
+    }
+
+    if (fileNameLen < 0) {
+        fileNameLen = strlen(fileName);
+    }
+    if (fileNameLen == 0) {
+        return strdup(dirName);
+    }
+
+    int sep_len = 0;
+    if (isPatchChar(dirName[dirNameLen - 1])) {
+        sep_len++;
+    }
+    if (isPatchChar(fileName[0])) {
+        sep_len++;
+    }
+    if (sep_len == 2) {
+        sep_len = -1; // erase 1 position
+    } else if (sep_len == 1) {
+        sep_len = 0;  // nothing
+    } else {
+        sep_len = 1;  // add 1 position between dir and file
+    }
+
+    int len = dirNameLen + sep_len + fileNameLen;
+
+    char* path = (char*) malloc(len + 1);
+    strcpy(path, dirName);
+    if (sep_len == 1) {
+        path[dirNameLen] = '/';
+        path[dirNameLen + 1] = '\0';
+        //strcat(path, "/");
+    }
+    // shift fileName if erase 1 position
+    strcat(path, sep_len == -1 ? fileName + 1 : fileName);
+    path[len] = '\0';
+
+    return path;
+}
+
 bool isWildcardChar(char ch) {
     return (ch == '*' || ch == '?' || ch == '[' || ch == ']');
 }
@@ -41,10 +191,10 @@ int getWildcardIndex(const char* pattern) {
     if (len == 0) {
         return -1;
     }
-    char ch;
+    //char ch;
     for (int i = 0; i < len; i++) {
-        ch = pattern[i];
-        if (isWildcardChar(ch)) {
+        //ch = pattern[i];
+        if (isWildcardChar(pattern[i])) {
             return i;
         }
     }
@@ -71,7 +221,7 @@ int getWildcardPathIndex(int wildcardIndex, const char* fileName) {
     // go from end to start
     bool found = false;
     while (i >= 0) {
-        if (fileName[i] == '\\' || fileName[i] == '/') {
+        if (isPatchChar(fileName[i])) {
             found = true;
             break;
         }
@@ -151,93 +301,6 @@ static std::vector<std::string> _getFiles(const char* dirName, const char* patte
 #ifdef _WIN32
 #else
 
-bool isPatchChar(char c) {
-    return c  == '\\' || c == '/';
-}
-
-int count_pattern_level(const char* pattern) {
-    if (pattern == NULL || pattern[0] == '\0') {
-        return 0;
-    }
-    int start = 0;
-    if (isPatchChar(pattern[start])) {
-        start++;
-    }
-    if (pattern[start] == '\0') {
-        return 0;
-    }
-    char c;
-    int i = start;
-    int level = 1;
-    int end = -1;
-
-    // find start level
-    while ((c = pattern[i]) != '\0') {
-        if (pattern[i] == '\\' || pattern[i] == '/') {
-            level++;
-        }
-        i++;
-    }
-    return level;
-}
-
-char* select_pattern(const char* pattern, int level) {
-    if (pattern == NULL || pattern[0] == '\0' || level < 0) {
-        return NULL;
-    }
-    int start = 0;
-    if (isPatchChar(pattern[start])) {
-        start++;
-    }
-    if (pattern[start] == '\0') {
-        return NULL;
-    }
-    char c;
-    int i = start;
-    int curr_level = -1;
-    int end = -1;
-
-    // find start level
-    while ((c = pattern[i]) != '\0') {
-        if (pattern[i] == '\\' || pattern[i] == '/') {
-            curr_level++;
-            if (level - curr_level == 1) {
-                start = i + 1;
-            }
-            if (curr_level == level) {
-                end = i;
-                break;
-            }            
-        }
-        i++;
-    }
-
-    //printf("curr level: %d\n", curr_level);
-    //printf("start path: %d\n", start);
-
-    if (curr_level < 0) {
-        // No level in pattern
-        end = i;
-    } else if (curr_level < level) {
-        if (level - curr_level == 1) {
-            end = i;
-        } else {
-            // Incorrect deep level in pattern
-            return NULL;
-        }
-    }
-
-    //printf("end path  : %d\n", end);
-
-    if (start == end) {
-        end++;
-    }    
-
-    char* p = (char*) malloc(end - start + 1);
-    strncpy(p, pattern + start, end - start);
-    return p;
-
-}
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level) {
 
@@ -253,8 +316,8 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
     }
 
     int dir_len = strlen(dirName);
-    int total_level = count_pattern_level(pattern);
-    char* level_pattern = select_pattern(pattern, level);
+    int total_level = countPathLevel(pattern); // count path level in pattern
+    char* level_pattern = getLevelPath(pattern, level);
 
     //printf("scandir : %s\n", dirName);
     //printf("total   : %d\n", total_level);
@@ -264,19 +327,10 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
     
     errno = 0;
     while ((file = readdir(dir)) != NULL) {
-        //printf("%s\n", file->d_name);
         //printf("try [%d] %s, %s, :: %s\n", level, dirName, file->d_name, level_pattern);
         if (pattern == NULL || match_file_nix(level_pattern, file->d_name)) {
 
-            int sep_len = (dirName[dir_len - 1] == '\\' || dirName[dir_len - 1] == '/') ? 0 : 1;
-
-            // match        
-            char* fullName = (char*) malloc(dir_len + sep_len + file->d_namlen + 1);
-            strcpy(fullName, dirName);
-            if (sep_len) {
-                strcat(fullName, "/");
-            }
-            strcat(fullName, file->d_name);
+            char* fullName = getFilePath(dirName, dir_len, file->d_name, file->d_namlen);
 
             if (file->d_type != DT_DIR && (level == 0 || level == total_level - 1)) {
                 // We add file from last pattern level only

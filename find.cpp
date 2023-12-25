@@ -112,6 +112,26 @@ int skipLine(const char* data, size_t data_size, size_t pos) {
 
 ////
 
+bool contains(const char* data, const char* input, int start, int size) {
+    for (size_t j = 0; j < size; j++) {
+        if (data[start + j] != input[j]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool icontains(const char* data, const char* input, int start, int size) {
+    for (size_t j = 0; j < size; j++) {
+        if (std::tolower(data[start + j]) != std::tolower(input[j])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+////
+
 Positions* findBinary(const char* data, size_t data_size, const char* input, size_t input_size, FindConfig* config) {
     if (data == NULL || input == NULL || data_size == 0 || input_size == 0) {
         return NULL;
@@ -138,14 +158,15 @@ Positions* findBinary(const char* data, size_t data_size, const char* input, siz
             return positions;
         }
 
-        bool found = true;
+        bool found = contains(data, input, pos, input_size);
 
-        for (size_t j = 0; j < input_size; j++) {
-            if (data[pos + j] != input[j]) {
-                found = false;
-                break;
-            }
-        }
+        // bool found = true;
+        // for (size_t j = 0; j < input_size; j++) {
+        //     if (data[pos + j] != input[j]) {
+        //         found = false;
+        //         break;
+        //     }
+        // }
 
         if (found) {
             Position* position = new Position();
@@ -175,26 +196,6 @@ Positions* findBinary(const char* data, size_t data_size, const char* input, siz
 
     }
     return positions;
-}
-
-////
-
-bool contains(const char* data, const char* input, int start, int size) {
-    for (size_t j = 0; j < size; j++) {
-        if (data[start + j] != input[j]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool icontains(const char* data, const char* input, int start, int size) {
-    for (size_t j = 0; j < size; j++) {
-        if (std::tolower(data[start + j]) != std::tolower(input[j])) {
-            return false;
-        }
-    }
-    return true;
 }
 
 Positions* findText(const char* data, size_t data_size, const char* input, size_t input_size, FindConfig* config) {
@@ -613,42 +614,10 @@ int main(int argc, char* argv[]) {
 
         scandir(dirName, pattern, files);
 
-        /*
-        std::vector<std::string> files = getFiles(dirName, pattern);
-        if (files.size() == 0) {
-            if (pathIndex >= 0) {
-                fileName = fileName - pathIndex - 1;
-            }
-            printf("%s: %s: No such file or directory\n", argv[0], fileName);
-
-            free(dirName);
-            free(config);
-            return 0;
-        }
-
         for (int i = 0; i < files.size(); i++) {
             //printf("%s\n", files[i].c_str());
-            char* fullName;
-            if (pathIndex >= 0) {
-                fullName = (char*) malloc(strlen(dirName) + files[i].size() + 1);
-                strcpy(fullName, dirName);
-                strcat(fullName, files[i].c_str());
-            } else {
-                fullName = strdup(files[i].c_str());
-            }
-            //printf("%s\n", f);
-            find(fullName, input, inputSize, config);
-            free(fullName);
-        }
-        */
-
-        for (int i = 0; i < files.size(); i++) {
-            //printf("%s\n", files[i].c_str());
-            //printf("%s\n", f);
             find(files[i].c_str(), input, inputSize, config);
-            //free(fullName);
         }
-
 
         free(dirName);
         free(config);
