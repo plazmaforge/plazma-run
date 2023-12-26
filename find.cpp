@@ -198,6 +198,30 @@ Positions* findBinary(const char* data, size_t data_size, const char* input, siz
     return positions;
 }
 
+void fixedEndRowIndex(const char* data, size_t data_size, const char* input, size_t input_size, Position* curr) {
+    if (curr == NULL) {
+        return;
+    }
+    if (curr->endRowIndex > curr->startRowIndex + input_size) {
+        return;
+    }
+    if (curr->index >= data_size) {
+        return;
+    }
+
+    //printf("input_size: %lu\n", input_size);
+    //printf("startRowIndex: %d\n", curr->startRowIndex);
+    //printf("endRowIndex: %d\n", curr->endRowIndex);
+    for (size_t pos = curr->index; pos < data_size; pos++) {
+        char c = data[pos];
+        if (c == '\r' || c == '\n') {
+            curr->endRowIndex = pos;
+            break;
+        }
+    }
+    //printf("endRowIndex: %d\n", curr->endRowIndex);     
+}
+
 Positions* findText(const char* data, size_t data_size, const char* input, size_t input_size, FindConfig* config) {
     if (data == NULL || input == NULL || data_size == 0 || input_size == 0) {
         return NULL;
@@ -231,6 +255,7 @@ Positions* findText(const char* data, size_t data_size, const char* input, size_
     for (size_t pos = 0; pos < data_size; pos++) {
 
         if (pos + input_size > data_size) {
+            fixedEndRowIndex(data, data_size, input, input_size, curr);
             return positions;
         }
 
@@ -245,6 +270,7 @@ Positions* findText(const char* data, size_t data_size, const char* input, size_
             pos += skip;
             row++;
             if (pos >= data_size) {
+                fixedEndRowIndex(data, data_size, input, input_size, curr);
                 return positions;
             }
         }
@@ -258,13 +284,6 @@ Positions* findText(const char* data, size_t data_size, const char* input, size_
 
         bool found = ignoreCase ? icontains(data, input, pos, input_size) : contains(data, input, pos, input_size);
 
-        // for (size_t j = 0; j < input_size; j++) {
-        //     if (data[pos + j] != input[j]) {
-        //         found = false;
-        //         break;
-        //     }
-        // }
-
         if (found) {
             Position* position = new Position();
             position->index = pos;
@@ -274,6 +293,10 @@ Positions* findText(const char* data, size_t data_size, const char* input, size_
             position->endRowIndex = startRowIndex + input_size;
             position->prev = NULL;
             position->next = NULL;
+
+            if (curr != NULL && curr->row == row) {
+                fixedEndRowIndex(data, data_size, input, input_size, curr);
+            }
 
             if (positions == NULL) {
                 curr = position;
@@ -291,11 +314,14 @@ Positions* findText(const char* data, size_t data_size, const char* input, size_
             }
 
             if (findFirstOnly) {
+                fixedEndRowIndex(data, data_size, input, input_size, curr);
                 return positions;
             }
         }
 
     }
+
+    fixedEndRowIndex(data, data_size, input, input_size, curr);
     return positions;
 }
 
@@ -303,26 +329,42 @@ void printTextPosition(Position* position, char* data, int fileSize, int inputSi
     if (position == NULL) {
         return;
     }
-    int startIndex = position->index; 
-    //int startIndex = position->startRowIndex; // all line
+    bool printFullLine = true;
+    bool printUnderLine = false;
 
-    printf(format, position->row, position->col);
+    int startIndex = 0;
+    int endIndex = 0;
+    int endIndex2 = 0;
+    int pad = 0;
+    int count = inputSize; // TODO: count char - not len
 
-    int endIndex = startIndex + inputSize;
-    //int endIndex = position->endRowIndex; // all line
+    if (printFullLine) {
+        startIndex = position->startRowIndex; // full line
+        endIndex = position->endRowIndex;     // full line
+        endIndex2 = endIndex;
+        pad = position->index - position->startRowIndex; // TODO: count char - not len
+    } else {
+        startIndex = position->index;
+        endIndex = startIndex + inputSize;
 
-    int delta = 10;
-    int rest = fileSize - endIndex;
-    delta = rest < delta ? rest : delta;
-    int endIndex2 = endIndex + delta;
+        int delta = 10;
+        int rest = fileSize - endIndex;
+        delta = rest < delta ? rest : delta;
+        endIndex2 = endIndex + delta;
+    }
+
     char c;
 
+    printf(format, position->row, position->col);
     for (size_t i = startIndex; i < endIndex2; i++)  {
         c = data[i];
-        if (!std::isprint(c)) {
-            //c = ' ';
+        if (c == '\r' || c == '\n') {
             break;
         }
+        //if (!std::isprint(c)) {
+            //c = '?';
+            //break;
+        //}
         printf("%c", c);
     }
 
@@ -344,9 +386,7 @@ void printTextPosition(Position* position, char* data, int fileSize, int inputSi
       width = 5 + row_width + col_width;
     }
 
-    bool underline = false;
-
-    if (!underline) {
+    if (!printUnderLine) {
         return;
     }
 
@@ -354,8 +394,12 @@ void printTextPosition(Position* position, char* data, int fileSize, int inputSi
         printf(" ");
     }
 
+    for (int i = 0; i < pad; i++)  {
+        printf(" ");
+    }
+
     // Underline word
-    for (size_t i = startIndex; i < endIndex; i++)  {
+    for (int i = 0; i < count; i++)  {
         printf("_");
     }
 
