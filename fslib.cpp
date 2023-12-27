@@ -1,4 +1,4 @@
-#include <cstring>
+#include <string.h>
 
 #ifdef _WIN32
 
@@ -313,14 +313,16 @@ static std::vector<std::string> _getFiles(const char* dirName, const char* patte
 
 wchar_t* char2wchar(char* str, int len) {    
     int wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, NULL, 0);
-    wchar_t* wstr = (wchar_t*) malloc(siseof(wchar_t) * wlen);
-    MultiByteToWideChar(CP_UTF8, 0, len, len, wstr, wlen);
+    wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen);
+    MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
+    return wstr;
 }
 
-char* wchar2char(wchar_t wstr, int wlen) {    
+char* wchar2char(wchar_t* wstr, int wlen) {    
     int len = WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, NULL, 0, NULL, NULL);
     char* str = (char*) malloc(sizeof(char) * len);
     WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
+    return str;
 }
 
 bool isDir(WIN32_FIND_DATAW file) {

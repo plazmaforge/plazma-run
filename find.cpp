@@ -575,6 +575,18 @@ void find(const char* fileName, const char* input, int inputSize, FindConfig* co
 
 }
 
+char* strndup_(const char * src, size_t size) {
+  //size_t len = strnlen(src, size);
+  size_t len = strlen(src);
+  len = len < size ? len : size;
+  char* dst = (char*) malloc(len + 1);
+  if (!dst)
+    return NULL;
+  memcpy(dst, src, len);
+  dst[len] = '\0';
+  return dst;
+}
+
 int main(int argc, char* argv[]) {
 
     int min_arg = 2; // <text> <file>
@@ -642,7 +654,7 @@ int main(int argc, char* argv[]) {
 
         if (pathIndex >= 0) {
             //printf("found '/': %d\n", pathIndex);
-            dirName = strndup(fileName, pathIndex + 1);
+            dirName = strndup_(fileName, pathIndex + 1);
             fileName = fileName + pathIndex + 1;
         } else {
             dirName = strdup("."); // ".";
