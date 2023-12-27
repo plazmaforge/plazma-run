@@ -575,7 +575,10 @@ void find(const char* fileName, const char* input, int inputSize, FindConfig* co
 
 }
 
-char* strndup_(const char * src, size_t size) {
+char* strndup_(const char* src, size_t size) {
+  if (!src || size < 0) {
+    return NULL;
+  }
   //size_t len = strnlen(src, size);
   size_t len = strlen(src);
   len = len < size ? len : size;
@@ -587,7 +590,25 @@ char* strndup_(const char * src, size_t size) {
   return dst;
 }
 
+char* strdup_uq(const char* src) {
+  if (!src) {
+    return NULL;
+  }
+  size_t len = strlen(src);
+  char* dst = NULL;
+  if ((src[0] == '\'' && src[len - 1] == '\'') || src[0] == '"' && src[len - 1] == '"') {
+     dst = strndup_(src + 1, len - 2);
+  } else {
+     dst = strdup(src);
+  }
+  return dst;
+}
+
 int main(int argc, char* argv[]) {
+
+    //for (int i = 0; i < argc; i++) {
+    //   printf("%d: %s\n", i, argv[i]);
+    //}
 
     int min_arg = 2; // <text> <file>
     if (argc < min_arg + 1) {
@@ -629,9 +650,13 @@ int main(int argc, char* argv[]) {
         printUsage();
         return 0;
     }
+                                        
+    char* input = strdup_uq(argv[optind]);
+    char* fileName = strdup_uq(argv[++optind]);
 
-    char* input = argv[optind];
-    char* fileName = argv[++optind];
+    //printf("input: %s\n", input);
+    //printf("file : %s\n", fileName);
+
 
     size_t inputSize = strlen(input);
     if (inputSize == 0) {
