@@ -682,7 +682,13 @@ int main(int argc, char* argv[]) {
             dirName = strndup_(fileName, pathIndex + 1);
             fileName = fileName + pathIndex + 1;
         } else {
+            #ifdef _WIN32
+            dirName = strdup("./*"); // ".";
+            #else
             dirName = strdup("."); // ".";
+            #endif
+            
+
         }
 
         //printf("dir  : %s\n", dirName);

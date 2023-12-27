@@ -5,6 +5,13 @@
 #include <wchar.h>
 #include <windows.h>
 
+//#include <shlwapi.h>
+
+//#include <winioctl.h>
+//#include <direct.h>
+//#include <shlobj.h>
+//#include <shlwapi.h>
+
 #else
 
 #include <fnmatch.h>
@@ -311,24 +318,27 @@ static std::vector<std::string> _getFiles(const char* dirName, const char* patte
 
 #ifdef _WIN32
 
-wchar_t* char2wchar(char* str, int len) {    
+wchar_t* char2wchar(const char* str, int len) {    
     int wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, NULL, 0);
-    wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen);
+    wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
     MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
+    wstr[wlen] = '\0';
     return wstr;
 }
 
-char* wchar2char(wchar_t* wstr, int wlen) {    
+char* wchar2char(const wchar_t* wstr, int wlen) {    
     int len = WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, NULL, 0, NULL, NULL);
-    char* str = (char*) malloc(sizeof(char) * len);
+    char* str = (char*) malloc(sizeof(char) * len + 1);
     WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
+    str[len] = '\0';
     return str;
 }
 
 bool isDir(WIN32_FIND_DATAW file) {
-    //TODO
-    return false;
+    return file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 }
+
+// https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level) {
 
@@ -336,7 +346,7 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
         return;
     }
 
-    /*
+    
     HANDLE dir = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW file;
     
@@ -363,34 +373,56 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
 
         wchar_t* wfileName = file.cFileName;
         int wfileLen = wcslen(wfileName); //260; //MAX_PATH;
-        char* fileName = wchar2char((wfileName, wfileLen);
+
+        //printf("win::fileLen : %d\n", wfileLen);
+
+        char* fileName = wchar2char(wfileName, wfileLen);
         int fileLen = strlen(fileName);
+
+        //printf("win::fileName: %s\n", fileName);
 
         if (pattern == NULL || match_file_win(level_pattern, fileName)) {
 
-            char* fullName = getFilePath(dirName, dir_len, fileName, fileLen);
+            char* fullName = NULL;
+            if (dirName[0] == '.' && dirName[1] == '/' && dirName[2] == '*') {
+               fullName = strdup(fileName);
+            } else {
+               fullName = getFilePath(dirName, dir_len, fileName, fileLen);
+            }
+            
+            //printf("win::fullName: %s\n", fullName);
 
             if (!isDir(file) && (level == 0 || level == total_level - 1)) {
                 // We add file from last pattern level only
-                //printf("match: [%s] %s, %s, %s\n", (file->d_type == DT_DIR ? "D" : " "), fullName, dirName, file->d_name);
+                //printf("win::match: [%s] %s, %s, %s\n", (isDir(file) ? "D" : " "), fullName, dirName, fileName);
                 files.push_back(fullName);
             }
  
-            if (isDir(file)) {
-                scandir(fullName, pattern, files, level + 1);
-            }
+            //if (isDir(file)) {
+            //    scandir(fullName, pattern, files, level + 1);
+            //}
         }
     }
-    */
+    
 
 }
 
 static int match_file_win(const char* pattern, const char* name, int mode) {
+
     // PathMatchSpecA
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
-    //return PathMatchSpec(name, pattern);
+
+    wchar_t* wpattern = char2wchar(pattern, strlen(pattern));
+    wchar_t* wname = char2wchar(name, strlen(name));
+
+    //return PathMatchSpecW(wname, wpattern);
+    //return PathMatchSpecA(name, pattern);
+
+    // TODO: Stub
+    return strcmp(name, "find.cpp") == 0;
+
     //TODO
-    return 1;
+    //return 1;
 }
 
 static int match_file_win(const char* pattern, const char* name) {
