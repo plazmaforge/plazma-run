@@ -29,11 +29,6 @@ char* getLevelPath(const char* path, int level);
 char* getFilePath(const char* dirName, const char* fileName);
 
 /*
- Returns full file path 
- */
-char* getFilePath(const char* dirName, int dirNameLen, const char* fileName, int fileNameLen);
-
-/*
  Returns true if a char is a wildcard char: '*', '?' , '[', ']'
 */
 bool isWildcardChar(char ch);

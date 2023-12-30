@@ -575,7 +575,7 @@ void find(const char* fileName, const char* input, int inputSize, FindConfig* co
 
 }
 
-char* strndup_(const char* src, size_t size) {
+char* lib_strndup(const char* src, size_t size) {
   if (!src || size < 0) {
     return NULL;
   }
@@ -590,14 +590,14 @@ char* strndup_(const char* src, size_t size) {
   return dst;
 }
 
-char* strdup_uq(const char* src) {
+char* lib_strdup_uq(const char* src) {
   if (!src) {
     return NULL;
   }
   size_t len = strlen(src);
   char* dst = NULL;
-  if ((src[0] == '\'' && src[len - 1] == '\'') || src[0] == '"' && src[len - 1] == '"') {
-     dst = strndup_(src + 1, len - 2);
+  if ((src[0] == '\'' && src[len - 1] == '\'') || (src[0] == '"' && src[len - 1] == '"')) {
+     dst = lib_strndup(src + 1, len - 2);
   } else {
      dst = strdup(src);
   }
@@ -651,8 +651,8 @@ int main(int argc, char* argv[]) {
         return 0;
     }
                                         
-    char* input = strdup_uq(argv[optind]);
-    char* fileName = strdup_uq(argv[++optind]);
+    char* input = lib_strdup_uq(argv[optind]);
+    char* fileName = lib_strdup_uq(argv[++optind]);
 
     //printf("input: %s\n", input);
     //printf("file : %s\n", fileName);
@@ -679,17 +679,10 @@ int main(int argc, char* argv[]) {
 
         if (pathIndex >= 0) {
             //printf("found '/': %d\n", pathIndex);
-            dirName = strndup_(fileName, pathIndex + 1);
+            dirName = lib_strndup(fileName, pathIndex + 1);
             fileName = fileName + pathIndex + 1;
         } else {
-            //#ifdef _WIN32
-            //dirName = strdup("./*"); // ".";
-            //#else
-            //dirName = strdup(".");    // ".";
-            //#endif
-            dirName = strdup(getCurrentFindPath().c_str());
-            
-
+            dirName = strdup(getCurrentFindPath().c_str());            
         }
 
         //printf("dir  : %s\n", dirName);

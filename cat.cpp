@@ -59,6 +59,7 @@ int main(int argc, char* argv[]) {
         offset += fileData->size;
 
     }
+    //printf("%s", totalData);
 
     for (int i = 0; i < totalSize; i++) {
         printf("%c", totalData[i]);

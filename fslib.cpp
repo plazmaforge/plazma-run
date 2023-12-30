@@ -132,10 +132,6 @@ char* getLevelPath(const char* path, int level) {
 
 }
 
-//char* getFilePath(const char* dirName, const char* fileName) {
-//    return getFilePath(dirName, -1, fileName, -1);
-//}
-
 char* getFilePath(const char* dirName, const char* fileName) {
     if (dirName == NULL && fileName == NULL) {
         return NULL;
@@ -178,7 +174,7 @@ char* getFilePath(const char* dirName, const char* fileName) {
     strcpy(path, dirName);
     if (sep_len == 1) {
         path[len1] = '/';
-        path[len1 + 1] = '\0';
+        path[len1 + 1] = '\0'; // ???: Maybe for next strcat
         //strcat(path, "/");
     }
     // shift fileName if erase 1 position
@@ -204,9 +200,7 @@ int getWildcardIndex(const char* pattern) {
     if (len == 0) {
         return -1;
     }
-    //char ch;
     for (int i = 0; i < len; i++) {
-        //ch = pattern[i];
         if (isWildcardChar(pattern[i])) {
             return i;
         }
@@ -343,7 +337,6 @@ bool isDir(WIN32_FIND_DATAW file) {
     return file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 }
 
-
 std::string getCurrentFindPath() {
     return "./*"; // Why not '.\*'?
 }
@@ -425,9 +418,7 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
         wchar_t* wfileName = file.cFileName;
         char* fileName = wchar2char(wfileName);
 
-        //int fileLen = strlen(fileName);
-        //printf("fileName: %s\n", fileName);
-
+        //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
         if (pattern == NULL || match_file_win(level_pattern, fileName)) {
 
             char* fullName = NULL;
@@ -435,8 +426,7 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
                fullName = strdup(fileName);
             } else {
                fullName = getFilePath(dirName, fileName);
-            }
-            
+            }            
             //printf("match:fullName: %s\n", fullName);
 
             if (!isDir(file) && (level == 0 || level == total_level - 1)) {
@@ -483,8 +473,22 @@ static int match_file_win(const char* pattern, const char* name) {
 
 #else
 
+bool isDir(struct dirent* file) {
+    if (file == NULL) {
+        return false;
+    }
+    return file->d_type == DT_DIR;
+}
+
 std::string getCurrentFindPath() {
     return ".";
+}
+
+bool isCurrentFindPath(const char* path) {
+    if (path == NULL) {
+        return false;
+    }
+    return path[0] == '.';
 }
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level) {
@@ -493,16 +497,14 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
         return;
     }
 
-    //MAX_PATH
-
     DIR* dir = NULL;
-    struct dirent *file;
+    struct dirent* file;
     dir = opendir(dirName);
     if (dir == NULL) {
+        fprintf(stderr, "Directory not found: %s", dirName);
         return;
     }
 
-    int dir_len = strlen(dirName);
     int total_level = countPathLevel(pattern); // count path level in pattern
     char* level_pattern = getLevelPath(pattern, level);
 
@@ -514,21 +516,25 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
     
     errno = 0;
     while ((file = readdir(dir)) != NULL) {
-        //printf("try [%d] %s, %s, :: %s\n", level, dirName, file->d_name, level_pattern);
-        if (pattern == NULL || match_file_nix(level_pattern, file->d_name)) {
 
-            char* fullName = getFilePath(dirName, file->d_name);
+        char* fileName = file->d_name;
 
-            if (file->d_type != DT_DIR && (level == 0 || level == total_level - 1)) {
+        //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
+        if (pattern == NULL || match_file_nix(level_pattern, fileName)) {
+
+            char* fullName = getFilePath(dirName, fileName);
+            //printf("match:fullName: %s\n", fullName);
+
+            if (!isDir(file) && (level == 0 || level == total_level - 1)) {
                 // We add file from last pattern level only
-                //printf("match: [%s] %s, %s, %s\n", (file->d_type == DT_DIR ? "D" : " "), fullName, dirName, file->d_name);
+                //printf("match: [%s] %s, %s, %s\n", (isDir(file) ? "D" : " "), fullName, dirName, fileName);
                 files.push_back(fullName);
             }
  
-            if (file->d_type == DT_DIR) {
+            if (isDir(file)) {
                 scandir(fullName, pattern, files, level + 1);
             }
-        }        
+        }
     }
     if (errno != 0) {
         // TODO: stderr: error
