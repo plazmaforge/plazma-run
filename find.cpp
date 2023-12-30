@@ -579,15 +579,70 @@ char* lib_strndup(const char* src, size_t size) {
   if (!src || size < 0) {
     return NULL;
   }
-  //size_t len = strnlen(src, size);
   size_t len = strlen(src);
   len = len < size ? len : size;
   char* dst = (char*) malloc(len + 1);
-  if (!dst)
+  if (!dst) {
     return NULL;
+  }    
   memcpy(dst, src, len);
   dst[len] = '\0';
   return dst;
+}
+
+int lib_is_strn_qt(const char* src, size_t size, char quote) {
+  if (!src || size <= 0) {
+    return 0;
+  }
+  return src[0] == quote && src[size - 1] == quote;
+}
+
+int lib_is_strn_qt(const char* src, char quote) {
+  if (!src) {
+    return 0;
+  }
+  return lib_is_strn_qt(src, strlen(src), quote);
+}
+
+int lib_is_strn_qt(const char* src, size_t size) {
+  if (!src || size <= 0) {
+    return 0;
+  }
+  //return (src[0] == '\'' && src[size - 1] == '\'') || (src[0] == '"' && src[size - 1] == '"');
+  return lib_is_strn_qt(src, size, '\'') || lib_is_strn_qt(src, size, '"');
+}
+
+int lib_is_str_qt(const char* src) {
+  if (!src) {
+    return 0;
+  }
+  return lib_is_strn_qt(src, strlen(src));
+}
+
+char* lib_strdup_qt(const char* src, char quote) {
+  if (!src) {
+    return NULL;
+  }
+  size_t len = strlen(src);
+  char* dst = NULL;
+  if (!lib_is_strn_qt(src, len)) {
+    dst = strdup(src);
+  } else {
+    dst = (char*) malloc(len + 3); // +2 start/end quotes
+    if (!dst) {
+      return NULL;
+    }
+    dst[0] = quote;       // start
+    memcpy(++dst, src, len);
+    len += 2;
+    dst[len - 1] = quote; // end
+    dst[len] = '\0';
+  }
+  return dst;
+}
+
+char* lib_strdup_qt(const char* src) {
+    return lib_strdup_qt(src, '\'');
 }
 
 char* lib_strdup_uq(const char* src) {
@@ -596,7 +651,8 @@ char* lib_strdup_uq(const char* src) {
   }
   size_t len = strlen(src);
   char* dst = NULL;
-  if ((src[0] == '\'' && src[len - 1] == '\'') || (src[0] == '"' && src[len - 1] == '"')) {
+  //if ((src[0] == '\'' && src[len - 1] == '\'') || (src[0] == '"' && src[len - 1] == '"')) {
+  if (lib_is_strn_qt(src, len)) {  
      dst = lib_strndup(src + 1, len - 2);
   } else {
      dst = strdup(src);
