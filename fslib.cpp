@@ -237,6 +237,83 @@ int getWildcardPathIndex(int wildcardIndex, const char* fileName) {
     return found ? i : -1;
 }
 
+////
+
+int match(const char *name, const char *pattern) {
+    if (name == NULL || pattern == NULL) {
+        return 0;
+    }
+
+    do {
+        switch (*pattern) {
+        case '\0':
+            /* Only end of string matches NUL */
+            return *name == '\0';
+
+        case '/':
+        case '\\':
+        case ':':
+            /* Invalid pattern */
+            return 0;
+
+        case '?':
+            /* Any character except NUL matches question mark */
+            if (*name == '\0')
+                return 0;
+
+            /* Consume character and continue scanning */
+            name++;
+            pattern++;
+            break;
+
+        case '*':
+            /* Any sequence of characters match asterisk */
+            switch (pattern[1]) {
+            case '\0':
+                /* Trailing asterisk matches anything */
+                return 1;
+
+            case '*':
+            case '?':
+            case '/':
+            case '\\':
+            case ':':
+                /* Invalid pattern */
+                return 0;
+
+            default:
+                /* Find the next matching character */
+                while (*name != pattern[1]) {
+                    if (*name == '\0')
+                        return 0;
+                    name++;
+                }
+
+                /* Terminate sequence on trailing match */
+                if (match(name, pattern + 1))
+                    return 1;
+
+                /* No match, continue from next character */
+                name++;
+            }
+            break;
+
+        default:
+            /* Only character itself matches */
+            if (*pattern != *name)
+                return 0;
+
+            /* Character passes */
+            name++;
+            pattern++;
+        }
+    } while (1);
+
+    return 0;
+}
+
+////
+
 std::vector<std::string> getFiles(const char* dirName) {
     return getFiles(dirName, NULL);
 }
@@ -454,17 +531,19 @@ static int match_file_win(const char* pattern, const char* name, int mode) {
     // PathMatchSpecA
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
 
-    wchar_t* wpattern = char2wchar(pattern, strlen(pattern));
-    wchar_t* wname = char2wchar(name, strlen(name));
+    //wchar_t* wpattern = char2wchar(pattern, strlen(pattern));
+    //wchar_t* wname = char2wchar(name, strlen(name));
 
     //return PathMatchSpecW(wname, wpattern);
     //return PathMatchSpecA(name, pattern);
 
     // TODO: Stub
-    return strcmp(name, "find.cpp") == 0;
+    //return strcmp(name, "find.cpp") == 0;
 
     //TODO
     //return 1;
+
+    return match(name, pattern); // rotate pattern, name !
 }
 
 static int match_file_win(const char* pattern, const char* name) {
@@ -544,11 +623,14 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
 }
 
 static int match_file_nix(const char* pattern, const char* name, int mode) {
-    int val = fnmatch(pattern, name, mode);
-    int res = val == 0;
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
     //return fnmatch(pattern, name, FNM_PERIOD) == 0; // true id '0'
+
+    int val = fnmatch(pattern, name, mode);
+    int res = val == 0;
     return res;
+
+    //return match(name, pattern); // rotate pattern, name !
 }
 
 static int match_file_nix(const char* pattern, const char* name) {
