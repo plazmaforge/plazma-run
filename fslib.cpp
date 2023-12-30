@@ -132,11 +132,11 @@ char* getLevelPath(const char* path, int level) {
 
 }
 
-char* getFilePath(const char* dirName, const char* fileName) {
-    return getFilePath(dirName, -1, fileName, -1);
-}
+//char* getFilePath(const char* dirName, const char* fileName) {
+//    return getFilePath(dirName, -1, fileName, -1);
+//}
 
-char* getFilePath(const char* dirName, int dirNameLen, const char* fileName, int fileNameLen) {
+char* getFilePath(const char* dirName, const char* fileName) {
     if (dirName == NULL && fileName == NULL) {
         return NULL;
     }
@@ -147,22 +147,18 @@ char* getFilePath(const char* dirName, int dirNameLen, const char* fileName, int
         return strdup(dirName);
     }
 
-    if (dirNameLen < 0) {
-        dirNameLen = strlen(dirName);
-    }
-    if (dirNameLen == 0) {
+    int len1 = strlen(dirName);
+    if (len1 == 0) {
         return strdup(fileName);
     }
 
-    if (fileNameLen < 0) {
-        fileNameLen = strlen(fileName);
-    }
-    if (fileNameLen == 0) {
+    int len2 = strlen(fileName);
+    if (len2 == 0) {
         return strdup(dirName);
     }
 
     int sep_len = 0;
-    if (isPatchChar(dirName[dirNameLen - 1])) {
+    if (isPatchChar(dirName[len1 - 1])) {
         sep_len++;
     }
     if (isPatchChar(fileName[0])) {
@@ -176,13 +172,13 @@ char* getFilePath(const char* dirName, int dirNameLen, const char* fileName, int
         sep_len = 1;  // add 1 position between dir and file
     }
 
-    int len = dirNameLen + sep_len + fileNameLen;
+    int len = len1 + sep_len + len2;
 
     char* path = (char*) malloc(len + 1);
     strcpy(path, dirName);
     if (sep_len == 1) {
-        path[dirNameLen] = '/';
-        path[dirNameLen + 1] = '\0';
+        path[len1] = '/';
+        path[len1 + 1] = '\0';
         //strcat(path, "/");
     }
     // shift fileName if erase 1 position
@@ -326,6 +322,11 @@ wchar_t* char2wchar(const char* str, int len) {
     return wstr;
 }
 
+wchar_t* char2wchar(const char* str) {    
+    return char2wchar(str, strlen(str));
+
+}
+
 char* wchar2char(const wchar_t* wstr, int wlen) {    
     int len = WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, NULL, 0, NULL, NULL);
     char* str = (char*) malloc(sizeof(char) * len + 1);
@@ -334,18 +335,57 @@ char* wchar2char(const wchar_t* wstr, int wlen) {
     return str;
 }
 
+char* wchar2char(const wchar_t* wstr) {
+    return wchar2char(wstr, wcslen(wstr)); 
+}
+
 bool isDir(WIN32_FIND_DATAW file) {
     return file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 }
 
 
+std::string getCurrentFindPath() {
+    return "./*"; // Why not '.\*'?
+}
+
+bool isCurrentFindPath(const char* path) {
+    if (path == NULL) {
+        return false;
+    }
+    return strcmp(path, "./*") == 0; // Why not '.\*'?
+
+}
+
 // Convert directory name to WIN32 find path: add '\*'
 char* getFindPath(const char* dirName) {
-    int dir_len = strlen(dirName);
-    char* path = (char*) malloc(dir_len + 2);
-    strcpy(path, dirName);
-    strcat(path, "*");
-    path[dir_len + 1] = '\0';
+    if (dirName == NULL) {
+        return NULL;
+    }
+
+    int len = strlen(dirName);
+    int add = 0;
+
+    if (len == 0) {
+        add = 3;
+    } else {
+        if (dirName[len - 1] == '\\') {
+            add = 1;
+        }
+    }
+
+    len += add;
+    char* path = (char*) malloc(len + 1);
+
+    if (add == 3) {
+        strcpy(path, "./*"); // Why not '.\*'?
+    } else {
+        strcpy(path, dirName);
+        if (add == 1) {
+           strcat(path, "*");
+        }
+    }
+    
+    path[len + 1] = '\0';
     return path;
 }
 
@@ -356,27 +396,25 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
     if (dirName == NULL) {
         return;
     }
+       
+    char* path = getFindPath(dirName); // convert 'dirName' to WIN32 find path: add '\*'
+    wchar_t* wpath = char2wchar(path);
 
-    
+    //printf("path    : '%s'\n", path);
+
     HANDLE dir = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW file;
-        
-    int dir_len = strlen(dirName);
-    char* path = getFindPath(dirName);
-                                                 
-    wchar_t* wpath = char2wchar(path, strlen(path));
-    printf("wpath   : '%s'\n", wchar2char(wpath, wcslen(wpath)));
 
     dir = FindFirstFileW(wpath, &file);
     if (dir == INVALID_HANDLE_VALUE && GetLastError() != ERROR_FILE_NOT_FOUND) {
-        printf("Directory not found");
+        fprintf(stderr, "Directory not found: %s", dirName);
         return;
     }
 
     int total_level = countPathLevel(pattern); // count path level in pattern
     char* level_pattern = getLevelPath(pattern, level);
 
-    printf("scandir : '%s'\n", dirName);
+    //printf("scandir : '%s'\n", dirName);
     //printf("total   : %d\n", total_level);
     //printf("level   : %d\n", level);
     //printf("pattern : %s\n", pattern);
@@ -385,29 +423,25 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
     while (FindNextFileW(dir, &file) != 0) {
 
         wchar_t* wfileName = file.cFileName;
-        int wfileLen = wcslen(wfileName); //260; //MAX_PATH;
+        char* fileName = wchar2char(wfileName);
 
-        //printf("win::fileLen : %d\n", wfileLen);
-
-        char* fileName = wchar2char(wfileName, wfileLen);
-        int fileLen = strlen(fileName);
-
-        //printf("win::fileName: %s\n", fileName);
+        //int fileLen = strlen(fileName);
+        //printf("fileName: %s\n", fileName);
 
         if (pattern == NULL || match_file_win(level_pattern, fileName)) {
 
             char* fullName = NULL;
-            if (dirName[0] == '.' && dirName[1] == '/' && dirName[2] == '*') {
+            if (isCurrentFindPath(dirName)) {
                fullName = strdup(fileName);
             } else {
-               fullName = getFilePath(dirName, dir_len, fileName, fileLen);
+               fullName = getFilePath(dirName, fileName);
             }
             
-            //printf("match:: win::fullName: %s\n", fullName);
+            //printf("match:fullName: %s\n", fullName);
 
             if (!isDir(file) && (level == 0 || level == total_level - 1)) {
                 // We add file from last pattern level only
-                //printf("win::match: [%s] %s, %s, %s\n", (isDir(file) ? "D" : " "), fullName, dirName, fileName);
+                //printf("match: [%s] %s, %s, %s\n", (isDir(file) ? "D" : " "), fullName, dirName, fileName);
                 files.push_back(fullName);
             }
  
@@ -415,9 +449,14 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
                 scandir(fullName, pattern, files, level + 1);
             }
         }
-    }
-    
 
+        free(fileName);
+    }
+
+    free(path);
+    free(wpath);
+    free(level_pattern);
+    
 }
 
 static int match_file_win(const char* pattern, const char* name, int mode) {
@@ -444,6 +483,9 @@ static int match_file_win(const char* pattern, const char* name) {
 
 #else
 
+std::string getCurrentFindPath() {
+    return ".";
+}
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level) {
 
@@ -475,7 +517,7 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
         //printf("try [%d] %s, %s, :: %s\n", level, dirName, file->d_name, level_pattern);
         if (pattern == NULL || match_file_nix(level_pattern, file->d_name)) {
 
-            char* fullName = getFilePath(dirName, dir_len, file->d_name, file->d_namlen);
+            char* fullName = getFilePath(dirName, file->d_name);
 
             if (file->d_type != DT_DIR && (level == 0 || level == total_level - 1)) {
                 // We add file from last pattern level only

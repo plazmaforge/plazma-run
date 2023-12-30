@@ -53,6 +53,8 @@ int getWildcardPathIndex(const char* pattern, const char* fileName);
 
 int getWildcardPathIndex(int wildcardIndex, const char* fileName);
 
+std::string getCurrentFindPath();
+
 std::vector<std::string> getFiles(const char* dirName);
 
 std::vector<std::string> getFiles(const char* dirName, const char* pattern);
