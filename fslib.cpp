@@ -338,6 +338,17 @@ bool isDir(WIN32_FIND_DATAW file) {
     return file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 }
 
+
+// Convert directory name to WIN32 find path: add '\*'
+char* getFindPath(const char* dirName) {
+    int dir_len = strlen(dirName);
+    char* path = (char*) malloc(dir_len + 2);
+    strcpy(path, dirName);
+    strcat(path, "*");
+    path[dir_len + 1] = '\0';
+    return path;
+}
+
 // https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level) {
@@ -349,26 +360,28 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
     
     HANDLE dir = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW file;
-    
-    //char* path = dirName;
+        
     int dir_len = strlen(dirName);
-    wchar_t* wdirName = char2wchar(dirName, dir_len);
+    char* path = getFindPath(dirName);
+                                                 
+    wchar_t* wpath = char2wchar(path, strlen(path));
+    printf("wpath   : '%s'\n", wchar2char(wpath, wcslen(wpath)));
 
-    dir = FindFirstFileW(wdirName, &file);
+    dir = FindFirstFileW(wpath, &file);
     if (dir == INVALID_HANDLE_VALUE && GetLastError() != ERROR_FILE_NOT_FOUND) {
+        printf("Directory not found");
         return;
     }
 
-    //int dir_len = strlen(dirName);
     int total_level = countPathLevel(pattern); // count path level in pattern
     char* level_pattern = getLevelPath(pattern, level);
 
-    //printf("scandir : %s\n", dirName);
+    printf("scandir : '%s'\n", dirName);
     //printf("total   : %d\n", total_level);
     //printf("level   : %d\n", level);
     //printf("pattern : %s\n", pattern);
     //printf("select  : %s\n", level_pattern);
-
+                                                                                         
     while (FindNextFileW(dir, &file) != 0) {
 
         wchar_t* wfileName = file.cFileName;
@@ -383,14 +396,14 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
 
         if (pattern == NULL || match_file_win(level_pattern, fileName)) {
 
-            char* fullName = NULL;
+            char* fullName = NULL;
             if (dirName[0] == '.' && dirName[1] == '/' && dirName[2] == '*') {
                fullName = strdup(fileName);
             } else {
                fullName = getFilePath(dirName, dir_len, fileName, fileLen);
             }
             
-            //printf("win::fullName: %s\n", fullName);
+            //printf("match:: win::fullName: %s\n", fullName);
 
             if (!isDir(file) && (level == 0 || level == total_level - 1)) {
                 // We add file from last pattern level only
@@ -398,9 +411,9 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
                 files.push_back(fullName);
             }
  
-            //if (isDir(file)) {
-            //    scandir(fullName, pattern, files, level + 1);
-            //}
+            if (isDir(file)) {
+                scandir(fullName, pattern, files, level + 1);
+            }
         }
     }
     
