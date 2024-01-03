@@ -2,10 +2,24 @@
 
 #ifdef _WIN32
 
+//#ifndef UNICODE
+//#define UNICODE
+//#endif
+
+#ifdef UNICODE
+#if _WIN32_WINNT >= 0x0600
+#define WIN32_FILE_API_NEW
+#endif
+#endif
+
 #include <wchar.h>
 #include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-//#include <shlwapi.h>
+//#include <fileapi.h>
+//#include <aclapi.h>
+//#include <io.h>
 
 //#include <winioctl.h>
 //#include <direct.h>
@@ -462,6 +476,8 @@ char* getFindPath(const char* dirName) {
     return path;
 }
 
+#ifdef WIN32_FILE_API_NEW
+
 wchar_t* getRealPath(HANDLE handle) {
     if (handle == NULL) {
         return NULL;
@@ -499,7 +515,34 @@ wchar_t* getRealPath(const wchar_t* wpath) {
     return getRealPath(handle);
 }
 
-char_t* getRealPath(const char* path) {
+#else
+
+wchar_t* getRealPath(const wchar_t* wpath) {
+    if(wpath == NULL) {
+        return NULL;
+    }
+    uint32_t size = GetFullPathNameW(wpath, 0, NULL, NULL);
+    if(size == 0) {
+        return NULL;
+    }
+
+    //PWSTR buf = (PWSTR)_alloca((4 + size) * sizeof(WCHAR));
+    //buf[0] = L'\\', buf[1] = L'\\',  buf[2] = L'?', buf[3] = L'\\';
+    //size = GetFullPathName(wpath, size, buf + 4, NULL);
+
+    wchar_t buf[size];
+
+    size = GetFullPathName(wpath, size, buf, NULL);
+    if (size == 0) {
+       return NULL; 
+    }
+    return _wcsdup(buf);
+}
+
+#endif
+
+
+char* getRealPath(const char* path) {
     if (path == NULL) {
         return NULL;
     }
@@ -515,7 +558,7 @@ char_t* getRealPath(const char* path) {
     char* real_path = wchar2char(wreal_path);
     free(wreal_path);
 
-    return real_path
+    return real_path;
 }
 
 // https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
