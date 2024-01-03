@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "getopt.h"
+#include "pathlib.h"
 #include "fslib.h"
 #include "iolib.h"
 
