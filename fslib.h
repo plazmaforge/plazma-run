@@ -54,6 +54,8 @@ std::vector<std::string> getFiles(const char* dirName);
 
 std::vector<std::string> getFiles(const char* dirName, const char* pattern);
 
+char* getRealPath(const char* path);
+
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files);
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level);

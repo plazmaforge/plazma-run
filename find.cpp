@@ -561,7 +561,7 @@ void find(const char* fileName, const char* input, int inputSize, FindConfig* co
     }
 
     if (config->useFileList) {
-        printf(">> %s\n", fileName);
+        printf(">> %s\n", getRealPath(fileName));
     }
 
     if (config->binaryMode) {

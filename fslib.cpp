@@ -18,6 +18,9 @@
 #include <dirent.h>
 #include <errno.h>
 
+#include <limits.h> /* PATH_MAX */
+#include <stdio.h>
+#include <stdlib.h>
 #endif
 
 #include "fslib.h"
@@ -459,6 +462,62 @@ char* getFindPath(const char* dirName) {
     return path;
 }
 
+wchar_t* getRealPath(HANDLE handle) {
+    if (handle == NULL) {
+        return NULL;
+    }
+    DWORD size = GetFinalPathNameByHandleW(handle, NULL, 0, VOLUME_NAME_DOS);
+    if (size == 0) {
+        SetLastError(ERROR_INVALID_HANDLE);
+        return NULL;
+    }    
+    wchar_t* wpath = (wchar_t*) malloc(sizeof(wchar_t) * size);
+    size = GetFinalPathNameByHandleW(handle, wpath, size, VOLUME_NAME_DOS);
+    if (size == 0) {
+        free(wpath);
+        SetLastError(ERROR_INVALID_HANDLE);
+        return NULL;
+    }
+    return wpath;
+}
+
+wchar_t* getRealPath(const wchar_t* wpath) {
+    if (wpath == NULL) {
+        return NULL;
+    }
+    HANDLE handle = CreateFileW(wpath,
+                       0,
+                       0,
+                       NULL,
+                       OPEN_EXISTING,
+                       FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS,
+                       NULL);
+    if (handle == INVALID_HANDLE_VALUE) {
+        //GetLastError();
+        return NULL;
+    }    
+    return getRealPath(handle);
+}
+
+char_t* getRealPath(const char* path) {
+    if (path == NULL) {
+        return NULL;
+    }
+    wchar_t* wpath = char2wchar(path);
+    if (wpath == NULL) {
+        return NULL;
+    }
+    wchar_t* wreal_path = getRealPath(wpath);
+    free(wpath);
+    if (wreal_path == NULL) {
+        return NULL;
+    }
+    char* real_path = wchar2char(wreal_path);
+    free(wreal_path);
+
+    return real_path
+}
+
 // https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level) {
@@ -568,6 +627,17 @@ bool isCurrentFindPath(const char* path) {
         return false;
     }
     return path[0] == '.';
+}
+
+char* getRealPath(const char* path) {
+    if (path == NULL) {
+        return NULL;
+    }
+    char buf[PATH_MAX];
+    if (realpath(path, buf) != buf) {
+        return NULL;
+    }
+    return strdup(buf);
 }
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level) {
