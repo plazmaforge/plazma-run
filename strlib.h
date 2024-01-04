@@ -1,3 +1,5 @@
+#ifndef PLAZMA_LIB_STRLIB_H
+#define PLAZMA_LIB_STRLIB_H
 
 char* lib_strcat(char* str1, const char* str2);
 
@@ -32,3 +34,5 @@ char* lib_strdup_qt(const char* src, char quote);
 char* lib_strdup_qt(const char* src);
 
 char* lib_strdup_uq(const char* src);
+
+#endif // PLAZMA_LIB_STRLIB_H

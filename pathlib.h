@@ -1,3 +1,5 @@
+#ifndef PLAZMA_LIB_PATHLIB_H
+#define PLAZMA_LIB_PATHLIB_H
 
 /*
  Returns true if a char is cross-platform path separator: '/', '\'
@@ -41,4 +43,4 @@ int getWildcardPathIndex(const char* pattern, const char* fileName);
 
 int getWildcardPathIndex(int wildcardIndex, const char* fileName);
 
-
+#endif // PLAZMA_LIB_PATHLIB_H

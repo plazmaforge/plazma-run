@@ -1,3 +1,6 @@
+#ifndef PLAZMA_LIB_FSLIB_H
+#define PLAZMA_LIB_FSLIB_H
+
 #include <string>
 #include <vector>
 
@@ -17,3 +20,5 @@ char* getRealPath(const char* path);
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files);
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level);
+
+#endif // PLAZMA_LIB_FSLIB_H
