@@ -10,7 +10,6 @@
 #include "strlib.h"
 #include "pathlib.h"
 #include "fslib.h"
-//#include "iolib.h"
 #include "srhlib.h"
 
 void printUsage() {
@@ -83,6 +82,7 @@ int main(int argc, char* argv[]) {
     config->binaryMode = binaryMode;
     config->findFirstOnly = findFirstOnly;
     config->ignoreCase = ignoreCase;
+    config->printFileName = true; // TODO: add optional
 
     int wildcardIndex = getWildcardIndex(fileName);
 
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
         //printf("dir  : %s\n", dirName);
         //printf("file : %s\n", fileName);
 
-        config->useFileList = true;
+        //config->printFileName = true;
         char* pattern = fileName;
 
         std::vector<std::string> files;
@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    config->useFileList = false;
+    //config->printFileName = false;
     find(fileName, input, inputSize, config);
 
     free(config);

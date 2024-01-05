@@ -23,7 +23,7 @@ struct FindConfig {
     bool binaryMode;
     bool findFirstOnly;
     bool ignoreCase;
-    bool useFileList;
+    bool printFileName;
 };
 
 void find(const char* fileName, const char* input, int inputSize, const FindConfig* config);

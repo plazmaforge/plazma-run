@@ -539,7 +539,7 @@ void find(const char* fileName, const char* input, int inputSize, const FindConf
         return;
     }
 
-    if (config->useFileList) {
+    if (config->printFileName) {
         printf(">> %s\n", getRealPath(fileName));
     }
 
