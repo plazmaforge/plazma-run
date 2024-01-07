@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 
+const int FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
+const int FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
+
 /*
  Returns full file path 
  */

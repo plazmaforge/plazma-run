@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 
         std::vector<std::string> files;
 
-        scandir(dirName, pattern, files);
+        scandir(dirName, pattern, files, FS_SCANDIR_RECURSIVE);
 
         for (int i = 0; i < files.size(); i++) {
             //printf("%s\n", files[i].c_str());

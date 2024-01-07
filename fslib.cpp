@@ -58,8 +58,6 @@ static int match_file_nix(const char* pattern, const char* name);
 
 #endif
 
-static std::vector<std::string> _getFiles(const char* dirName, const char* pattern);
-
 ////
 
 char* getFilePath(const char* dirName, const char* fileName) {
@@ -196,68 +194,9 @@ std::vector<std::string> getFiles(const char* dirName) {
 }
 
 std::vector<std::string> getFiles(const char* dirName, const char* pattern) {
-    return _getFiles(dirName, pattern);
-}
-
-////
-
-static std::vector<std::string> _getFiles(const char* dirName, const char* pattern) {
-    std::vector<std::string> result;
-    if (dirName == NULL) {
-        return result;
-    }
-
-    #ifdef _WIN32
-
-    /*
-    // TODO: Stub
-    HANDLE dir = INVALID_HANDLE_VALUE;
-    WIN32_FIND_DATAW ent;
-    
-    char *path = dirName;
-    len = strlen(dirName);
-    wchar_t *wpath = NULL;
-
-    int wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, NULL, 0);
-    wpath = malloc(siseof(wchar_t) * wlen);
-    MultiByteToWideChar(CP_UTF8, 0, len, len, wpath, wlen);
-    dir = FindFirstFileW(wpath, &ent);
-    */
-
-    return result;
-    #else
-
-    /*
-    filter_pattern = pattern;
-    //char* dirname = "../";
-    struct dirent **files;
-	int n = scandir(dirName, &files, pattern ? filter_file_nix : NULL, alphasort);
-    for (int i = 0; i < n; i++) {
-        //printf("%s\n", files[i]->d_name);
-        result.push_back(files[i]->d_name);
-    }
-    */
-
-    DIR* dir = NULL;
-    struct dirent *file;
-    dir = opendir(dirName);
-    if (dir == NULL) {
-        return result;
-    }
-    errno = 0;
-    while ((file = readdir(dir)) != NULL) {
-        //printf("%s\n", file->d_name);
-        if ((pattern == NULL || match_file_nix(pattern, file->d_name)) && file->d_type != DT_DIR) {
-            result.push_back(file->d_name);
-        }        
-    }
-    if (errno != 0) {
-        // TODO: stderr: error
-    }
-    closedir(dir);
-    #endif
-
-    return result;
+    std::vector<std::string> files;
+    scandir(dirName, pattern, files);
+    return files;
 }
 
 #ifdef _WIN32
@@ -423,34 +362,18 @@ char* getRealPath(const char* path) {
 
 // https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
 
-void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level) {
+void _scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
 
-    if (dirName == NULL) {
-        return;
-    }
-       
     char* path = getFindPath(dirName); // convert 'dirName' to WIN32 find path: add '\*'
     wchar_t* wpath = char2wchar(path);
-
     //printf("path    : '%s'\n", path);
 
-    HANDLE dir = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW file;
-
-    dir = FindFirstFileW(wpath, &file);
-    if (dir == INVALID_HANDLE_VALUE && GetLastError() != ERROR_FILE_NOT_FOUND) {
-        fprintf(stderr, "Directory not found: %s", dirName);
+    HANDLE dir = FindFirstFileW(wpath, &file);
+    if (dir == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
+        fprintf(stderr, "Directory not found: %s\n", dirName);
         return;
     }
-
-    int total_level = countPathLevel(pattern); // count path level in pattern
-    char* level_pattern = getLevelPath(pattern, level);
-
-    //printf("scandir : '%s'\n", dirName);
-    //printf("total   : %d\n", total_level);
-    //printf("level   : %d\n", level);
-    //printf("pattern : %s\n", pattern);
-    //printf("select  : %s\n", level_pattern);
                                                                                          
     while (FindNextFileW(dir, &file) != 0) {
 
@@ -474,7 +397,7 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
                 files.push_back(fullName);
             }
  
-            if (isDir(file)) {
+            if (isDir(file) && max_depth >= 0) {
                 scandir(fullName, pattern, files, level + 1);
             }
         }
@@ -484,8 +407,6 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
 
     free(path);
     free(wpath);
-    free(level_pattern);
-    
 }
 
 static int match_file_win(const char* pattern, const char* name, int mode) {
@@ -498,12 +419,6 @@ static int match_file_win(const char* pattern, const char* name, int mode) {
 
     //return PathMatchSpecW(wname, wpattern);
     //return PathMatchSpecA(name, pattern);
-
-    // TODO: Stub
-    //return strcmp(name, "find.cpp") == 0;
-
-    //TODO
-    //return 1;
 
     return match(name, pattern); // rotate pattern, name !
 }
@@ -543,28 +458,14 @@ char* getRealPath(const char* path) {
     return strdup(buf);
 }
 
-void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level) {
+void _scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
 
-    if (dirName == NULL) {
-        return;
-    }
-
-    DIR* dir = NULL;
     struct dirent* file;
-    dir = opendir(dirName);
+    DIR* dir = opendir(dirName);
     if (dir == NULL) {
-        fprintf(stderr, "Directory not found: %s", dirName);
+        fprintf(stderr, "Directory not found: %s\n", dirName);
         return;
     }
-
-    int total_level = countPathLevel(pattern); // count path level in pattern
-    char* level_pattern = getLevelPath(pattern, level);
-
-    //printf("scandir : %s\n", dirName);
-    //printf("total   : %d\n", total_level);
-    //printf("level   : %d\n", level);
-    //printf("pattern : %s\n", pattern);
-    //printf("select  : %s\n", level_pattern);
     
     errno = 0;
     while ((file = readdir(dir)) != NULL) {
@@ -583,7 +484,7 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
                 files.push_back(fullName);
             }
  
-            if (isDir(file)) {
+            if (isDir(file) && max_depth >= 0) {
                 scandir(fullName, pattern, files, level + 1);
             }
         }
@@ -592,7 +493,6 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
         // TODO: stderr: error
     }
     closedir(dir);
-    free(level_pattern);
 }
 
 static int match_file_nix(const char* pattern, const char* name, int mode) {
@@ -613,6 +513,29 @@ static int match_file_nix(const char* pattern, const char* name) {
 #endif
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files) {
-    scandir(dirName, pattern, files, 0);
+    scandir(dirName, pattern, files, FS_SCANDIR_FLAT);
+}
+
+void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level) {
+    if (dirName == NULL) {
+        return;
+    }
+
+    int max_depth = level;
+    if (max_depth < 0) {
+        level = 0;
+    }
+    int total_level = countPathLevel(pattern); // count path level in pattern
+    char* level_pattern = getLevelPath(pattern, level);
+
+    //printf("scandir : %s\n", dirName);
+    //printf("total   : %d\n", total_level);
+    //printf("level   : %d\n", level);
+    //printf("pattern : %s\n", pattern);
+    //printf("select  : %s\n", level_pattern);
+
+    _scandir(dirName, pattern, files, level, max_depth, total_level, level_pattern);
+
+    free(level_pattern);
 }
 
