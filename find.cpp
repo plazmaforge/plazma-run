@@ -12,9 +12,19 @@
 #include "wclib.h"
 #include "fslib.h"
 #include "srhlib.h"
+#include "syslib.h"
+
+void printSysInfo() {
+    printf("\n");
+    printf("user.name: %s\n", getUserName());
+    printf("user.home: %s\n", getUserHome());
+    printf("user.dir : %s\n", getUserDir());
+    printf("tmp.dir  : %s\n", getTmpDir());
+}
 
 void printUsage() {
     printf("Usage: run-find text file \n");
+    printSysInfo();
 }
 
 ////

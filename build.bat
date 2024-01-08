@@ -11,6 +11,7 @@ g++ -c fslib.cpp -o fslib.o
 g++ -c wclib.cpp -o wclib.o
 g++ -c iolib.cpp -o iolib.o
 g++ -c srhlib.cpp -o srhlib.o
+g++ -c syslib.cpp -o syslib.o
 g++ -c getopt.cpp -o getopt.o
 
 g++ -c dump.cpp -o dump.o
@@ -21,4 +22,4 @@ rem link
 
 g++ iolib.o dump.o -o run-dump.exe
 g++ iolib.o cat.o -o run-cat.exe
-g++ getopt.o strlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o find.o -o run-find.exe
+g++ getopt.o strlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o syslib.o find.o -o run-find.exe
