@@ -331,7 +331,7 @@ wchar_t* getRealPath(const wchar_t* wpath) {
 
     wchar_t buf[size];
 
-    size = GetFullPathName(wpath, size, buf, NULL);
+    size = GetFullPathNameW(wpath, size, buf, NULL);
     if (size == 0) {
        return NULL; 
     }
