@@ -9,6 +9,7 @@
 #include "getopt.h"
 #include "strlib.h"
 #include "pathlib.h"
+#include "wclib.h"
 #include "fslib.h"
 #include "srhlib.h"
 

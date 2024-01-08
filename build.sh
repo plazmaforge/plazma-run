@@ -7,6 +7,7 @@ rm test-*
 ############
 g++ -c strlib.cpp -o strlib.o
 g++ -c pathlib.cpp -o pathlib.o
+g++ -c wclib.cpp -o wclib.o
 g++ -c fslib.cpp -o fslib.o
 g++ -c iolib.cpp -o iolib.o
 g++ -c srhlib.cpp -o srhlib.o
@@ -21,7 +22,7 @@ g++ -c find.cpp -o find.o
 ###########
 g++ iolib.o dump.o -o run-dump
 g++ iolib.o cat.o -o run-cat
-g++ getopt.o strlib.o pathlib.o fslib.o iolib.o srhlib.o find.o -o run-find
+g++ getopt.o strlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o find.o -o run-find
 
 g++ getopt.o test_getopt.o -o test-getopt
 #g++ test_getopt.o -o test-getopt
