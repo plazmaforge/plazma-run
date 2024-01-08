@@ -37,7 +37,7 @@
 #ifdef _WIN32
 
 // wstrlib
-wchar_t* char2wchar(const char* str, int len) {
+static wchar_t* char2wchar(const char* str, int len) {
     int wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, NULL, 0);
     wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
     MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
@@ -46,13 +46,13 @@ wchar_t* char2wchar(const char* str, int len) {
 }
 
 // wstrlib
-wchar_t* char2wchar(const char* str) {
+static wchar_t* char2wchar(const char* str) {
     return char2wchar(str, strlen(str));
 
 }
 
 // wstrlib
-char* wchar2char(const wchar_t* wstr, int wlen) {
+static char* wchar2char(const wchar_t* wstr, int wlen) {
     int len = WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, NULL, 0, NULL, NULL);
     char* str = (char*) malloc(sizeof(char) * len + 1);
     WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
@@ -61,7 +61,7 @@ char* wchar2char(const wchar_t* wstr, int wlen) {
 }
 
 // wstrlib
-char* wchar2char(const wchar_t* wstr) {
+static char* wchar2char(const wchar_t* wstr) {
     return wchar2char(wstr, wcslen(wstr)); 
 }
 
