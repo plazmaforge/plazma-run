@@ -6,13 +6,18 @@
 #include <cctype>
 #include <vector>
 
+#include <locale.h>
+
 #include "getopt.h"
 #include "strlib.h"
+#include "wstrlib.h"
 #include "pathlib.h"
 #include "wclib.h"
 #include "fslib.h"
 #include "srhlib.h"
 #include "syslib.h"
+
+//#include <wchar.h>
 
 void printSysInfo() {
     printf("\n");
@@ -31,8 +36,31 @@ void printUsage() {
 
 int main(int argc, char* argv[]) {
 
+    //setlocale(LC_ALL, "en_US.utf8");
+    //setlocale(LC_ALL, "");
+
     //for (int i = 0; i < argc; i++) {
     //   printf("%d: %s\n", i, argv[i]);
+    //}
+
+    //const char* str = "\xe4\xbd\xa0\xe5\xa5\xbd";
+    //wchar_t* wstr = char2wchar(str);
+
+    //wprintf(L"MB string: %s\n", str);
+    //wprintf(L"WC string: %ls\n", wstr);
+    //wprintf(L"WC length: %d\n", wcslen(wstr));
+
+    //for (int i = 0; i < argc; i++) {
+    //    char* str = argv[i];
+    //    wchar_t* wstr = char2wchar(str);
+    //    char* str2 = wchar2char(wstr);
+    //    wprintf(L"\n");
+    //    wprintf(L"%d: MB-STR %s\n", i, str);
+    //    wprintf(L"%d: MB-LEN %d\n", i, strlen(str));
+    //    wprintf(L"%d: WC-STR %ls\n", i, wstr);
+    //    wprintf(L"%d: WC-LEN %d\n", i, wcslen(wstr));
+    //    wprintf(L"%d: MB-STR %s\n", i, str2);
+    //    wprintf(L"%d: MB-LEN %d\n", i, strlen(str2));
     //}
 
     int min_arg = 2; // <text> <file>
@@ -41,6 +69,7 @@ int main(int argc, char* argv[]) {
         printUsage();
         return 0;
     }
+
     // Config
     bool binaryMode = false;
     bool findFirstOnly = false;

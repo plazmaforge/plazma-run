@@ -10,14 +10,16 @@
 #include <shlobj.h>
 #include <objidl.h>
 
+#include "wstrlib.h"      // convert char/wchar, string/wstring
+
 #else
 
-#include <unistd.h>
-#include <dlfcn.h>
-#include <sys/utsname.h>        /* For os_name and os_version */
-//#include <langinfo.h>         /* For nl_langinfo */
-#include <pwd.h>
-#include <limits.h>
+#include <unistd.h>       // getuid (user_name, user_home), getcwd (current_dir), macos:confstr (tmp_dir)
+//#include <dlfcn.h>
+#include <sys/utsname.h>  // os_name, os_version
+//#include <langinfo.h>   // nl_langinfo
+#include <pwd.h>          // getpwuid (user_name, user_home)
+#include <limits.h>       // PATH_MAX
 
 #ifdef _ALLBSD_SOURCE
 #ifndef P_tmpdir
@@ -36,34 +38,6 @@
 
 #ifdef _WIN32
 
-// wstrlib
-static wchar_t* char2wchar(const char* str, int len) {
-    int wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, NULL, 0);
-    wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
-    MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
-    wstr[wlen] = '\0';
-    return wstr;
-}
-
-// wstrlib
-static wchar_t* char2wchar(const char* str) {
-    return char2wchar(str, strlen(str));
-
-}
-
-// wstrlib
-static char* wchar2char(const wchar_t* wstr, int wlen) {
-    int len = WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, NULL, 0, NULL, NULL);
-    char* str = (char*) malloc(sizeof(char) * len + 1);
-    WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
-    str[len] = '\0';
-    return str;
-}
-
-// wstrlib
-static char* wchar2char(const wchar_t* wstr) {
-    return wchar2char(wstr, wcslen(wstr)); 
-}
 
 ////
 
@@ -240,7 +214,6 @@ char* getUserHome() {
 
 char* getUserDir() {
   /* Current directory */
-  //int PATH_MAX_ = 1024;
   char buf[PATH_MAX];
   //errno = 0;
   if (getcwd(buf, sizeof(buf)) == NULL) {
@@ -259,10 +232,10 @@ char* getTmpDir() {
     if (pathSize > 0 && pathSize <= PATH_MAX) {
         return tmp_path;
     }
+    return (char*) P_tmpdir;
    #else 
-     return P_tmpdir;
+     return (char*) P_tmpdir;
    #endif
-   return NULL;
 }
 
 #endif

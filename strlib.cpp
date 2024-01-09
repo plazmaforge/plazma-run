@@ -123,7 +123,7 @@ char* lib_strdup(const char* src) {
     return NULL;
   }
   size_t len = strlen(src);
-  char* dst = lib_strnew(len); //(char*) malloc(len + 1);
+  char* dst = lib_strnew(len);
   if (!dst) {
     return NULL;
   }    
@@ -138,7 +138,7 @@ char* lib_strndup(const char* src, size_t size) {
   }
   size_t len = strlen(src);
   len = len < size ? len : size;
-  char* dst = lib_strnew(len); //(char*) malloc(len + 1);
+  char* dst = lib_strnew(len);
   if (!dst) {
     return NULL;
   }    
@@ -184,7 +184,7 @@ char* lib_strdup_qt(const char* src, char quote) {
   if (!lib_is_strn_qt(src, len)) {
     dst = lib_strdup(src);
   } else {
-    dst = lib_strnew(len + 2); // (char*) malloc(len + 3); // +2 start/end quotes
+    dst = lib_strnew(len + 2); // +2 start/end quotes
     if (!dst) {
       return NULL;
     }
@@ -206,11 +206,11 @@ char* lib_strdup_uq(const char* src) {
     return NULL;
   }
   size_t len = strlen(src);
-  char* dst = NULL;
+  //char* dst = NULL;
   if (lib_is_strn_qt(src, len)) {  
-     dst = lib_strndup(src + 1, len - 2);
+     return lib_strndup(src + 1, len - 2);
   } else {
-     dst = lib_strdup(src);
+     return lib_strdup(src);
   }
-  return dst;
+  //return dst;
 }

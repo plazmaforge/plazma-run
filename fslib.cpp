@@ -28,6 +28,8 @@
 //#include <shlobj.h>
 //#include <shlwapi.h>
 
+#include "wstrlib.h"
+
 #else
 
 #include <fnmatch.h>
@@ -201,30 +203,29 @@ std::vector<std::string> getFiles(const char* dirName, const char* pattern) {
 
 #ifdef _WIN32
 
-wchar_t* char2wchar(const char* str, int len) {    
-    int wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, NULL, 0);
-    wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
-    MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
-    wstr[wlen] = '\0';
-    return wstr;
-}
+// wchar_t* char2wchar(const char* str, int len) {    
+//     int wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, NULL, 0);
+//     wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
+//     MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
+//     wstr[wlen] = '\0';
+//     return wstr;
+// }
 
-wchar_t* char2wchar(const char* str) {    
-    return char2wchar(str, strlen(str));
+// wchar_t* char2wchar(const char* str) {    
+//     return char2wchar(str, strlen(str));
+// }
 
-}
+// char* wchar2char(const wchar_t* wstr, int wlen) {    
+//     int len = WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, NULL, 0, NULL, NULL);
+//     char* str = (char*) malloc(sizeof(char) * len + 1);
+//     WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
+//     str[len] = '\0';
+//     return str;
+// }
 
-char* wchar2char(const wchar_t* wstr, int wlen) {    
-    int len = WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, NULL, 0, NULL, NULL);
-    char* str = (char*) malloc(sizeof(char) * len + 1);
-    WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
-    str[len] = '\0';
-    return str;
-}
-
-char* wchar2char(const wchar_t* wstr) {
-    return wchar2char(wstr, wcslen(wstr)); 
-}
+// char* wchar2char(const wchar_t* wstr) {
+//     return wchar2char(wstr, wcslen(wstr)); 
+// }
 
 bool isDir(WIN32_FIND_DATAW file) {
     return file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
