@@ -36,32 +36,38 @@ void printUsage() {
 
 int main(int argc, char* argv[]) {
 
-    //setlocale(LC_ALL, "en_US.utf8");
-    //setlocale(LC_ALL, "");
+    //setlocale(LC_ALL, "en_US.utf8");  // FAIL
+    //setlocale(LC_ALL, "en_US.UTF-8"); // OK
+    //setlocale(LC_ALL, "UTF-8");       // FAIL
+    //setlocale(LC_ALL, "");            // OK
 
     //for (int i = 0; i < argc; i++) {
     //   printf("%d: %s\n", i, argv[i]);
     //}
 
-    //const char* str = "\xe4\xbd\xa0\xe5\xa5\xbd";
-    //wchar_t* wstr = char2wchar(str);
+    /*
+    const char* str = "\xe4\xbd\xa0\xe5\xa5\xbd";
+    wchar_t* wstr = achar2wchar(str);
 
-    //wprintf(L"MB string: %s\n", str);
-    //wprintf(L"WC string: %ls\n", wstr);
-    //wprintf(L"WC length: %d\n", wcslen(wstr));
+    wprintf(L"MB string: %s\n", str);
+    wprintf(L"WC string: %ls\n", wstr);
+    wprintf(L"WC length: %d\n", wcslen(wstr));
+    */    
 
-    //for (int i = 0; i < argc; i++) {
-    //    char* str = argv[i];
-    //    wchar_t* wstr = char2wchar(str);
-    //    char* str2 = wchar2char(wstr);
-    //    wprintf(L"\n");
-    //    wprintf(L"%d: MB-STR %s\n", i, str);
-    //    wprintf(L"%d: MB-LEN %d\n", i, strlen(str));
-    //    wprintf(L"%d: WC-STR %ls\n", i, wstr);
-    //    wprintf(L"%d: WC-LEN %d\n", i, wcslen(wstr));
-    //    wprintf(L"%d: MB-STR %s\n", i, str2);
-    //    wprintf(L"%d: MB-LEN %d\n", i, strlen(str2));
-    //}
+    /*
+    for (int i = 0; i < argc; i++) {
+        char* str = argv[i];
+        wchar_t* wstr = achar2wchar(str);
+        char* str2 = wchar2achar(wstr);
+        wprintf(L"\n");
+        wprintf(L"%d: MB-STR %s\n", i, str);
+        wprintf(L"%d: MB-LEN %d\n", i, strlen(str));
+        wprintf(L"%d: WC-STR %ls\n", i, wstr);
+        wprintf(L"%d: WC-LEN %d\n", i, wcslen(wstr));
+        wprintf(L"%d: MB-STR %s\n", i, str2);
+        wprintf(L"%d: MB-LEN %d\n", i, strlen(str2));
+    }
+    */
 
     int min_arg = 2; // <text> <file>
     if (argc < min_arg + 1) {
