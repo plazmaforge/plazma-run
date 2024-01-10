@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "iolib.h"
+#include <locale.h>
 
 struct FileData {
     char* data;
@@ -14,6 +15,8 @@ void printUsage() {
 }
 
 int main(int argc, char* argv[]) {
+
+    setlocale(LC_ALL, "");
 
     if (argc < 2) {
         printUsage();

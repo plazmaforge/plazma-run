@@ -17,8 +17,6 @@
 #include "srhlib.h"
 #include "syslib.h"
 
-//#include <wchar.h>
-
 void printSysInfo() {
     printf("\n");
     printf("user.name: %s\n", getUserName());
@@ -35,11 +33,15 @@ void printUsage() {
 ////
 
 int main(int argc, char* argv[]) {
+           
+    //printf("Locale: %s\n", setlocale(LC_ALL, NULL));
 
     //setlocale(LC_ALL, "en_US.utf8");  // FAIL
     //setlocale(LC_ALL, "en_US.UTF-8"); // OK
     //setlocale(LC_ALL, "UTF-8");       // FAIL
-    //setlocale(LC_ALL, "");            // OK
+    setlocale(LC_ALL, "");              // OK
+
+    //printf("Locale: %s\n", setlocale(LC_ALL, NULL));
 
     //for (int i = 0; i < argc; i++) {
     //   printf("%d: %s\n", i, argv[i]);
@@ -47,9 +49,10 @@ int main(int argc, char* argv[]) {
 
     /*
     const char* str = "\xe4\xbd\xa0\xe5\xa5\xbd";
-    wchar_t* wstr = achar2wchar(str);
+    wchar_t* wstr = char2wchar(str);
 
-    wprintf(L"MB string: %s\n", str);
+    printf("MB-c string: %s\n", str);
+    //wprintf(L"MB-w string: %s\n", str);
     wprintf(L"WC string: %ls\n", wstr);
     wprintf(L"WC length: %d\n", wcslen(wstr));
     */    
@@ -57,17 +60,22 @@ int main(int argc, char* argv[]) {
     /*
     for (int i = 0; i < argc; i++) {
         char* str = argv[i];
-        wchar_t* wstr = achar2wchar(str);
+        wchar_t* wstr = achar2wchar(str); // WIN32 (ANSII): achar2wchar + wchar2achar - correct only!
         char* str2 = wchar2achar(wstr);
+
         wprintf(L"\n");
-        wprintf(L"%d: MB-STR %s\n", i, str);
+
+        printf("%d: MB-c-STR %s\n", i, str);
+        //wprintf(L"%d: MB-w-STR %s\n", i, str);
         wprintf(L"%d: MB-LEN %d\n", i, strlen(str));
         wprintf(L"%d: WC-STR %ls\n", i, wstr);
         wprintf(L"%d: WC-LEN %d\n", i, wcslen(wstr));
-        wprintf(L"%d: MB-STR %s\n", i, str2);
+        printf("%d: MB-c-STR %s\n", i, str2);
+        //wprintf(L"%d: MB-w-STR %s\n", i, str2);
         wprintf(L"%d: MB-LEN %d\n", i, strlen(str2));
     }
     */
+    
 
     int min_arg = 2; // <text> <file>
     if (argc < min_arg + 1) {
