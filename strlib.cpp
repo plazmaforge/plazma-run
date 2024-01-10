@@ -3,48 +3,6 @@
 
 #include "strlib.h"
 
-char* lib_strcat(char* str1, const char* str2) {
-  if (!str1) {
-    return NULL;
-  }
-  if (!str2) {
-    return str1;
-  }
-  return strcat(str1, str2);
-}
-
-char* lib_strcpy(char* dst, const char* src) {
-  if (!dst) {
-    return NULL;
-  }
-  if (!src) {
-    return dst;
-  }
-  return strcpy(dst, src);
-}
-
-const char* lib_strchr(const char* str, int c) {
-  if (!str) {
-    return NULL;
-  }
-  return strchr(str, c);
-}
-
-size_t lib_strind(const char* str, int c) {
-  if (!str) {
-    return -1;
-  }
-  const char* res = lib_strchr(str, c);
-  return (res) ? res - str : -1;
-}
-
-size_t lib_strlen(const char* src) {
-  if (!src) {
-    return 0;
-  }
-  return strlen(src);
-}
-
 char* lib_strnew(size_t size) {
   if (size < 0) {
     return NULL;
@@ -116,6 +74,48 @@ char* lib_strnew(const char* str1, const char* str2, const char* str3, const cha
     lib_strcat(dst, str4);
   }
   return dst;
+}
+
+char* lib_strcat(char* str1, const char* str2) {
+  if (!str1) {
+    return NULL;
+  }
+  if (!str2) {
+    return str1;
+  }
+  return strcat(str1, str2);
+}
+
+char* lib_strcpy(char* dst, const char* src) {
+  if (!dst) {
+    return NULL;
+  }
+  if (!src) {
+    return dst;
+  }
+  return strcpy(dst, src);
+}
+
+const char* lib_strchr(const char* str, int c) {
+  if (!str) {
+    return NULL;
+  }
+  return strchr(str, c);
+}
+
+size_t lib_strind(const char* str, int c) {
+  if (!str) {
+    return -1;
+  }
+  const char* res = lib_strchr(str, c);
+  return (res) ? res - str : -1;
+}
+
+size_t lib_strlen(const char* src) {
+  if (!src) {
+    return 0;
+  }
+  return strlen(src);
 }
 
 char* lib_strdup(const char* src) {

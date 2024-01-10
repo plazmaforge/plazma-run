@@ -5,28 +5,23 @@
 #include <windows.h>
 #endif
 
+#include "strlib.h"
 #include "wstrlib.h"
 
-////
-
-// std::string ConvertWideToAnsi(const std::wstring &wstr) {
-//     int count = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.length(),
-//                                     NULL, 0, NULL, NULL);
-//     std::string str(count, 0);
-//     WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, &str[0], count, NULL,
-//                         NULL);
-//     return str;
-// }
-
-// std::wstring ConvertAnsiToWide(const std::string &str) {
-//     int count =
-//         MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.length(), NULL, 0);
-//     std::wstring wstr(count, 0);
-//     MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.length(), &wstr[0], count);
-//     return wstr;
-// }
-
-////
+wchar_t* lib_wstrnew(size_t size) {
+  if (size < 0) {
+    return NULL;
+  }
+  wchar_t* dst = (wchar_t*) malloc(sizeof(wchar_t) * size + 1);
+  if (!dst) {
+    return NULL;
+  }
+  for (int i = 0; i <= size; i++) {
+    dst[i] = '\0';
+  }    
+  //dst[size] = '\0';
+  return dst;
+}
 
 wchar_t* achar2wchar(const char* str, int len) {
     if (!str) {
@@ -34,14 +29,16 @@ wchar_t* achar2wchar(const char* str, int len) {
     }
     #ifdef _WIN32
     int wlen = MultiByteToWideChar(CP_ACP, 0, str, len, NULL, 0);
-    wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
+    //wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
+    wchar_t* wstr = lib_wstrnew(len);
     MultiByteToWideChar(CP_ACP, 0, str, len, wstr, wlen);
     wstr[wlen] = '\0';
     return wstr;
     #else
     // Locale dependency! - setlocale(LC_ALL, "");
     int wlen = mbstowcs((wchar_t*) 0, str, len);
-    wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
+    //wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
+    wchar_t* wstr = lib_wstrnew(len);
     wlen = mbstowcs(wstr, str, wlen);
     wstr[wlen] = '\0';
     return wstr;
@@ -62,6 +59,7 @@ char* wchar2achar(const wchar_t* wstr, int wlen) {
     #ifdef _WIN32
     int len = WideCharToMultiByte(CP_ACP, 0, wstr, wlen, NULL, 0, NULL, NULL);
     char* str = (char*) malloc(sizeof(char) * len + 1);
+    //char* str = lib_strnew(len);
     WideCharToMultiByte(CP_ACP, 0, wstr, -1, str, len, NULL, NULL);
     str[len] = '\0';
     return str;
@@ -69,6 +67,7 @@ char* wchar2achar(const wchar_t* wstr, int wlen) {
     // Locale dependency! - setlocale(LC_ALL, "");
     int len = wcstombs((char*) 0, wstr, wlen);
     char* str = (char*) malloc(sizeof(char) * len + 1);
+    //char* str = lib_strnew(len);
     wcstombs(str, wstr, len);
     str[len] = '\0';
     return str;
@@ -90,14 +89,16 @@ wchar_t* char2wchar(const char* str, int len) {
     }
     #ifdef _WIN32
     int wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, NULL, 0);
-    wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
+    //wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
+    wchar_t* wstr = lib_wstrnew(wlen);
     MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
     wstr[wlen] = '\0';
     return wstr;
     #else
     // Locale dependency! - setlocale(LC_ALL, "");
     int wlen = mbstowcs((wchar_t*) 0, str, len);
-    wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
+    //wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
+    wchar_t* wstr = lib_wstrnew(wlen);
     wlen = mbstowcs(wstr, str, wlen);
     wstr[wlen] = '\0';
     return wstr;
@@ -117,14 +118,16 @@ char* wchar2char(const wchar_t* wstr, int wlen) {
     }
     #ifdef _WIN32
     int len = WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, NULL, 0, NULL, NULL);
-    char* str = (char*) malloc(sizeof(char) * len + 1);
+    //char* str = (char*) malloc(sizeof(char) * len + 1);
+    char* str = lib_strnew(len);
     WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
     str[len] = '\0';
     return str;
     #else
     // Locale dependency! - setlocale(LC_ALL, "");
     int len = wcstombs((char*) 0, wstr, wlen);
-    char* str = (char*) malloc(sizeof(char) * len + 1);
+    //char* str = (char*) malloc(sizeof(char) * len + 1);
+    char* str = lib_strnew(len);
     wcstombs(str, wstr, len);
     str[len] = '\0';
     return str;
