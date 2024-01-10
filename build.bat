@@ -22,5 +22,5 @@ g++ -c find.cpp -o find.o
 rem link
 
 g++ iolib.o dump.o -o run-dump.exe
-g++ iolib.o cat.o -o run-cat.exe
+g++ iolib.o wstrlib.o cat.o -o run-cat.exe
 g++ getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o syslib.o find.o -o run-find.exe

@@ -1,9 +1,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <locale.h>
 
 #include "iolib.h"
-#include <locale.h>
+#include "wstrlib.h"
 
 struct FileData {
     char* data;
@@ -62,7 +63,9 @@ int main(int argc, char* argv[]) {
         offset += fileData->size;
 
     }
+
     //printf("%s", totalData);
+    //wprintf(L"%ls", char2wchar(totalData));
 
     for (int i = 0; i < totalSize; i++) {
         printf("%c", totalData[i]);
