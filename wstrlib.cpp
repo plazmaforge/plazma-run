@@ -23,7 +23,10 @@ wchar_t* lib_wstrnew(size_t size) {
   return dst;
 }
 
+
+#ifdef _WIN32
 static UINT cp = CP_ACP; //CP_OEMCP;
+#endif
 
 wchar_t* achar2wchar(const char* str, int len) {
     if (!str) {
