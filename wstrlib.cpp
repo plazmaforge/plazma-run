@@ -23,15 +23,17 @@ wchar_t* lib_wstrnew(size_t size) {
   return dst;
 }
 
+static UINT cp = CP_ACP; //CP_OEMCP;
+
 wchar_t* achar2wchar(const char* str, int len) {
     if (!str) {
         return NULL;
     }
     #ifdef _WIN32
-    int wlen = MultiByteToWideChar(CP_ACP, 0, str, len, NULL, 0);
+    int wlen = MultiByteToWideChar(cp /*CP_ACP*/, 0, str, len, NULL, 0);
     //wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen + 1);
     wchar_t* wstr = lib_wstrnew(len);
-    MultiByteToWideChar(CP_ACP, 0, str, len, wstr, wlen);
+    MultiByteToWideChar(cp /*CP_ACP*/, 0, str, len, wstr, wlen);
     wstr[wlen] = '\0';
     return wstr;
     #else
@@ -52,15 +54,16 @@ wchar_t* achar2wchar(const char* str) {
     return achar2wchar(str, strlen(str));
 }
 
+
 char* wchar2achar(const wchar_t* wstr, int wlen) {
     if (!wstr) {
         return NULL;
     }
     #ifdef _WIN32
-    int len = WideCharToMultiByte(CP_ACP, 0, wstr, wlen, NULL, 0, NULL, NULL);
+    int len = WideCharToMultiByte(cp /*CP_ACP*/, 0, wstr, wlen, NULL, 0, NULL, NULL);
     char* str = (char*) malloc(sizeof(char) * len + 1);
     //char* str = lib_strnew(len);
-    WideCharToMultiByte(CP_ACP, 0, wstr, -1, str, len, NULL, NULL);
+    WideCharToMultiByte(cp /*CP_ACP*/, 0, wstr, -1, str, len, NULL, NULL);
     str[len] = '\0';
     return str;
     #else
