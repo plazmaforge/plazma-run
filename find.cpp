@@ -6,8 +6,6 @@
 #include <cctype>
 #include <vector>
 
-#include <locale.h>
-
 #include "getopt.h"
 #include "strlib.h"
 #include "wstrlib.h"
@@ -17,9 +15,9 @@
 #include "srhlib.h"
 #include "syslib.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
+//#ifdef _WIN32
+//#include <windows.h>
+//#endif
 
 void printSysInfo() {
     printf("\n");
@@ -36,100 +34,16 @@ void printUsage() {
 
 ////
 
-static char* _locale;
-
-#ifdef _WIN32
-static UINT _cp;
-static UINT _out_cp;
-#endif
-
-void init_locale() {
-    int debug = 1;
-    int check = 1;
-    _locale = setlocale(LC_ALL, NULL);
-    if (debug) {
-      printf("Get Locale: %s\n", _locale);
-    }
-    
-    if (debug && check) {
-      printf("Def Locale: %s\n", setlocale(LC_ALL, ""));
-      setlocale(LC_ALL, _locale);
-    }
-   
-    #ifdef _WIN32
-    _cp = GetConsoleCP();
-    _out_cp = GetConsoleOutputCP();
-    if (debug) {
-      printf("Get ConsoleCP      : %d\n", _cp);
-      printf("Get ConsoleOutputCP: %d\n", _out_cp);
-    }
-
-    if (_out_cp == 65001) {
-        // UTF-8
-        return;
-    }
-
-    UINT _new_cp = 0;
-    if (_out_cp == 866) {
-       _new_cp = 1251;       
-    }
-
-    if (_new_cp > 0) {
-       SetConsoleCP(_new_cp);
-       SetConsoleOutputCP(_new_cp);
-       if (debug) {
-         printf("Set ConsoleCP      : %d\n", _new_cp);
-         printf("Set ConsoleOutputCP: %d\n", _new_cp);
-       }
-    } else {
-       setlocale(LC_ALL, ""); // set default locale
-       if (debug) {
-         printf("Set Locale: %s\n", setlocale(LC_ALL, NULL));
-       }
-    }
-
-    #else
-    setlocale(LC_ALL, ""); // set default locale
-    if (debug) {
-       printf("Set Locale: %s\n", setlocale(LC_ALL, NULL));
-    }
-    #endif
-}
-
-void reset_locale() {
-    int debug = 1;
-    #ifdef _WIN32
-    if (_out_cp == 65001) {
-        // UTF-8
-        return;
-    }
-
-    SetConsoleCP(_cp);
-    SetConsoleOutputCP(_out_cp);
-    if (debug) {
-       printf("Set ConsoleCP      : %d\n", _cp);
-       printf("Set ConsoleOutputCP: %d\n", _out_cp);
-    }
-    #else
-    setlocale(LC_ALL, _locale); // reset locale
-    if (debug) {
-       printf("Set Locale: %s\n", setlocale(LC_ALL, NULL));
-    }
-    #endif
-}
-
 int main(int argc, char* argv[]) {
 
     init_locale();
     
     /*       
-    printf("Locale: %s\n", setlocale(LC_ALL, NULL));
-  
+    printf("Locale: %s\n", setlocale(LC_ALL, NULL));  
     //setlocale(LC_ALL, "en_US.UTF-8"); // OK
     //setlocale(LC_ALL, "UTF-8");       // FAIL
     //setlocale(LC_ALL, "");              // OK
     //setlocale(LC_ALL, "English_United States.1251");
-
     printf("Locale: %s\n", setlocale(LC_ALL, NULL));
     */
 
@@ -145,8 +59,8 @@ int main(int argc, char* argv[]) {
     //wprintf(L"MB-w string: %s\n", str);
     wprintf(L"WC-STR: %ls\n", wstr);
     wprintf(L"WC-LEN: %d\n", wcslen(wstr));
-    */    
-
+    */
+        
     /*
     for (int i = 0; i < argc; i++) {
         char* str = argv[i];
@@ -163,9 +77,9 @@ int main(int argc, char* argv[]) {
         printf("%d: MB-c-STR %s\n", i, str2);
         //wprintf(L"%d: MB-w-STR %s\n", i, str2);
         wprintf(L"%d: MB-LEN %d\n", i, strlen(str2));
-    }    
-    */
-
+    } 
+    */   
+    
     reset_locale();
 
     int min_arg = 2; // <text> <file>

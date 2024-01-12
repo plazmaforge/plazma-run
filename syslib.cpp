@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <locale.h>
 
 #ifdef _WIN32
 
@@ -34,6 +35,7 @@
 
 #endif
 
+#include "strlib.h"
 #include "syslib.h"
 
 #ifdef _WIN32
@@ -239,3 +241,90 @@ char* getTmpDir() {
 }
 
 #endif
+
+
+static char* _locale;
+static int debug = 0;
+static int check = 0;
+
+#ifdef _WIN32
+static UINT _cp;
+static UINT _out_cp;
+#endif
+
+void init_locale() {
+    //int debug = 1;
+    //int check = 1;
+    _locale = lib_strdup(setlocale(LC_ALL, NULL));
+    if (debug) {
+      printf("Get Locale: %s\n", _locale);
+    }
+    
+    if (debug && check) {
+      printf("Def Locale: %s\n", setlocale(LC_ALL, ""));
+      setlocale(LC_ALL, _locale);
+    }
+   
+    #ifdef _WIN32
+    _cp = GetConsoleCP();
+    _out_cp = GetConsoleOutputCP();
+    if (debug) {
+      printf("Get ConsoleCP      : %d\n", _cp);
+      printf("Get ConsoleOutputCP: %d\n", _out_cp);
+    }
+
+    if (_out_cp == 65001) {
+        // UTF-8
+        return;
+    }
+
+    UINT _new_cp = 0;
+    if (_out_cp == 866) {
+       _new_cp = 1251;       
+    }
+
+    if (_new_cp > 0) {
+       SetConsoleCP(_new_cp);
+       SetConsoleOutputCP(_new_cp);
+       if (debug) {
+         printf("Set ConsoleCP      : %d\n", _new_cp);
+         printf("Set ConsoleOutputCP: %d\n", _new_cp);
+       }
+    } else {
+       setlocale(LC_ALL, ""); // set default locale
+       if (debug) {
+         printf("Set Locale: %s\n", setlocale(LC_ALL, NULL));
+       }
+    }
+
+    #else
+    setlocale(LC_ALL, ""); // set default locale
+    if (debug) {
+       printf("Set Locale: %s\n", setlocale(LC_ALL, NULL));
+    }
+    #endif
+}
+
+void reset_locale() {
+    //int debug = 1;
+    #ifdef _WIN32
+    if (_out_cp == 65001) {
+        // UTF-8
+        return;
+    }
+
+    SetConsoleCP(_cp);
+    SetConsoleOutputCP(_out_cp);
+    if (debug) {
+       printf("Set ConsoleCP      : %d\n", _cp);
+       printf("Set ConsoleOutputCP: %d\n", _out_cp);
+    }
+    #else
+    setlocale(LC_ALL, _locale); // reset locale
+    if (debug) {
+       printf("Set Locale: %s\n", setlocale(LC_ALL, NULL));
+    }
+    free(_locale);
+    _locale = NULL;
+    #endif
+}
