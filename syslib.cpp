@@ -336,18 +336,46 @@ void init_locale() {
          printf("Set ConsoleOutCP: %d\n", _new_cp);
        }
     } else {
-       //setlocale(LC_ALL, ""); // set default locale
-       set_default_locale();
+
+       setlocale(LC_ALL, ""); // set default locale
+       //set_default_locale();
+
        if (debug) {
-         printf("\nSet LC Locale   : %s\n", get_locale(LC_ALL));
+         //printf("\nSet LC Locale   : %s\n", get_locale(LC_ALL));
+         printf("\n");
+         printf("All LC Locale   : %s\n", get_locale(LC_ALL));
+         printf("Get LC Locale   : %s\n", get_locale(LC_CTYPE));
+         _locale_os = load_locale_os();
+         printf("Get OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
+         print_locale(_locale_os);
+
        }
     }
 
     #else
-    //setlocale(LC_ALL, ""); // set default locale
-    set_default_locale();
+
+    setlocale(LC_ALL, ""); // set default locale
+    //set_default_locale();
+
     if (debug) {
-       printf("\nSet LC Locale   : %s\n", get_locale(LC_ALL));
+       printf("\n");
+       printf("All LC Locale   : %s\n", get_locale(LC_ALL));
+       printf("Get LC Locale   : %s\n", get_locale(LC_CTYPE));
+       _locale_os = load_locale_os();
+       printf("Get OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
+       print_locale(_locale_os);
+
+       // We can't use 'setlocale(LC_CTYPE, _locale_os->name)'
+       // because this combination 'lang_COUNTRY.encoding' is not found
+
+       //if (_locale_os && _locale_os->name) {
+       //   setlocale(LC_CTYPE, _locale_os->name);
+       //   printf("Set LC Locale   : %s\n", get_locale(LC_CTYPE));
+       //}       
+
+       free(_locale_os);
+       _locale_os = NULL;
+
     }
     #endif
 }
