@@ -1,6 +1,8 @@
 #ifndef PLAZMA_LIB_STRLIB_H
 #define PLAZMA_LIB_STRLIB_H
 
+#include <string.h>
+
 char* lib_strnew(size_t size);
 
 char* lib_strnew(const char* str);

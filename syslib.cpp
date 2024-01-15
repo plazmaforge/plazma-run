@@ -36,6 +36,8 @@
 #endif
 
 #include "strlib.h"
+#include "syslocale.h"
+#include "syslocale_os.h"
 #include "syslib.h"
 
 #ifdef _WIN32
@@ -208,6 +210,7 @@ char* getUserName() {
 char* getUserHome() {
   /* User */
   struct passwd *pwent = getpwuid(getuid());
+  //printf("%p\n", pwent->pw_dir);
   if (pwent) {
     return strdup(pwent->pw_dir);
   } 
@@ -244,24 +247,50 @@ char* getTmpDir() {
 
 
 static char* _locale;
-static int debug = 0;
-static int check = 0;
+static int debug = 1;
+static int check = 1;
 
 #ifdef _WIN32
 static UINT _cp;
 static UINT _out_cp;
 #endif
 
+/**
+ * Print current locale
+ */
+void print_locale() {
+    char* _locale_ = NULL;
+
+    _locale_ = get_locale(LC_COLLATE);
+    printf("Get LC_COLLATE     : %s\n", _locale_);
+
+    _locale_ = get_locale(LC_CTYPE);
+    printf("Get LC_CTYPE       : %s\n", _locale_);
+
+    _locale_ = get_locale(LC_MESSAGES);
+    printf("Get LC_MESSAGES    : %s\n", _locale_);
+
+}
+
 void init_locale() {
-    //int debug = 1;
-    //int check = 1;
-    _locale = lib_strdup(setlocale(LC_ALL, NULL));
+    _locale = lib_strdup(get_locale(LC_ALL)); // get current locale LC_ALL
+    locale_t* _locale_os = NULL;
+
     if (debug) {
-      printf("Get Locale: %s\n", _locale);
+      printf("\nGet Locale      : %s\n", _locale);
+      _locale_os = load_locale_os();
+      print_locale(_locale_os);
+      free(_locale_os);
+      _locale_os = NULL;
     }
     
     if (debug && check) {
-      printf("Def Locale: %s\n", setlocale(LC_ALL, ""));
+      printf("\nDef Locale      : %s\n", set_default_locale());
+      _locale_os = load_locale_os();    
+      print_locale(_locale_os);
+      free(_locale_os);
+      _locale_os = NULL;
+
       setlocale(LC_ALL, _locale);
     }
    
@@ -269,8 +298,8 @@ void init_locale() {
     _cp = GetConsoleCP();
     _out_cp = GetConsoleOutputCP();
     if (debug) {
-      printf("Get ConsoleCP      : %d\n", _cp);
-      printf("Get ConsoleOutputCP: %d\n", _out_cp);
+      printf("\nGet ConsoleCP   : %d\n", _cp);
+      printf("Get ConsoleOutCP: %d\n", _out_cp);
     }
 
     if (_out_cp == 65001) {
@@ -287,26 +316,27 @@ void init_locale() {
        SetConsoleCP(_new_cp);
        SetConsoleOutputCP(_new_cp);
        if (debug) {
-         printf("Set ConsoleCP      : %d\n", _new_cp);
-         printf("Set ConsoleOutputCP: %d\n", _new_cp);
+         printf("\nSet ConsoleCP   : %d\n", _new_cp);
+         printf("Set ConsoleOutCP: %d\n", _new_cp);
        }
     } else {
-       setlocale(LC_ALL, ""); // set default locale
+       //setlocale(LC_ALL, ""); // set default locale
+       set_default_locale();
        if (debug) {
-         printf("Set Locale: %s\n", setlocale(LC_ALL, NULL));
+         printf("\nSet Locale      : %s\n", get_locale(LC_ALL));
        }
     }
 
     #else
-    setlocale(LC_ALL, ""); // set default locale
+    //setlocale(LC_ALL, ""); // set default locale
+    set_default_locale();
     if (debug) {
-       printf("Set Locale: %s\n", setlocale(LC_ALL, NULL));
+       printf("\nSet Locale      : %s\n", get_locale(LC_ALL));
     }
     #endif
 }
 
 void reset_locale() {
-    //int debug = 1;
     #ifdef _WIN32
     if (_out_cp == 65001) {
         // UTF-8
@@ -316,13 +346,13 @@ void reset_locale() {
     SetConsoleCP(_cp);
     SetConsoleOutputCP(_out_cp);
     if (debug) {
-       printf("Set ConsoleCP      : %d\n", _cp);
-       printf("Set ConsoleOutputCP: %d\n", _out_cp);
+       printf("Set ConsoleCP   : %d\n", _cp);
+       printf("Set ConsoleOutCP: %d\n", _out_cp);
     }
     #else
     setlocale(LC_ALL, _locale); // reset locale
     if (debug) {
-       printf("Set Locale: %s\n", setlocale(LC_ALL, NULL));
+       printf("Set Locale      : %s\n", get_locale(LC_ALL));
     }
     free(_locale);
     _locale = NULL;
