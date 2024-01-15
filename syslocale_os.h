@@ -4,12 +4,17 @@
 #include "syslocale.h"
 
 /*
- * Load OS style locale by category
+ * OS locale.
+ * It depends on Operation System (Windows, MacOS)
+ */
+
+/*
+ * Load OS locale by category
  */
 locale_t* load_locale_os(int cat);
 
 /*
- * Load OS style locale
+ * Load OS locale
  */
 locale_t* load_locale_os();
 

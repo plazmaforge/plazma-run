@@ -255,43 +255,59 @@ static UINT _cp;
 static UINT _out_cp;
 #endif
 
-/**
- * Print current locale
- */
-void print_locale() {
-    char* _locale_ = NULL;
+// /**
+//  * Print current locale
+//  */
+// void print_locale() {
+//     char* _locale_ = NULL;
 
-    _locale_ = get_locale(LC_COLLATE);
-    printf("Get LC_COLLATE     : %s\n", _locale_);
+//     _locale_ = get_locale(LC_COLLATE);
+//     printf("Get LC_COLLATE     : %s\n", _locale_);
 
-    _locale_ = get_locale(LC_CTYPE);
-    printf("Get LC_CTYPE       : %s\n", _locale_);
+//     _locale_ = get_locale(LC_CTYPE);
+//     printf("Get LC_CTYPE       : %s\n", _locale_);
 
-    _locale_ = get_locale(LC_MESSAGES);
-    printf("Get LC_MESSAGES    : %s\n", _locale_);
+//     _locale_ = get_locale(LC_MESSAGES);
+//     printf("Get LC_MESSAGES    : %s\n", _locale_);
 
+// }
+
+const char* lib_strsaf(const char* str) {
+    return str ? str : "";
 }
 
 void init_locale() {
+
+    if (debug) {
+      printf("\n");
+      printf("All LC Locale   : %s\n", lib_strsaf(get_locale(LC_ALL)));
+      printf("Get LC Locale   : %s\n", lib_strsaf(get_locale(LC_CTYPE)));
+    }
+
     _locale = lib_strdup(get_locale(LC_ALL)); // get current locale LC_ALL
     locale_t* _locale_os = NULL;
 
     if (debug) {
-      printf("\nGet Locale      : %s\n", _locale);
       _locale_os = load_locale_os();
+      printf("Get OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
       print_locale(_locale_os);
       free(_locale_os);
       _locale_os = NULL;
     }
     
     if (debug && check) {
-      printf("\nDef Locale      : %s\n", set_default_locale());
-      _locale_os = load_locale_os();    
+      setlocale(LC_ALL, "");         // SET
+
+      printf("\n");
+      printf("All LC Locale   : %s\n", lib_strsaf(get_locale(LC_ALL)));
+      printf("Def LC Locale   : %s\n", lib_strsaf(get_locale(LC_CTYPE)));
+      _locale_os = load_locale_os();
+      printf("Get OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
       print_locale(_locale_os);
       free(_locale_os);
       _locale_os = NULL;
 
-      setlocale(LC_ALL, _locale);
+      setlocale(LC_ALL, _locale);   // RESTORE
     }
    
     #ifdef _WIN32
@@ -323,7 +339,7 @@ void init_locale() {
        //setlocale(LC_ALL, ""); // set default locale
        set_default_locale();
        if (debug) {
-         printf("\nSet Locale      : %s\n", get_locale(LC_ALL));
+         printf("\nSet LC Locale   : %s\n", get_locale(LC_ALL));
        }
     }
 
@@ -331,7 +347,7 @@ void init_locale() {
     //setlocale(LC_ALL, ""); // set default locale
     set_default_locale();
     if (debug) {
-       printf("\nSet Locale      : %s\n", get_locale(LC_ALL));
+       printf("\nSet LC Locale   : %s\n", get_locale(LC_ALL));
     }
     #endif
 }
@@ -352,7 +368,7 @@ void reset_locale() {
     #else
     setlocale(LC_ALL, _locale); // reset locale
     if (debug) {
-       printf("Set Locale      : %s\n", get_locale(LC_ALL));
+       printf("Set LC Locale   : %s\n", get_locale(LC_ALL));
     }
     free(_locale);
     _locale = NULL;

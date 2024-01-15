@@ -3,17 +3,17 @@
 
 #if defined _WIN32
 
-locale_t* load_locale_os(int cat) {
-    return NULL;
-    //return loadLocaleWin(cat);
-}
-
 #elif defined __APPLE__ && defined __MACH__
 #include <CoreFoundation/CoreFoundation.h>
 //#include <CoreServices/CoreServices.h>
 #endif
 
 #if defined _WIN32
+
+locale_t* load_locale_os(int cat) {
+    return parse_locale(get_locale(cat));
+    //return loadLocaleWin(cat);
+}
 
 #elif defined __APPLE__ && defined __MACH__
 
@@ -108,6 +108,12 @@ locale_t* loadLocaleMac(int cat) {
 
 locale_t* load_locale_os(int cat) {
     return loadLocaleMac(cat);
+}
+
+#else
+
+locale_t* load_locale_os(int cat) {
+    return parse_locale(get_locale(cat)); // LC Locale
 }
 
 #endif
