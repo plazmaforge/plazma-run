@@ -62,6 +62,11 @@ char* parse_encoding(char* locale);
 locale_t* load_locale(int cat);
 
 /*
+ * Returns a locale name by language, country, encoding in format: <language>_<COUNTRY>.<encoding>
+ */
+char* get_locale_name(char* language, char* country, char* encoding);
+
+/*
  * Print a locale
  */
 void print_locale(locale_t* locale);
