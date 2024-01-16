@@ -308,12 +308,14 @@ static locale_t* loadLocaleMac() {
   CFRelease(cflocale);
 
   locale_t* locale = (locale_t*) malloc(sizeof(locale_t));
-  locale->name = encoding ? lib_strnew(name, "." , encoding) : lib_strdup(name);  
   locale->language = lib_strdup(language);
   locale->script = lib_strdup(script);
   locale->country = lib_strdup(country);
   locale->variant = lib_strdup(variant);
   locale->encoding = lib_strdup(encoding);
+
+  //locale->name = encoding ? lib_strnew(name, "." , encoding) : lib_strdup(name);
+  locale->name = get_locale_name(language, country, encoding);
 
   return locale;
 

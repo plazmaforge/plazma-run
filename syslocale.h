@@ -39,22 +39,22 @@ char* get_locale();
 /*
  * Returns true if LC locale is empty
  */
-int is_empty_locale(char* locale);
+int is_empty_locale(const char* locale);
 
 /*
  * Returns true if LC locales are equal
  */
-int equals_locale(char* locale1, char* locale2);
+int equals_locale(const char* locale1, const char* locale2);
 
 /*
  * Parse LC locale
  */
-locale_t* parse_locale(char* locale);
+locale_t* parse_locale(const char* locale);
 
 /*
  * Parse LC locale and return encoding
  */
-char* parse_encoding(char* locale);
+char* parse_encoding(const char* locale);
 
 /*
  * Load LC locale
@@ -64,7 +64,7 @@ locale_t* load_locale(int cat);
 /*
  * Returns a locale name by language, country, encoding in format: <language>_<COUNTRY>.<encoding>
  */
-char* get_locale_name(char* language, char* country, char* encoding);
+char* get_locale_name(const char* language, const char* country, const char* encoding);
 
 /*
  * Print a locale

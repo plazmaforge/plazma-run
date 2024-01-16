@@ -19,11 +19,11 @@ char* get_locale() {
   return get_locale(LC_CTYPE);
 }
 
-int is_empty_locale(char* locale) {
+int is_empty_locale(const char* locale) {
   return locale == NULL || (strcmp(locale, "C") == 0);
 }
 
-int equals_locale(char* locale1, char* locale2) {
+int equals_locale(const char* locale1, const char* locale2) {
   if (locale1 == NULL && locale2 == NULL) {
     return 1;
   }
@@ -48,7 +48,7 @@ void locale_free(locale_t* locale) {
     free(locale);
 }
 
-char* parse_encoding(char* locale) {
+char* parse_encoding(const char* locale) {
   if (!locale) {
     return NULL;
   }
@@ -64,7 +64,7 @@ char* parse_encoding(char* locale) {
   return encoding;
 }
 
-locale_t* parse_locale(char* locale) {
+locale_t* parse_locale(const char* locale) {
   if (!locale) {
     return NULL;
   }
@@ -125,7 +125,7 @@ locale_t* parse_locale(char* locale) {
 
 }
 
-char* get_locale_name(char* language, char* country, char* encoding) {
+char* get_locale_name(const char* language, const char* country, const char* encoding) {
   if (!language && !country && !encoding) {
      return NULL;
   }
