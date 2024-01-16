@@ -77,8 +77,9 @@ int main(int argc, char* argv[]) {
         printf("%d: MB-c-STR %s\n", i, str2);
         //wprintf(L"%d: MB-w-STR %s\n", i, str2);
         wprintf(L"%d: MB-LEN %d\n", i, strlen(str2));
-    } 
-    */   
+    }
+    */ 
+       
     
     reset_locale();
 

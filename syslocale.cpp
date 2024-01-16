@@ -125,6 +125,61 @@ locale_t* parse_locale(char* locale) {
 
 }
 
+char* get_locale_name(char* language, char* country, char* encoding) {
+  if (!language && !country && !encoding) {
+     return NULL;
+  }
+
+  char* name = NULL;
+  size_t size = 0;
+
+  if (language) {
+     size += strlen(language);
+  }
+
+  if (country) {
+     size += strlen(country);
+  }
+
+  if (encoding) {
+     size += strlen(encoding);
+  }
+
+  if (language && country) {
+     size++;   // '_'
+  }
+
+  if ((language || country) && encoding) {
+     size++;   // '.'
+  }
+
+  name = (char*) malloc(size);
+
+  if (language) {
+    strcpy(name, language);
+  }
+
+  if (country) {
+    if (language) {
+       strcat(name, "_");
+       strcat(name, country);
+    } else {   
+      strcpy(name, country);
+    }
+  }
+
+  if (encoding) {
+     if (language || country) {
+       strcat(name, ".");
+       strcat(name, encoding);
+     } else {
+       strcpy(name, encoding);
+     }
+  }
+
+  return name;  
+}
+
 locale_t* load_locale(int cat) {
   char* name = get_locale(cat /*LC_CTYPE*/); 
   if (!name) {

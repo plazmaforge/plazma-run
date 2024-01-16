@@ -1,11 +1,13 @@
+#include <locale.h>
+
 #include "strlib.h"
 #include "syslocale_os.h"
 
 #if defined _WIN32
-
+#include <io.h>
 #include <windows.h>
-#include <shlobj.h>
-#include <objidl.h>
+//#include <shlobj.h>
+//#include <objidl.h>
 
 #elif defined __APPLE__ && defined __MACH__
 #include <CoreFoundation/CoreFoundation.h>
@@ -13,6 +15,9 @@
 #endif
 
 #if defined _WIN32
+
+#define PROPSIZE 9      // eight-letter + null terminator
+#define SNAMESIZE 86    // max number of chars for LOCALE_SNAME is 85
 
 static char* getEncoding(LCID lcid) {
     int codepage = 0;
@@ -137,6 +142,17 @@ static locale_t* loadLocale(LCID lcid) {
     locale->country = country;
     locale->variant = variant;
     locale->encoding = encoding;
+
+    char* le = encoding;
+    if (le) {
+       if (  (le[0] == 'M' && le[1] == 'S') 
+          || (le[0] == 'C' && le[1] == 'P') 
+          || (le[0] == 'C' && le[1] == 'p')) {
+         le += 2;
+       }
+    }
+
+    locale->name = get_locale_name(language, country, le);
  
     return locale;
 }

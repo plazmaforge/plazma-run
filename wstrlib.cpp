@@ -35,7 +35,7 @@ wchar_t* mchar2wchar_win(UINT cp, const char* str, int len) {
     return wstr;
 }
 
-char* wchar2wchar_win(UINT cp, const wchar_t* wstr, int wlen) {
+char* wchar2mchar_win(UINT cp, const wchar_t* wstr, int wlen) {
     if (!wstr) {
         return NULL;
     }
@@ -109,7 +109,7 @@ char* wchar2achar(const wchar_t* wstr, int wlen) {
         return NULL;
     }
     #ifdef _WIN32
-    return wchar2wchar_win(CP_ACP, wstr, wlen);
+    return wchar2mchar_win(CP_ACP, wstr, wlen);
 
     //int len = WideCharToMultiByte(cp /*CP_ACP*/, 0, wstr, wlen, NULL, 0, NULL, NULL);
     //char* str = (char*) malloc(sizeof(char) * len + 1);
@@ -181,7 +181,7 @@ char* wchar2char(const wchar_t* wstr, int wlen) {
         return NULL;
     }
     #ifdef _WIN32
-    return wchar2mchar_win(CP_UTF8, str, len);
+    return wchar2mchar_win(CP_UTF8, wstr, wlen);
 
     //int len = WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, NULL, 0, NULL, NULL);
     //char* str = (char*) malloc(sizeof(char) * len + 1);
