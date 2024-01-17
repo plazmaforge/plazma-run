@@ -1,7 +1,9 @@
 rem clean
-del *.o 
-del run-*
-del test-*
+call clean.bat
+
+rem del *.o 
+rem del run-*
+rem del test-*
 
 rem compile
 

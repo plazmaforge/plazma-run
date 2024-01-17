@@ -63,6 +63,7 @@ typedef struct {
  */
 
 const char* getWIN32_WINDOWS_Name(VersionInfo ver) {
+  //printf("Windows Name\n");
   if (ver.majorVersion == 4) {
     switch (ver.minorVersion) {
       case  0: return "Windows 95";
@@ -75,6 +76,7 @@ const char* getWIN32_WINDOWS_Name(VersionInfo ver) {
 }
 
 const char* getWIN32_NT_5_Name(VersionInfo ver) {
+  //printf("Windows NT 5 Name\n");
   switch (ver.minorVersion) {
     case  0: return "Windows 2000";
     case  1: return "Windows XP";
@@ -101,6 +103,7 @@ const char* getWIN32_NT_5_Name(VersionInfo ver) {
 }
 
 const char* getWIN32_NT_6_Name(VersionInfo ver) {
+  //printf("Windows NT 6 Name\n");
   /*
    * See table in MSDN OSVERSIONINFOEX documentation.
    */
@@ -152,6 +155,8 @@ const char* getWIN32_NT_10_Name(VersionInfo ver) {
 }
 
 const char* getWIN32_NT_Name(VersionInfo ver) {
+
+    //printf("Windows NT Name\n");
   
     if (ver.majorVersion <= 4) {
         return "Windows NT";
@@ -322,7 +327,13 @@ os_info_t* getOsInfoWin() {
    is_workstation = (ver.wProductType == VER_NT_WORKSTATION);
    platformId = ver.dwPlatformId;
 
-   //sysInfo.patch_level = _strdup(ver.szCSDVersion);    
+   //sysInfo.patch_level = _strdup(ver.szCSDVersion); 
+
+   //printf("majorVersion  : %d\n", majorVersion); 
+   //printf("minorVersion  : %d\n", minorVersion);  
+   //printf("buildNumber   : %d\n", buildNumber);
+   //printf("platformId    : %d\n", platformId);
+   //printf("is_workstation: %d\n", is_workstation);
 
    ////
 
@@ -332,7 +343,9 @@ os_info_t* getOsInfoWin() {
 
    is_64bit = (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64);
 
-   // TODO: Load from kernel32.DLL
+   // TODO
+   // Incorrect version for Windows 10/11 
+   // Load system info from kernel32.DLL
 
    VersionInfo versionInfo;
    
