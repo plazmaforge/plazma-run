@@ -9,8 +9,6 @@
 
 #include "sysos.h"
 
-os_info_t* get_os_info_objc();
-
 #ifdef PLAZMA_LIB_SYSOS_CORE
 os_info_t* get_os_info_core() {
 
@@ -45,6 +43,8 @@ os_info_t* get_os_info() {
 }
 
 #else
+
+os_info_t* get_os_info_objc(); // Implemented in *.mm file
 
 os_info_t* get_os_info() {
     return get_os_info_objc();
