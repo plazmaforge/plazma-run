@@ -1,3 +1,11 @@
+#UNAME_S=`uname -s`
+LDFLAGS=
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+#if [[ "$UNAME_S" == "Darwin" ]]; then
+    LDFLAGS='-framework CoreFoundation -framework CoreServices'
+fi
+
 # clean
 rm *.o 
 rm run*
@@ -24,11 +32,8 @@ g++ -c find.cpp -o find.o
 
 # link
 ###########
-g++ iolib.o dump.o -o run-dump
-g++ iolib.o strlib.o wstrlib.o cat.o -o run-cat
-g++ -framework CoreFoundation -framework CoreServices getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o syslocale.o syslocale_os.o syslib.o find.o -o run-find
-#g++ getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o syslocale.o syslocale_os.o syslib.o find.o -o run-find
-
-g++ getopt.o test_getopt.o -o test-getopt
-#g++ test_getopt.o -o test-getopt
-
+g++ $LDFLAGS iolib.o dump.o -o run-dump
+g++ $LDFLAGS iolib.o strlib.o wstrlib.o cat.o -o run-cat
+g++ $LDFLAGS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o syslocale.o syslocale_os.o syslib.o find.o -o run-find
+g++ $LDFLAGS getopt.o test_getopt.o -o test-getopt
+#g++ $LDFLAGS test_getopt.o -o test-getopt
