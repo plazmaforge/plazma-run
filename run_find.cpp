@@ -13,18 +13,22 @@
 #include "wclib.h"
 #include "fslib.h"
 #include "srhlib.h"
+#include "sysos.h"
 #include "syslib.h"
-
-//#ifdef _WIN32
-//#include <windows.h>
-//#endif
 
 void printSysInfo() {
     printf("\n");
-    printf("user.name: %s\n", getUserName());
-    printf("user.home: %s\n", getUserHome());
-    printf("user.dir : %s\n", getUserDir());
-    printf("tmp.dir  : %s\n", getTmpDir());
+
+    os_info_t* os_info = get_os_info();
+    if (os_info) {
+        printf("os.name    : %s\n", lib_strsaf(os_info->name));
+        printf("os.version : %s\n", lib_strsaf(os_info->version));
+    }
+
+    printf("user.name  : %s\n", lib_strsaf(getUserName()));
+    printf("user.home  : %s\n", lib_strsaf(getUserHome()));
+    printf("user.dir   : %s\n", lib_strsaf(getUserDir()));
+    printf("tmp.dir    : %s\n", lib_strsaf(getTmpDir()));
 }
 
 void printUsage() {

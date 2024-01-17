@@ -2,7 +2,11 @@
 #define PLAZMA_LIB_SYSLOCALE_H
 
 /*
- * LC locale.
+ * LC locale definition.
+ * 
+ * Structures: 
+ * - locale_t
+ *
  */
 
 //#ifndef LC_MESSAGES
@@ -10,7 +14,6 @@
 //#endif
 
 struct locale_t {
-
     char* name;
 
     char* language;
@@ -18,7 +21,6 @@ struct locale_t {
     char* country;
     char* variant;
     char* encoding;
-
 };
 
 /*

@@ -3,6 +3,10 @@
 
 #include "strlib.h"
 
+const char* lib_strsaf(const char* str) {
+    return str ? str : "";
+}
+
 char* lib_strnew(size_t size) {
   if (size < 0) {
     return NULL;

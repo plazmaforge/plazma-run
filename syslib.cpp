@@ -255,27 +255,6 @@ static UINT _cp;
 static UINT _out_cp;
 #endif
 
-// /**
-//  * Print current locale
-//  */
-// void print_locale() {
-//     char* _locale_ = NULL;
-
-//     _locale_ = get_locale(LC_COLLATE);
-//     printf("Get LC_COLLATE     : %s\n", _locale_);
-
-//     _locale_ = get_locale(LC_CTYPE);
-//     printf("Get LC_CTYPE       : %s\n", _locale_);
-
-//     _locale_ = get_locale(LC_MESSAGES);
-//     printf("Get LC_MESSAGES    : %s\n", _locale_);
-
-// }
-
-const char* lib_strsaf(const char* str) {
-    return str ? str : "";
-}
-
 void init_locale() {
 
     if (debug) {

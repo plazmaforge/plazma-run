@@ -3,6 +3,8 @@
 
 #include <string.h>
 
+const char* lib_strsaf(const char* str);
+
 char* lib_strnew(size_t size);
 
 char* lib_strnew(const char* str);
