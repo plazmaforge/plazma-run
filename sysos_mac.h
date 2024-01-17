@@ -23,8 +23,8 @@ os_info_t* get_os_info() {
     os_info->name = NULL;
     os_info->nodename = NULL;
     os_info->release = NULL;
-	os_info->version = NULL;
-	os_info->machine = NULL;
+    os_info->version = NULL;
+    os_info->machine = NULL;
 
     char version[100];
     sprintf(version, "%d.%d.%d", majorVersion, minorVersion, bugFixVersion);
