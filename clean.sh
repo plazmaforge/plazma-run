@@ -1,4 +1,4 @@
 # clean
 rm *.o 
-rm run*
+rm run-*
 rm test-*
