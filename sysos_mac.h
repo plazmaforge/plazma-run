@@ -2,12 +2,17 @@
 #define PLAZMA_LIB_SYSOS_MAC_H
 
 #if defined __APPLE__ && defined __MACH__
-//#include <CoreFoundation/CoreFoundation.h>
-#include <CoreServices/CoreServices.h>
+
+//#define PLAZMA_LIB_SYSOS_CORE
+
+#include <CoreServices/CoreServices.h> // Gestalt: os_version
 
 #include "sysos.h"
 
-os_info_t* get_os_info() {
+os_info_t* get_os_info_objc();
+
+#ifdef PLAZMA_LIB_SYSOS_CORE
+os_info_t* get_os_info_core() {
 
     // Gestalt is deprecated in macOS 10.8 - Use NSProcessInfo's (*.mm)
 
@@ -34,6 +39,18 @@ os_info_t* get_os_info() {
   
     return os_info;
 }
+
+os_info_t* get_os_info() {
+    return get_os_info_core();
+}
+
+#else
+
+os_info_t* get_os_info() {
+    return get_os_info_objc();
+}
+
+#endif // PLAZMA_LIB_SYSOS_CORE
 
 #endif
 
