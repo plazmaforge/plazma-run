@@ -62,7 +62,7 @@ typedef struct {
  * versions are released.
  */
 
-char* getWIN32_WINDOWS_Name(VersionInfo ver) {
+const char* getWIN32_WINDOWS_Name(VersionInfo ver) {
   if (ver.majorVersion == 4) {
     switch (ver.minorVersion) {
       case  0: return "Windows 95";
@@ -74,7 +74,7 @@ char* getWIN32_WINDOWS_Name(VersionInfo ver) {
    return "Windows 9X (unknown)"; 
 }
 
-char* getWIN32_NT_5_Name(VersionInfo ver) {
+const char* getWIN32_NT_5_Name(VersionInfo ver) {
   switch (ver.minorVersion) {
     case  0: return "Windows 2000";
     case  1: return "Windows XP";
@@ -100,7 +100,7 @@ char* getWIN32_NT_5_Name(VersionInfo ver) {
   return "Windows NT (unknown)"; 
 }
 
-char* getWIN32_NT_6_Name(VersionInfo ver) {
+const char* getWIN32_NT_6_Name(VersionInfo ver) {
   /*
    * See table in MSDN OSVERSIONINFOEX documentation.
    */
@@ -122,7 +122,7 @@ char* getWIN32_NT_6_Name(VersionInfo ver) {
     return "Windows NT (unknown)";
 }
 
-char* getWIN32_NT_10_Name(VersionInfo ver) {
+const char* getWIN32_NT_10_Name(VersionInfo ver) {
    if (ver.is_workstation) {
         switch (ver.minorVersion) {
             case  0:
@@ -151,7 +151,7 @@ char* getWIN32_NT_10_Name(VersionInfo ver) {
   
 }
 
-char* getWIN32_NT_Name(VersionInfo ver) {
+const char* getWIN32_NT_Name(VersionInfo ver) {
   
     if (ver.majorVersion <= 4) {
         return "Windows NT";
@@ -172,7 +172,7 @@ char* getWIN32_NT_Name(VersionInfo ver) {
 // !!!!
 //#ifdef OS_WIN
 
-char* getOsName(VersionInfo ver) {
+const char* getOsName(VersionInfo ver) {
 
     // WINDOWS
     if (ver.platformId == VER_PLATFORM_WIN32_WINDOWS) {
@@ -195,7 +195,7 @@ char* getOsVersion(VersionInfo ver) {
 }
 
 // by definition
-char* getOsArch() {
+const char* getOsArch() {
    #if defined(_M_AMD64)
    return "x86_64"; //"amd64";
    #elif defined(_X86_)
@@ -208,8 +208,7 @@ char* getOsArch() {
 }
 
 // by SYSTEM_INFO
-
-char* getOsArch(SYSTEM_INFO& si) {
+const char* getOsArch(SYSTEM_INFO& si) {
    switch (si.wProcessorArchitecture) {
     #ifdef PROCESSOR_ARCHITECTURE_IA64
     case PROCESSOR_ARCHITECTURE_IA64: return "x86_64";
@@ -231,7 +230,7 @@ char* getOsArch(SYSTEM_INFO& si) {
 }
 
 // by definition
-char* getOsArchData() {
+const char* getOsArchData() {
    #if defined(_M_AMD64)
    return "64";
    #elif defined(_X86_)
@@ -244,7 +243,7 @@ char* getOsArchData() {
 }
 
 // by SYSTEM_INFO
-char* getOsArchData(SYSTEM_INFO& si) {
+const char* getOsArchData(SYSTEM_INFO& si) {
    switch (si.wProcessorArchitecture) {
     #ifdef PROCESSOR_ARCHITECTURE_IA64
     case PROCESSOR_ARCHITECTURE_IA64: return "64";
@@ -353,7 +352,7 @@ os_info_t* getOsInfoWin() {
    os_info->version = NULL;
    os_info->machine = NULL;
 
-   os_info->name = _strdup(getOsName(versionInfo);
+   os_info->name = _strdup(getOsName(versionInfo));
    os_info->version = _strdup(getOsVersion(versionInfo));
 
    //sysInfo.os_arch = getOsArch(si);
@@ -376,7 +375,7 @@ os_info_t* getOsInfoWin() {
    return os_info;
  
 }
-}
+
 os_info_t* get_os_info() {
     return getOsInfoWin();
 }

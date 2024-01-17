@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
     wprintf(L"WC-LEN: %d\n", wcslen(wstr));
     */
         
-    /*
+    ///*
     for (int i = 0; i < argc; i++) {
         char* str = argv[i];
         wchar_t* wstr = achar2wchar(str); // WIN32 (ANSII): achar2wchar + wchar2achar - correct only!
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
         //wprintf(L"%d: MB-w-STR %s\n", i, str2);
         wprintf(L"%d: MB-LEN %d\n", i, strlen(str2));
     }
-    */ 
+    //*/ 
        
     
     reset_locale();
