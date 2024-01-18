@@ -1,10 +1,6 @@
 rem clean
 call clean.bat
 
-rem del *.o 
-rem del run-*
-rem del test-*
-
 rem compile
 
 g++ -c strlib.cpp -o strlib.o

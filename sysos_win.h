@@ -315,6 +315,7 @@ os_info_t* getOsInfoWin() {
   DWORD platformId;
 
   ////
+
   OSVERSIONINFOEX ver;
   ver.dwOSVersionInfoSize = sizeof(ver);
 
@@ -322,70 +323,121 @@ os_info_t* getOsInfoWin() {
   majorVersion = ver.dwMajorVersion;
   minorVersion = ver.dwMinorVersion;
 
-   /* Distinguish Windows Server 2016+ by build number */
-   buildNumber = ver.dwBuildNumber;
-   is_workstation = (ver.wProductType == VER_NT_WORKSTATION);
-   platformId = ver.dwPlatformId;
+  /* Distinguish Windows Server 2016+ by build number */
+  buildNumber = ver.dwBuildNumber;
+  is_workstation = (ver.wProductType == VER_NT_WORKSTATION);
+  platformId = ver.dwPlatformId;
 
-   //sysInfo.patch_level = _strdup(ver.szCSDVersion); 
+  //sysInfo.patch_level = _strdup(ver.szCSDVersion); 
 
-   //printf("majorVersion  : %d\n", majorVersion); 
-   //printf("minorVersion  : %d\n", minorVersion);  
-   //printf("buildNumber   : %d\n", buildNumber);
-   //printf("platformId    : %d\n", platformId);
-   //printf("is_workstation: %d\n", is_workstation);
+  //printf("majorVersion  : %d\n", majorVersion); 
+  //printf("minorVersion  : %d\n", minorVersion);  
+  //printf("buildNumber   : %d\n", buildNumber);
+  //printf("platformId    : %d\n", platformId); 
+  //printf("is_workstation: %d\n", is_workstation);
 
-   ////
+  ////
 
-   SYSTEM_INFO si;
-   ZeroMemory(&si, sizeof(SYSTEM_INFO));
-   GetNativeSystemInfo(&si);
+  SYSTEM_INFO si;
+  ZeroMemory(&si, sizeof(SYSTEM_INFO));
+  GetNativeSystemInfo(&si);
 
-   is_64bit = (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64);
+  is_64bit = (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64);
 
-   // TODO
-   // Incorrect version for Windows 10/11 
-   // Load system info from kernel32.DLL
+  // TODO
+  // Incorrect version for Windows 10/11 
+  // Load system info from kernel32.DLL
 
-   VersionInfo versionInfo;
-   
-   versionInfo.platformId = platformId;
-   versionInfo.majorVersion = majorVersion;
-   versionInfo.minorVersion = minorVersion;
+  ////
 
-   versionInfo.is_workstation = is_workstation;
-   versionInfo.is_64bit = is_64bit;
+  do {
 
-   /* OS */
+      // Read the major and minor version number from kernel32.dll
+      VS_FIXEDFILEINFO *file_info;
+      WCHAR kernel32_path[MAX_PATH];
+      DWORD version_size;
+      LPTSTR version_info;
+      UINT len, ret;
 
-   os_info_t* os_info = (os_info_t*) malloc(sizeof(os_info_t));
-   os_info->name = NULL;
-   os_info->nodename = NULL;
-   os_info->release = NULL;
-   os_info->version = NULL;
-   os_info->machine = NULL;
+      // Get the full path to \Windows\System32\kernel32.dll and use that for
+      // determining what version of Windows we're running on.
+      len = MAX_PATH - (UINT)strlen("\\kernel32.dll") - 1;
+      ret = GetSystemDirectoryW(kernel32_path, len);
 
-   os_info->name = _strdup(getOsName(versionInfo));
-   os_info->version = _strdup(getOsVersion(versionInfo));
+      if (ret == 0 || ret > len) {
+          break;
+      }
 
-   //sysInfo.os_arch = getOsArch(si);
-   //sysInfo.os_arch_data = getOsArchData(si);
+      wcsncat(kernel32_path, L"\\kernel32.dll", MAX_PATH - ret);
+      version_size = GetFileVersionInfoSizeW(kernel32_path, NULL);
 
-   /* CPU */
-   //sysInfo.cpu_isalist = getCpuIsalist(si);
+      if (version_size == 0) {
+          break;
+      }
 
-   /* User */
-   //sysInfo.user_name = getUserName();
-   //sysInfo.user_dir = getUserDir();
-   //sysInfo.user_home = getUserHome();
-   //if (sysInfo.user_home == NULL) {
-   // sysInfo.user_home = L"C:\\";
-   //}
+      version_info = (LPTSTR)malloc(version_size);
+      if (version_info == NULL) {
+          break;
+      }
 
-   //sysInfo.file_separator = "\\";
-   //sysInfo.line_separator = "\r\n";
+      if (!GetFileVersionInfoW(kernel32_path, 0, version_size, version_info)) {
+          free(version_info);
+          break;
+      }
 
-   return os_info;
+      if (!VerQueryValueW(version_info, L"\\", (LPVOID *)&file_info, &len)) {
+          free(version_info);
+          break;
+      }
+
+      majorVersion = HIWORD(file_info->dwProductVersionMS);
+      minorVersion = LOWORD(file_info->dwProductVersionMS);
+      buildNumber = HIWORD(file_info->dwProductVersionLS);
+      free(version_info);
+      
+  } while (0);
+
+  ////
+
+  VersionInfo versionInfo;
+
+  versionInfo.platformId = platformId;
+  versionInfo.majorVersion = majorVersion;
+  versionInfo.minorVersion = minorVersion;
+
+  versionInfo.is_workstation = is_workstation;
+  versionInfo.is_64bit = is_64bit;
+
+  /* OS */
+
+  os_info_t *os_info = (os_info_t *)malloc(sizeof(os_info_t));
+  os_info->name = NULL;
+  os_info->nodename = NULL;
+  os_info->release = NULL;
+  os_info->version = NULL;
+  os_info->machine = NULL;
+
+  os_info->name = _strdup(getOsName(versionInfo));
+  os_info->version = _strdup(getOsVersion(versionInfo));
+
+  // sysInfo.os_arch = getOsArch(si);
+  // sysInfo.os_arch_data = getOsArchData(si);
+
+  /* CPU */
+  // sysInfo.cpu_isalist = getCpuIsalist(si);
+
+  /* User */
+  // sysInfo.user_name = getUserName();
+  // sysInfo.user_dir = getUserDir();
+  // sysInfo.user_home = getUserHome();
+  // if (sysInfo.user_home == NULL) {
+  //  sysInfo.user_home = L"C:\\";
+  // }
+
+  // sysInfo.file_separator = "\\";
+  // sysInfo.line_separator = "\r\n";
+
+  return os_info;
  
 }
 
