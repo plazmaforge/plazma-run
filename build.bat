@@ -1,3 +1,5 @@
+set "LIBS=-lversion"
+
 rem clean
 call clean.bat
 
@@ -24,4 +26,4 @@ rem link
 
 g++ iolib.o run_dump.o -o run-dump.exe
 g++ iolib.o strlib.o wstrlib.o run_cat.o -o run-cat.exe
-g++ getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o sysos.o syslocale.o syslocale_os.o syslib.o run_find.o -o run-find.exe
+g++ getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o sysos.o syslocale.o syslocale_os.o syslib.o run_find.o -o run-find.exe %LIBS%

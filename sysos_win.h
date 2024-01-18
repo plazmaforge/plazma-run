@@ -4,8 +4,10 @@
 #if defined _WIN32
 #include <io.h>
 #include <windows.h>
+
 //#include <shlobj.h>
 //#include <objidl.h>
+//#include <wincon.h>
 
 #include <stdlib.h>
 #include <string.h>
