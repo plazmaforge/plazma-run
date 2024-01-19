@@ -18,4 +18,8 @@ locale_t* load_locale_os(int cat);
  */
 locale_t* load_locale_os();
 
+#ifdef _WIN32
+int getCodepage(int cat);
+#endif
+
 #endif // PLAZMA_LIB_SYSLOCALE_OS_H

@@ -19,6 +19,69 @@
 #define PROPSIZE 9      // eight-letter + null terminator
 #define SNAMESIZE 86    // max number of chars for LOCALE_SNAME is 85
 
+
+
+/*
+ * Returns Windows Locale ID (LCID) by locale category (LC_CTYPE, LC_MESSAGES)
+ */
+static LCID getLocaleID(int cat) {
+
+   if (cat == LC_CTYPE) {
+      return GetUserDefaultLCID(); // LC_CTYPE
+   }
+
+   // query the system for the current system default locale
+   // (which is a Windows LCID value),
+   LCID userDefaultLCID = GetUserDefaultLCID();
+   LANGID userDefaultUILang = GetUserDefaultUILanguage();
+   LCID userDefaultUILCID = MAKELCID(userDefaultUILang, SORTIDFROMLCID(userDefaultLCID));
+
+   //char * display_encoding;
+   //HANDLE hStdOutErr;
+
+    // Windows UI Language selection list only cares "language"
+    // information of the UI Language. For example, the list
+    // just lists "English" but it actually means "en_US", and
+    // the user cannot select "en_GB" (if exists) in the list.
+    // So, this hack is to use the user LCID region information
+    // for the UI Language, if the "language" portion of those
+    // two locales are the same.
+    if (PRIMARYLANGID(LANGIDFROMLCID(userDefaultLCID)) == PRIMARYLANGID(userDefaultUILang)) {
+      userDefaultUILCID = userDefaultLCID;
+    }
+
+    return userDefaultUILCID; // LC_MESSAGES = LC_TIME + 1
+}
+
+/*
+ * Returns Windows codepage by Locale ID
+ */
+
+static int getCodepage(LCID lcid) {
+    int codepage = 0;
+    char ret[16];
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    if (lcid == 0) {
+        codepage = GetACP();
+        _itoa_s(codepage, ret + 2, 14, 10);
+    } else if (GetLocaleInfo(lcid, LOCALE_IDEFAULTANSICODEPAGE, ret + 2, 14) != 0) {
+        codepage = atoi(ret + 2);
+    } 
+    return codepage;
+}
+
+/*
+ * Returns Windows codepage by locale category (LC_CTYPE, LC_MESSAGES)
+ */
+
+int getCodepage(int cat) {
+    LCID lcid = getLocaleID(cat);
+    return getCodepage(lcid);
+}
+
 static char* getEncoding(LCID lcid) {
     int codepage = 0;
     char* ret = (char*) malloc(16);

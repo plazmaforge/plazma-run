@@ -301,15 +301,19 @@ void init_locale() {
       printf("Get ConsoleOutCP: %d\n", _out_cp);
     }
 
+    // TODO: Maybe check all UTF codepage.
     if (_out_cp == 65001) {
         // UTF-8
         return;
     }
 
     UINT _new_cp = 0;
-    if (_out_cp == 866) {
-       _new_cp = 1251;       
-    }
+
+    // TODO: Maybe check codepage. If it is WIN codepage then return
+    // TODO: Maybe convert DOS to WIN codepage and return
+    //if (_out_cp == 866) {
+    //   _new_cp = 1251;       
+    //}
 
     if (_new_cp > 0) {
        SetConsoleCP(_new_cp);
@@ -318,23 +322,45 @@ void init_locale() {
          printf("\nSet ConsoleCP   : %d\n", _new_cp);
          printf("Set ConsoleOutCP: %d\n", _new_cp);
        }
-    } else {
+       return;
+    }
 
-       setlocale(LC_ALL, ""); // set default locale
-       //set_default_locale();
+    // 1252 - default Windows codepage (?)
+    _new_cp = getCodepage(LC_CTYPE);       // try LC_CTYPE
+    if (_new_cp < 0 || _new_cp == 1252) {
+      _new_cp = 0;
+    }
+    if (_new_cp == 0) {
+      _new_cp = getCodepage(LC_TIME + 1);  // try LC_MESSAGES
+    }
+    if (_new_cp < 0 || _new_cp == 1252) {
+      _new_cp = 0;
+    }
 
-       if (debug) {
-         //printf("\nSet LC Locale   : %s\n", get_locale(LC_ALL));
-         printf("\n");
-         printf("Change          :\n");
-         printf("----------------:\n");
-         printf("All LC Locale   : %s\n", get_locale(LC_ALL));
-         printf("Std LC Locale   : %s\n", get_locale(LC_CTYPE));
-         _locale_os = load_locale_os();
-         printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
-         print_locale(_locale_os);
+    if (_new_cp > 0) {
+      SetConsoleCP(_new_cp);
+      SetConsoleOutputCP(_new_cp);
+      if (debug) {
+        printf("\nSet ConsoleCP   : %d\n", _new_cp);
+        printf("Set ConsoleOutCP: %d\n", _new_cp);
+      }
+      return;
+    }
 
-       }
+    setlocale(LC_ALL, ""); // set default locale
+    //set_default_locale();
+
+    if (debug) {
+      //printf("\nSet LC Locale   : %s\n", get_locale(LC_ALL));
+      printf("\n");
+      printf("Change          :\n");
+      printf("----------------:\n");
+      printf("All LC Locale   : %s\n", get_locale(LC_ALL));
+      printf("Std LC Locale   : %s\n", get_locale(LC_CTYPE));
+      _locale_os = load_locale_os();
+      printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
+      print_locale(_locale_os);
+
     }
 
     #else
