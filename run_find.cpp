@@ -21,14 +21,19 @@ void printSysInfo() {
 
     os_info_t* os_info = get_os_info();
     if (os_info) {
-        printf("os.name    : %s\n", lib_strsaf(os_info->name));
-        printf("os.version : %s\n", lib_strsaf(os_info->version));
+        printf("os.name        : %s\n", lib_strsaf(os_info->os_name));
+        printf("os.version     : %s\n", lib_strsaf(os_info->os_version));
+        printf("os.major       : %d\n", os_info->os_major_version);
+        printf("os.minor       : %d\n", os_info->os_minor_version);
+        printf("os.build       : %d\n", os_info->os_build_version);
+        printf("os.arch        : %s\n", lib_strsaf(os_info->os_arch));
+        printf("os.arch.data   : %s\n", lib_strsaf(os_info->os_arch_data));         
     }
 
-    printf("user.name  : %s\n", lib_strsaf(getUserName()));
-    printf("user.home  : %s\n", lib_strsaf(getUserHome()));
-    printf("user.dir   : %s\n", lib_strsaf(getUserDir()));
-    printf("tmp.dir    : %s\n", lib_strsaf(getTmpDir()));
+    printf("user.name      : %s\n", lib_strsaf(getUserName()));
+    printf("user.home      : %s\n", lib_strsaf(getUserHome()));
+    printf("user.dir       : %s\n", lib_strsaf(getUserDir()));
+    printf("tmp.dir        : %s\n", lib_strsaf(getTmpDir()));
 }
 
 void printUsage() {

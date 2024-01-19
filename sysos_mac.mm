@@ -12,23 +12,14 @@ typedef struct {
 
 os_info_t* get_os_info_objc() {
 
-    os_info_t* os_info = (os_info_t*) malloc(sizeof(os_info_t));
-    os_info->name = NULL;
-    os_info->nodename = NULL;
-    os_info->release = NULL;
-    os_info->version = NULL;
-    os_info->machine = NULL;
+    NSString *osVerStr = NULL;
+    //char* osVerCStr = NULL;
+    OSVerStruct osVer;
 
-    // Hardcode os_name, and fill in os_version
-    os_info->name = strdup("Mac OS X");
-
-    NSString *nsVerStr = NULL;
-
-    char* osVersionCStr = NULL;
     // Mac OS 10.9 includes the [NSProcessInfo operatingSystemVersion] function,
     // but it's not in the 10.9 SDK.  So, call it via NSInvocation.
     if ([[NSProcessInfo processInfo] respondsToSelector:@selector(operatingSystemVersion)]) {
-        OSVerStruct osVer;
+        //OSVerStruct osVer;
         NSMethodSignature *sig = [[NSProcessInfo processInfo] methodSignatureForSelector:
                 @selector(operatingSystemVersion)];
         NSInvocation *invoke = [NSInvocation invocationWithMethodSignature:sig];
@@ -41,10 +32,10 @@ os_info_t* get_os_info_objc() {
         if (!((long)osVer.majorVersion == 10 && (long)osVer.minorVersion >= 16) ||
                 (getenv("SYSTEM_VERSION_COMPAT") != NULL)) {
             if (osVer.patchVersion == 0) { // Omit trailing ".0"
-                nsVerStr = [NSString stringWithFormat:@"%ld.%ld",
+                osVerStr = [NSString stringWithFormat:@"%ld.%ld",
                         (long)osVer.majorVersion, (long)osVer.minorVersion];
             } else {
-                nsVerStr = [NSString stringWithFormat:@"%ld.%ld.%ld",
+                osVerStr = [NSString stringWithFormat:@"%ld.%ld.%ld",
                         (long)osVer.majorVersion, (long)osVer.minorVersion, (long)osVer.patchVersion];
             }
         } else {
@@ -54,27 +45,36 @@ os_info_t* get_os_info_objc() {
             NSDictionary *version = [NSDictionary dictionaryWithContentsOfFile :
                              @"/System/Library/CoreServices/.SystemVersionPlatform.plist"];
             if (version != NULL) {
-                nsVerStr = [version objectForKey : @"ProductVersion"];
+                osVerStr = [version objectForKey : @"ProductVersion"];
             }
         }
     }
     // Fallback if running on pre-10.9 Mac OS
-    if (nsVerStr == NULL) {
+    if (osVerStr == NULL) {
         NSDictionary *version = [NSDictionary dictionaryWithContentsOfFile :
                                  @"/System/Library/CoreServices/SystemVersion.plist"];
         if (version != NULL) {
-            nsVerStr = [version objectForKey : @"ProductVersion"];
+            osVerStr = [version objectForKey : @"ProductVersion"];
         }
     }
 
-    if (nsVerStr != NULL) {
-        // Copy out the char*
-        osVersionCStr = strdup([nsVerStr UTF8String]);
-    }
-    if (osVersionCStr == NULL) {
-        osVersionCStr = strdup("Unknown");
-    }
-    os_info->version = osVersionCStr;
+    //if (osVerStr != NULL) {
+    //    // Copy out the char*
+    //    osVerCStr = strdup([osVerStr UTF8String]);
+    //}
+    //if (osVerCStr == NULL) {
+    //    osVerCStr = strdup("Unknown");
+    //}
+
+    os_info_t* os_info = new_os_info();
+
+    // Hardcode os_name, and fill in os_version
+    os_info->os_name = strdup("Mac OS X");
+    os_info->os_version = strdup(osVerStr ? [osVerStr UTF8String] : "Unknown");
+    
+    os_info->os_major_version = osVer.majorVersion;
+    os_info->os_minor_version = osVer.minorVersion;
+    os_info->os_build_version = osVer.patchVersion;
 
    return os_info;
 }

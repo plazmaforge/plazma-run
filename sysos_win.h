@@ -347,10 +347,6 @@ os_info_t* getOsInfoWin() {
 
   is_64bit = (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64);
 
-  // TODO
-  // Incorrect version for Windows 10/11 
-  // Load system info from kernel32.DLL
-
   ////
 
   do {
@@ -412,19 +408,17 @@ os_info_t* getOsInfoWin() {
   versionInfo.is_64bit = is_64bit;
 
   /* OS */
+  os_info_t *os_info = new_os_info();
 
-  os_info_t *os_info = (os_info_t *)malloc(sizeof(os_info_t));
-  os_info->name = NULL;
-  os_info->nodename = NULL;
-  os_info->release = NULL;
-  os_info->version = NULL;
-  os_info->machine = NULL;
+  os_info->os_name = _strdup(getOsName(versionInfo));
+  os_info->os_version = _strdup(getOsVersion(versionInfo));
+  
+  os_info->os_major_version = majorVersion;
+  os_info->os_minor_version = minorVersion;
+  os_info->os_build_version = buildNumber;
 
-  os_info->name = _strdup(getOsName(versionInfo));
-  os_info->version = _strdup(getOsVersion(versionInfo));
-
-  // sysInfo.os_arch = getOsArch(si);
-  // sysInfo.os_arch_data = getOsArchData(si);
+  os_info->os_arch = getOsArch(si);
+  os_info->os_arch_data = getOsArchData(si);
 
   /* CPU */
   // sysInfo.cpu_isalist = getCpuIsalist(si);
