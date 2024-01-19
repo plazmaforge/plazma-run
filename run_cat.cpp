@@ -64,9 +64,12 @@ int main(int argc, char* argv[]) {
 
     }
 
+    // incorrect last chars: non printable char
     //printf("%s", totalData);
+    //printf("%ls", char2wchar(totalData));
     //wprintf(L"%ls", char2wchar(totalData));
 
+ 
     for (int i = 0; i < totalSize; i++) {
         printf("%c", totalData[i]);
     }
