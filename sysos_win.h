@@ -417,8 +417,8 @@ os_info_t* getOsInfoWin() {
   os_info->os_minor_version = minorVersion;
   os_info->os_build_version = buildNumber;
 
-  os_info->os_arch = getOsArch(si);
-  os_info->os_arch_data = getOsArchData(si);
+  os_info->os_arch = _strdup(getOsArch(si));
+  os_info->os_arch_data = _strdup(getOsArchData(si));
 
   /* CPU */
   // sysInfo.cpu_isalist = getCpuIsalist(si);
