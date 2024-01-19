@@ -326,16 +326,20 @@ void init_locale() {
     }
 
     // 1252 - default Windows codepage (?)
-    _new_cp = getCodepage(LC_CTYPE);       // try LC_CTYPE
+    int _lc_type = LC_CTYPE;
+    _new_cp = getCodepage(_lc_type);       // try LC_CTYPE
     if (_new_cp < 0 || _new_cp == 1252) {
       _new_cp = 0;
     }
     if (_new_cp == 0) {
-      _new_cp = getCodepage(LC_TIME + 1);  // try LC_MESSAGES
+      _lc_type = LC_TIME + 1;
+      _new_cp = getCodepage(_lc_type);     // try LC_MESSAGES
     }
     if (_new_cp < 0 || _new_cp == 1252) {
       _new_cp = 0;
     }
+
+    int need_set_locale = 1;
 
     if (_new_cp > 0) {
       SetConsoleCP(_new_cp);
@@ -344,11 +348,38 @@ void init_locale() {
         printf("\nSet ConsoleCP   : %d\n", _new_cp);
         printf("Set ConsoleOutCP: %d\n", _new_cp);
       }
-      return;
+      if (!need_set_locale) {
+        return;
+      }
     }
 
-    setlocale(LC_ALL, ""); // set default locale
-    //set_default_locale();
+    //setlocale(LC_ALL, "English_United States.1252"); // set default locale
+    //setlocale(LC_ALL, ""); // set default locale
+
+    int need_sync_locale = 1;
+    _locale_os = NULL;
+
+    if (need_sync_locale && _new_cp > 0) {
+       _locale_os = load_locale_os(_lc_type);
+
+       // TODO: Windows 10
+       // Maybe need convert <lg>_<CN> -> <Language>_Country>
+       // because if we use short names then locale turn 'C'
+       //
+       // For example:
+       // en_US.1252 -> English_United States.1252
+
+       char* new_locale_name = _locale_os->name; 
+       if (new_locale_name) {
+           setlocale(LC_ALL, new_locale_name);
+           free(new_locale_name);
+       } else {
+           setlocale(LC_ALL, "");
+       }
+
+    } else {
+       setlocale(LC_ALL, "");
+    }
 
     if (debug) {
       //printf("\nSet LC Locale   : %s\n", get_locale(LC_ALL));
@@ -357,11 +388,15 @@ void init_locale() {
       printf("----------------:\n");
       printf("All LC Locale   : %s\n", get_locale(LC_ALL));
       printf("Std LC Locale   : %s\n", get_locale(LC_CTYPE));
-      _locale_os = load_locale_os();
+      if (_locale_os) {
+        _locale_os = load_locale_os(_lc_type);
+      }
       printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
       print_locale(_locale_os);
 
     }
+
+    free(_locale_os);
 
     #else
 
