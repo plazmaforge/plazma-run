@@ -296,7 +296,8 @@ static const char* getCpuIsalist(SYSTEM_INFO& si) {
         case 4: return "i486 i386 i86";
         case 3: return "i386 i86";
         }
-    }  
+    }
+    return ""; 
 }
 
 os_info_t* getOsInfoWin() {
