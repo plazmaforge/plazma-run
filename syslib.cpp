@@ -362,7 +362,7 @@ void init_locale() {
     if (need_sync_locale && _new_cp > 0) {
        _locale_os = load_locale_os(_lc_type);
 
-       // TODO: Windows 10
+       // TODO: Windows 7/10
        // Maybe need convert <lg>_<CN> -> <Language>_Country>
        // because if we use short names then locale turn 'C'
        //

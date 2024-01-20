@@ -5,6 +5,7 @@
 
 #include "iolib.h"
 #include "wstrlib.h"
+#include "syslib.h"
 
 struct FileData {
     char* data;
@@ -18,6 +19,7 @@ void printUsage() {
 int main(int argc, char* argv[]) {
 
     setlocale(LC_ALL, "");
+    //init_locale(); // WIN32 fast output with setvbuf(?)
 
     if (argc < 2) {
         printUsage();
@@ -64,13 +66,18 @@ int main(int argc, char* argv[]) {
 
     }
 
+    #ifdef _WIN32
+    char buf[65536];
+    setvbuf(stdout, buf, _IOFBF, 65536);
+    #endif
+
     // incorrect last chars: non printable char
     //printf("%s", totalData);
-    //printf("%ls", char2wchar(totalData));
-    //wprintf(L"%ls", char2wchar(totalData));
+    //printf("%ls", char2wchar(totalData));   // IMPORTANT for WIN32 
+    //wprintf(L"%ls", char2wchar(totalData)); // IMPORTANT for WIN32
 
  
-    for (int i = 0; i < totalSize; i++) {
+    for (int i = 0; i < totalSize; i++) {                                            
         printf("%c", totalData[i]);
     }
 

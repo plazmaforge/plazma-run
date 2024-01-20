@@ -36,6 +36,6 @@ fi
 # link
 ###########
 g++ $LDFLAGS iolib.o run_dump.o -o run-dump
-g++ $LDFLAGS iolib.o strlib.o wstrlib.o run_cat.o -o run-cat
+g++ $LDFLAGS iolib.o strlib.o wstrlib.o syslocale_os.o syslib.o run_cat.o -o run-cat
 g++ $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o sysos.o syslocale.o syslocale_os.o syslib.o run_find.o -o run-find
 g++ $LDFLAGS getopt.o test_getopt.o -o test-getopt
