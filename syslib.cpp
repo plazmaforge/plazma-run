@@ -372,6 +372,17 @@ void init_locale() {
        char* new_locale_name = _locale_os->name; 
        if (new_locale_name) {
            setlocale(LC_ALL, new_locale_name);
+
+           // Fix incorrect locale
+           //char* cur_locale_name = setlocale(LC_ALL, new_locale_name);
+           //if (strcmp(cur_locale_name, "C") == 0) {
+           //   // Incorrect locale
+           //   char* cur_encoding = strchr('.');
+           //   if (cur_encoding) {
+           //     setlocale(LC_ALL, lib_strdup(cur_encoding));
+           //   }
+           //}
+           
            free(new_locale_name);
        } else {
            setlocale(LC_ALL, "");
