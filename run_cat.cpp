@@ -18,8 +18,8 @@ void printUsage() {
 
 int main(int argc, char* argv[]) {
 
-    setlocale(LC_ALL, "");
-    //init_locale(); // WIN32 fast output with setvbuf(?)
+    //setlocale(LC_ALL, "");
+    init_locale(); // WIN32 fast output with setvbuf(?)
 
     if (argc < 2) {
         printUsage();

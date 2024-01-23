@@ -315,13 +315,6 @@ void init_locale_win() {
 
     getConsoleCodepage();
 
-    //_cp = GetConsoleCP();
-    //_out_cp = GetConsoleOutputCP();
-    //if (debug) {
-    //  printf("\nGet ConsoleCP   : %d\n", _cp);
-    //  printf("Get ConsoleOutCP: %d\n", _out_cp);
-    }
-
     // TODO: Maybe check all UTF codepage.
     if (_out_cp == 65001) {
         // UTF-8
@@ -338,14 +331,7 @@ void init_locale_win() {
 
     if (_new_cp > 0) {
         setConsoleCodepage(_new_cp);
-       
-    //    SetConsoleCP(_new_cp);
-    //    SetConsoleOutputCP(_new_cp);
-    //    if (debug) {
-    //      printf("\nSet ConsoleCP   : %d\n", _new_cp);
-    //      printf("Set ConsoleOutCP: %d\n", _new_cp);
-    //    }
-       return;
+        return;
     }
 
     // 1252 - default Windows codepage (?)
@@ -366,17 +352,9 @@ void init_locale_win() {
 
     if (_new_cp > 0) {
         setConsoleCodepage(_new_cp);
-
-    //   SetConsoleCP(_new_cp);
-    //   SetConsoleOutputCP(_new_cp);
-    //   if (debug) {
-    //     printf("\nSet ConsoleCP   : %d\n", _new_cp);
-    //     printf("Set ConsoleOutCP: %d\n", _new_cp);
-    //   }
-
-      if (!need_set_locale) {
-        return;
-      }
+        if (!need_set_locale) {
+          return;
+        }
     }
 
     //setlocale(LC_ALL, "English_United States.1252"); // set default locale
@@ -397,17 +375,38 @@ void init_locale_win() {
 
        char* new_locale_name = _locale_os->name; 
        if (new_locale_name) {
+           
+           // Transfer OS locale to setlocale
            setlocale(LC_ALL, new_locale_name);
 
+           /*
+
            // Fix incorrect locale
-           //char* cur_locale_name = setlocale(LC_ALL, new_locale_name);
-           //if (strcmp(cur_locale_name, "C") == 0) {
-           //   // Incorrect locale
-           //   char* cur_encoding = strchr('.');
-           //   if (cur_encoding) {
-           //     setlocale(LC_ALL, lib_strdup(cur_encoding));
-           //   }
-           //}
+           // Slowly output with this fix (!!!)
+ 
+           char* cur_locale_name = get_locale(LC_ALL);
+           //printf(">> cur_locale_name: %s\n", cur_locale_name);
+
+           // If we set incorrect locale then get_locale returns "C" locale
+           if (cur_locale_name && strcmp(cur_locale_name, "C") == 0) {
+
+              //printf(">> C Locale\n");
+              // Get encoding only fri new_locale_name
+              char* cur_encoding = strchr(new_locale_name, '.');
+              
+              if (cur_encoding) {
+
+                //cur_encoding++; // for encoding only
+                //printf(">> cur_ecoding: %s", cur_encoding);
+                //setlocale(LC_ALL, lib_strdup(cur_encoding));
+
+                // Set new locale: English_United States.<encoding>
+                setlocale(LC_ALL, lib_strnew("English_United States", cur_encoding));
+          
+              }
+           }
+
+           */
            
            free(new_locale_name);
        } else {
@@ -444,13 +443,6 @@ void reset_locale_win() {
         return;
     }
     setConsoleCodepage(_cp, _out_cp);
-
-    // SetConsoleCP(_cp);
-    // SetConsoleOutputCP(_out_cp);
-    // if (debug) {
-    //    printf("Set ConsoleCP   : %d\n", _cp);
-    //    printf("Set ConsoleOutCP: %d\n", _out_cp);
-    // }
 }
 
 #endif
