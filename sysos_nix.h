@@ -8,6 +8,9 @@
 
 #include "sysos.h"
 
+#if defined __APPLE__ && defined __MACH__
+#include "sysos_mac.h"
+#else
 os_info_t* get_os_info() {
 
    struct utsname name;
@@ -32,6 +35,8 @@ os_info_t* get_os_info() {
 
     return os_info;
 }
+#endif
+
 //#endif
 
 #endif // PLAZMA_LIB_SYSOS_NIX_H

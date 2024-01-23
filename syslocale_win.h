@@ -13,6 +13,15 @@
 #define PROPSIZE 9      // eight-letter + null terminator
 #define SNAMESIZE 86    // max number of chars for LOCALE_SNAME is 85
 
+////
+
+static UINT _cp;
+static UINT _out_cp;
+
+int getCodepage(int cat);
+
+////
+
 /*
  * Returns Windows Locale ID (LCID) by locale category (LC_CTYPE, LC_MESSAGES)
  */
@@ -273,9 +282,175 @@ static void loadLocaleAllWin(SysInfo& sysInfo) {
 }
 */
 
+void getConsoleCodepage() {
+    _cp = GetConsoleCP();
+    _out_cp = GetConsoleOutputCP();
+    if (debug) {
+        printf("\n");
+        printf("Get ConsoleCP   : %d\n", _cp);
+        printf("Get ConsoleOutCP: %d\n", _out_cp);
+    }
+}
+
+void setConsoleCodepage(UINT cp, UINT out_cp) {
+    SetConsoleCP(cp);
+    SetConsoleOutputCP(out_cp);
+    if (debug) {
+        printf("\n");
+        printf("Set ConsoleCP   : %d\n", cp);
+        printf("Set ConsoleOutCP: %d\n", out_cp);
+    }
+}
+
+void setConsoleCodepage(UINT cp) {
+    setConsoleCodepage(cp, cp);
+}
+
 locale_t* load_locale_os(int cat) {
     //return parse_locale(get_locale(cat));
     return loadLocaleWin(cat);
+}
+
+void init_locale_win() {
+
+    getConsoleCodepage();
+
+    //_cp = GetConsoleCP();
+    //_out_cp = GetConsoleOutputCP();
+    //if (debug) {
+    //  printf("\nGet ConsoleCP   : %d\n", _cp);
+    //  printf("Get ConsoleOutCP: %d\n", _out_cp);
+    }
+
+    // TODO: Maybe check all UTF codepage.
+    if (_out_cp == 65001) {
+        // UTF-8
+        return;
+    }
+
+    UINT _new_cp = 0;
+
+    // TODO: Maybe check codepage. If it is WIN codepage then return
+    // TODO: Maybe convert DOS to WIN codepage and return
+    //if (_out_cp == 866) {
+    //   _new_cp = 1251;       
+    //}
+
+    if (_new_cp > 0) {
+        setConsoleCodepage(_new_cp);
+       
+    //    SetConsoleCP(_new_cp);
+    //    SetConsoleOutputCP(_new_cp);
+    //    if (debug) {
+    //      printf("\nSet ConsoleCP   : %d\n", _new_cp);
+    //      printf("Set ConsoleOutCP: %d\n", _new_cp);
+    //    }
+       return;
+    }
+
+    // 1252 - default Windows codepage (?)
+    int _lc_type = LC_CTYPE;
+    _new_cp = getCodepage(_lc_type);       // try LC_CTYPE
+    if (_new_cp < 0 || _new_cp == 1252) {
+      _new_cp = 0;
+    }
+    if (_new_cp == 0) {
+      _lc_type = LC_TIME + 1;
+      _new_cp = getCodepage(_lc_type);     // try LC_MESSAGES
+    }
+    if (_new_cp < 0 || _new_cp == 1252) {
+      _new_cp = 0;
+    }
+
+    int need_set_locale = 1;
+
+    if (_new_cp > 0) {
+        setConsoleCodepage(_new_cp);
+
+    //   SetConsoleCP(_new_cp);
+    //   SetConsoleOutputCP(_new_cp);
+    //   if (debug) {
+    //     printf("\nSet ConsoleCP   : %d\n", _new_cp);
+    //     printf("Set ConsoleOutCP: %d\n", _new_cp);
+    //   }
+
+      if (!need_set_locale) {
+        return;
+      }
+    }
+
+    //setlocale(LC_ALL, "English_United States.1252"); // set default locale
+    //setlocale(LC_ALL, ""); // set default locale
+
+    int need_sync_locale = 1;
+    _locale_os = NULL;
+
+    if (need_sync_locale && _new_cp > 0) {
+       _locale_os = load_locale_os(_lc_type);
+
+       // TODO: Windows 7/10
+       // Maybe need convert <lg>_<CN> -> <Language>_Country>
+       // because if we use short names then locale turn 'C'
+       //
+       // For example:
+       // en_US.1252 -> English_United States.1252
+
+       char* new_locale_name = _locale_os->name; 
+       if (new_locale_name) {
+           setlocale(LC_ALL, new_locale_name);
+
+           // Fix incorrect locale
+           //char* cur_locale_name = setlocale(LC_ALL, new_locale_name);
+           //if (strcmp(cur_locale_name, "C") == 0) {
+           //   // Incorrect locale
+           //   char* cur_encoding = strchr('.');
+           //   if (cur_encoding) {
+           //     setlocale(LC_ALL, lib_strdup(cur_encoding));
+           //   }
+           //}
+           
+           free(new_locale_name);
+       } else {
+           setlocale(LC_ALL, "");
+       }
+
+    } else {
+       setlocale(LC_ALL, "");
+    }
+
+    if (debug) {
+      //printf("\nSet LC Locale   : %s\n", get_locale(LC_ALL));
+      printf("\n");
+      printf("Change          :\n");
+      printf("----------------:\n");
+      printf("All LC Locale   : %s\n", get_locale(LC_ALL));
+      printf("Std LC Locale   : %s\n", get_locale(LC_CTYPE));
+      if (_locale_os) {
+        _locale_os = load_locale_os(_lc_type);
+      }
+      printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
+      print_locale(_locale_os);
+
+    }
+
+    free(_locale_os);
+    _locale_os = NULL;
+
+}
+
+void reset_locale_win() {
+    if (_out_cp == 65001) {
+        // UTF-8
+        return;
+    }
+    setConsoleCodepage(_cp, _out_cp);
+
+    // SetConsoleCP(_cp);
+    // SetConsoleOutputCP(_out_cp);
+    // if (debug) {
+    //    printf("Set ConsoleCP   : %d\n", _cp);
+    //    printf("Set ConsoleOutCP: %d\n", _out_cp);
+    // }
 }
 
 #endif

@@ -6,8 +6,6 @@
 
 #if defined _WIN32
 #include "sysos_win.h"
-#elif defined __APPLE__ && defined __MACH__
-#include "sysos_mac.h"
 #else
 #include "sysos_nix.h"
 #endif

@@ -3,6 +3,12 @@
 
 #include "syslocale.h"
 
+static char* _locale;
+static locale_t* _locale_os;
+
+static int debug = 1;
+static int check = 1;
+
 /*
  * OS locale.
  * It depends on Operation System (Windows, MacOS)
@@ -18,8 +24,16 @@ locale_t* load_locale_os(int cat);
  */
 locale_t* load_locale_os();
 
-#ifdef _WIN32
-int getCodepage(int cat);
-#endif
+/*
+ * Initialize OS locale
+ */
+
+void init_locale_os();
+
+/*
+ * Reset OS locale
+ */
+void reset_locale_os();
+
 
 #endif // PLAZMA_LIB_SYSLOCALE_OS_H
