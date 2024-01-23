@@ -1,13 +1,13 @@
 #ifndef PLAZMA_LIB_SYSLIB_OS_H
 #define PLAZMA_LIB_SYSLIB_OS_H
 
-char* getUserName();
+// char* getUserName();
 
-char* getUserHome();
+// char* getUserHome();
 
-char* getUserDir();
+// char* getUserDir();
 
-char* getTmpDir();
+// char* getTmpDir();
 
 ////
 

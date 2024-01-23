@@ -13,35 +13,12 @@
 #include "wclib.h"
 #include "fslib.h"
 #include "srhlib.h"
-#include "sysos.h"
 #include "syslib.h"
 
-void printSysInfo() {
-    printf("\n");
-
-    os_info_t* os_info = get_os_info();
-    if (os_info) {
-        printf("os.name        : %s\n", lib_strsaf(os_info->os_name));
-        printf("os.version     : %s\n", lib_strsaf(os_info->os_version));
-        printf("os.major       : %d\n", os_info->os_major_version);
-        printf("os.minor       : %d\n", os_info->os_minor_version);
-        printf("os.build       : %d\n", os_info->os_build_version);
-        printf("os.arch        : %s\n", lib_strsaf(os_info->os_arch));
-        printf("os.arch.data   : %s\n", lib_strsaf(os_info->os_arch_data));         
-    }
-
-    printf("user.name      : %s\n", lib_strsaf(getUserName()));
-    printf("user.home      : %s\n", lib_strsaf(getUserHome()));
-    printf("user.dir       : %s\n", lib_strsaf(getUserDir()));
-    printf("tmp.dir        : %s\n", lib_strsaf(getTmpDir()));
-}
 
 void printUsage() {
-    printf("Usage: run-find text file \n");
-    printSysInfo();
+    printf("Usage: run-find <text> <file> \n");
 }
-
-////
 
 int main(int argc, char* argv[]) {
 
@@ -70,7 +47,7 @@ int main(int argc, char* argv[]) {
     wprintf(L"WC-LEN: %d\n", wcslen(wstr));
     */
         
-    ///*
+    /*
     for (int i = 0; i < argc; i++) {
         char* str = argv[i];
         wchar_t* wstr = achar2wchar(str); // WIN32 (ANSII): achar2wchar + wchar2achar - correct only!
@@ -87,9 +64,8 @@ int main(int argc, char* argv[]) {
         //wprintf(L"%d: MB-w-STR %s\n", i, str2);
         wprintf(L"%d: MB-LEN %d\n", i, strlen(str2));
     }
-    //*/ 
+    */ 
        
-    
     reset_locale();
 
     int min_arg = 2; // <text> <file>

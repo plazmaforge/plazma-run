@@ -4,7 +4,7 @@
 #include "iolib.h"
 
 void printUsage() {
-    printf("Usage: run-dump file\n");
+    printf("Usage: run-dump <file>\n");
 }
 
 int main(int argc, char* argv[]) {

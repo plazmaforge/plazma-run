@@ -20,13 +20,17 @@ g++ -c fslib.cpp -o fslib.o
 g++ -c iolib.cpp -o iolib.o
 g++ -c srhlib.cpp -o srhlib.o
 g++ -c sysos.cpp -o sysos.o
+g++ -c sysuser.cpp -o sysuser.o
 g++ -c syslocale.cpp -o syslocale.o
 g++ -c syslocale_os.cpp -o syslocale_os.o
+g++ -c sysinfo.cpp -o sysinfo.o
 g++ -c syslib.cpp -o syslib.o
 g++ -c getopt.cpp -o getopt.o
 g++ -c test_getopt.cpp -o test_getopt.o
 g++ -c run_dump.cpp -o run_dump.o
+g++ -c run_echo.cpp -o run_echo.o
 g++ -c run_cat.cpp -o run_cat.o
+g++ -c run_sysinfo.cpp -o run_sysinfo.o
 g++ -c run_find.cpp -o run_find.o
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -36,6 +40,8 @@ fi
 # link
 ###########
 g++ $LDFLAGS iolib.o run_dump.o -o run-dump
+g++ $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_echo.o -o run-echo
 g++ $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_cat.o -o run-cat
-g++ $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o sysos.o syslocale.o syslocale_os.o syslib.o run_find.o -o run-find
+g++ $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_sysinfo.o -o run-sysinfo
+g++ $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_find.o -o run-find
 g++ $LDFLAGS getopt.o test_getopt.o -o test-getopt

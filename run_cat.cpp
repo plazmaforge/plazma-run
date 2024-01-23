@@ -13,7 +13,7 @@ struct FileData {
 };
 
 void printUsage() {
-    printf("Usage: run-cat file...\n");
+    printf("Usage: run-cat <file...>\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -83,4 +83,6 @@ int main(int argc, char* argv[]) {
 
     //char* fileName = argv[1];
     //hexDump(fileName);
+
+    //reset_locale();
 }

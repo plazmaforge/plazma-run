@@ -9,7 +9,7 @@
   *
   */
 
-struct  os_info_t {
+struct os_info_t {
 	char* os_name;
 	char* os_version;
 	char* os_release;     // *
