@@ -8,14 +8,6 @@ struct user_info_t {
     char* tmp_dir;
 };
 
-// char* getUserName();
-
-// char* getUserHome();
-
-// char* getUserDir();
-
-// char* getTmpDir();
-
 user_info_t* get_user_info();
 
 #endif // PLAZMA_LIB_SYSUSER_H

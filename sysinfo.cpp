@@ -85,6 +85,71 @@ sys_info_t* get_sys_info() {
     return sys_info;
 }
 
+// OS Info
+
+char* get_os_name() {
+    os_info_t* os_info = get_os_info();
+    return os_info ? os_info->os_name : NULL;
+}
+
+char* get_os_version() {
+    os_info_t* os_info = get_os_info();
+    return os_info ? os_info->os_version : NULL;
+}
+
+int get_os_major_version() {
+    os_info_t* os_info = get_os_info();
+    return os_info ? os_info->os_major_version : 0;
+}
+
+int get_os_minor_version() {
+    os_info_t* os_info = get_os_info();
+    return os_info ? os_info->os_minor_version : 0;
+}
+
+int get_os_build_version() {
+    os_info_t* os_info = get_os_info();
+    return os_info ? os_info->os_build_version : 0;
+}
+
+char* get_os_arch() {
+    os_info_t* os_info = get_os_info();
+    return os_info ? os_info->os_arch : NULL;
+}
+
+char* get_os_arch_data() {
+    os_info_t* os_info = get_os_info();
+    return os_info ? os_info->os_arch_data : NULL;
+}
+
+// User Info
+
+char* get_user_name() {
+    user_info_t* user_info = get_user_info();
+    return user_info ? user_info->user_name : NULL;
+}
+
+char* get_user_home() {
+    user_info_t* user_info = get_user_info();
+    return user_info ? user_info->user_home : NULL;
+}
+
+char* get_user_dir() {
+    user_info_t* user_info = get_user_info();
+    return user_info ? user_info->user_dir : NULL;
+}
+
+char* get_work_dir() {
+    return get_user_dir();
+}
+
+char* get_tmp_dir() {
+    user_info_t* user_info = get_user_info();
+    return user_info ? user_info->tmp_dir : NULL;
+}
+
+////
+
 void print_sys_info() {
     if (!sys_info) {
         // Load sys_info
@@ -111,5 +176,21 @@ void print_sys_info() {
     printf("user.home      : %s\n", lib_strsaf(sys_info->user_home));
     printf("user.dir       : %s\n", lib_strsaf(sys_info->user_dir));
     printf("tmp.dir        : %s\n", lib_strsaf(sys_info->tmp_dir));
-      
+
+    /*
+    printf("\n");
+    printf("os.name        : %s\n", lib_strsaf(get_os_name()));
+    printf("os.version     : %s\n", lib_strsaf(get_os_version()));
+    printf("os.major       : %d\n", get_os_major_version());
+    printf("os.minor       : %d\n", get_os_minor_version());
+    printf("os.build       : %d\n", get_os_build_version());
+    printf("os.arch        : %s\n", lib_strsaf(get_os_arch()));
+    printf("os.arch.data   : %s\n", lib_strsaf(get_os_arch_data()));
+
+    printf("user.name      : %s\n", lib_strsaf(get_user_name()));
+    printf("user.home      : %s\n", lib_strsaf(get_user_home()));
+    printf("user.dir       : %s\n", lib_strsaf(get_user_dir()));
+    printf("tmp.dir        : %s\n", lib_strsaf(get_tmp_dir()));
+    */
+
 }
