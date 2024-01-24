@@ -5,6 +5,7 @@
 #include <ctype.h>
 
 #include "syslocale.h"
+#include "strlib.h"
 
 char* set_default_locale() {
   return setlocale(LC_ALL, "");
@@ -187,21 +188,18 @@ locale_t* load_locale(int cat) {
   return parse_locale(name);;
 }
 
-void printv(const char* label, const char* value) {
-    printf(label, value ? value : "");
-}
-
 void print_locale(locale_t* locale) {
     if (!locale) {
         printf("Locale: NULL\n");
         return;
     }
+    // We use 'strsaf' because if the value is NULL we have the result: '(null)'
     if (locale->name) {
-        printv("Locale.name     : %s\n", locale->name);
+        printf("Locale.name     : %s\n", lib_strsaf(locale->name));
     }    
-    printv("Locale.language : %s\n", locale->language);
-    printv("Locale.script   : %s\n", locale->script);
-    printv("Locale.country  : %s\n", locale->country);
-    printv("Locale.variant  : %s\n", locale->variant);
-    printv("Locale.encoding : %s\n", locale->encoding);    
+    printf("Locale.language : %s\n", lib_strsaf(locale->language));
+    printf("Locale.script   : %s\n", lib_strsaf(locale->script));
+    printf("Locale.country  : %s\n", lib_strsaf(locale->country));
+    printf("Locale.variant  : %s\n", lib_strsaf(locale->variant));
+    printf("Locale.encoding : %s\n", lib_strsaf(locale->encoding));
 }

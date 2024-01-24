@@ -300,7 +300,7 @@ static const char* getCpuIsalist(SYSTEM_INFO& si) {
     return ""; 
 }
 
-os_info_t* getOsInfoWin() {
+void loadOsInfo(os_info_t* os_info) {
 
   int majorVersion = 0;
   int minorVersion = 0;
@@ -408,11 +408,9 @@ os_info_t* getOsInfoWin() {
   versionInfo.is_64bit = is_64bit;
 
   /* OS */
-  os_info_t *os_info = new_os_info();
-
   os_info->os_name = _strdup(getOsName(versionInfo));
   os_info->os_version = _strdup(getOsVersion(versionInfo));
-  
+
   os_info->os_major_version = majorVersion;
   os_info->os_minor_version = minorVersion;
   os_info->os_build_version = buildNumber;
@@ -434,13 +432,13 @@ os_info_t* getOsInfoWin() {
   // sysInfo.file_separator = "\\";
   // sysInfo.line_separator = "\r\n";
 
-  return os_info;
  
 }
 
-os_info_t* get_os_info() {
-    return getOsInfoWin();
+void load_os_info(os_info_t* os_info) {
+    return loadOsInfo();
 }
+
 #endif
 
 #endif // PLAZMA_LIB_SYSOS_WIN_H

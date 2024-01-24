@@ -43,8 +43,5 @@ const char* get_os_arch_data(const char* os_arch);
  */
 os_info_t* get_os_info();
 
-os_info_t* new_os_info();
-
-void free_os_info(os_info_t* os_info);
 
 #endif // PLAZMA_LIB_SYSOS_H

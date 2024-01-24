@@ -10,6 +10,8 @@
 #include "sysos_nix.h"
 #endif
 
+static os_info_t* os_info = NULL;
+
 int is_cpu_big_endian() {
     unsigned int endianTest = 0xff000000;
     return ((char*) (&endianTest))[0] != 0;
@@ -102,7 +104,7 @@ const char* get_os_arch_data(const char* os_arch) {
     return NULL;
 }
 
-os_info_t* new_os_info() {
+static os_info_t* new_os_info() {
     os_info_t* os_info = (os_info_t*) malloc(sizeof(os_info_t));
     os_info->os_name = NULL;
 	os_info->os_version = NULL;
@@ -118,7 +120,7 @@ os_info_t* new_os_info() {
     return os_info;
 }
 
-void free_os_info(os_info_t* os_info) {
+static void free_os_info(os_info_t* os_info) {
     if (!os_info)  {
         return;
     }
@@ -132,4 +134,17 @@ void free_os_info(os_info_t* os_info) {
     free(os_info->release);
 
     free(os_info);
+}
+
+os_info_t* get_os_info() {
+    if (os_info) {
+        return os_info;
+    }
+    os_info = new_os_info();
+    if (!os_info) {
+        // Allocation error
+        return NULL;
+    }    
+    load_os_info(os_info);
+    return os_info;
 }

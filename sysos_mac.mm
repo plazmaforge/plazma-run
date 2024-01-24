@@ -10,7 +10,7 @@ typedef struct {
         NSInteger patchVersion;
 } OSVerStruct;
 
-os_info_t* get_os_info_objc() {
+void load_os_info_objc(os_info_t* os_info) {
 
     NSString *osVerStr = NULL;
     //char* osVerCStr = NULL;
@@ -66,15 +66,12 @@ os_info_t* get_os_info_objc() {
     //    osVerCStr = strdup("Unknown");
     //}
 
-    os_info_t* os_info = new_os_info();
-
     // Hardcode os_name, and fill in os_version
     os_info->os_name = strdup("Mac OS X");
     os_info->os_version = strdup(osVerStr ? [osVerStr UTF8String] : "Unknown");
-    
+
     os_info->os_major_version = osVer.majorVersion;
     os_info->os_minor_version = osVer.minorVersion;
     os_info->os_build_version = osVer.patchVersion;
 
-   return os_info;
 }
