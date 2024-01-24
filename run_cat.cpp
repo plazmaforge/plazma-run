@@ -18,9 +18,6 @@ void printUsage() {
 
 int main(int argc, char* argv[]) {
 
-    //setlocale(LC_ALL, "");
-    init_locale(); // WIN32 fast output with setvbuf(?)
-
     if (argc < 2) {
         printUsage();
         return 0;
@@ -66,6 +63,9 @@ int main(int argc, char* argv[]) {
 
     }
 
+    //setlocale(LC_ALL, "");
+    init_locale(); // WIN32 fast output with setvbuf(?)
+
     #ifdef _WIN32
     char buf[65536];
     setvbuf(stdout, buf, _IOFBF, 65536);
@@ -84,5 +84,5 @@ int main(int argc, char* argv[]) {
     //char* fileName = argv[1];
     //hexDump(fileName);
 
-    //reset_locale();
+    restore_locale(); // Important for WIN32: The locale was changed for the terminal
 }

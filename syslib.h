@@ -13,7 +13,7 @@
 
 void init_locale();
 
-void reset_locale();
+void restore_locale();
 
 #endif // PLAZMA_LIB_SYSLIB_H
 

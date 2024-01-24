@@ -6,8 +6,8 @@
 static char* _locale;
 static locale_t* _locale_os;
 
-static int debug = 1;
-static int check = 1;
+static int debug = 0;
+static int check = 0;
 
 /*
  * OS locale.
@@ -31,9 +31,9 @@ locale_t* load_locale_os();
 void init_locale_os();
 
 /*
- * Reset OS locale
+ * Restore OS locale
  */
-void reset_locale_os();
+void restore_locale_os();
 
 
 #endif // PLAZMA_LIB_SYSLOCALE_OS_H

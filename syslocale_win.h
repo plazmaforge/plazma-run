@@ -285,21 +285,11 @@ static void loadLocaleAllWin(SysInfo& sysInfo) {
 void getConsoleCodepage() {
     _cp = GetConsoleCP();
     _out_cp = GetConsoleOutputCP();
-    if (debug) {
-        printf("\n");
-        printf("Get ConsoleCP   : %d\n", _cp);
-        printf("Get ConsoleOutCP: %d\n", _out_cp);
-    }
 }
 
 void setConsoleCodepage(UINT cp, UINT out_cp) {
     SetConsoleCP(cp);
     SetConsoleOutputCP(out_cp);
-    if (debug) {
-        printf("\n");
-        printf("Set ConsoleCP   : %d\n", cp);
-        printf("Set ConsoleOutCP: %d\n", out_cp);
-    }
 }
 
 void setConsoleCodepage(UINT cp) {
@@ -314,6 +304,11 @@ locale_t* load_locale_os(int cat) {
 void init_locale_win() {
 
     getConsoleCodepage();
+    if (debug) {
+        printf("\n");
+        printf("Get ConsoleCP   : %d\n", _cp);
+        printf("Get ConsoleOutCP: %d\n", _out_cp);
+    }
 
     // TODO: Maybe check all UTF codepage.
     if (_out_cp == 65001) {
@@ -331,6 +326,11 @@ void init_locale_win() {
 
     if (_new_cp > 0) {
         setConsoleCodepage(_new_cp);
+        if (debug) {
+            printf("\n");
+            printf("Set ConsoleCP   : %d\n", _new_cp);
+            printf("Set ConsoleOutCP: %d\n", _new_cp);
+        }
         return;
     }
 
@@ -351,7 +351,15 @@ void init_locale_win() {
     int need_set_locale = 1;
 
     if (_new_cp > 0) {
-        setConsoleCodepage(_new_cp);
+
+        if (_new_cp != _out_cp) {
+            setConsoleCodepage(_new_cp);
+            if (debug) {
+                printf("\n");
+                printf("Set ConsoleCP   : %d\n", _new_cp);
+                printf("Set ConsoleOutCP: %d\n", _new_cp);
+            }
+        }            
         if (!need_set_locale) {
           return;
         }
@@ -437,12 +445,27 @@ void init_locale_win() {
 
 }
 
-void reset_locale_win() {
+void restore_locale_win() {
     if (_out_cp == 65001) {
         // UTF-8
         return;
     }
+    
+    UINT _cur_cp = GetConsoleCP();
+    UINT _cur_out_cp = GetConsoleOutputCP();
+
+    if (_cur_cp == _cp && _cur_out_cp == _out_cp) {
+        return;
+    }
+
     setConsoleCodepage(_cp, _out_cp);
+    if (debug) {
+        printf("\n");
+        printf("Restore         :\n");
+        printf("----------------:\n");
+        printf("Set ConsoleCP   : %d\n", _cp);
+        printf("Set ConsoleOutCP: %d\n", _out_cp);
+    }
 }
 
 #endif

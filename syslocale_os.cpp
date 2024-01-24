@@ -63,11 +63,11 @@ void init_locale_os() {
     #endif
 }
 
-void reset_locale_os() {
+void restore_locale_os() {
     #ifdef _WIN32
-    reset_locale_win();
+    restore_locale_win();
     #else
-    reset_locale_nix();
+    restore_locale_nix();
     #endif
 }
 

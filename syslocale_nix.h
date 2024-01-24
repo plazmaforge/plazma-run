@@ -33,8 +33,8 @@ void init_locale_nix() {
     }
 }
 
-void reset_locale_nix() {
-    setlocale(LC_ALL, _locale); // reset locale
+void restore_locale_nix() {
+    setlocale(LC_ALL, _locale); // restore locale
     if (debug) {
        printf("\n");
        printf("Restore         :\n");

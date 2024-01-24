@@ -22,9 +22,8 @@ void printUsage() {
 
 int main(int argc, char* argv[]) {
 
-    init_locale();
-    
-    /*       
+    /*
+    init_locale();        
     printf("Locale: %s\n", setlocale(LC_ALL, NULL));  
     //setlocale(LC_ALL, "en_US.UTF-8"); // OK
     //setlocale(LC_ALL, "UTF-8");       // FAIL
@@ -64,10 +63,9 @@ int main(int argc, char* argv[]) {
         //wprintf(L"%d: MB-w-STR %s\n", i, str2);
         wprintf(L"%d: MB-LEN %d\n", i, strlen(str2));
     }
+    reset_locale();
     */ 
        
-    reset_locale();
-
     int min_arg = 2; // <text> <file>
     if (argc < min_arg + 1) {
         printf("%s: Incorrect argument count\n", argv[0]);
@@ -123,6 +121,8 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    init_locale();
+
     FindConfig* config = new FindConfig();
     config->binaryMode = binaryMode;
     config->findFirstOnly = findFirstOnly;
@@ -162,6 +162,7 @@ int main(int argc, char* argv[]) {
 
         free(dirName);
         free(config);
+        restore_locale(); // Important for WIN32: The locale was changed for the terminal
         return 0;
     }
 
@@ -169,6 +170,7 @@ int main(int argc, char* argv[]) {
     find(fileName, input, inputSize, config);
 
     free(config);
+    restore_locale(); // Important for WIN32: The locale was changed for the terminal
     return 0;
 
 }

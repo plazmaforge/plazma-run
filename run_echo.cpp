@@ -50,5 +50,7 @@ int main(int argc, char* argv[]) {
     init_locale();
 
     printInput(argv[1]);
+
+    restore_locale(); // Important for WIN32: The locale was changed for the terminal
     return 0;
 }
