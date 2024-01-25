@@ -15,6 +15,13 @@ locale_t* load_locale_os() {
 
 void init_locale_os() {
 
+    #if defined __APPLE__ && defined __MACH__
+    // Bug with empty locale for MacOS
+    // const char* name = getLocaleValue(cflocale, kCFLocaleIdentifier);
+    // name is NULL. Why?
+    load_locale_os(); // TODO: Force load locale (Why?)
+    #endif
+
     // debug = 1;
     // check = 1;
 
