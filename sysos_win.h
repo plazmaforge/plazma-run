@@ -407,7 +407,7 @@ void loadOsInfo(os_info_t* os_info) {
   versionInfo.is_workstation = is_workstation;
   versionInfo.is_64bit = is_64bit;
 
-  /* OS */
+  // Version Info
   os_info->os_name = _strdup(getOsName(versionInfo));
   os_info->os_version = _strdup(getOsVersion(versionInfo));
 
@@ -415,11 +415,14 @@ void loadOsInfo(os_info_t* os_info) {
   os_info->os_minor_version = minorVersion;
   os_info->os_build_version = buildNumber;
 
+  // CPU Info
   os_info->os_arch = _strdup(getOsArch(si));
   os_info->os_arch_data = _strdup(getOsArchData(si));
+  // os_info->cpu_isalist = getCpuIsalist(si);
 
-  /* CPU */
-  // sysInfo.cpu_isalist = getCpuIsalist(si);
+  // FS Info
+  os_info->file_separator = _strdup("\\");
+  os_info->line_separator = _strdup("\r\n");
 
   /* User */
   // sysInfo.user_name = getUserName();
@@ -429,8 +432,6 @@ void loadOsInfo(os_info_t* os_info) {
   //  sysInfo.user_home = L"C:\\";
   // }
 
-  // sysInfo.file_separator = "\\";
-  // sysInfo.line_separator = "\r\n";
 
  
 }

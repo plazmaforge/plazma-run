@@ -10,15 +10,8 @@
 
 #include "sysos.h"
 
-void load_os_arch(os_info_t* os_info) {
-   struct utsname name;
-   uname(&name);
-   os_info->os_arch = strdup(name.machine);
-   os_info->os_arch_data = strdup(get_os_arch_data(os_info->os_arch));
-}
-
 #ifdef PLAZMA_LIB_SYSOS_CORE
-void load_os_info_core(os_info_t* os_info) {
+void load_os_version_info_core(os_info_t* os_info) {
     // Gestalt is deprecated in macOS 10.8 - Use NSProcessInfo's (*.mm)
 
     SInt32 majorVersion = 0;
@@ -42,17 +35,17 @@ void load_os_info_core(os_info_t* os_info) {
 }
 
 void load_os_info(os_info_t* os_info) {
-    load_os_info_core(os_info);
-    load_os_arch(os_info);
+    load_os_version_info_core(os_info);
+    load_os_common_info(os_info);
 }
 
 #else
 
-void load_os_info_objc(os_info_t* os_info); // Implemented in *.mm file
+void load_os_version_info_objc(os_info_t* os_info); // Implemented in *.mm file
 
 void load_os_info(os_info_t* os_info) {
-    load_os_info_objc(os_info);
-    load_os_arch(os_info);
+    load_os_version_info_objc(os_info);
+    load_os_common_info(os_info);
 }
 
 #endif // PLAZMA_LIB_SYSOS_CORE

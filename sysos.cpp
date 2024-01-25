@@ -13,13 +13,19 @@
 static os_info_t* os_info = NULL;
 
 int is_cpu_big_endian() {
+    /* Endianness of platform */
     unsigned int endianTest = 0xff000000;
     return ((char*) (&endianTest))[0] != 0;
 }
 
 const char* get_cpu_endian() {
-    unsigned int endianTest = 0xff000000;
     return is_cpu_big_endian() ? "big" : "little";
+    //unsigned int endianTest = 0xff000000;
+    //if (((char*) (&endianTest))[0] != 0) {
+    //   return "big";
+    //} else {
+    //   return "little";
+    //}
 }
 
 const char* get_os_arch_data(const char* os_arch) {
@@ -106,17 +112,32 @@ const char* get_os_arch_data(const char* os_arch) {
 
 static os_info_t* new_os_info() {
     os_info_t* os_info = (os_info_t*) malloc(sizeof(os_info_t));
+
+    // Version Info
     os_info->os_name = NULL;
 	os_info->os_version = NULL;
 	os_info->os_release = NULL;
     os_info->os_major_version = 0;
     os_info->os_minor_version = 0;
     os_info->os_build_version = 0;
+
+    // Kernel Info
+    os_info->version = NULL;
+    os_info->release = NULL;
+
+    // CPU Info
     os_info->os_arch = NULL;
     os_info->os_arch_data = NULL;
+    os_info->cpu_isalist = NULL;
+    os_info->cpu_endian = NULL;
+
+    // Network Info
 	os_info->node_name = NULL;
-	os_info->version = NULL;
-    os_info->release = NULL;
+
+    // FS Info
+    os_info->file_separator = NULL;
+    os_info->line_separator = NULL;
+
     return os_info;
 }
 
@@ -124,14 +145,28 @@ static void free_os_info(os_info_t* os_info) {
     if (!os_info)  {
         return;
     }
+
+    // Version Info
     free(os_info->os_name);
 	free(os_info->os_version);
 	free(os_info->os_release);
-    free(os_info->os_arch);
-    free(os_info->os_arch_data);
-	free(os_info->node_name);
+
+    // Kernel Info
 	free(os_info->version);
     free(os_info->release);
+
+    // CPU Info
+    free(os_info->os_arch);
+    free(os_info->os_arch_data);
+    //free(os_info->cpu_isalist);
+    free(os_info->cpu_endian);
+
+    // Network Info
+	free(os_info->node_name);
+
+    // FS Info
+    free(os_info->file_separator);
+    free(os_info->line_separator);
 
     free(os_info);
 }

@@ -55,9 +55,11 @@ static locale_t* loadLocaleMac() {
 
   CFLocaleRef cflocale = CFLocaleCopyCurrent();
   const char* name = getLocaleValue(cflocale, kCFLocaleIdentifier);
+
   if (!name) {
+    // Why? But is real case!
     CFRelease(cflocale);
-    locale_t* locale = (locale_t*) malloc(sizeof(locale_t));
+    locale_t* locale = new_locale(); //(locale_t*) malloc(sizeof(locale_t));
     locale->name = NULL;
     locale->language = NULL;
     locale->script = NULL;
@@ -90,7 +92,7 @@ static locale_t* loadLocaleMac() {
 
   CFRelease(cflocale);
 
-  locale_t* locale = (locale_t*) malloc(sizeof(locale_t));
+  locale_t* locale = new_locale(); //(locale_t*) malloc(sizeof(locale_t));
   locale->language = lib_strdup(language);
   locale->script = lib_strdup(script);
   locale->country = lib_strdup(country);

@@ -2,11 +2,39 @@
 #define PLAZMA_LIB_SYSOS_NIX_H
 
 #if defined __unix__ || defined __linux__ || (defined __APPLE__ && defined __MACH__)
+//#if defined(__linux__) || defined(_ALLBSD_SOURCE)
 #include <stdlib.h>
 #include <string.h>
 #include <sys/utsname.h>        /* For os_name and os_version */
 
 #include "sysos.h"
+
+void load_os_common_info(os_info_t* os_info, /*struct*/ utsname* name) {
+
+   // CPU Info
+   os_info->os_arch = strdup(name->machine);
+   os_info->os_arch_data = strdup(get_os_arch_data(os_info->os_arch));
+   os_info->cpu_endian = strdup(get_cpu_endian());
+
+   #ifdef SI_ISALIST
+   /* supported instruction sets */
+   char list[258];
+   sysinfo(SI_ISALIST, list, sizeof(list));
+   os_info->cpu_isalist = strdup(list);
+   #else
+   os_info->cpu_isalist = NULL;
+   #endif
+
+   // FS Info
+   os_info->file_separator = strdup("/");
+   os_info->line_separator = strdup("\n");
+}
+
+void load_os_common_info(os_info_t* os_info) {
+   /*struct*/ utsname name;
+   uname(&name);
+   load_os_common_info(os_info, &name);
+}
 
 #if defined __APPLE__ && defined __MACH__
 #include "sysos_mac.h"
@@ -29,8 +57,9 @@ void load_os_info(os_info_t* os_info) {
         os_info->os_version = strdup(name.release); // 'name.version' is full version string
         // TODO: split os_version by '.' and set major/minor/build
     #endif
-    os_info->os_arch = strdup(name.machine);
-    os_info->os_arch_data = strdup(get_os_arch_data(os_info->os_arch));
+
+    load_os_common_info(os_info, &name);
+
 }
 #endif
 

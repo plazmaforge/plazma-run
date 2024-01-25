@@ -10,17 +10,32 @@
   */
 
 struct os_info_t {
+
+    // OS Version Info
 	char* os_name;
 	char* os_version;
-	char* os_release;     // *
+	char* os_release;        // *
     int os_major_version;
     int os_minor_version;
     int os_build_version;
-    char* os_arch;        // cpu
-    char* os_arch_data;   // cpu
-	char* node_name;      // network
-	char* version;        // kernel
-    char* release;        // kernel
+
+    // Kernel Version Info
+	char* version;           // kernel
+    char* release;           // kernel
+
+    // CPU Info
+    char* os_arch;           // cpu
+    char* os_arch_data;      // cpu
+    const char* cpu_isalist; // list of supported instruction sets
+    char* cpu_endian;        // endianness of platform
+
+    // Network Info
+	char* node_name;         // network
+
+    // FS Info
+    char* file_separator;
+    char* line_separator;
+
 };
 
 /**

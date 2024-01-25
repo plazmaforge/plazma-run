@@ -6,21 +6,52 @@ struct sys_info_t {
     // OS Info
 	char* os_name;
 	char* os_version;
-	char* os_release;     // *
+	char* os_release;         // *
     int os_major_version;
     int os_minor_version;
     int os_build_version;
-    char* os_arch;        // cpu
-    char* os_arch_data;   // cpu
-	char* node_name;      // network
-	char* version;        // kernel
-    char* release;        // kernel
+
+    // Kernel Info
+	char* version;            // kernel
+    char* release;            // kernel
+
+    // CPU Info
+    char* os_arch;            // cpu
+    char* os_arch_data;       // cpu
+    const char* cpu_isalist;  // list of supported instruction sets
+    char* cpu_endian;         // endianness of platform
+
+    // Network Info
+	char* node_name;          // network
+
+    // FS Info
+    char* file_separator;
+    char* line_separator;
+
+    char* encoding;           // file_encoding
+    char* stdout_encoding;
+    char* stderr_encoding;
+    char* unicode_encoding;   // The default endianness of unicode i.e. UnicodeBig or UnicodeLittle
 
     // User Info
 	char* user_name;
 	char* user_home;
 	char* user_dir;
     char* tmp_dir;
+
+    // Format Locale Info
+    char* format_locale;
+    char* format_language;
+    char* format_script;
+    char* format_country;
+    char* format_variant;
+
+    // Display Locale Info
+    char* display_locale;
+    char* display_language;    
+    char* display_script;    
+    char* display_country;    
+    char* display_variant;
 
 };
 

@@ -33,7 +33,7 @@ int equals_locale(const char* locale1, const char* locale2) {
   return strcmp(locale1, locale2) == 0;
 }
 
-static locale_t* new_locale() {
+/*static*/ locale_t* new_locale() {
    locale_t* locale = (locale_t*) malloc(sizeof(locale_t));
    locale->name = NULL;
    locale->language = NULL;
@@ -44,7 +44,7 @@ static locale_t* new_locale() {
    return locale;
 }
 
-static void free_locale(locale_t* locale) {
+/*static*/ void free_locale(locale_t* locale) {
     if (!locale) {
         return;
     }

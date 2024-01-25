@@ -10,7 +10,7 @@ typedef struct {
         NSInteger patchVersion;
 } OSVerStruct;
 
-void load_os_info_objc(os_info_t* os_info) {
+void load_os_version_info_objc(os_info_t* os_info) {
 
     NSString *osVerStr = NULL;
     //char* osVerCStr = NULL;
