@@ -434,6 +434,7 @@ void init_locale_win() {
       printf("Std LC Locale   : %s\n", get_locale(LC_CTYPE));
       if (_locale_os) {
         _locale_os = load_locale_os(_lc_type);
+        printf("Std OS LC Type  : %d\n", _lc_type);
       }
       printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
       print_locale(_locale_os);

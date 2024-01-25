@@ -28,23 +28,22 @@ struct sys_info_t {
     char* file_separator;
     char* line_separator;
 
-    char* encoding;           // file_encoding
-    char* stdout_encoding;
-    char* stderr_encoding;
-    char* unicode_encoding;   // The default endianness of unicode i.e. UnicodeBig or UnicodeLittle
-
     // User Info
 	char* user_name;
 	char* user_home;
 	char* user_dir;
     char* tmp_dir;
 
+    // Current Locale Type (Format/Dysplay)
+    int locale_type;
+  
     // Format Locale Info
     char* format_locale;
     char* format_language;
     char* format_script;
     char* format_country;
     char* format_variant;
+    char* format_encoding;
 
     // Display Locale Info
     char* display_locale;
@@ -52,6 +51,12 @@ struct sys_info_t {
     char* display_script;    
     char* display_country;    
     char* display_variant;
+    char* display_encoding;
+
+    char* encoding;           // file_encoding
+    char* stdout_encoding;
+    char* stderr_encoding;
+    char* unicode_encoding;   // The default endianness of unicode i.e. UnicodeBig or UnicodeLittle
 
 };
 

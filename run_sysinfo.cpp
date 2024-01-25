@@ -20,10 +20,13 @@ void printUsage() {
 
 int main(int argc, char* argv[]) {
 
-    setlocale(LC_ALL, ""); // set default locale    
-    load_locale_os();      // TODO: Force load locale (?)
-    //init_locale_os();
+    //setlocale(LC_ALL, ""); // set default locale    
+    //load_locale_os();      // TODO: Force load locale (?)
+    init_locale_os();
 
-    printSysInfo();    
+    printSysInfo();
+
+    restore_locale_os();
+
     return 0;
 }

@@ -418,7 +418,8 @@ void loadOsInfo(os_info_t* os_info) {
   // CPU Info
   os_info->os_arch = _strdup(getOsArch(si));
   os_info->os_arch_data = _strdup(getOsArchData(si));
-  // os_info->cpu_isalist = getCpuIsalist(si);
+  os_info->cpu_endian = strdup(get_cpu_endian());
+  os_info->cpu_isalist = getCpuIsalist(si);
 
   // FS Info
   os_info->file_separator = _strdup("\\");

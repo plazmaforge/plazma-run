@@ -8,6 +8,9 @@
 #include "syslocale_os.h"
 #include "strlib.h"
 
+int LC_FORMAT_TYPE = LC_CTYPE;
+int LC_DISPLAY_TYPE = LC_TIME + 1;
+  
 static sys_info_t* sys_info = NULL;
 
 static sys_info_t* new_sys_info() {
@@ -39,6 +42,25 @@ static sys_info_t* new_sys_info() {
 	sys_info->user_dir = NULL;
     sys_info->tmp_dir = NULL;
 
+     // Current Locale Type (Format/Dysplay)
+    sys_info->locale_type = 0;
+  
+    // Format Locale Info
+    sys_info->format_locale = NULL;
+    sys_info->format_language = NULL;
+    sys_info->format_script = NULL;
+    sys_info->format_country = NULL;
+    sys_info->format_variant = NULL;
+    sys_info->format_encoding = NULL;
+
+    // Display Locale Info
+    sys_info->display_locale = NULL;
+    sys_info->display_language = NULL;    
+    sys_info->display_script = NULL;    
+    sys_info->display_country = NULL;    
+    sys_info->display_variant = NULL;
+    sys_info->display_encoding = NULL;
+ 
     // Encoding Info
     sys_info->encoding = NULL;
     sys_info->stdout_encoding = NULL;
@@ -78,6 +100,22 @@ static void free_sys_info(sys_info_t* sys_info) {
     free(sys_info->user_home);
     free(sys_info->user_dir);
     free(sys_info->tmp_dir);
+
+    // Format Locale Info
+    free(sys_info->format_locale);
+    free(sys_info->format_language);
+    free(sys_info->format_script);
+    free(sys_info->format_country);
+    free(sys_info->format_variant);
+    free(sys_info->format_encoding);
+
+    // Display Locale Info
+    free(sys_info->display_locale);
+    free(sys_info->display_language);    
+    free(sys_info->display_script);    
+    free(sys_info->display_country);    
+    free(sys_info->display_variant);
+    free(sys_info->display_encoding);
 
     // Encoding Info
     free(sys_info->encoding);
@@ -126,30 +164,47 @@ sys_info_t* get_sys_info() {
         sys_info->tmp_dir = user_info->tmp_dir;
     }
 
-    // Format Locale Info
-    locale_t* format_locale = load_locale_os(/*LC_CTYPE*/);
+    sys_info->locale_type = 0;
+  
+    // Format Locale Info  
+    locale_t* format_locale = load_locale_os(LC_CTYPE);
     if (format_locale) {
-        sys_info->encoding = lib_strdup(format_locale->encoding);
-
+        sys_info->locale_type = LC_FORMAT_TYPE;
+        sys_info->format_locale = lib_strdup(format_locale->name);
         sys_info->format_language = lib_strdup(format_locale->language);
         sys_info->format_script = lib_strdup(format_locale->script);
         sys_info->format_country = lib_strdup(format_locale->country);
         sys_info->format_variant = lib_strdup(format_locale->variant);
-
-        free_locale(format_locale);
+        sys_info->format_encoding = lib_strdup(format_locale->encoding);
     }
 
     // Display Locale Info
-    locale_t* display_locale = load_locale_os(LC_TIME + 1);
+    locale_t* display_locale = load_locale_os(LC_DISPLAY_TYPE);
     if (display_locale) {
-
+        sys_info->locale_type = LC_DISPLAY_TYPE;
+        sys_info->display_locale = lib_strdup(display_locale->name);
         sys_info->display_language = lib_strdup(display_locale->language);
         sys_info->display_script = lib_strdup(display_locale->script);
         sys_info->display_country = lib_strdup(display_locale->country);
         sys_info->display_variant = lib_strdup(display_locale->variant);
-
-        free_locale(display_locale);
+        sys_info->display_encoding = lib_strdup(display_locale->encoding);
     }
+
+    // Select correct locale form format and display
+    if (sys_info->locale_type == LC_DISPLAY_TYPE && !display_locale->encoding) {
+        sys_info->locale_type = LC_FORMAT_TYPE;
+    }
+
+    if (sys_info->locale_type == LC_FORMAT_TYPE) {
+        sys_info->encoding = lib_strdup(format_locale->encoding);
+    } else if (sys_info->locale_type == LC_DISPLAY_TYPE) {
+        sys_info->encoding = lib_strdup(display_locale->encoding);
+    } else {
+        sys_info->encoding = lib_strdup("UTF-8"); // TODO: ISO
+    }
+
+    free_locale(format_locale);
+    free_locale(display_locale);
 
     /*
     if (isatty(STDOUT_FILENO) == 1) {
@@ -281,33 +336,53 @@ void print_sys_info() {
 
     
     // Version Info
-    printf("os.name        : %s\n", lib_strsaf(sys_info->os_name));
-    printf("os.version     : %s\n", lib_strsaf(sys_info->os_version));
-    printf("os.major       : %d\n", sys_info->os_major_version);
-    printf("os.minor       : %d\n", sys_info->os_minor_version);
-    printf("os.build       : %d\n", sys_info->os_build_version);
+    printf("os.name          : %s\n", lib_strsaf(sys_info->os_name));
+    printf("os.version       : %s\n", lib_strsaf(sys_info->os_version));
+    printf("os.major         : %d\n", sys_info->os_major_version);
+    printf("os.minor         : %d\n", sys_info->os_minor_version);
+    printf("os.build         : %d\n", sys_info->os_build_version);
 
     // CPU Info
-    printf("os.arch        : %s\n", lib_strsaf(sys_info->os_arch));
-    printf("os.arch.data   : %s\n", lib_strsaf(sys_info->os_arch_data));
-    printf("cpu.isalist    : %s\n", lib_strsaf(sys_info->cpu_isalist));
-    printf("cpu.endian     : %s\n", lib_strsaf(sys_info->cpu_endian));
+    printf("os.arch          : %s\n", lib_strsaf(sys_info->os_arch));
+    printf("os.arch.data     : %s\n", lib_strsaf(sys_info->os_arch_data));
+    printf("cpu.isalist      : %s\n", lib_strsaf(sys_info->cpu_isalist));
+    printf("cpu.endian       : %s\n", lib_strsaf(sys_info->cpu_endian));
 
     // FS Info
-    printf("file.separator : %s\n", lib_strsaf(sys_info->file_separator));
-    //printf("line.separator : %s\n", lib_strsaf(sys_info->line_separator));
-    printf("file.encoding  : %s\n", lib_strsaf(sys_info->encoding));
+    printf("file.separator   : %s\n", lib_strsaf(sys_info->file_separator));
+    //printf("line.separator   : %s\n", lib_strsaf(sys_info->line_separator));
+    printf("file.encoding    : %s\n", lib_strsaf(sys_info->encoding));
 
     // User Info
-    printf("user.name      : %s\n", lib_strsaf(sys_info->user_name));
-    printf("user.home      : %s\n", lib_strsaf(sys_info->user_home));
-    printf("user.dir       : %s\n", lib_strsaf(sys_info->user_dir));
-    printf("tmp.dir        : %s\n", lib_strsaf(sys_info->tmp_dir));
+    printf("\n");
+    printf("user.name        : %s\n", lib_strsaf(sys_info->user_name));
+    printf("user.home        : %s\n", lib_strsaf(sys_info->user_home));
+    printf("user.dir         : %s\n", lib_strsaf(sys_info->user_dir));
+    printf("tmp.dir          : %s\n", lib_strsaf(sys_info->tmp_dir));
+ 
+    printf("\n");
+    printf("user.locale      : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_locale : sys_info->display_locale)); 
+    printf("user.language    : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_language : sys_info->display_language));
+    printf("user.script      : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_script : sys_info->display_script));
+    printf("user.country     : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_country : sys_info->display_country));
+    printf("user.variant     : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_variant: sys_info->display_variant));
+    printf("user.encoding    : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_encoding: sys_info->display_encoding));
 
-    printf("user.language  : %s\n", lib_strsaf(sys_info->format_language));
-    printf("user.script    : %s\n", lib_strsaf(sys_info->format_script));
-    printf("user.country   : %s\n", lib_strsaf(sys_info->format_country));
-    printf("user.variant   : %s\n", lib_strsaf(sys_info->format_variant));
+    printf("\n");
+    printf("format.locale    : %s\n", lib_strsaf(sys_info->format_locale));
+    printf("format.language  : %s\n", lib_strsaf(sys_info->format_language));
+    printf("format.script    : %s\n", lib_strsaf(sys_info->format_script));
+    printf("format.country   : %s\n", lib_strsaf(sys_info->format_country));
+    printf("format.variant   : %s\n", lib_strsaf(sys_info->format_variant));
+    printf("format.encoding  : %s\n", lib_strsaf(sys_info->format_encoding));
+
+    printf("\n");
+    printf("display.locale   : %s\n", lib_strsaf(sys_info->display_locale));    
+    printf("display.language : %s\n", lib_strsaf(sys_info->display_language));
+    printf("display.script   : %s\n", lib_strsaf(sys_info->display_script));
+    printf("display.country  : %s\n", lib_strsaf(sys_info->display_country));
+    printf("display.variant  : %s\n", lib_strsaf(sys_info->display_variant));
+    printf("display.encoding : %s\n", lib_strsaf(sys_info->display_encoding));
 
     /*
     // Version Info
