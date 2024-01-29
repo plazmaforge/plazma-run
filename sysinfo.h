@@ -4,69 +4,69 @@
 struct sys_info_t {
 
     // OS Info
-	char* os_name;
-	char* os_version;
-	char* os_release;         // *
+	const char* os_name;
+	const char* os_version;
+	const char* os_release;         // *
     int os_major_version;
     int os_minor_version;
     int os_build_version;
 
     // Kernel Info
-	char* version;            // kernel
-    char* release;            // kernel
+	const char* version;            // kernel
+    const char* release;            // kernel
 
     // CPU Info
-    char* os_arch;            // cpu
-    char* os_arch_data;       // cpu
-    const char* cpu_isalist;  // list of supported instruction sets
-    char* cpu_endian;         // endianness of platform
+    const char* os_arch;            // cpu
+    const char* os_arch_data;       // cpu
+    const char* cpu_isalist;        // list of supported instruction sets
+    const char* cpu_endian;         // endianness of platform
 
     // Network Info
-	char* node_name;          // network
+	const char* node_name;          // network
 
     // FS Info
-    char* file_separator;
-    char* line_separator;
+    const char* file_separator;
+    const char* line_separator;
 
     // User Info
-	char* user_name;
-	char* user_home;
-	char* user_dir;
-    char* tmp_dir;
+	const char* user_name;
+	const char* user_home;
+	const char* user_dir;
+    const char* tmp_dir;
 
     // Current Locale Type (Format/Dysplay)
     int locale_type;
   
     // Format Locale Info
-    char* format_locale;
-    char* format_language;
-    char* format_script;
-    char* format_country;
-    char* format_variant;
-    char* format_encoding;
+    const char* format_locale;
+    const char* format_language;
+    const char* format_script;
+    const char* format_country;
+    const char* format_variant;
+    const char* format_encoding;
 
     // Display Locale Info
-    char* display_locale;
-    char* display_language;    
-    char* display_script;    
-    char* display_country;    
-    char* display_variant;
-    char* display_encoding;
+    const char* display_locale;
+    const char* display_language;    
+    const char* display_script;    
+    const char* display_country;    
+    const char* display_variant;
+    const char* display_encoding;
 
-    char* encoding;           // file_encoding
-    char* stdout_encoding;
-    char* stderr_encoding;
-    char* unicode_encoding;   // The default endianness of unicode i.e. UnicodeBig or UnicodeLittle
+    const char* encoding;           // file_encoding
+    const char* stdout_encoding;
+    const char* stderr_encoding;
+    const char* unicode_encoding;   // The default endianness of unicode i.e. UnicodeBig or UnicodeLittle
 
 };
 
-sys_info_t* get_sys_info();
+const sys_info_t* get_sys_info();
 
 // OS Info
 
-char* get_os_name();
+const char* get_os_name();
 
-char* get_os_version();
+const char* get_os_version();
 
 int get_os_major_version();
 
@@ -74,21 +74,35 @@ int get_os_minor_version();
 
 int get_os_build_version();
 
-char* get_os_arch();
+// CPU Info
 
-char* get_os_arch_data();
+const char* get_os_arch();
+
+// arch_model: int value
+int get_os_arch_size();
+
+// arch_model: char* value
+const char* get_os_arch_data();
+
+const char* get_cpu_isalist();
+
+// FS Info
+
+const char* get_file_separator();
+
+const char* get_line_separator();
 
 // User Info
 
-char* get_user_name();
+const char* get_user_name();
 
-char* get_user_home();
+const char* get_user_home();
 
-char* get_user_dir();
+const char* get_user_dir();
 
-char* get_work_dir();
+const char* get_work_dir();
 
-char* get_tmp_dir();
+const char* get_tmp_dir();
 
 ////
 

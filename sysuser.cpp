@@ -14,16 +14,22 @@
 
 static user_info_t* user_info = NULL;
 
-static user_info_t* new_user_info() {
-    user_info_t* user_info = (user_info_t*) malloc(sizeof(user_info_t));
+static void init_user_info(user_info_t* user_info) {
     user_info->user_name = NULL;
 	user_info->user_home = NULL;
 	user_info->user_dir = NULL;
     user_info->tmp_dir = NULL;
-
-    return user_info;
 }
 
+/*
+static user_info_t* new_user_info() {
+    user_info_t* user_info = (user_info_t*) malloc(sizeof(user_info_t));
+    init_user_info(user_info);
+    return user_info;
+}
+*/
+
+/*
 static void free_user_info(user_info_t* user_info) {
     if (!user_info)  {
         return;
@@ -35,16 +41,22 @@ static void free_user_info(user_info_t* user_info) {
 
     free(user_info);
 }
+*/
 
-user_info_t* get_user_info() {
+const user_info_t* get_user_info() {
     if (user_info) {
         return user_info;
     }
-    user_info = new_user_info();
-    if (!user_info) {
-        // Allocation error
-        return NULL;
-    }
+    //user_info = new_user_info();
+    static user_info_t user_info_s;
+    user_info = &user_info_s;
+    init_user_info(user_info);
+
+    //if (!user_info) {
+    //    // Allocation error
+    //    return NULL;
+    //}
+    
     user_info->user_name = getUserName();
     user_info->user_home = getUserHome();
     user_info->user_dir = getUserDir();

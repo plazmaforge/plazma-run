@@ -13,9 +13,8 @@ int LC_DISPLAY_TYPE = LC_TIME + 1;
   
 static sys_info_t* sys_info = NULL;
 
-static sys_info_t* new_sys_info() {
-    sys_info_t* sys_info = (sys_info_t*) malloc(sizeof(sys_info_t));
-
+static sys_info_t* init_sys_info(sys_info_t* sys_info) {
+    
     // Version Info
     sys_info->os_major_version = 0;
     sys_info->os_minor_version = 0;
@@ -70,6 +69,7 @@ static sys_info_t* new_sys_info() {
     return sys_info;
 }
 
+/*
 static void free_sys_info(sys_info_t* sys_info) {
     if (!sys_info)  {
         return;
@@ -125,16 +125,28 @@ static void free_sys_info(sys_info_t* sys_info) {
 	
     free(sys_info);
 }
+*/
 
-sys_info_t* get_sys_info() {
+/*
+static sys_info_t* new_sys_info() {
+    sys_info_t* sys_info = (sys_info_t*) malloc(sizeof(sys_info_t));
+    init_sys_info(sys_info);
+    return sys_info;
+}
+*/
+
+const sys_info_t* get_sys_info() {
 
     if (sys_info) {
         return sys_info;
     }
-    sys_info = new_sys_info();
+    //sys_info = new_sys_info();
+    static sys_info_t sys_info_s;
+    sys_info = &sys_info_s;
+    init_sys_info(sys_info);
 
     // OS Info
-    os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = get_os_info();
     if (os_info) {
 
         // Version Info
@@ -156,7 +168,7 @@ sys_info_t* get_sys_info() {
     }
 
     // User Info
-    user_info_t* user_info = get_user_info();
+    const user_info_t* user_info = get_user_info();
     if (user_info) {
         sys_info->user_name = user_info->user_name;
         sys_info->user_home = user_info->user_home;
@@ -167,7 +179,7 @@ sys_info_t* get_sys_info() {
     sys_info->locale_type = 0;
   
     // Format Locale Info  
-    locale_t* format_locale = load_locale_os(LC_CTYPE);
+    locale_t* format_locale = load_locale_os(LC_FORMAT_TYPE);
     if (format_locale) {
         sys_info->locale_type = LC_FORMAT_TYPE;
         sys_info->format_locale = lib_strdup(format_locale->name);
@@ -200,7 +212,7 @@ sys_info_t* get_sys_info() {
     } else if (sys_info->locale_type == LC_DISPLAY_TYPE) {
         sys_info->encoding = lib_strdup(display_locale->encoding);
     } else {
-        sys_info->encoding = lib_strdup("UTF-8"); // TODO: ISO
+        sys_info->encoding = "UTF-8"; // TODO: ISO
     }
 
     free_locale(format_locale);
@@ -235,105 +247,119 @@ sys_info_t* get_sys_info() {
     #endif // _ALLBSD_SOURCE
     */
 
+   /*
+   // WIN32
+   sys_info->unicode_encoding = "UnicodeLittle";
+   */
+
     return sys_info;
 }
 
 // Version Info
 
-char* get_os_name() {
-    os_info_t* os_info = get_os_info();
+const char* get_os_name() {
+    const os_info_t* os_info = get_os_info();
     return os_info ? os_info->os_name : NULL;
 }
 
-char* get_os_version() {
-    os_info_t* os_info = get_os_info();
+const char* get_os_version() {
+    const os_info_t* os_info = get_os_info();
     return os_info ? os_info->os_version : NULL;
 }
 
 int get_os_major_version() {
-    os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = get_os_info();
     return os_info ? os_info->os_major_version : 0;
 }
 
 int get_os_minor_version() {
-    os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = get_os_info();
     return os_info ? os_info->os_minor_version : 0;
 }
 
 int get_os_build_version() {
-    os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = get_os_info();
     return os_info ? os_info->os_build_version : 0;
 }
 
 // CPU Info
 
-char* get_os_arch() {
-    os_info_t* os_info = get_os_info();
+const char* get_os_arch() {
+    const os_info_t* os_info = get_os_info();
     return os_info ? os_info->os_arch : NULL;
 }
 
-char* get_os_arch_data() {
-    os_info_t* os_info = get_os_info();
+// arch_model: int value
+int get_os_arch_size() {
+    const os_info_t* os_info = get_os_info();
+    return get_os_arch_size(os_info->os_arch);
+}
+
+// arch_model: char* value
+const char* get_os_arch_data() {
+    const os_info_t* os_info = get_os_info();
     return os_info ? os_info->os_arch_data : NULL;
 }
 
 const char* get_cpu_isalist() {
-    os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = get_os_info();
     return os_info ? os_info->cpu_isalist : NULL;
 }
 
 // FS Info
 
-char* get_file_separator() {
-    os_info_t* os_info = get_os_info();
+const char* get_file_separator() {
+    const os_info_t* os_info = get_os_info();
     return os_info ? os_info->file_separator : NULL;
 }
 
-char* get_line_separator() {
-    os_info_t* os_info = get_os_info();
+const char* get_line_separator() {
+    const os_info_t* os_info = get_os_info();
     return os_info ? os_info->line_separator : NULL;
 }
 
 // User Info
 
-char* get_user_name() {
-    user_info_t* user_info = get_user_info();
+const char* get_user_name() {
+    const user_info_t* user_info = get_user_info();
     return user_info ? user_info->user_name : NULL;
 }
 
-char* get_user_home() {
-    user_info_t* user_info = get_user_info();
+const char* get_user_home() {
+    const user_info_t* user_info = get_user_info();
     return user_info ? user_info->user_home : NULL;
 }
 
-char* get_user_dir() {
-    user_info_t* user_info = get_user_info();
+const char* get_user_dir() {
+    const user_info_t* user_info = get_user_info();
     return user_info ? user_info->user_dir : NULL;
 }
 
-char* get_work_dir() {
+const char* get_work_dir() {
     return get_user_dir();
 }
 
-char* get_tmp_dir() {
-    user_info_t* user_info = get_user_info();
+const char* get_tmp_dir() {
+    const user_info_t* user_info = get_user_info();
     return user_info ? user_info->tmp_dir : NULL;
 }
 
 ////
 
 void print_sys_info() {
-    if (!sys_info) {
-        // Load sys_info
-        sys_info = get_sys_info();
-    }
+
+    const sys_info_t* sys_info = get_sys_info();
+    
+    //HARD TEST
+    //free(sys_info);
+    //sys_info = NULL;
+
     if (!sys_info) {
         // Error loading sys_info
         return;
     }
-
+      
     printf("\n");
-
     
     // Version Info
     printf("os.name          : %s\n", lib_strsaf(sys_info->os_name));

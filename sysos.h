@@ -38,6 +38,11 @@ struct os_info_t {
 
 };
 
+typedef enum {
+    ARCH_LITTLE_ENDIAN,
+    ARCH_BIG_ENDIAN,
+} arch_endian_t;
+
 /**
  * Returns true if CPU is big endian 
  */
@@ -49,6 +54,11 @@ int is_cpu_big_endian();
 const char* get_cpu_endian();
 
 /**
+ * Returns OS Arch Size by OS Arch 
+ */
+int get_os_arch_size(const char* os_arch);
+
+/**
  * Returns OS Arch Data by OS Arch 
  */
 const char* get_os_arch_data(const char* os_arch);
@@ -56,7 +66,7 @@ const char* get_os_arch_data(const char* os_arch);
 /**
  * Returns OS Info 
  */
-os_info_t* get_os_info();
+const os_info_t* get_os_info();
 
 
 #endif // PLAZMA_LIB_SYSOS_H

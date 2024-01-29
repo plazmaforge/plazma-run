@@ -19,7 +19,8 @@ void init_locale_os() {
     // Bug with empty locale for MacOS
     // const char* name = getLocaleValue(cflocale, kCFLocaleIdentifier);
     // name is NULL. Why?
-    load_locale_os(); // TODO: Force load locale (Why?)
+    locale_t* locale = load_locale_os(); // TODO: Force load locale (Why?)
+    free_locale(locale);     
     #endif
 
     // debug = 1;
