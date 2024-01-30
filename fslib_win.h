@@ -226,16 +226,6 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
                 scandir(fullName, pattern, files, level + 1);
             }
 
-
-            //if (!is_dir(file) && (level == 0 || level == total_level - 1)) {
-            //    // We add file from last pattern level only
-            //    //printf("match: [%s] %s, %s, %s\n", (isDir(file) ? "D" : " "), fullName, dirName, fileName);
-            //    files.push_back(fullName);
-            //} 
-            //if (is_dir(file) && max_depth >= 0) {
-            //    scandir(fullName, pattern, files, level + 1);
-            //}
-
             free(fullName);
         }
 
