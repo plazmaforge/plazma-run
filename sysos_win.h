@@ -417,23 +417,14 @@ void loadOsInfo(os_info_t* os_info) {
 
   // CPU Info
   os_info->os_arch = _strdup(getOsArch(si));
-  os_info->os_arch_data = _strdup(getOsArchData(si));
+  os_info->os_arch_size = get_os_arch_size(os_info->os_arch);
+  //os_info->os_arch_data = _strdup(getOsArchData(si));
   os_info->cpu_endian = strdup(get_cpu_endian());
   os_info->cpu_isalist = getCpuIsalist(si);
 
   // FS Info
   os_info->file_separator = _strdup("\\");
   os_info->line_separator = _strdup("\r\n");
-
-  /* User */
-  // sysInfo.user_name = getUserName();
-  // sysInfo.user_dir = getUserDir();
-  // sysInfo.user_home = getUserHome();
-  // if (sysInfo.user_home == NULL) {
-  //  sysInfo.user_home = L"C:\\";
-  // }
-
-
  
 }
 

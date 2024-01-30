@@ -1,6 +1,8 @@
 #ifndef PLAZMA_LIB_SYSOS_H
 #define PLAZMA_LIB_SYSOS_H
 
+#include "syscpu.h"
+
  /*
   * OS definition.
   * 
@@ -25,7 +27,8 @@ struct os_info_t {
 
     // CPU Info
     char* os_arch;           // cpu
-    char* os_arch_data;      // cpu
+    int os_arch_size;        // cpu
+    //char* os_arch_data;      // cpu
     const char* cpu_isalist; // list of supported instruction sets
     char* cpu_endian;        // endianness of platform
 
@@ -38,30 +41,16 @@ struct os_info_t {
 
 };
 
-typedef enum {
-    ARCH_LITTLE_ENDIAN,
-    ARCH_BIG_ENDIAN,
-} arch_endian_t;
-
-/**
- * Returns true if CPU is big endian 
- */
-int is_cpu_big_endian();
-
-/**
- * Returns CPU endian: big/little
- */
-const char* get_cpu_endian();
 
 /**
  * Returns OS Arch Size by OS Arch 
  */
-int get_os_arch_size(const char* os_arch);
+int get_os_arch_size(const char* arch);
 
 /**
  * Returns OS Arch Data by OS Arch 
  */
-const char* get_os_arch_data(const char* os_arch);
+const char* get_os_arch_data(const char* arch);
 
 /**
  * Returns OS Info 

@@ -51,11 +51,6 @@ const user_info_t* get_user_info() {
     static user_info_t user_info_s;
     user_info = &user_info_s;
     init_user_info(user_info);
-
-    //if (!user_info) {
-    //    // Allocation error
-    //    return NULL;
-    //}
     
     user_info->user_name = getUserName();
     user_info->user_home = getUserHome();

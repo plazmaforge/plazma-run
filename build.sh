@@ -19,6 +19,7 @@ g++ -c wclib.cpp -o wclib.o
 g++ -c fslib.cpp -o fslib.o
 g++ -c iolib.cpp -o iolib.o
 g++ -c srhlib.cpp -o srhlib.o
+g++ -c syscpu.cpp -o syscpu.o
 g++ -c sysos.cpp -o sysos.o
 g++ -c sysuser.cpp -o sysuser.o
 g++ -c syslocale.cpp -o syslocale.o
@@ -42,6 +43,6 @@ fi
 g++ $LDFLAGS iolib.o run_dump.o -o run-dump
 g++ $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_echo.o -o run-echo
 g++ $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_cat.o -o run-cat
-g++ $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_sysinfo.o -o run-sysinfo
-g++ $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_find.o -o run-find
+g++ $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o syscpu.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_sysinfo.o -o run-sysinfo
+g++ $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o syscpu.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_find.o -o run-find
 g++ $LDFLAGS getopt.o test_getopt.o -o test-getopt

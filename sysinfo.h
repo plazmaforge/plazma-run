@@ -17,7 +17,9 @@ struct sys_info_t {
 
     // CPU Info
     const char* os_arch;            // cpu
-    const char* os_arch_data;       // cpu
+    int os_arch_size;               // cpu
+    //const char* os_arch_data;       // cpu
+
     const char* cpu_isalist;        // list of supported instruction sets
     const char* cpu_endian;         // endianness of platform
 
@@ -78,11 +80,9 @@ int get_os_build_version();
 
 const char* get_os_arch();
 
-// arch_model: int value
 int get_os_arch_size();
 
-// arch_model: char* value
-const char* get_os_arch_data();
+//const char* get_os_arch_data();
 
 const char* get_cpu_isalist();
 

@@ -13,7 +13,8 @@ void load_os_common_info(os_info_t* os_info, /*struct*/ utsname* name) {
 
    // CPU Info
    os_info->os_arch = strdup(name->machine);
-   os_info->os_arch_data = strdup(get_os_arch_data(os_info->os_arch));
+   os_info->os_arch_size = get_os_arch_size(os_info->os_arch);
+   //os_info->os_arch_data = strdup(get_os_arch_data(os_info->os_arch));
    os_info->cpu_endian = strdup(get_cpu_endian());
 
    #ifdef SI_ISALIST

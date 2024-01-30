@@ -24,7 +24,8 @@ static sys_info_t* init_sys_info(sys_info_t* sys_info) {
 
     // CPU Info
     sys_info->os_arch = NULL;
-    sys_info->os_arch_data = NULL;
+    sys_info->os_arch_size = 0;
+    //sys_info->os_arch_data = NULL;
     sys_info->cpu_isalist = NULL;
     sys_info->cpu_endian = NULL;
 
@@ -84,7 +85,7 @@ static void free_sys_info(sys_info_t* sys_info) {
 
     // CPU Info
     free(sys_info->os_arch);
-    free(sys_info->os_arch_data);
+    //free(sys_info->os_arch_data);
     //free(sys_info->cpu_isalist);
     free(sys_info->cpu_endian);
 
@@ -158,7 +159,8 @@ const sys_info_t* get_sys_info() {
 
         // CPU Info
         sys_info->os_arch = os_info->os_arch;
-        sys_info->os_arch_data = os_info->os_arch_data;
+        sys_info->os_arch_size = os_info->os_arch_size;
+        //sys_info->os_arch_data = os_info->os_arch_data;
         sys_info->cpu_isalist = os_info->cpu_isalist;
         sys_info->cpu_endian = os_info->cpu_endian;
 
@@ -289,17 +291,16 @@ const char* get_os_arch() {
     return os_info ? os_info->os_arch : NULL;
 }
 
-// arch_model: int value
 int get_os_arch_size() {
     const os_info_t* os_info = get_os_info();
     return get_os_arch_size(os_info->os_arch);
 }
 
 // arch_model: char* value
-const char* get_os_arch_data() {
-    const os_info_t* os_info = get_os_info();
-    return os_info ? os_info->os_arch_data : NULL;
-}
+// const char* get_os_arch_data() {
+//     const os_info_t* os_info = get_os_info();
+//     return os_info ? os_info->os_arch_data : NULL;
+// }
 
 const char* get_cpu_isalist() {
     const os_info_t* os_info = get_os_info();
@@ -370,7 +371,9 @@ void print_sys_info() {
 
     // CPU Info
     printf("os.arch          : %s\n", lib_strsaf(sys_info->os_arch));
-    printf("os.arch.data     : %s\n", lib_strsaf(sys_info->os_arch_data));
+    printf("os.arch.size     : %d\n", sys_info->os_arch_size);
+    //printf("os.arch.data   : %s\n", lib_strsaf(sys_info->os_arch_data));
+    
     printf("cpu.isalist      : %s\n", lib_strsaf(sys_info->cpu_isalist));
     printf("cpu.endian       : %s\n", lib_strsaf(sys_info->cpu_endian));
 
@@ -420,7 +423,8 @@ void print_sys_info() {
 
     // CPU Info
     printf("os.arch        : %s\n", lib_strsaf(get_os_arch()));
-    printf("os.arch.data   : %s\n", lib_strsaf(get_os_arch_data()));
+    printf("os.arch.size     : %d\n", get_os_arch_size());
+    //printf("os.arch.data   : %s\n", lib_strsaf(get_os_arch_data()));
     printf("cpu.isalist    : %s\n", lib_strsaf(get_cpu_isalist()));
     printf("cpu.endian     : %s\n", lib_strsaf(get_cpu_endian()));
 
