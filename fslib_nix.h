@@ -77,14 +77,13 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
             }
 
             char* fullName = get_file_path(dirName, fileName);
-            //printf("match:fullName: %s\n", fullName);
 
-            //if (!is_dir(file) && (level == 0 || level == total_level - 1)) {
+            //printf("match:fullName: %s\n", fullName);
+            //printf("match: [%s] %s, %s, %s\n", (mode == 2 ? "D" : " "), fullName, dirName, fileName);
+
             if (mode == 1) {
-                //printf("match: [%s] %s, %s, %s\n", (isDir(file) ? "D" : " "), fullName, dirName, fileName);
                 files.push_back(fullName);
             } else if (mode == 2) {
-            //if (is_dir(file) && max_depth >= 0) {
                 scandir(fullName, pattern, files, level + 1);
             }
 
@@ -93,7 +92,6 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
             //    //printf("match: [%s] %s, %s, %s\n", (isDir(file) ? "D" : " "), fullName, dirName, fileName);
             //    files.push_back(fullName);
             //}
-
             //if (is_dir(file) && max_depth >= 0) {
             //    scandir(fullName, pattern, files, level + 1);
             //}

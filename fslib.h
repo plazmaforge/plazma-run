@@ -31,6 +31,11 @@ const char* get_current_find_path();
  */
 int is_current_find_path(const char* path);
 
+/**
+ * Return true if a file name is matched by a pattern
+ */
+int match_file(const char* name, const char* pattern);
+
 /* C++ Style - Migration Task */
 
 /**

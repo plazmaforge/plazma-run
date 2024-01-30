@@ -66,21 +66,6 @@ int is_current_find_path(const char* path) {
     return strcmp(path, "./*") == 0; // Why not '.\*'?
 }
 
-/*
-std::string getCurrentFindPath() {
-    return get_current_find_path();
-    //return "./*"; // Why not '.\*'?
-}
-
-bool isCurrentFindPath(const char* path) {
-    return is_current_find_path(path)
-    // if (path == NULL) {
-    //     return false;
-    // }
-    // return strcmp(path, "./*") == 0; // Why not '.\*'?
-}
-*/
-
 ////
 
 static int is_dir(WIN32_FIND_DATAW file) {
@@ -89,7 +74,7 @@ static int is_dir(WIN32_FIND_DATAW file) {
 
 // Convert directory name to WIN32 find path: add '\*'
 // [allocate]
-static char* getFindPath(const char* dirName) {
+static char* get_find_path(const char* dirName) {
     if (dirName == NULL) {
         return NULL;
     }
@@ -144,7 +129,6 @@ static wchar_t* getRealPathW(HANDLE handle) {
 }
 
 // [allocate]
-
 static wchar_t* getRealPathW(const wchar_t* wpath) {
     if (wpath == NULL) {
         return NULL;
@@ -165,6 +149,7 @@ static wchar_t* getRealPathW(const wchar_t* wpath) {
 
 #else
 
+// [allocate]
 static wchar_t* getRealPathW(const wchar_t* wpath) {
     if(wpath == NULL) {
         return NULL;
@@ -189,31 +174,11 @@ static wchar_t* getRealPathW(const wchar_t* wpath) {
 
 #endif
 
-
-// static char* _getRealPath(const char* path) {
-//     if (path == NULL) {
-//         return NULL;
-//     }
-//     wchar_t* wpath = char2wchar(path);
-//     if (wpath == NULL) {
-//         return NULL;
-//     }
-//     wchar_t* wreal_path = getRealPath(wpath);
-//     free(wpath);
-//     if (wreal_path == NULL) {
-//         return NULL;
-//     }
-//     char* real_path = wchar2char(wreal_path);
-//     free(wreal_path);
-
-//     return real_path;
-// }
-
 // https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
 
 void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
 
-    char* path = getFindPath(dirName); // convert 'dirName' to WIN32 find path: add '\*'
+    char* path = get_find_path(dirName); // convert 'dirName' to WIN32 find path: add '\*'
     wchar_t* wpath = char2wchar(path);
     //printf("path    : '%s'\n", path);
 
@@ -232,23 +197,44 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
         //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
         if (pattern == NULL || match_file_internal(level_pattern, fileName)) {
 
+            int mode = 0; // 0 - notning, 1 - file, 2 - dir
+            if (!is_dir(file)) {
+                // We add the file from last pattern level only
+                mode = (level == 0 || level == total_level - 1) ? 1 : 0;
+            } else {
+                // Recursive if max_depth != -1
+                mode = max_depth >= 0 ? 2 : 0;
+            }
+
+            if (mode == 0) {
+                continue; // notning
+            }
+
             char* fullName = NULL;
             if (is_current_find_path(dirName)) {
                fullName = strdup(fileName);
             } else {
                fullName = get_file_path(dirName, fileName); // [allocate]
-            }            
-            //printf("match:fullName: %s\n", fullName);
-
-            if (!is_dir(file) && (level == 0 || level == total_level - 1)) {
-                // We add file from last pattern level only
-                //printf("match: [%s] %s, %s, %s\n", (isDir(file) ? "D" : " "), fullName, dirName, fileName);
-                files.push_back(fullName);
             }
- 
-            if (is_dir(file) && max_depth >= 0) {
+            
+            //printf("match:fullName: %s\n", fullName);
+            //printf("match: [%s] %s, %s, %s\n", (mode == 2 ? "D" : " "), fullName, dirName, fileName);
+
+            if (mode == 1) {
+                files.push_back(fullName);
+            } else if (mode == 2) {
                 scandir(fullName, pattern, files, level + 1);
             }
+
+
+            //if (!is_dir(file) && (level == 0 || level == total_level - 1)) {
+            //    // We add file from last pattern level only
+            //    //printf("match: [%s] %s, %s, %s\n", (isDir(file) ? "D" : " "), fullName, dirName, fileName);
+            //    files.push_back(fullName);
+            //} 
+            //if (is_dir(file) && max_depth >= 0) {
+            //    scandir(fullName, pattern, files, level + 1);
+            //}
 
             free(fullName);
         }
@@ -271,7 +257,7 @@ static int match_file_internal(const char* pattern, const char* name, int mode) 
     //return PathMatchSpecW(wname, wpattern);
     //return PathMatchSpecA(name, pattern);
 
-    return match(name, pattern); // rotate pattern, name !
+    return match_file(name, pattern); // rotate pattern, name !
 }
 
 static int match_file_internal(const char* pattern, const char* name) {

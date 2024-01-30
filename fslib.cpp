@@ -68,7 +68,7 @@ char* get_file_path(const char* dir_name, const char* file_name) {
     return path;
 }
 
-int match(const char* name, const char* pattern) {
+int match_file(const char* name, const char* pattern) {
     if (name == NULL || pattern == NULL) {
         return 0;
     }
@@ -119,7 +119,7 @@ int match(const char* name, const char* pattern) {
                 }
 
                 /* Terminate sequence on trailing match */
-                if (match(name, pattern + 1))
+                if (match_file(name, pattern + 1))
                     return 1;
 
                 /* No match, continue from next character */
