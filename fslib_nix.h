@@ -14,8 +14,7 @@ static int match_file_internal(const char* pattern, const char* name, int mode);
 
 static int match_file_internal(const char* pattern, const char* name);
 
-////
-
+// [allocate]
 char* get_real_path(const char* path) {
     if (!path) {
         return NULL;
@@ -64,18 +63,40 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
         //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
         if (pattern == NULL || match_file_internal(level_pattern, fileName)) {
 
+            int mode = 0; // 0 - notning, 1 - file, 2 - dir
+            if (!is_dir(file)) {
+                // We add the file from last pattern level only
+                mode = (level == 0 || level == total_level - 1) ? 1 : 0;
+            } else {
+                // Recursive if max_depth != -1
+                mode = max_depth >= 0 ? 2 : 0;
+            }
+
+            if (mode == 0) {
+                continue; // notning
+            }
+
             char* fullName = get_file_path(dirName, fileName);
             //printf("match:fullName: %s\n", fullName);
 
-            if (!is_dir(file) && (level == 0 || level == total_level - 1)) {
-                // We add file from last pattern level only
+            //if (!is_dir(file) && (level == 0 || level == total_level - 1)) {
+            if (mode == 1) {
                 //printf("match: [%s] %s, %s, %s\n", (isDir(file) ? "D" : " "), fullName, dirName, fileName);
                 files.push_back(fullName);
-            }
- 
-            if (is_dir(file) && max_depth >= 0) {
+            } else if (mode == 2) {
+            //if (is_dir(file) && max_depth >= 0) {
                 scandir(fullName, pattern, files, level + 1);
             }
+
+            //if (!is_dir(file) && (level == 0 || level == total_level - 1)) {
+            //    // We add file from last pattern level only
+            //    //printf("match: [%s] %s, %s, %s\n", (isDir(file) ? "D" : " "), fullName, dirName, fileName);
+            //    files.push_back(fullName);
+            //}
+
+            //if (is_dir(file) && max_depth >= 0) {
+            //    scandir(fullName, pattern, files, level + 1);
+            //}
 
             free(fullName);
         }

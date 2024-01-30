@@ -35,6 +35,7 @@ static int match_file_internal(const char* pattern, const char* name);
 
 static wchar_t* getRealPathW(const wchar_t* wpath);
 
+// [allocate]
 char* get_real_path(const char* path) {
     if (!path) {
         return NULL;
@@ -87,6 +88,7 @@ static int is_dir(WIN32_FIND_DATAW file) {
 }
 
 // Convert directory name to WIN32 find path: add '\*'
+// [allocate]
 static char* getFindPath(const char* dirName) {
     if (dirName == NULL) {
         return NULL;
@@ -121,6 +123,7 @@ static char* getFindPath(const char* dirName) {
 
 #ifdef WIN32_FILE_API_NEW
 
+// [allocate]
 static wchar_t* getRealPathW(HANDLE handle) {
     if (handle == NULL) {
         return NULL;
@@ -139,6 +142,8 @@ static wchar_t* getRealPathW(HANDLE handle) {
     }
     return wpath;
 }
+
+// [allocate]
 
 static wchar_t* getRealPathW(const wchar_t* wpath) {
     if (wpath == NULL) {

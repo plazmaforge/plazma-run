@@ -57,7 +57,7 @@ char* get_file_path(const char* dir_name, const char* file_name) {
     char* path = (char*) malloc(len + 1);
     strcpy(path, dir_name);
     if (sep_len == 1) {
-        path[len1] = '/';
+        path[len1] = '/'; // TODO: OS/FS File separator (!)
         path[len1 + 1] = '\0'; // ???: Maybe for next strcat
         //strcat(path, "/");
     }
