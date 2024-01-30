@@ -33,6 +33,7 @@ int countPathLevel(const char* path) {
     return level;
 }
 
+// [allocate]
 char* getLevelPath(const char* path, int level) {
     if (path == NULL || path[0] == '\0' || level < 0) {
         return NULL;
