@@ -236,6 +236,11 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
     free(wpath);
 }
 
+int scandir_internal2(const char* dir_name, const char* pattern, file_t*** files, int* file_count, int* reserved, int level, int max_depth, int total_level, char* level_pattern) {{
+    // TODO: STUB
+    return -1;
+
+}
 static int match_file_internal(const char* pattern, const char* name, int mode) {
 
     // PathMatchSpecA

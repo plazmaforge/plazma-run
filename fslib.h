@@ -4,8 +4,15 @@
 #include <string>
 #include <vector>
 
+#include "pathlib.h"
+
 const int FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
 const int FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
+
+struct file_t {
+  const char* name;
+  int type;
+};
 
 /* C Style */
 
@@ -63,5 +70,7 @@ std::vector<std::string> getFiles(const char* dirName, const char* pattern);
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files);
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level);
+
+int scandir2(const char* dir_name, const char* pattern, file_t*** files, int level);
 
 #endif // PLAZMA_LIB_FSLIB_H

@@ -151,6 +151,7 @@ int main(int argc, char* argv[]) {
         //config->printFileName = true;
         char* pattern = fileName;
 
+        
         std::vector<std::string> files;
 
         scandir(dirName, pattern, files, FS_SCANDIR_RECURSIVE);
@@ -159,6 +160,24 @@ int main(int argc, char* argv[]) {
             //printf("%s\n", files[i].c_str());
             find(files[i].c_str(), input, inputSize, config);
         }
+        //printf("file_count : %d\n", files.size());
+        
+        
+        //printf("New Scandir \n");
+        
+        /*
+        file_t** files2 = NULL;
+        int z = scandir2(dirName, pattern, &files2, FS_SCANDIR_RECURSIVE);
+
+        for (int i = 0; i < z; i++) {
+            //printf("%s\n", files[i].c_str());
+            find(files2[i]->name, input, inputSize, config);
+            free(files2[i]);
+        }
+        free(files2);
+        printf("file_count : %d\n", z);
+        */
+        
 
         free(dirName);
         free(config);

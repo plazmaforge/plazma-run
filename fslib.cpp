@@ -8,7 +8,6 @@
 #include "fslib_nix.h"
 #endif
 
-#include "pathlib.h"
 #include "fslib.h"
 
 /* C Style */
@@ -178,6 +177,9 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
     scandir(dirName, pattern, files, FS_SCANDIR_FLAT);
 }
 
+// Scandir source code
+// https://gist.github.com/saghul/8013376
+
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level) {
     if (dirName == NULL) {
         return;
@@ -199,5 +201,36 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
     scandir_internal(dirName, pattern, files, level, max_depth, total_level, level_pattern);
 
     free(level_pattern);
+}
+
+int scandir2(const char* dir_name, const char* pattern, file_t*** files, int level) {
+    if (!dir_name) {
+        return -1;
+    }
+
+    int max_depth = level;
+    if (max_depth < 0) {
+        level = 0;
+    }
+    int total_level = countPathLevel(pattern); // count path level in pattern
+    char* level_pattern = getLevelPath(pattern, level); // [allocate]
+
+    //printf("scandir : %s\n", dir_name);
+    //printf("total   : %d\n", total_level);
+    //printf("level   : %d\n", level);
+    //printf("pattern : %s\n", pattern);
+    //printf("select  : %s\n", level_pattern);
+
+    int file_count = 0;
+    int reserved = 10;
+
+    if (max_depth <= 0) {
+        reserved++; // NULL-terminate array: +1: start size
+        file_t** list = (struct file_t**) malloc(sizeof(struct file_t*) * reserved); 
+        *files = list;
+    }
+    scandir_internal2(dir_name, pattern, files, &file_count, &reserved, level, max_depth, total_level, level_pattern);
+    free(level_pattern);
+    return file_count;
 }
 
