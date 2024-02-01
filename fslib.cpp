@@ -233,7 +233,41 @@ void lib_strafree(char** array) {
     free(array);
 }
 
-int files_malloc(file_t*** files, size_t size) {
+// [fslib]
+file_t* file_new() {
+  file_t* file = (file_t*) malloc(sizeof(struct file_t));
+  if (!file) {
+    return NULL;
+  }
+  file->name = NULL;
+  return file;
+}
+
+// [fslib]
+void file_free(file_t* file) {
+    if (!file) {
+        return;
+    }
+    //free(file->name);
+    free(file);
+}
+
+// [fslib]
+void files_free(file_t** files) {
+    if (!files) {
+        return;
+    }
+    file_t* file = NULL;
+    file_t** elements = files;
+    while ((file = *elements) != NULL) {
+        file_free(file);
+        elements++;
+    }
+    free(files);
+}
+
+// [fslib]
+int files_init(file_t*** files, size_t size) {
     // NULL-terminate array: +1
     file_t** list = (struct file_t**) malloc(sizeof(struct file_t*) * size + 1); 
     if (!list) {
@@ -244,9 +278,10 @@ int files_malloc(file_t*** files, size_t size) {
     return 0;
 }
 
-int files_realloc(file_t*** files, size_t size) {
+// [fslib]
+int files_reinit(file_t*** files, size_t size) {
     // NULL-terminate array: +1
-    file_t** list = (struct file_t **) realloc((file_t *)*files, (size + 1) * sizeof(struct file_t *));
+    file_t** list = (struct file_t **) realloc( /*(file_t *)*/ *files, (size + 1) * sizeof(struct file_t *));
     list[size] = NULL;
     if (!list) {
         return -1;
@@ -263,15 +298,7 @@ int scandir2(const char* dir_name, const char* pattern, file_t*** files, int max
     char** patterns = split_path(pattern); // split pattern by level
     int pattern_count = lib_stralen(patterns);
 
-    // const char* e = NULL;
-    // const char** elements = patterns;
-    // while ((e = *elements) != NULL) {
-    //     printf(">>pettern       : %s\n", e);
-    //     pattern_count++;
-    //     elements++;
-    // }
-
-    printf(">>pattern_count : %d\n", pattern_count);
+    //printf(">>pattern_count : %d\n", pattern_count);
     //printf(">>total_level   : %d\n", total_level);
     //printf(">>scandir       : %s\n", dir_name);
     //printf(">>total         : %d\n", total_level);
@@ -282,12 +309,7 @@ int scandir2(const char* dir_name, const char* pattern, file_t*** files, int max
     int file_count = 0;
     int size = 10; // start size
 
-    // NULL-terminate array: +1
-    //file_t** list = (struct file_t**) malloc(sizeof(struct file_t*) * size + 1); 
-    //list[size] = NULL;
-    //*files = list;
-
-    files_malloc(files, size);
+    files_init(files, size);
 
     scandir_internal2(dir_name, /*(const char**)*/ patterns, pattern_count, files, &file_count, 0, max_depth);
 

@@ -96,7 +96,7 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
     closedir(dir);
 }
 
-int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int pattern_count, file_t*** files, int* file_count, /*int* reserved,*/ int level, int max_depth) {
+int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int pattern_count, file_t*** files, int* file_count, int level, int max_depth) {
 
     struct dirent* file;
     DIR* dir = opendir(dir_name);
@@ -144,19 +144,15 @@ int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int patte
                 if (list[index] == NULL) { // NULL-terminate array: +1
                     const int inc = 10;	/* increase by this much */
                     int size = index + inc;
-
-                    // printf("try  : expand_array\n");
-                    if (files_realloc(files, size) != 0) {
-                        //printf("err  : malloc\n");
+                    if (files_reinit(files, size) != 0) {                        
                         free(full_name);
-                        // TODO: free files (!)
+                        files_free(*files);
                         closedir(dir);
                         return -1;
                     }
-                    // printf("ok   : expand_array : %d\n", *reserved);
                 }
 
-                file_t* file_s = (file_t*) malloc(sizeof(struct file_t));
+                file_t* file_s = file_new(); // (file_t*) malloc(sizeof(struct file_t));
                 file_s->name = strdup(full_name);
 
                 //printf("try  : index        : %d\n", *file_count);
