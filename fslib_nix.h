@@ -96,7 +96,7 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
     closedir(dir);
 }
 
-int scandir_internal2(const char* dir_name, const char* pattern, file_t*** files, int* file_count, int* reserved, int level, int max_depth, int total_level, char* level_pattern) {
+int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int pattern_count, file_t*** files, int* file_count, /*int* reserved,*/ int level, int max_depth) {
 
     struct dirent* file;
     DIR* dir = opendir(dir_name);
@@ -106,19 +106,22 @@ int scandir_internal2(const char* dir_name, const char* pattern, file_t*** files
     }
 
     errno = 0;
-    while ((file = readdir(dir)) != NULL) {
+    const char* pattern = NULL;
+    if (patterns)  {
+        pattern = patterns[level];
+    } 
 
-        //printf("readdir    : %p\n", file);
+    while ((file = readdir(dir)) != NULL) {
 
         char* file_name = file->d_name;
 
-        //printf("try [%d] %s, %s, :: %s\n", level, dir_name, file_name, level_pattern);
-        if (pattern == NULL || match_file_internal(level_pattern, file_name)) {
+        //printf("try [%d] %s, %s, :: %s\n", level, dir_name, file_name, pattern);
+        if (pattern == NULL || match_file_internal(pattern, file_name)) {
 
             int mode = 0; // 0 - notning, 1 - file, 2 - dir
             if (!is_dir(file)) {
                 // We add the file from last pattern level only
-                mode = (level == 0 || level == total_level - 1) ? 1 : 0;
+                mode = (level == 0 || level == pattern_count - 1) ? 1 : 0;
             } else {
                 // Recursive if max_depth != -1
                 mode = max_depth >= 0 ? 2 : 0;
@@ -133,52 +136,44 @@ int scandir_internal2(const char* dir_name, const char* pattern, file_t*** files
             //printf("match: full_name    : %s\n", full_name);
     
             if (mode == 1) {
+
                 //printf("try  : add_file\n");
-                if (*file_count + 1 >= *reserved) { // NULL-terminate array: +1
+                int index = *file_count; // old file_count
+                file_t** list = *files;
+
+                if (list[index] == NULL) { // NULL-terminate array: +1
                     const int inc = 10;	/* increase by this much */
-                    *reserved += inc;
-                    file_t** list2;
-                    //printf("try  : expand_array\n");
-                    list2 = (struct file_t **) realloc((file_t*) *files, (*reserved + 1) * sizeof(struct file_t*)); // NULL-terminate array: +1
-                    //printf("ok   : expand_array : %d\n", *reserved);
-			        if (list2 == NULL) {
+                    int size = index + inc;
+
+                    // printf("try  : expand_array\n");
+                    if (files_realloc(files, size) != 0) {
                         //printf("err  : malloc\n");
                         free(full_name);
+                        // TODO: free files (!)
                         closedir(dir);
                         return -1;
-			       }
-                   *files = list2;
+                    }
+                    // printf("ok   : expand_array : %d\n", *reserved);
                 }
-                file_t* f = (file_t*) malloc(sizeof(struct file_t));
-                f->name = strdup(full_name);
+
+                file_t* file_s = (file_t*) malloc(sizeof(struct file_t));
+                file_s->name = strdup(full_name);
+
                 //printf("try  : index        : %d\n", *file_count);
                 //printf("try  : reserved     : %d\n", *reserved);
 
-                file_t** list = *files;
-                //*files[*file_count] = f;
-                list[*file_count] = f;
+                list = *files;
+                list[index] = file_s; 
+                //*files[*file_count] = file_s; // Doesn't work
 
                 *file_count = *file_count + 1;
                 //printf("try  : file_count   : %d\n", *file_count);
             } else if (mode == 2) {
 
-               //scandir2(full_name, pattern, files, level + 1);
-
-               int level2 = level + 1;
-               int max_depth2 = level2;
-               if (max_depth2 < 0) {
-                  level2 = 0;
-               }
-
-               int total_level2 = countPathLevel(pattern); // count path level in pattern
-               char* level_pattern2 = getLevelPath(pattern, level2); // [allocate]
-
-               int result = scandir_internal2(full_name, pattern, files, file_count, reserved, level2, max_depth2, total_level2, level_pattern2);
+               int result = scandir_internal2(full_name, patterns, pattern_count, files, file_count, level + 1, max_depth);
                if (result < 0) {
                 // error
                }
-
-               free(level_pattern2);
             }
 
             free(full_name);

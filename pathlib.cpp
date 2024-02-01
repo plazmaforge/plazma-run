@@ -11,6 +11,7 @@ int countPathLevel(const char* path) {
     if (path == NULL || path[0] == '\0') {
         return 0;
     }
+
     int start = 0;
     if (isPatchChar(path[start])) {
         start++;
@@ -18,6 +19,7 @@ int countPathLevel(const char* path) {
     if (path[start] == '\0') {
         return 0;
     }
+
     char ch;
     int i = start;
     int level = 1;
@@ -34,10 +36,12 @@ int countPathLevel(const char* path) {
 }
 
 // [allocate]
+// level starts with '0'
 char* getLevelPath(const char* path, int level) {
     if (path == NULL || path[0] == '\0' || level < 0) {
         return NULL;
     }
+
     int start = 0;
     if (isPatchChar(path[start])) {
         start++;
@@ -45,6 +49,7 @@ char* getLevelPath(const char* path, int level) {
     if (path[start] == '\0') {
         return NULL;
     }
+
     char ch;
     int i = start;
     int curr_level = -1;
@@ -96,4 +101,23 @@ char* getLevelPath(const char* path, int level) {
 
 ////
 
+// [allocate]
+char** split_path(const char* path) {
+    if (!path) {
+        return NULL;
+    }
+    int count = countPathLevel(path);
+    if (count == 0) {
+        return NULL;
+    }
+    char** result = (char**) malloc(sizeof(char*) * count + 1);
 
+    // TODO: Optimaze without 'getLevelPath'
+    // Temp solution
+    for (int i = 0; i < count; i++) {
+        result[i] = getLevelPath(path, i);
+    }
+
+    result[count] = NULL;
+    return result;
+}

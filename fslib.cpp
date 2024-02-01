@@ -203,34 +203,96 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
     free(level_pattern);
 }
 
-int scandir2(const char* dir_name, const char* pattern, file_t*** files, int level) {
+// [strlib]
+int lib_stralen(/*const*/ char** array) {
+    if (!array) {
+        return 0;
+    }
+    /*const*/ char* e = NULL;
+    /*const*/ char** elements = array;
+    int count = 0;
+    while ((e = *elements) != NULL) {
+        count++;
+        elements++;
+    }
+    return count;
+}
+
+// [strlib]
+void lib_strafree(char** array) {
+    if (!array) {
+        return;
+    }
+    char* e = NULL;
+    char** elements = array;
+    int count = 0;
+    while ((e = *elements) != NULL) {
+        free(e);
+        elements++;
+    }
+    free(array);
+}
+
+int files_malloc(file_t*** files, size_t size) {
+    // NULL-terminate array: +1
+    file_t** list = (struct file_t**) malloc(sizeof(struct file_t*) * size + 1); 
+    if (!list) {
+        return -1;
+    }
+    list[size] = NULL;
+    *files = list;
+    return 0;
+}
+
+int files_realloc(file_t*** files, size_t size) {
+    // NULL-terminate array: +1
+    file_t** list = (struct file_t **) realloc((file_t *)*files, (size + 1) * sizeof(struct file_t *));
+    list[size] = NULL;
+    if (!list) {
+        return -1;
+    }
+    *files = list;
+    return 0;
+}
+
+int scandir2(const char* dir_name, const char* pattern, file_t*** files, int max_depth) {
     if (!dir_name) {
         return -1;
     }
 
-    int max_depth = level;
-    if (max_depth < 0) {
-        level = 0;
-    }
-    int total_level = countPathLevel(pattern); // count path level in pattern
-    char* level_pattern = getLevelPath(pattern, level); // [allocate]
+    char** patterns = split_path(pattern); // split pattern by level
+    int pattern_count = lib_stralen(patterns);
 
-    //printf("scandir : %s\n", dir_name);
-    //printf("total   : %d\n", total_level);
-    //printf("level   : %d\n", level);
-    //printf("pattern : %s\n", pattern);
-    //printf("select  : %s\n", level_pattern);
+    // const char* e = NULL;
+    // const char** elements = patterns;
+    // while ((e = *elements) != NULL) {
+    //     printf(">>pettern       : %s\n", e);
+    //     pattern_count++;
+    //     elements++;
+    // }
+
+    printf(">>pattern_count : %d\n", pattern_count);
+    //printf(">>total_level   : %d\n", total_level);
+    //printf(">>scandir       : %s\n", dir_name);
+    //printf(">>total         : %d\n", total_level);
+    //printf(">>level         : %d\n", level);
+    //printf(">>pattern       : %s\n", pattern);
+    //printf(">>select        : %s\n", level_pattern);
 
     int file_count = 0;
-    int reserved = 10;
+    int size = 10; // start size
 
-    if (max_depth <= 0) {
-        reserved++; // NULL-terminate array: +1: start size
-        file_t** list = (struct file_t**) malloc(sizeof(struct file_t*) * reserved); 
-        *files = list;
-    }
-    scandir_internal2(dir_name, pattern, files, &file_count, &reserved, level, max_depth, total_level, level_pattern);
-    free(level_pattern);
+    // NULL-terminate array: +1
+    //file_t** list = (struct file_t**) malloc(sizeof(struct file_t*) * size + 1); 
+    //list[size] = NULL;
+    //*files = list;
+
+    files_malloc(files, size);
+
+    scandir_internal2(dir_name, /*(const char**)*/ patterns, pattern_count, files, &file_count, 0, max_depth);
+
+    lib_strafree(patterns);
+
     return file_count;
 }
 
