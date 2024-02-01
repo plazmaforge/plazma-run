@@ -269,7 +269,7 @@ void files_free(file_t** files) {
 // [fslib]
 int files_init(file_t*** files, size_t size) {
     // NULL-terminate array: +1
-    file_t** list = (struct file_t**) malloc(sizeof(struct file_t*) * size + 1); 
+    file_t** list = (struct file_t**) calloc(size + 1, sizeof(struct file_t*)); 
     if (!list) {
         return -1;
     }
