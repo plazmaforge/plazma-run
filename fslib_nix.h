@@ -96,91 +96,65 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
     closedir(dir);
 }
 
-int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int pattern_count, file_t*** files, int* file_count, int level, int max_depth) {
+////
 
-    struct dirent* file;
-    DIR* dir = opendir(dir_name);
-    if (dir == NULL) {
-        fprintf(stderr, "Directory not found: %s\n", dir_name);
-        return -1;
+int is_dir(fs_dirent_t* dirent) {
+    if (!dirent) {
+        return 0;
     }
-
-    errno = 0;
-    const char* pattern = NULL;
-    if (patterns)  {
-        pattern = patterns[level];
-    } 
-
-    while ((file = readdir(dir)) != NULL) {
-
-        char* file_name = file->d_name;
-
-        //printf("try [%d] %s, %s, :: %s\n", level, dir_name, file_name, pattern);
-        if (pattern == NULL || match_file_internal(pattern, file_name)) {
-
-            int mode = 0; // 0 - notning, 1 - file, 2 - dir
-            if (!is_dir(file)) {
-                // We add the file from last pattern level only
-                mode = (level == 0 || level == pattern_count - 1) ? 1 : 0;
-            } else {
-                // Recursive if max_depth != -1
-                mode = max_depth >= 0 ? 2 : 0;
-            }
-
-            if (mode == 0) {
-                continue; // notning
-            }
-
-            char* full_name = get_file_path(dir_name, file_name);
-
-            //printf("match: full_name    : %s\n", full_name);
-    
-            if (mode == 1) {
-
-                //printf("try  : add_file\n");
-                int index = *file_count; // old file_count
-                file_t** list = *files;
-
-                if (list[index] == NULL) { // NULL-terminate array: +1
-                    const int inc = 10;	/* increase by this much */
-                    int size = index + inc;
-                    if (files_reinit(files, size) != 0) {                        
-                        free(full_name);
-                        files_free(*files);
-                        closedir(dir);
-                        return -1;
-                    }
-                }
-
-                file_t* file_s = file_new(); // (file_t*) malloc(sizeof(struct file_t));
-                file_s->name = strdup(full_name);
-
-                //printf("try  : index        : %d\n", *file_count);
-                //printf("try  : reserved     : %d\n", *reserved);
-
-                list = *files;
-                list[index] = file_s; 
-                //*files[*file_count] = file_s; // Doesn't work
-
-                *file_count = *file_count + 1;
-                //printf("try  : file_count   : %d\n", *file_count);
-            } else if (mode == 2) {
-
-               int result = scandir_internal2(full_name, patterns, pattern_count, files, file_count, level + 1, max_depth);
-               if (result < 0) {
-                // error
-               }
-            }
-
-            free(full_name);
-        }
-    }
-    if (errno != 0) {
-        // TODO: stderr: error
-    }
-    closedir(dir);
-    return 0;
+    return dirent->fd->d_type == DT_DIR;
 }
+
+fs_dir_t* open_dir(const char* dir_name) {
+    if (!dir_name) {
+        return NULL;
+    }
+    DIR* _dir = opendir(dir_name);
+    if (!_dir) {
+        fprintf(stderr, "Directory not found: %s\n", dir_name);
+        return NULL;
+    }
+    fs_dir_t* dir = (fs_dir_t*) malloc(sizeof(fs_dir_t));
+    if (!dir) {
+        closedir(_dir);
+        return NULL;
+    }
+    dir->ptr = _dir;
+    dir->dirent = NULL;
+    return dir;
+}
+
+fs_dirent_t* read_dir(fs_dir_t* dir) {
+    if (!dir) {
+        return NULL;
+    }
+    struct dirent* fd = readdir(dir->ptr);
+    if (!fd) {
+        return NULL;
+    }
+    if (!dir->dirent) {
+        dir->dirent = (fs_dirent_t*) malloc(sizeof(fs_dirent_t));
+    }
+    if (!dir->dirent) {
+        return NULL;
+    }
+    dir->dirent->fd = fd;
+    dir->dirent->type = fd->d_type; // TODO: Use Universal type
+    dir->dirent->name = fd->d_name;
+    return dir->dirent;
+}
+
+int close_dir(fs_dir_t* dir) {
+    if (!dir) {
+        return 0;
+    }
+    int result = closedir(dir->ptr);
+    dir->dirent = NULL;
+    free(dir);
+    return result;
+}
+
+////
 
 static int match_file_internal(const char* pattern, const char* name, int mode) {
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);

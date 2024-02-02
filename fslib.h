@@ -10,10 +10,64 @@
 const int FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
 const int FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
 
-struct file_t {
+#ifdef _WIN32
+#include <windows.h>
+
+/* File descriptor    */
+typedef HANDLE fs_fd_t;
+
+/* Directory pointer  */
+typedef HANDLE fs_dir_t;
+
+/* File Info          */
+typedef BY_HANDLE_FILE_INFORMATION fs_file_info_t;
+
+/* Directory entry    */
+typedef struct fs_dirent_t {
+    //fs_file_info_t info;
+    int type; // OS Indepentent
+    WIN32_FIND_DATAW fd;
+} fs_dirent_t;
+
+typedef struct fs_dir_t {
+    void* ptr;
+    fs_dirent_t* dirent;
+} fs_dir_t;
+
+#else
+
+#include <dirent.h>
+#include <sys/stat.h>
+
+/* File descriptor    */
+typedef int fs_fd_t;     
+
+/* Directory pointer  */
+//typedef DIR fs_dir_t;
+
+/* File Info          */
+//#define fs_file_info_t struct stat;
+typedef struct stat fs_file_info_t;
+
+/* Directory entry    */
+typedef struct fs_dirent_t {
+    //fs_file_info_t info;
+    int type; // OS Indepentent
+    char* name;
+    struct dirent* fd;
+} fs_dirent_t;
+
+typedef struct fs_dir_t {
+    DIR* ptr;
+    fs_dirent_t* dirent;
+} fs_dir_t;
+
+#endif
+
+typedef struct file_t {
   const char* name;
   int type;
-};
+} file_t;
 
 /* C Style */
 
@@ -85,5 +139,15 @@ void files_free(file_t** files);
 int files_init(file_t*** files, size_t size);
 
 int files_reinit(file_t*** files, size_t size);
+
+////
+
+int is_dir(fs_dirent_t* dirent);
+
+fs_dir_t* open_dir(const char* dir_name);
+
+fs_dirent_t* read_dir(fs_dir_t* dir);
+
+int close_dir(fs_dir_t* dir);
 
 #endif // PLAZMA_LIB_FSLIB_H

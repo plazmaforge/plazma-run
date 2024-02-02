@@ -236,11 +236,76 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
     free(wpath);
 }
 
-int scandir_internal2(const char* dir_name, const char* pattern, file_t*** files, int* file_count, int* reserved, int level, int max_depth, int total_level, char* level_pattern) {{
-    // TODO: STUB
-    return -1;
+////
 
+int is_dir(fs_dirent_t* dirent) {
+    if (!dirent) {
+        return 0;
+    }
+    return dirent->fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 }
+
+fs_dir_t* open_dir(const char* dir_name) {
+    if (!dir_name) {
+        return NULL;
+    }
+
+    char* path = get_find_path(dir_name); // convert 'dir_name' to WIN32 find path: add '\*'
+    wchar_t* wpath = char2wchar(path);
+    //printf("path    : '%s'\n", path);
+
+    WIN32_FIND_DATAW _file;
+    HANDLE _dir = FindFirstFileW(wpath, &_file);
+    if (_dir == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
+        fprintf(stderr, "Directory not found: %s\n", dir_name);
+        return NULL;
+    }
+
+    fs_dir_t* dir = (fs_dir_t*) malloc(sizeof(fs_dir_t));
+    if (!dir) {
+        free(path);
+        free(wpath);
+        FindClose(_dir);
+        return NULL;
+    }
+    dir->ptr = _dir;
+    dir->dirent = NULL;
+    return dir;
+}
+
+fs_dirent_t* read_dir(fs_dir_t* dir) {
+    if (!dir) {
+        return NULL;
+    }
+    if (!dir->dirent) {
+        dir->dirent = (fs_dirent_t*) malloc(sizeof(fs_dirent_t));
+    }
+    if (!dir->dirent) {
+        return NULL;
+    }
+
+    if (FindNextFileW(dir->ptr, &dir->fd) == 0) {
+        return NULL;
+    }
+
+    //dir->dirent->fd = fd;
+    //dir->dirent->type = fd->d_type; // TODO: Use Universal type
+
+    char* name = wchar2char(file.cFileName); // [allocate]
+    dir->dirent->name = name;
+    return dir->dirent;
+}
+
+int close_dir(fs_dir_t* dir) {
+    if (!dir) {
+        return 0;
+    }
+    FindClose(dir->ptr);
+    free(dir-name);
+    free(dir);
+    return 0;
+}
+
 static int match_file_internal(const char* pattern, const char* name, int mode) {
 
     // PathMatchSpecA

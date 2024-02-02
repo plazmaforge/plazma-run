@@ -290,6 +290,100 @@ int files_reinit(file_t*** files, size_t size) {
     return 0;
 }
 
+int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int pattern_count, file_t*** files, int* file_count, int level, int max_depth) {
+
+    fs_dir_t* dir = open_dir(dir_name);
+    if (!dir) {
+        return -1;
+    }
+
+    fs_dirent_t* file;
+    //errno = 0;
+    const char* pattern = NULL;
+    if (patterns)  {
+        pattern = patterns[level];
+    } 
+
+    while ((file = read_dir(dir)) != NULL) {
+
+        //printf("FILE: %p\n", file);
+
+        char* file_name = file->name; //file->d_name;
+
+        //printf("try [%d] %s, %s, :: %s\n", level, dir_name, file_name, pattern);
+        if (pattern == NULL || match_file_internal(pattern, file_name)) {
+
+            int mode = 0; // 0 - notning, 1 - file, 2 - dir
+            if (!is_dir(file)) {
+                // We add the file from last pattern level only
+                mode = (level == 0 || level == pattern_count - 1) ? 1 : 0;
+            } else {
+                // Recursive if max_depth != -1
+                mode = max_depth >= 0 ? 2 : 0;
+            }
+
+            if (mode == 0) {
+                continue; // notning
+            }
+
+            char* full_name = get_file_path(dir_name, file_name);
+
+            //printf("match: full_name    : %s\n", full_name);
+    
+            if (mode == 1) {
+
+                //printf("try  : add_file\n");
+                int index = *file_count; // old file_count
+                file_t** list = *files;
+
+                if (list[index] == NULL) { // NULL-terminate array: +1
+                    const int inc = 10;	/* increase by this much */
+                    int size = index + inc;
+                    if (files_reinit(files, size) != 0) {                        
+                        free(full_name);
+                        files_free(*files);
+                        close_dir(dir);
+                        return -1;
+                    }
+                }
+
+                file_t* file_s = file_new(); // (file_t*) malloc(sizeof(struct file_t));
+                file_s->name = strdup(full_name);
+
+                //printf("try  : index        : %d\n", *file_count);
+                //printf("try  : reserved     : %d\n", *reserved);
+
+                list = *files;
+                list[index] = file_s; 
+                //*files[*file_count] = file_s; // Doesn't work
+
+                *file_count = *file_count + 1;
+                 
+                // Shift NULL marker (size + 1): for allocation without fulling NULL
+                index = *file_count; // new file_count
+                if (list[index] != NULL) {
+                    list[index] = NULL;
+                }
+
+                //printf("try  : file_count   : %d\n", *file_count);
+            } else if (mode == 2) {
+
+               int result = scandir_internal2(full_name, patterns, pattern_count, files, file_count, level + 1, max_depth);
+               if (result < 0) {
+                // error
+               }
+            }
+
+            free(full_name);
+        }
+    }
+    //if (errno != 0) {
+        // TODO: stderr: error
+    //}
+    close_dir(dir);
+    return 0;
+}
+
 int scandir2(const char* dir_name, const char* pattern, file_t*** files, int max_depth) {
     if (!dir_name) {
         return -1;
@@ -317,4 +411,3 @@ int scandir2(const char* dir_name, const char* pattern, file_t*** files, int max
 
     return file_count;
 }
-
