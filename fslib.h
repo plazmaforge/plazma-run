@@ -26,6 +26,7 @@ typedef BY_HANDLE_FILE_INFORMATION fs_file_info_t;
 typedef struct fs_dirent_t {
     //fs_file_info_t info;
     int type; // OS Indepentent
+    char* name;
     WIN32_FIND_DATAW fd;
 } fs_dirent_t;
 
