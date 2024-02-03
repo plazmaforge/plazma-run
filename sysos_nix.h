@@ -5,11 +5,12 @@
 //#if defined(__linux__) || defined(_ALLBSD_SOURCE)
 #include <stdlib.h>
 #include <string.h>
-#include <sys/utsname.h>        /* For os_name and os_version */
+#include <sys/utsname.h>    /* For os_name and os_version */
+#include <unistd.h>         /* CPU - sysconf(_SC_NPROCESSORS_ONLN) [NonMacOS?] */
 
 #include "sysos.h"
 
-void load_os_common_info(os_info_t* os_info, /*struct*/ utsname* name) {
+void load_posix_common_info(os_info_t* os_info, /*struct*/ utsname* name) {
 
    // CPU Info
    os_info->os_arch = strdup(name->machine);
@@ -34,7 +35,11 @@ void load_os_common_info(os_info_t* os_info, /*struct*/ utsname* name) {
 void load_os_common_info(os_info_t* os_info) {
    /*struct*/ utsname name;
    uname(&name);
-   load_os_common_info(os_info, &name);
+   load_posix_common_info(os_info, &name);
+}
+
+void load_posix_cpu_info(os_info_t* os_info) {
+    os_info->cpu_processors = sysconf(_SC_NPROCESSORS_ONLN);
 }
 
 #if defined __APPLE__ && defined __MACH__
@@ -59,8 +64,9 @@ void load_os_info(os_info_t* os_info) {
         // TODO: split os_version by '.' and set major/minor/build
     #endif
 
-    load_os_common_info(os_info, &name);
-
+    load_posix_common_info(os_info, &name);
+    load_posix_cpu_info(os_info);
+    
 }
 #endif
 

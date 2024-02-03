@@ -31,6 +31,8 @@ struct os_info_t {
     //char* os_arch_data;      // cpu
     const char* cpu_isalist; // list of supported instruction sets
     char* cpu_endian;        // endianness of platform
+    int cpu_processors;      // number of processors
+
 
     // Network Info
 	char* node_name;         // network

@@ -315,6 +315,7 @@ void loadOsInfo(os_info_t* os_info) {
   char buf[100];
   boolean is_workstation;
   boolean is_64bit;
+  int processors = 0;
   DWORD platformId;
 
   ////
@@ -346,6 +347,7 @@ void loadOsInfo(os_info_t* os_info) {
   GetNativeSystemInfo(&si);
 
   is_64bit = (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64);
+  processors = si.dwNumberOfProcessors;
 
   ////
 
@@ -421,6 +423,7 @@ void loadOsInfo(os_info_t* os_info) {
   //os_info->os_arch_data = _strdup(getOsArchData(si));
   os_info->cpu_endian = strdup(get_cpu_endian());
   os_info->cpu_isalist = getCpuIsalist(si);
+  os_info->cpu_processors = cpu_processors;
 
   // FS Info
   os_info->file_separator = _strdup("\\");

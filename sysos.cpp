@@ -43,6 +43,7 @@ static void init_os_info(os_info_t* os_info) {
     //os_info->os_arch_data = NULL;
     os_info->cpu_isalist = NULL;
     os_info->cpu_endian = NULL;
+    os_info->cpu_processors = 0;
 
     // Network Info
 	os_info->node_name = NULL;

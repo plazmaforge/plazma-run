@@ -22,6 +22,7 @@ struct sys_info_t {
 
     const char* cpu_isalist;        // list of supported instruction sets
     const char* cpu_endian;         // endianness of platform
+    int cpu_processors;             // number of processors
 
     // Network Info
 	const char* node_name;          // network
