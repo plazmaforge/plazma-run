@@ -313,17 +313,19 @@ int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int patte
 
     while ((file = read_dir(dir)) != NULL) {
 
-        //printf("FILE: %p\n", file);
+        char* file_name = file->name;
+        int is_ignore = is_ignore_file(file_name);
+        int is_match = is_ignore ? 0 : (pattern == NULL || match_file_internal(pattern, file_name));
+        int is_dir_ = is_dir(file);
 
-        char* file_name = file->name; //file->d_name;
+        //printf("find [%s] [%s%s] [%d] %s, %s, %s\n", (is_match ? "+" : " "), (is_dir_ ? "D" : " "), (is_ignore ? "I" : " "), level, dir_name, file_name, pattern);
 
-        //printf("try   [%d] %s, %s, %s\n", level, dir_name, file_name, pattern);
-        if ( !is_ignore_file(file_name) && (pattern == NULL || match_file_internal(pattern, file_name)) ) {
+        if (is_match) {
 
             //printf("match [%d] %s, %s, %s\n", level, dir_name, file_name, pattern);
 
             int mode = 0; // 0 - notning, 1 - file, 2 - dir
-            if (!is_dir(file)) {
+            if (!is_dir_) {
                 // We add the file from last pattern level only
                 mode = (level == 0 || level == pattern_count - 1) ? 1 : 0;
             } else {
