@@ -290,6 +290,13 @@ int files_reinit(file_t*** files, size_t size) {
     return 0;
 }
 
+int is_ignore_file(const char* file_name) {
+    if (!file_name) {
+        return 1;
+    }
+    return (strcmp(file_name, ".") == 0 || strcmp(file_name, "..") == 0);
+}
+
 int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int pattern_count, file_t*** files, int* file_count, int level, int max_depth) {
 
     fs_dir_t* dir = open_dir(dir_name);
@@ -310,8 +317,10 @@ int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int patte
 
         char* file_name = file->name; //file->d_name;
 
-        //printf("try [%d] %s, %s, :: %s\n", level, dir_name, file_name, pattern);
-        if (pattern == NULL || match_file_internal(pattern, file_name)) {
+        //printf("try   [%d] %s, %s, %s\n", level, dir_name, file_name, pattern);
+        if ( !is_ignore_file(file_name) && (pattern == NULL || match_file_internal(pattern, file_name)) ) {
+
+            //printf("match [%d] %s, %s, %s\n", level, dir_name, file_name, pattern);
 
             int mode = 0; // 0 - notning, 1 - file, 2 - dir
             if (!is_dir(file)) {
@@ -332,7 +341,7 @@ int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int patte
     
             if (mode == 1) {
 
-                //printf("try  : add_file\n");
+                //printf("try   : add_file\n");
                 int index = *file_count; // old file_count
                 file_t** list = *files;
 
@@ -367,10 +376,12 @@ int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int patte
 
                 //printf("try  : file_count   : %d\n", *file_count);
             } else if (mode == 2) {
+               //printf("try   : add_dir\n");
 
                int result = scandir_internal2(full_name, patterns, pattern_count, files, file_count, level + 1, max_depth);
                if (result < 0) {
-                // error
+                 //printf("err  : %d\n", result);
+                 // error
                }
             }
 

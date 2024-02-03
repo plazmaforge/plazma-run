@@ -139,6 +139,8 @@ fs_dirent_t* read_dir(fs_dir_t* dir) {
     }
     if (!dir->dirent) {
         dir->dirent = (fs_dirent_t*) malloc(sizeof(fs_dirent_t));
+        dir->dirent->type = 0;
+        dir->dirent->name = NULL;
     }
     if (!dir->dirent) {
         return NULL;
