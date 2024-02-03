@@ -36,6 +36,15 @@ static int match_file_internal(const char* pattern, const char* name);
 static wchar_t* getRealPathW(const wchar_t* wpath);
 
 // [allocate]
+char* get_normalize_path(const char* dir_name, const char* file_name) { 
+    if (is_current_find_path(dir_name)) {
+        return strdup(file_name);                  // [allocate]
+    } else {
+        return get_file_path(dir_name, file_name); // [allocate]
+    }
+}
+
+// [allocate]
 char* get_real_path(const char* path) {
     if (!path) {
         return NULL;
@@ -284,14 +293,14 @@ fs_dirent_t* read_dir(fs_dir_t* dir) {
         return NULL;
     }
 
-    if (FindNextFileW(dir->ptr, &dir->fd) == 0) {
+    if (FindNextFileW(dir->ptr, &dir->dirent->fd) == 0) {
         return NULL;
     }
 
     //dir->dirent->fd = fd;
     //dir->dirent->type = fd->d_type; // TODO: Use Universal type
 
-    char* name = wchar2char(file.cFileName); // [allocate]
+    char* name = wchar2char(dir->dirent->fd.cFileName); // [allocate]
     dir->dirent->name = name;
     return dir->dirent;
 }
@@ -301,7 +310,7 @@ int close_dir(fs_dir_t* dir) {
         return 0;
     }
     FindClose(dir->ptr);
-    free(dir-name);
+    free(dir->dirent->name);
     free(dir);
     return 0;
 }

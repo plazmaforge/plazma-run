@@ -15,6 +15,11 @@ static int match_file_internal(const char* pattern, const char* name, int mode);
 static int match_file_internal(const char* pattern, const char* name);
 
 // [allocate]
+char* get_normalize_path(const char* dir_name, const char* file_name) {
+    return get_file_path(dir_name, file_name); // nothing to do 
+}
+
+// [allocate]
 char* get_real_path(const char* path) {
     if (!path) {
         return NULL;

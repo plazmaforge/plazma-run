@@ -17,7 +17,7 @@ const int FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
 typedef HANDLE fs_fd_t;
 
 /* Directory pointer  */
-typedef HANDLE fs_dir_t;
+//typedef HANDLE fs_dir_t;
 
 /* File Info          */
 typedef BY_HANDLE_FILE_INFORMATION fs_file_info_t;
@@ -73,10 +73,16 @@ typedef struct file_t {
 /* C Style */
 
 /**
- * Build full file name
+ * Build full file path
  */
 // [allocate]
 char* get_file_path(const char* dir_name, const char* file_name);
+
+/**
+ * Return normalize full file path
+ */
+// [allocate]
+char* get_normalize_path(const char* dir_name, const char* file_name);
 
 /**
  * Return real file path
@@ -88,6 +94,7 @@ char* get_real_path(const char* path);
  * Return current find path
  */
 const char* get_current_find_path();
+
 
 /**
  * Return true if a path is current find path

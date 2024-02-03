@@ -161,17 +161,17 @@ int main(int argc, char* argv[]) {
             //printf("%s\n", files[i].c_str());
             find(files[i].c_str(), input, inputSize, config);
         }
-        printf("file_count : %lu\n", files.size());
+        //printf("file_count : %lu\n", files.size());
         */
 
         //printf("New Scandir \n");
         
-        
+         
         file_t** files2 = NULL;
         int z = scandir2(dirName, pattern, &files2, FS_SCANDIR_RECURSIVE);
 
         for (int i = 0; i < z; i++) {
-            //printf("%s\n", files[i].c_str());
+            //printf("%s\n", files2[i]->name);
             find(files2[i]->name, input, inputSize, config);
             //free(files2[i]);
             //file_free(files2[i]);
@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
 
         //free(files2);
         files_free(files2);
-        printf("file_count : %d\n", z);
+        //printf("file_count : %d\n", z);
         
         
         //}

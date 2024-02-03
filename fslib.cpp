@@ -326,7 +326,7 @@ int scandir_internal2(const char* dir_name, /*const*/ char** patterns, int patte
                 continue; // notning
             }
 
-            char* full_name = get_file_path(dir_name, file_name);
+            char* full_name = get_normalize_path(dir_name, file_name);
 
             //printf("match: full_name    : %s\n", full_name);
     
