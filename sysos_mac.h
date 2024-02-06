@@ -8,9 +8,6 @@
 #include <CoreServices/CoreServices.h> // Gestalt: os_version
 #include <sys/utsname.h>               // For os_name and os_version
 
-//#include <sys/param.h>               // CPU (?)
-#include <sys/sysctl.h>                // CPU
-
 #include "sysos.h"
 
 void load_os_common_info(os_info_t* os_info) {
@@ -18,20 +15,7 @@ void load_os_common_info(os_info_t* os_info) {
 }
 
 void load_os_cpu_info(os_info_t* os_info) {
-    int nm[2];
-    uint32_t count;
-    size_t len = sizeof(count);
- 
-    nm[0] = CTL_HW; 
-    nm[1] = HW_NCPU; //HW_AVAILCPU;
-    sysctl(nm, 2, &count, &len, NULL, 0);
-
-    //if(count < 1) {
-    //    nm[1] = HW_NCPU;
-    //    sysctl(nm, 2, &count, &len, NULL, 0);
-    //}
-
-    os_info->cpu_count = count > 0 ? count : 1;
+    load_posix_cpu_info(os_info);
 }
 
 #ifdef PLAZMA_LIB_SYSOS_CORE

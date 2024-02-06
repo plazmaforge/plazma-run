@@ -12,8 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sysos.h"
-//#include "syscpu.h"
-
 
 typedef struct {
 

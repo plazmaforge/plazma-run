@@ -178,6 +178,11 @@ arch_t get_cpu_arch_type();
  */
 const char* get_cpu_arch_name();
 
+/**
+ * Returns CPU count
+ */
+int _get_cpu_count();
+
 ////
 
 const char* get_cpu_issalist_by_machine(const char* machine);

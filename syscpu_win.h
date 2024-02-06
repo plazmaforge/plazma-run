@@ -2,7 +2,6 @@
 #define PLAZMA_LIB_SYSCPU_WIN_H
 
 #if defined _WIN32
-//#include <io.h>
 #include <windows.h>
 
 #include <stdlib.h>
