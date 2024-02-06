@@ -157,9 +157,7 @@ const char* getWIN32_NT_10_Name(VersionInfo ver) {
 }
 
 const char* getWIN32_NT_Name(VersionInfo ver) {
-
-    //printf("Windows NT Name\n");
-  
+      
     if (ver.majorVersion <= 4) {
         return "Windows NT";
     }
@@ -172,12 +170,9 @@ const char* getWIN32_NT_Name(VersionInfo ver) {
     if (ver.majorVersion == 10) {
         return getWIN32_NT_10_Name(ver);
     }
-    
+
     return "Windows NT (unknown)";
 }
-
-// !!!!
-//#ifdef OS_WIN
 
 const char* getOsName(VersionInfo ver) {
 
@@ -201,104 +196,78 @@ char* getOsVersion(VersionInfo ver) {
    return _strdup(buf);
 }
 
-// by definition
-const char* getOsArch() {
-   #if defined(_M_AMD64)
-   return "x86_64"; //"amd64";
-   #elif defined(_X86_)
-   return "x86";
-   #elif defined(_M_ARM64)
-   return "aarch64";
-   #else
-   return NULL;
-   #endif
-}
+// // by SYSTEM_INFO
+// const char* getOsArch(SYSTEM_INFO& si) {
+//    switch (si.wProcessorArchitecture) {
+//     #ifdef PROCESSOR_ARCHITECTURE_IA64
+//     case PROCESSOR_ARCHITECTURE_IA64: return "x86_64";
+//     #endif
+//     #ifdef PROCESSOR_ARCHITECTURE_AMD64
+//     case PROCESSOR_ARCHITECTURE_AMD64: return "x86_64";
+//     #endif
+//     case PROCESSOR_ARCHITECTURE_INTEL:
+//         switch (si.wProcessorLevel) {
+//          case 6: 
+//          case 5: 
+//          case 4:
+//          case 3: return "x86";
+//          default: return "x86_64";
+//         }
+//     }     
+
+//   return NULL;
+// }
 
 // by SYSTEM_INFO
-const char* getOsArch(SYSTEM_INFO& si) {
-   switch (si.wProcessorArchitecture) {
-    #ifdef PROCESSOR_ARCHITECTURE_IA64
-    case PROCESSOR_ARCHITECTURE_IA64: return "x86_64";
-    #endif
-    #ifdef PROCESSOR_ARCHITECTURE_AMD64
-    case PROCESSOR_ARCHITECTURE_AMD64: return "x86_64";
-    #endif
-    case PROCESSOR_ARCHITECTURE_INTEL:
-        switch (si.wProcessorLevel) {
-         case 6: 
-         case 5: 
-         case 4:
-         case 3: return "x86";
-         default: return "x86_64";
-        }
-    }     
-
-  return NULL;
-}
-
-// by definition
-const char* getOsArchData() {
-   #if defined(_M_AMD64)
-   return "64";
-   #elif defined(_X86_)
-   return "32";
-   #elif defined(_M_ARM64)
-   return "64";
-   #else
-   return NULL;
-   #endif
-}
-
-// by SYSTEM_INFO
-const char* getOsArchData(SYSTEM_INFO& si) {
-   switch (si.wProcessorArchitecture) {
-    #ifdef PROCESSOR_ARCHITECTURE_IA64
-    case PROCESSOR_ARCHITECTURE_IA64: return "64";
-    #endif
-    #ifdef PROCESSOR_ARCHITECTURE_AMD64
-    case PROCESSOR_ARCHITECTURE_AMD64: return "64";
-    #endif
-    case PROCESSOR_ARCHITECTURE_INTEL:
-        switch (si.wProcessorLevel) {
-         case 6: 
-         case 5: 
-         case 4:
-         case 3: return "32";
-         default: return "64";
-        }
-    }     
+// const char* getOsArchData(SYSTEM_INFO& si) {
+//    switch (si.wProcessorArchitecture) {
+//     #ifdef PROCESSOR_ARCHITECTURE_IA64
+//     case PROCESSOR_ARCHITECTURE_IA64: return "64";
+//     #endif
+//     #ifdef PROCESSOR_ARCHITECTURE_AMD64
+//     case PROCESSOR_ARCHITECTURE_AMD64: return "64";
+//     #endif
+//     case PROCESSOR_ARCHITECTURE_INTEL:
+//         switch (si.wProcessorLevel) {
+//          case 6: 
+//          case 5: 
+//          case 4:
+//          case 3: return "32";
+//          default: return "64";
+//         }
+//     }     
  
-   return NULL;
-}
+//    return NULL;
+// }
 
 ////
 
-static boolean haveMMX(void) {
-    return IsProcessorFeaturePresent(PF_MMX_INSTRUCTIONS_AVAILABLE);
-}
+// static boolean haveMMX(void) {
+//     return IsProcessorFeaturePresent(PF_MMX_INSTRUCTIONS_AVAILABLE);
+// }
 
-static const char* getCpuIsalist(SYSTEM_INFO& si) {
-   switch (si.wProcessorArchitecture) {
-    #ifdef PROCESSOR_ARCHITECTURE_IA64
-    case PROCESSOR_ARCHITECTURE_IA64: return "ia64";
-    #endif
-    #ifdef PROCESSOR_ARCHITECTURE_AMD64
-    case PROCESSOR_ARCHITECTURE_AMD64: return "amd64";
-    #endif
-    case PROCESSOR_ARCHITECTURE_INTEL:
-        switch (si.wProcessorLevel) {
-        case 6: return haveMMX()
-            ? "pentium_pro+mmx pentium_pro pentium+mmx pentium i486 i386 i86"
-            : "pentium_pro pentium i486 i386 i86";
-        case 5: return haveMMX()
-            ? "pentium+mmx pentium i486 i386 i86"
-            : "pentium i486 i386 i86";
-        case 4: return "i486 i386 i86";
-        case 3: return "i386 i86";
-        }
-    }
-    return ""; 
-}
+// static const char* getCpuIsalist(SYSTEM_INFO& si) {
+//    switch (si.wProcessorArchitecture) {
+//     #ifdef PROCESSOR_ARCHITECTURE_IA64
+//     case PROCESSOR_ARCHITECTURE_IA64: return "ia64";
+//     #endif
+//     #ifdef PROCESSOR_ARCHITECTURE_AMD64
+//     case PROCESSOR_ARCHITECTURE_AMD64: return "amd64";
+//     #endif
+//     case PROCESSOR_ARCHITECTURE_INTEL:
+//         switch (si.wProcessorLevel) {
+//         case 6: return haveMMX()
+//             ? "pentium_pro+mmx pentium_pro pentium+mmx pentium i486 i386 i86"
+//             : "pentium_pro pentium i486 i386 i86";
+//         case 5: return haveMMX()
+//             ? "pentium+mmx pentium i486 i386 i86"
+//             : "pentium i486 i386 i86";
+//         case 4: return "i486 i386 i86";
+//         case 3: return "i386 i86";
+//         }
+//     }
+//     return ""; 
+// }
 
 void loadOsInfo(os_info_t* os_info) {
 
@@ -315,7 +284,7 @@ void loadOsInfo(os_info_t* os_info) {
   char buf[100];
   boolean is_workstation;
   boolean is_64bit;
-  int cpu_count = 0;
+  //int cpu_count = 0;
   DWORD platformId;
 
   ////
@@ -347,7 +316,7 @@ void loadOsInfo(os_info_t* os_info) {
   GetNativeSystemInfo(&si);
 
   is_64bit = (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64);
-  cpu_count = si.dwNumberOfProcessors;
+  //cpu_count = si.dwNumberOfProcessors;
 
   ////
 
@@ -418,16 +387,21 @@ void loadOsInfo(os_info_t* os_info) {
   os_info->os_build_version = buildNumber;
 
   // CPU Info
-  os_info->os_arch = _strdup(getOsArch(si));
-  os_info->os_arch_size = get_os_arch_size(os_info->os_arch);
+  //os_info->os_arch = _strdup(getOsArch(si));
+  //os_info->os_arch_size = get_os_arch_size(os_info->os_arch);
   //os_info->os_arch_data = _strdup(getOsArchData(si));
-  os_info->cpu_endian = strdup(get_cpu_endian());
-  os_info->cpu_isalist = getCpuIsalist(si);
+  //os_info->cpu_endian = _strdup(get_cpu_endian());
+  //os_info->cpu_isalist = getCpuIsalist(si);
+
+  os_info->os_arch = _strdup(get_cpu_arch_name_by_si(si));
+  os_info->os_arch_size = get_os_arch_size(os_info->os_arch);
+  os_info->cpu_endian = _strdup(get_cpu_endian());
+  os_info->cpu_isalist = get_cpu_isalist_by_si(si);
 
   // C CPU Issue: os.cpu_count() WIN: GetLogicalProcessorInformationEx
   // https://github.com/giampaolo/psutil/issues/771
   // https://github.com/umezawatakeshi/GetLogicalProcessorInformationEx/blob/master/GetLogicalProcessorInformationEx.cc
-  os_info->cpu_count = cpu_count;
+  os_info->cpu_count = get_cpu_count_by_si(si); //cpu_count;
 
   // FS Info
   os_info->file_separator = _strdup("\\");

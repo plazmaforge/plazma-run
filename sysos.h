@@ -43,14 +43,14 @@ struct os_info_t {
 
 
 /**
- * Returns OS Arch Size by OS Arch 
+ * Returns OS Arch Size by OS Arch Name
  */
-int get_os_arch_size(const char* arch);
+int get_os_arch_size(const char* arch_name);
 
 /**
- * Returns OS Arch Data by OS Arch 
+ * Returns OS Arch Data Model by OS Arch 
  */
-const char* get_os_arch_data(const char* arch);
+const char* get_os_arch_data_model(const char* arch_name);
 
 /**
  * Returns OS Info 

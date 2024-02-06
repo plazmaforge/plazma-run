@@ -7,39 +7,30 @@
 #include <string.h>
 #include <sys/utsname.h>    /* For os_name and os_version */
 #include <unistd.h>         /* CPU - sysconf(_SC_NPROCESSORS_ONLN) [NonMacOS?] */
-
 #include "sysos.h"
 
 void load_posix_common_info(os_info_t* os_info, /*struct*/ utsname* name) {
 
    // CPU Info
-   os_info->os_arch = strdup(name->machine);
+   os_info->os_arch = strdup(get_cpu_arch_name_by_machine(name->machine));
    os_info->os_arch_size = get_os_arch_size(os_info->os_arch);
-   //os_info->os_arch_data = strdup(get_os_arch_data(os_info->os_arch));
    os_info->cpu_endian = strdup(get_cpu_endian());
-
-   #ifdef SI_ISALIST
-   /* supported instruction sets */
-   char list[258];
-   sysinfo(SI_ISALIST, list, sizeof(list));
-   os_info->cpu_isalist = strdup(list);
-   #else
-   os_info->cpu_isalist = NULL;
-   #endif
+   os_info->cpu_isalist = strdup(get_cpu_issalist_by_machine(name->machine));
 
    // FS Info
    os_info->file_separator = strdup("/");
    os_info->line_separator = strdup("\n");
 }
 
-void load_os_common_info(os_info_t* os_info) {
+void load_posix_common_info(os_info_t* os_info) {
    /*struct*/ utsname name;
    uname(&name);
    load_posix_common_info(os_info, &name);
 }
 
 void load_posix_cpu_info(os_info_t* os_info) {
-    os_info->cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
+    int cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
+    os_info->cpu_count = cpu_count > 0 ? cpu_count : 1;
 }
 
 #if defined __APPLE__ && defined __MACH__

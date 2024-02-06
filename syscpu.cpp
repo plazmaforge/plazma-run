@@ -1,8 +1,13 @@
 #include <string.h>
-
 #include "syscpu.h"
 
-const char* get_arc_name(arch_t arch) {
+#if defined _WIN32
+#include "syscpu_win.h"
+#else
+#include "syscpu_nix.h"
+#endif
+
+const char* get_arch_name(arch_t arch) {
     if (arch >= ARCH_LAST)
         arch = ARCH_NONE;
 
@@ -15,11 +20,32 @@ int get_arch_size(arch_t arch) {
     return arch_data[arch].size;
 }
 
-arch_endian_t get_arc_endian(arch_t arch) {
+arch_endian_t get_arch_endian(arch_t arch) {
     if (arch >= ARCH_LAST)
         arch = ARCH_NONE;
 
     return arch_data[arch].endian;
+}
+
+static arch_t find_arch_by_name(const char *arch_name) {
+    if (!arch_name) {
+        return ARCH_NONE; // none
+    }
+    size_t i;
+    for (i = 1; i < ARCH_LAST; i++) {
+        if (strcmp(arch_data[i].name, arch_name) == 0) {
+            return (arch_t) i;
+        }
+    }
+    return ARCH_NONE; // none
+}
+
+static arch_data_t find_arch_data_by_name(const char *arch_name) {
+    if (!arch_name) {
+        return arch_data[0]; // none
+    }
+    arch_t arch = find_arch_by_name(arch_name);
+    return arch_data[arch];
 }
 
 ////
@@ -34,24 +60,73 @@ const char* get_cpu_endian() {
     return is_cpu_big_endian() ? "BE" : "LE";
 }
 
-int get_cpu_arch_size(const char* arch) {
-    if (!arch) {
-        return 0;
-    }
-    for (int i = 0; i < 37; i++) {
-        const char* name = arch_data[i].name;
-        if (strcmp(arch, name) == 0) {
-            return arch_data[i].size;
-        }
-    }
-    return 0;
+const char* get_cpu_arch_name() {
+    arch_t arch = get_cpu_arch_type(); // OS Depending
+    return get_arch_name(arch);
 }
 
-const char* get_cpu_arch_data(const char* arch) {
-    if (!arch) {
+////
+
+const char* get_cpu_issalist_by_machine(const char* machine) {
+    if (!machine) {
+        return "";
+    }
+    if (strcmp(machine, "amd64") == 0) {
+        return "x86_64";    /* amd64  -> x86_64  */
+    } else if (strcmp(machine, "ia64") == 0) {
+        return "ia64";      /* WHY?  */
+    }
+    return machine;         /* WHAT? */
+}
+
+arch_t get_cpu_arch_type_by_machine(const char* machine) {
+    if (!machine) {
+        return ARCH_NONE;
+    }
+
+    /* Some special cases we need to handle first
+     * for non-canonical names */
+    
+    if (strlen(machine) == 4 &&
+        machine[0] == 'i' &&
+        machine[2] == '8' &&
+        machine[3] == '6' &&
+        machine[4] == '\0') {
+        return ARCH_I686;      /* i<n>86 -> i686    */
+    } else if (strcmp(machine, "amd64") == 0) {
+        return ARCH_X86_64;    /* amd64  -> x86_64  */
+    } else if (strcmp(machine, "arm64") == 0) {
+        return ARCH_AARCH64;   /* arm64  -> aarch64 */
+    }
+
+    /* Otherwise assume the canonical name          */
+    return find_arch_by_name(machine);        
+}
+
+const char* get_cpu_arch_name_by_machine(const char* machine) {
+    if (!machine) {
         return NULL;
     }
-    int arch_size = get_cpu_arch_size(arch);
+    // Try find an arch type by machine
+    arch_t arch = get_cpu_arch_type_by_machine(machine);
+
+    // If the arch type is not found return original machine name
+    return arch == ARCH_NONE ? machine : get_arch_name(arch);
+}
+
+int get_cpu_arch_size(const char* arch_name) {
+    if (!arch_name) {
+        return 0;
+    }
+    arch_data_t data = find_arch_data_by_name(arch_name);
+    return data.size;
+}
+
+const char* get_cpu_arch_data_model(const char* arch_name) {
+    if (!arch_name) {
+        return NULL;
+    }
+    int arch_size = get_cpu_arch_size(arch_name);
 
     if (arch_size == 16) {
         return "16"; // WHAT?
@@ -111,3 +186,32 @@ const char* get_cpu_arch_data(const char* arch) {
 }
 
 
+////
+
+// deprecated
+// by definition
+const char* get_cpu_arch_data_model_cc() {
+   #if defined(_M_AMD64)
+   return "x86_64"; //"amd64";
+   #elif defined(_X86_)
+   return "x86";
+   #elif defined(_M_ARM64)
+   return "aarch64";
+   #else
+   return NULL;
+   #endif
+}
+
+// deprecated
+// by definition
+const char* get_cpu_arch_cc() {
+   #if defined(_M_AMD64)
+   return "64";
+   #elif defined(_X86_)
+   return "32";
+   #elif defined(_M_ARM64)
+   return "64";
+   #else
+   return NULL;
+   #endif
+}

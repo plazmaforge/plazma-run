@@ -12,12 +12,12 @@
 
 static os_info_t* os_info = NULL;
 
-int get_os_arch_size(const char* arch) {
-    return get_cpu_arch_size(arch);
+int get_os_arch_size(const char* arch_name) {
+    return get_cpu_arch_size(arch_name);
 }
 
-const char* get_os_arch_data(const char* arch) {
-    return get_cpu_arch_data(arch);
+const char* get_os_arch_data_model(const char* arch_name) {
+    return get_cpu_arch_data_model(arch_name);
 }
 
 static void init_os_info(os_info_t* os_info) {

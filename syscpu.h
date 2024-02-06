@@ -97,6 +97,7 @@ static const struct arch_data_t {
     arch_endian_t endian;
 } arch_data[] = {
     { "none",          0, ARCH_LITTLE_ENDIAN },
+
     { "alpha",        64, ARCH_BIG_ENDIAN },
     { "armv6l",       32, ARCH_LITTLE_ENDIAN },
     { "armv7l",       32, ARCH_LITTLE_ENDIAN },
@@ -142,11 +143,11 @@ static const struct arch_data_t {
     { "xtensaeb",     32, ARCH_BIG_ENDIAN },
 };
 
-const char* get_arc_name(arch_t arch);
+const char* get_arch_name(arch_t arch);
 
 int get_arch_size(arch_t arch);
 
-arch_endian_t get_arc_endian(arch_t arch);
+arch_endian_t get_arch_endian(arch_t arch);
 
 ////
 
@@ -160,14 +161,34 @@ int is_cpu_big_endian();
  */
 const char* get_cpu_endian();
 
+const char* get_cpu_issalist();
+
+/**
+ * Returns CPU Arch Type
+ */
+arch_t get_cpu_arch_type();
+
+/**
+ * Returns CPU Arch Name
+ */
+const char* get_cpu_arch_name();
+
+////
+
+const char* get_cpu_issalist_by_machine(const char* machine);
+
+arch_t get_cpu_arch_type_by_machine(const char* machine);
+
+const char* get_cpu_arch_name_by_machine(const char* machine);
+
 /**
  * Returns CPU Arch Size by CPU Arch 
  */
-int get_cpu_arch_size(const char* arch);
+int get_cpu_arch_size(const char* arch_name);
 
 /**
- * Returns CPU Arch Data by CPU Arch 
+ * Returns CPU Arch Data Model by CPU Arch 
  */
-const char* get_cpu_arch_data(const char* arch);
+const char* get_cpu_arch_data_model(const char* arch_name);
 
 #endif // PLAZMA_LIB_SYSCPU_H

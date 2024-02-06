@@ -13,24 +13,25 @@
 
 #include "sysos.h"
 
-void load_os_cpu_info(os_info_t* os_info) {
-    
-    //posix
-    //os_info->cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
+void load_os_common_info(os_info_t* os_info) {
+    load_posix_common_info(os_info);
+}
 
+void load_os_cpu_info(os_info_t* os_info) {
     int nm[2];
-    size_t len = 4;
     uint32_t count;
+    size_t len = sizeof(count);
  
-    nm[0] = CTL_HW; nm[1] = HW_AVAILCPU;
+    nm[0] = CTL_HW; 
+    nm[1] = HW_NCPU; //HW_AVAILCPU;
     sysctl(nm, 2, &count, &len, NULL, 0);
 
-    if(count < 1) {
-        nm[1] = HW_NCPU;
-        sysctl(nm, 2, &count, &len, NULL, 0);
-        if(count < 1) { count = 1; }
-    }
-    os_info->cpu_count = count;
+    //if(count < 1) {
+    //    nm[1] = HW_NCPU;
+    //    sysctl(nm, 2, &count, &len, NULL, 0);
+    //}
+
+    os_info->cpu_count = count > 0 ? count : 1;
 }
 
 #ifdef PLAZMA_LIB_SYSOS_CORE

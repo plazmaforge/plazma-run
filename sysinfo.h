@@ -18,7 +18,6 @@ struct sys_info_t {
     // CPU Info
     const char* os_arch;            // cpu
     int os_arch_size;               // cpu
-    //const char* os_arch_data;       // cpu
 
     const char* cpu_isalist;        // list of supported instruction sets
     const char* cpu_endian;         // endianness of platform
@@ -83,15 +82,19 @@ const char* get_os_arch();
 
 int get_os_arch_size();
 
-//const char* get_os_arch_data();
-
 const char* get_cpu_isalist();
+
+int get_cpu_count();
 
 // FS Info
 
 const char* get_file_separator();
 
 const char* get_line_separator();
+
+const char* get_file_encoding();
+
+const char* get_encoding();
 
 // User Info
 
@@ -104,6 +107,48 @@ const char* get_user_dir();
 const char* get_work_dir();
 
 const char* get_tmp_dir();
+
+// Locale Info
+
+const char* get_locale_name();
+
+const char* get_locale_language();
+
+const char* get_locale_script();
+
+const char* get_locale_country();
+
+const char* get_locale_variant();
+
+const char* get_locale_encoding();
+
+// Format Locale Info
+
+const char* get_format_locale_name();
+
+const char* get_format_locale_language();
+
+const char* get_format_locale_script();
+
+const char* get_format_locale_country();
+
+const char* get_format_locale_variant();
+
+const char* get_format_locale_encoding();
+
+// Display Locale Info
+
+const char* get_display_locale_name();
+
+const char* get_display_locale_language();
+
+const char* get_display_locale_script();
+
+const char* get_display_locale_country();
+
+const char* get_display_locale_variant();
+
+const char* get_display_locale_encoding();
 
 ////
 
