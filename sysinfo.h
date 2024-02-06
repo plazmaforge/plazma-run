@@ -4,15 +4,15 @@
 struct sys_info_t {
 
     // OS Info
-	const char* os_name;
-	const char* os_version;
-	const char* os_release;         // *
+    const char* os_name;
+    const char* os_version;
+    const char* os_release;         // *
     int os_major_version;
     int os_minor_version;
     int os_build_version;
 
     // Kernel Info
-	const char* version;            // kernel
+    const char* version;            // kernel
     const char* release;            // kernel
 
     // CPU Info
@@ -24,16 +24,16 @@ struct sys_info_t {
     int cpu_count;                  // number of processors
 
     // Network Info
-	const char* node_name;          // network
+    const char* node_name;          // network
 
     // FS Info
     const char* file_separator;
     const char* line_separator;
 
     // User Info
-	const char* user_name;
-	const char* user_home;
-	const char* user_dir;
+    const char* user_name;
+    const char* user_home;
+    const char* user_dir;
     const char* tmp_dir;
 
     // Current Locale Type (Format/Dysplay)

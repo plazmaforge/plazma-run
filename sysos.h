@@ -14,15 +14,15 @@
 struct os_info_t {
 
     // OS Version Info
-	char* os_name;
-	char* os_version;
-	char* os_release;        // *
+    char* os_name;
+    char* os_version;
+    char* os_release;        // *
     int os_major_version;
     int os_minor_version;
     int os_build_version;
 
     // Kernel Version Info
-	char* version;           // kernel
+    char* version;           // kernel
     char* release;           // kernel
 
     // CPU Info
@@ -33,7 +33,7 @@ struct os_info_t {
     int cpu_count;           // number of processors
 
     // Network Info
-	char* node_name;         // network
+    char* node_name;         // network
 
     // FS Info
     char* file_separator;

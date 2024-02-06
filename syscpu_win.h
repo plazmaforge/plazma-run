@@ -32,7 +32,7 @@ static const char* get_cpu_arch_name_by_si_1(SYSTEM_INFO& info) {
   return "";
 }
 
-const char* get_cpu_isalist_by_si(SYSTEM_INFO& si) {
+const char* get_cpu_isalist_by_si(SYSTEM_INFO& info) {
    switch (info.wProcessorArchitecture) {
     #ifdef PROCESSOR_ARCHITECTURE_IA64
     case PROCESSOR_ARCHITECTURE_IA64: return "ia64";
@@ -55,15 +55,6 @@ const char* get_cpu_isalist_by_si(SYSTEM_INFO& si) {
     return ""; 
 }
 
-const char* get_cpu_arch_name_by_si_2(SYSTEM_INFO& info) {
-    arch_t arch = get_cpu_arch_type_by_si(info);
-    return get_arch_name(arch);
-}
-
-const char* get_cpu_arch_name_by_si(SYSTEM_INFO& info) {
-    return get_cpu_arch_name_by_si_2(info);
-}
-
 arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
 
     switch (info.wProcessorArchitecture) {
@@ -72,7 +63,7 @@ arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
     case PROCESSOR_ARCHITECTURE_AMD64:
         return ARCH_X86_64;
     case PROCESSOR_ARCHITECTURE_INTEL:
-        switch (si.wProcessorLevel) {
+        switch (info.wProcessorLevel) {
          case 6: 
          case 5: 
          case 4:
@@ -102,36 +93,45 @@ arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
     }
 }
 
+const char* get_cpu_arch_name_by_si_2(SYSTEM_INFO& info) {
+    arch_t arch = get_cpu_arch_type_by_si(info);
+    return get_arch_name(arch);
+}
+
+const char* get_cpu_arch_name_by_si(SYSTEM_INFO& info) {
+    return get_cpu_arch_name_by_si_2(info);
+}
+
 int get_cpu_count_by_si(SYSTEM_INFO& info) {
-    return si.dwNumberOfProcessors;
+    return info.dwNumberOfProcessors;
 }
 
 ////
 
 void load_system_info(SYSTEM_INFO& info) {
-    //GetSystemInfo(info);
+    //GetSystemInfo(&info);
 
-    ZeroMemory(info, sizeof(SYSTEM_INFO));
-    GetNativeSystemInfo(info);
+    ZeroMemory(&info, sizeof(SYSTEM_INFO));
+    GetNativeSystemInfo(&info);
 }
 
 ////
 
 arch_t get_cpu_arch_type() {
     SYSTEM_INFO info;
-    load_system_info(&info);
-    return get_cpu_arch_type_by_si(&info);
+    load_system_info(info);
+    return get_cpu_arch_type_by_si(info);
 }
 
 const char* get_cpu_issalist() {
     SYSTEM_INFO info;
-    load_system_info(&info);
-    return get_cpu_issalist_by_si(info);
+    load_system_info(info);
+    return get_cpu_isalist_by_si(info);
 }
 
 int _get_cpu_count() {
     SYSTEM_INFO info;
-    load_system_info(&info);
+    load_system_info(info);
     return get_cpu_count_by_si(info);
 }
 

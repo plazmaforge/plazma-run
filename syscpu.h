@@ -1,6 +1,11 @@
 #ifndef PLAZMA_LIB_SYSCPU_H
 #define PLAZMA_LIB_SYSCPU_H
 
+#if defined _WIN32
+//#include <io.h>
+#include <windows.h>
+#endif
+
 typedef enum {
 
     ARCH_NONE,
@@ -190,5 +195,19 @@ int get_cpu_arch_size(const char* arch_name);
  * Returns CPU Arch Data Model by CPU Arch 
  */
 const char* get_cpu_arch_data_model(const char* arch_name);
+
+#if defined _WIN32
+
+const char* get_cpu_isalist_by_si(SYSTEM_INFO& info);
+
+arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info);
+
+const char* get_cpu_arch_name_by_si_2(SYSTEM_INFO& info);
+
+const char* get_cpu_arch_name_by_si(SYSTEM_INFO& info);
+
+int get_cpu_count_by_si(SYSTEM_INFO& info);
+
+#endif
 
 #endif // PLAZMA_LIB_SYSCPU_H
