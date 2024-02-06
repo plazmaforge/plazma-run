@@ -27,8 +27,8 @@ static void init_os_info(os_info_t* os_info) {
 
     // Version Info
     os_info->os_name = NULL;
-	os_info->os_version = NULL;
-	os_info->os_release = NULL;
+    os_info->os_version = NULL;
+    os_info->os_release = NULL;
     os_info->os_major_version = 0;
     os_info->os_minor_version = 0;
     os_info->os_build_version = 0;
@@ -46,7 +46,7 @@ static void init_os_info(os_info_t* os_info) {
     os_info->cpu_count = 0;
 
     // Network Info
-	os_info->node_name = NULL;
+    os_info->node_name = NULL;
 
     // FS Info
     os_info->file_separator = NULL;
@@ -70,11 +70,11 @@ static void free_os_info(os_info_t* os_info) {
 
     // Version Info
     free(os_info->os_name);
-	free(os_info->os_version);
-	free(os_info->os_release);
+    free(os_info->os_version);
+    free(os_info->os_release);
 
     // Kernel Info
-	free(os_info->version);
+    free(os_info->version);
     free(os_info->release);
 
     // CPU Info
@@ -84,7 +84,7 @@ static void free_os_info(os_info_t* os_info) {
     free(os_info->cpu_endian);
 
     // Network Info
-	free(os_info->node_name);
+    free(os_info->node_name);
 
     // FS Info
     free(os_info->file_separator);

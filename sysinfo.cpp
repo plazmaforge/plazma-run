@@ -23,7 +23,7 @@ static sys_info_t* init_sys_info(sys_info_t* sys_info) {
     sys_info->os_major_version = 0;
     sys_info->os_minor_version = 0;
     sys_info->os_build_version = 0;
-	sys_info->version = NULL;
+    sys_info->version = NULL;
     sys_info->release = NULL;
 
     // CPU Info
@@ -38,15 +38,15 @@ static sys_info_t* init_sys_info(sys_info_t* sys_info) {
     sys_info->line_separator = NULL;
 
     // Network Info
-	sys_info->node_name = NULL;
+    sys_info->node_name = NULL;
 
     // User Info
     sys_info->user_name = NULL;
-	sys_info->user_home = NULL;
-	sys_info->user_dir = NULL;
+    sys_info->user_home = NULL;
+    sys_info->user_dir = NULL;
     sys_info->tmp_dir = NULL;
 
-     // Current Locale Type (Format/Dysplay)
+    // Current Locale Type (Format/Dysplay)
     sys_info->locale_type = 0;
   
     // Format Locale Info
@@ -82,9 +82,9 @@ static void free_sys_info(sys_info_t* sys_info) {
 
     // Version Info
     free(sys_info->os_name);
-	free(sys_info->os_version);
-	free(sys_info->os_release);
-	free(sys_info->version);
+    free(sys_info->os_version);
+    free(sys_info->os_release);
+    free(sys_info->version);
     free(sys_info->release);
 
     // CPU Info
@@ -94,7 +94,7 @@ static void free_sys_info(sys_info_t* sys_info) {
     free(sys_info->cpu_endian);
 
     // Network Info
-	free(sys_info->node_name);
+    free(sys_info->node_name);
 
     // FS Info
     free(sys_info->file_separator);
