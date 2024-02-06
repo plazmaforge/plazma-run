@@ -197,78 +197,6 @@ char* getOsVersion(VersionInfo ver) {
    return _strdup(buf);
 }
 
-// // by SYSTEM_INFO
-// const char* getOsArch(SYSTEM_INFO& si) {
-//    switch (si.wProcessorArchitecture) {
-//     #ifdef PROCESSOR_ARCHITECTURE_IA64
-//     case PROCESSOR_ARCHITECTURE_IA64: return "x86_64";
-//     #endif
-//     #ifdef PROCESSOR_ARCHITECTURE_AMD64
-//     case PROCESSOR_ARCHITECTURE_AMD64: return "x86_64";
-//     #endif
-//     case PROCESSOR_ARCHITECTURE_INTEL:
-//         switch (si.wProcessorLevel) {
-//          case 6: 
-//          case 5: 
-//          case 4:
-//          case 3: return "x86";
-//          default: return "x86_64";
-//         }
-//     }     
-
-//   return NULL;
-// }
-
-// by SYSTEM_INFO
-// const char* getOsArchData(SYSTEM_INFO& si) {
-//    switch (si.wProcessorArchitecture) {
-//     #ifdef PROCESSOR_ARCHITECTURE_IA64
-//     case PROCESSOR_ARCHITECTURE_IA64: return "64";
-//     #endif
-//     #ifdef PROCESSOR_ARCHITECTURE_AMD64
-//     case PROCESSOR_ARCHITECTURE_AMD64: return "64";
-//     #endif
-//     case PROCESSOR_ARCHITECTURE_INTEL:
-//         switch (si.wProcessorLevel) {
-//          case 6: 
-//          case 5: 
-//          case 4:
-//          case 3: return "32";
-//          default: return "64";
-//         }
-//     }     
- 
-//    return NULL;
-// }
-
-////
-
-// static boolean haveMMX(void) {
-//     return IsProcessorFeaturePresent(PF_MMX_INSTRUCTIONS_AVAILABLE);
-// }
-
-// static const char* getCpuIsalist(SYSTEM_INFO& si) {
-//    switch (si.wProcessorArchitecture) {
-//     #ifdef PROCESSOR_ARCHITECTURE_IA64
-//     case PROCESSOR_ARCHITECTURE_IA64: return "ia64";
-//     #endif
-//     #ifdef PROCESSOR_ARCHITECTURE_AMD64
-//     case PROCESSOR_ARCHITECTURE_AMD64: return "amd64";
-//     #endif
-//     case PROCESSOR_ARCHITECTURE_INTEL:
-//         switch (si.wProcessorLevel) {
-//         case 6: return haveMMX()
-//             ? "pentium_pro+mmx pentium_pro pentium+mmx pentium i486 i386 i86"
-//             : "pentium_pro pentium i486 i386 i86";
-//         case 5: return haveMMX()
-//             ? "pentium+mmx pentium i486 i386 i86"
-//             : "pentium i486 i386 i86";
-//         case 4: return "i486 i386 i86";
-//         case 3: return "i386 i86";
-//         }
-//     }
-//     return ""; 
-// }
 
 void loadOsInfo(os_info_t* os_info) {
 
@@ -285,7 +213,6 @@ void loadOsInfo(os_info_t* os_info) {
   char buf[100];
   boolean is_workstation;
   boolean is_64bit;
-  //int cpu_count = 0;
   DWORD platformId;
 
   ////
@@ -317,7 +244,6 @@ void loadOsInfo(os_info_t* os_info) {
   GetNativeSystemInfo(&si);
 
   is_64bit = (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64);
-  //cpu_count = si.dwNumberOfProcessors;
 
   ////
 
