@@ -39,7 +39,7 @@ void load_os_common_info(os_info_t* os_info) {
 }
 
 void load_posix_cpu_info(os_info_t* os_info) {
-    os_info->cpu_processors = sysconf(_SC_NPROCESSORS_ONLN);
+    os_info->cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
 }
 
 #if defined __APPLE__ && defined __MACH__
@@ -66,7 +66,7 @@ void load_os_info(os_info_t* os_info) {
 
     load_posix_common_info(os_info, &name);
     load_posix_cpu_info(os_info);
-    
+
 }
 #endif
 

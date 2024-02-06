@@ -25,10 +25,9 @@ static sys_info_t* init_sys_info(sys_info_t* sys_info) {
     // CPU Info
     sys_info->os_arch = NULL;
     sys_info->os_arch_size = 0;
-    //sys_info->os_arch_data = NULL;
     sys_info->cpu_isalist = NULL;
     sys_info->cpu_endian = NULL;
-    sys_info->cpu_processors = 0;
+    sys_info->cpu_count = 0;
 
     // FS Info
     sys_info->file_separator = NULL;
@@ -161,10 +160,9 @@ const sys_info_t* get_sys_info() {
         // CPU Info
         sys_info->os_arch = os_info->os_arch;
         sys_info->os_arch_size = os_info->os_arch_size;
-        //sys_info->os_arch_data = os_info->os_arch_data;
         sys_info->cpu_isalist = os_info->cpu_isalist;
         sys_info->cpu_endian = os_info->cpu_endian;
-        sys_info->cpu_processors = os_info->cpu_processors;
+        sys_info->cpu_count = os_info->cpu_count;
 
         // FS Info
         sys_info->file_separator = os_info->file_separator;
@@ -378,7 +376,7 @@ void print_sys_info() {
     
     printf("cpu.isalist      : %s\n", lib_strsaf(sys_info->cpu_isalist));
     printf("cpu.endian       : %s\n", lib_strsaf(sys_info->cpu_endian));
-    printf("cpu.processors   : %d\n", sys_info->cpu_processors);
+    printf("cpu.count        : %d\n", sys_info->cpu_count);
 
     // FS Info
     printf("file.separator   : %s\n", lib_strsaf(sys_info->file_separator));

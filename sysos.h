@@ -28,11 +28,9 @@ struct os_info_t {
     // CPU Info
     char* os_arch;           // cpu
     int os_arch_size;        // cpu
-    //char* os_arch_data;      // cpu
     const char* cpu_isalist; // list of supported instruction sets
     char* cpu_endian;        // endianness of platform
-    int cpu_processors;      // number of processors
-
+    int cpu_count;           // number of processors
 
     // Network Info
 	char* node_name;         // network
