@@ -2,16 +2,22 @@
 #define PLAZMA_LIB_SYSCPU_WIN_H
 
 #if defined _WIN32
-#include <io.h>
+//#include <io.h>
 #include <windows.h>
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "syscpu.h"
+
+#ifndef PROCESSOR_ARCHITECTURE_ARM64
+#define PROCESSOR_ARCHITECTURE_ARM64 12
+#endif
 
 static int has_mmx() {
     return IsProcessorFeaturePresent(PF_MMX_INSTRUCTIONS_AVAILABLE);
 }
 
+// legacy
 static const char* get_cpu_arch_name_by_si_1(SYSTEM_INFO& info) {
    switch (info.wProcessorArchitecture) {
     #ifdef PROCESSOR_ARCHITECTURE_IA64
@@ -32,6 +38,7 @@ static const char* get_cpu_arch_name_by_si_1(SYSTEM_INFO& info) {
   return "";
 }
 
+// legacy (?)
 const char* get_cpu_isalist_by_si(SYSTEM_INFO& info) {
    switch (info.wProcessorArchitecture) {
     #ifdef PROCESSOR_ARCHITECTURE_IA64
@@ -52,7 +59,8 @@ const char* get_cpu_isalist_by_si(SYSTEM_INFO& info) {
         case 3: return "i386 i86";
         }
     }
-    return ""; 
+    //return ""; 
+    return get_cpu_arch_name_by_si(info);
 }
 
 arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
@@ -71,7 +79,7 @@ arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
          default: return ARCH_X86_64;
         }
 
-    /*
+    
     case PROCESSOR_ARCHITECTURE_IA32_ON_WIN64:
         return ARCH_I686;
     case PROCESSOR_ARCHITECTURE_MIPS:
@@ -86,7 +94,7 @@ arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
         return ARCH_ARMV7L;
     case PROCESSOR_ARCHITECTURE_ARM64:
         return ARCH_AARCH64;
-    */
+    
 
     default:
         return ARCH_NONE;
@@ -103,7 +111,25 @@ const char* get_cpu_arch_name_by_si(SYSTEM_INFO& info) {
 }
 
 int get_cpu_count_by_si(SYSTEM_INFO& info) {
-    return info.dwNumberOfProcessors;
+   int count = info.dwNumberOfProcessors;
+
+   DWORD_PTR process_cpus;
+   DWORD_PTR system_cpus;
+
+   //gl
+   if (GetProcessAffinityMask (GetCurrentProcess (), &process_cpus, &system_cpus)) {
+      unsigned int af_count;
+      for (af_count = 0; process_cpus != 0; process_cpus >>= 1)
+        if (process_cpus & 1)
+          af_count++;
+
+      //printf("Processors count %d\n", af_count);
+  
+      /* Prefer affinity-based result, if available */
+      if (af_count > 0)
+        count = af_count;
+    }
+   return count > 0 ? count : 1;
 }
 
 ////
