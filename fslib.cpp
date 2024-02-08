@@ -227,7 +227,7 @@ int fs_chmod(const char* file_name, int mode) {
 
     retval = _wchmod(wfile_name, mode);
     save_errno = errno;
-    free(wfilename);
+    free(wfile_name);
     errno = save_errno;
     return retval;
 #else
