@@ -3,9 +3,9 @@
 
 #if defined __unix__ || defined __linux__ || (defined __APPLE__ && defined __MACH__)
 
-#include <fnmatch.h>
-#include <dirent.h>
 #include <errno.h>
+#include <dirent.h>
+#include <fnmatch.h>
 #include <limits.h> /* PATH_MAX */
 
 #include "fslib.h"

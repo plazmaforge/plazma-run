@@ -12,8 +12,11 @@
 #endif
 #endif
 
-#include <wchar.h>
 #include <windows.h>
+#include <errno.h>
+#include <wchar.h>
+#include <io.h>
+
 //#include <stdio.h>
 //#include <stdlib.h>
 

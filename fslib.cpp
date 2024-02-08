@@ -3,8 +3,12 @@
 #include <stdio.h>
 
 #ifdef _WIN32
+#include <sys/utime.h>
 #include "fslib_win.h"
 #else
+//#include <utime.h>
+//#include <sys/unistd.h>
+#include <unistd.h>
 #include "fslib_nix.h"
 #endif
 
@@ -144,7 +148,41 @@ int match_file(const char* name, const char* pattern) {
 ////////////////////
 
 int fs_mkdir(const char* file_name, int mode) {
-    return 0; // TODO: STUB
+#ifdef _WIN32
+    wchar_t *wfile_name = char_wchar(file_name);
+    int retval;
+    int save_errno;
+    if (wfile_name == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+    retval = _wmkdir(wfile_name);
+    save_errno = errno;
+    free(wfile_name);
+    errno = save_errno;
+    return retval;
+#else
+    return mkdir(file_name, mode);
+#endif
+}
+
+int fs_chdir(const char* file_name) {
+#ifdef _WIN32
+    wchar_t *wfile_name = char_wchar(file_name);
+    int retval;
+    int save_errno;
+    if (wfile_name == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+    retval = _wchdir(wfile_name);
+    save_errno = errno;
+    free(wfile_name);
+    errno = save_errno;
+    return retval;
+#else
+    return chdir(file_name);
+#endif
 }
 
 ///////////////////

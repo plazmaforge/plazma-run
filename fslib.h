@@ -106,6 +106,15 @@ int is_current_find_path(const char* path);
  */
 int match_file(const char* name, const char* pattern);
 
+
+////
+
+int fs_mkdir(const char* file_name, int mode);
+
+int fs_chdir(const char* file_name);
+
+////
+
 /* C++ Style - Migration Task */
 
 /**
