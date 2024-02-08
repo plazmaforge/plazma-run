@@ -25,8 +25,8 @@ void printTest(const char* input) {
         return;
     }
     const char* str = input;
-    const wchar_t* wstr = achar2wchar(str); // WIN32 (ANSII): achar2wchar + wchar2achar - correct only!
-    const char* str2 = wchar2achar(wstr);
+    const wchar_t* wstr = achar_wchar(str); // WIN32 (ANSII): achar_wchar + wchar_achar - correct only!
+    const char* str2 = wchar_achar(wstr);
 
     wprintf(L"\n");
     printf("MB-c-STR %s\n", str);

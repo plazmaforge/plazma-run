@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 
     /*
     const char* str = "\xe4\xbd\xa0\xe5\xa5\xbd";
-    wchar_t* wstr = char2wchar(str);
+    wchar_t* wstr = char_wchar(str);
 
     printf("MB-c-STR: %s\n", str);
     //wprintf(L"MB-w string: %s\n", str);
@@ -49,8 +49,8 @@ int main(int argc, char* argv[]) {
     /*
     for (int i = 0; i < argc; i++) {
         char* str = argv[i];
-        wchar_t* wstr = achar2wchar(str); // WIN32 (ANSII): achar2wchar + wchar2achar - correct only!
-        char* str2 = wchar2achar(wstr);
+        wchar_t* wstr = achar_wchar(str); // WIN32 (ANSII): achar_wchar + wchar_achar - correct only!
+        char* str2 = wchar_achar(wstr);
 
         wprintf(L"\n");
 

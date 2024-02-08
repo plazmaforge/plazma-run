@@ -49,7 +49,7 @@ char* get_real_path(const char* path) {
     if (!path) {
         return NULL;
     }
-    wchar_t* wpath = char2wchar(path);
+    wchar_t* wpath = char_wchar(path);
     if (!wpath) {
         return NULL;
     }
@@ -58,7 +58,7 @@ char* get_real_path(const char* path) {
     if (!wreal_path) {
         return NULL;
     }
-    char* real_path = wchar2char(wreal_path);
+    char* real_path = wchar_char(wreal_path);
     free(wreal_path);
 
     return real_path;
@@ -188,7 +188,7 @@ static wchar_t* getRealPathW(const wchar_t* wpath) {
 void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
 
     char* path = get_find_path(dirName); // convert 'dirName' to WIN32 find path: add '\*'
-    wchar_t* wpath = char2wchar(path);
+    wchar_t* wpath = char_wchar(path);
     //printf("path    : '%s'\n", path);
 
     WIN32_FIND_DATAW file;
@@ -201,7 +201,7 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
     while (FindNextFileW(dir, &file) != 0) {
 
         wchar_t* wfileName = file.cFileName;
-        char* fileName = wchar2char(wfileName); // [allocate]
+        char* fileName = wchar_char(wfileName); // [allocate]
 
         //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
         if (pattern == NULL || match_file_internal(level_pattern, fileName)) {
@@ -260,7 +260,7 @@ fs_dir_t* open_dir(const char* dir_name) {
     }
 
     char* path = get_find_path(dir_name); // convert 'dir_name' to WIN32 find path: add '\*'
-    wchar_t* wpath = char2wchar(path);
+    wchar_t* wpath = char_wchar(path);
     //printf("path    : '%s'\n", path);
 
     WIN32_FIND_DATAW _file;
@@ -302,7 +302,7 @@ fs_dirent_t* read_dir(fs_dir_t* dir) {
     //dir->dirent->fd = fd;
     //dir->dirent->type = fd->d_type; // TODO: Use Universal type
 
-    char* name = wchar2char(dir->dirent->fd.cFileName); // [allocate]
+    char* name = wchar_char(dir->dirent->fd.cFileName); // [allocate]
 
     dir->dirent->name = name;
     return dir->dirent;
@@ -323,8 +323,8 @@ static int match_file_internal(const char* pattern, const char* name, int mode) 
     // PathMatchSpecA
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
 
-    //wchar_t* wpattern = char2wchar(pattern, strlen(pattern));
-    //wchar_t* wname = char2wchar(name, strlen(name));
+    //wchar_t* wpattern = char_wchar(pattern, strlen(pattern));
+    //wchar_t* wname = char_wchar(name, strlen(name));
 
     //return PathMatchSpecW(wname, wpattern);
     //return PathMatchSpecA(name, pattern);

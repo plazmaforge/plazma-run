@@ -140,6 +140,15 @@ int match_file(const char* name, const char* pattern) {
     return 0;
 }
 
+
+////////////////////
+
+int fs_mkdir(const char* file_name, int mode) {
+    return 0; // TODO: STUB
+}
+
+///////////////////
+
 /* C++ Style - Migration Task */
 
 //[allocate]

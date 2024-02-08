@@ -73,8 +73,8 @@ int main(int argc, char* argv[]) {
 
     // incorrect last chars: non printable char
     //printf("%s", totalData);
-    //printf("%ls", char2wchar(totalData));   // IMPORTANT for WIN32 
-    //wprintf(L"%ls", char2wchar(totalData)); // IMPORTANT for WIN32
+    //printf("%ls", char_wchar(totalData));   // IMPORTANT for WIN32 
+    //wprintf(L"%ls", char_wchar(totalData)); // IMPORTANT for WIN32
 
  
     for (int i = 0; i < totalSize; i++) {                                            
