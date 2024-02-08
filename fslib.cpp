@@ -147,15 +147,105 @@ int match_file(const char* name, const char* pattern) {
 
 ////////////////////
 
-int fs_mkdir(const char* file_name, int mode) {
 #ifdef _WIN32
-    wchar_t *wfile_name = char_wchar(file_name);
+static int to_errno_win(DWORD error_code) {
+  switch (error_code) {
+    case ERROR_ACCESS_DENIED:
+      return EACCES;
+      break;
+    case ERROR_ALREADY_EXISTS:
+    case ERROR_FILE_EXISTS:
+      return EEXIST;
+    case ERROR_FILE_NOT_FOUND:
+      return ENOENT;
+      break;
+    case ERROR_INVALID_FUNCTION:
+      return EFAULT;
+      break;
+    case ERROR_INVALID_HANDLE:
+      return EBADF;
+      break;
+    case ERROR_INVALID_PARAMETER:
+      return EINVAL;
+      break;
+    case ERROR_LOCK_VIOLATION:
+    case ERROR_SHARING_VIOLATION:
+      return EACCES;
+      break;
+    case ERROR_NOT_ENOUGH_MEMORY:
+    case ERROR_OUTOFMEMORY:
+      return ENOMEM;
+      break;
+    case ERROR_NOT_SAME_DEVICE:
+      return EXDEV;
+      break;
+    case ERROR_PATH_NOT_FOUND:
+      return ENOENT; /* or ELOOP, or ENAMETOOLONG */
+      break;
+    default:
+      return EIO;
+      break;
+    }
+}
+#endif
+
+int fs_access(const char* file_name, int mode) {
+#ifdef _WIN32
+    wchar_t* wfile_name = char_wchar(file_name);
     int retval;
     int save_errno;
+
     if (wfile_name == NULL) {
         errno = EINVAL;
         return -1;
     }
+
+#ifndef X_OK
+#define X_OK 1
+#endif
+
+    retval = _waccess(wfile_name, mode & ~X_OK);
+    save_errno = errno;
+    free(wfile_name);
+    errno = save_errno;
+    return retval;
+#else
+    return access(file_name, mode);
+#endif
+}
+
+int fs_chmod(const char* file_name, int mode) {
+#ifdef _WIN32
+    wchar_t* wfile_name = char_wchar(file_name);
+    int retval;
+    int save_errno;
+
+    if (!wfile_name) {
+        errno = EINVAL;
+        return -1;
+    }    
+
+    retval = _wchmod(wfile_name, mode);
+    save_errno = errno;
+    free(wfilename);
+    errno = save_errno;
+    return retval;
+#else
+    return chmod(file_name, mode);
+#endif
+}
+
+int fs_mkdir(const char* file_name, int mode) {
+#ifdef _WIN32
+    wchar_t* wfile_name = char_wchar(file_name);
+    int retval;
+    int save_errno;
+
+    if (!wfile_name) {
+        errno = EINVAL;
+        return -1;
+    }
+
     retval = _wmkdir(wfile_name);
     save_errno = errno;
     free(wfile_name);
@@ -168,13 +258,15 @@ int fs_mkdir(const char* file_name, int mode) {
 
 int fs_chdir(const char* file_name) {
 #ifdef _WIN32
-    wchar_t *wfile_name = char_wchar(file_name);
+    wchar_t* wfile_name = char_wchar(file_name);
     int retval;
     int save_errno;
-    if (wfile_name == NULL) {
+
+    if (!wfile_name) {
         errno = EINVAL;
         return -1;
     }
+
     retval = _wchdir(wfile_name);
     save_errno = errno;
     free(wfile_name);
@@ -182,6 +274,89 @@ int fs_chdir(const char* file_name) {
     return retval;
 #else
     return chdir(file_name);
+#endif
+}
+
+int fs_rename(const char* old_file_name, const char* new_file_name) {
+#ifdef _WIN32
+    wchar_t* wold_file_name;
+    wchar_t* wnew_file_name;
+    int retval;
+    int save_errno = 0;
+
+    wold_file_name = char_wchar(old_file_name);
+    if (!wold_file_name) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    wnew_file_name = char_wchar(new_file_name);
+    if (!wnew_file_name) {
+        free(wold_file_name);
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (MoveFileExW(wold_file_name, wnew_file_name, MOVEFILE_REPLACE_EXISTING)) {
+        retval = 0;
+    } else {
+        retval = -1;
+        save_errno = to_errno_win(GetLastError());
+    }
+
+    free(wold_file_name);
+    free(wnew_file_name);
+
+    errno = save_errno;
+    return retval;
+#else
+    return rename(old_file_name, new_file_name);
+#endif
+}
+
+int fs_remove(const char* file_name) {
+#ifdef _WIN32
+    wchar_t* wfile_name = char_wchar(file_name);
+    int retval;
+    int save_errno;
+
+    if (!wfile_name) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    retval = _wremove(wfile_name);
+    if (retval == -1) {
+        retval = _wrmdir(wfile_name);
+    }
+        
+    save_errno = errno;
+    free(wfile_name);
+    errno = save_errno;    
+    return retval;
+#else
+    return remove(file_name);
+#endif
+}
+
+int fs_rmdir(const char* file_name) {
+#ifdef _WIN32
+    wchar_t* wfile_name = char_wchar(file_name);
+    int retval;
+    int save_errno;
+
+    if (!wfile_name) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    retval = _wrmdir(wfile_name);
+    save_errno = errno;
+    free(wfile_name);
+    errno = save_errno;
+    return retval;
+#else
+    return rmdir(file_name);
 #endif
 }
 

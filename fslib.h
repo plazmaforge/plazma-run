@@ -109,9 +109,19 @@ int match_file(const char* name, const char* pattern);
 
 ////
 
+int fs_access(const char* file_name, int mode);
+
+int fs_chmod(const char* file_name, int mode);
+
 int fs_mkdir(const char* file_name, int mode);
 
 int fs_chdir(const char* file_name);
+
+int fs_rename(const char* old_file_name, const char* new_file_name);
+
+int fs_remove(const char* file_name);
+
+int fs_rmdir(const char* file_name);
 
 ////
 
