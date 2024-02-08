@@ -34,6 +34,9 @@ g++ -c run_cat.cpp -o run_cat.o
 g++ -c run_sysinfo.cpp -o run_sysinfo.o
 g++ -c run_find.cpp -o run_find.o
 
+g++ -c run_mkdir.cpp -o run_mkdir.o
+g++ -c run_rmdir.cpp -o run_rmdir.o
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
    g++ -c sysos_mac.mm -o sysos_mac.o
 fi
@@ -46,3 +49,7 @@ g++ $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_
 g++ $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o syscpu.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_sysinfo.o -o run-sysinfo
 g++ $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o srhlib.o syscpu.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_find.o -o run-find
 g++ $LDFLAGS getopt.o test_getopt.o -o test-getopt
+
+g++ $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_mkdir.o -o run-mkdir
+g++ $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_rmdir.o -o run-rmdir
+
