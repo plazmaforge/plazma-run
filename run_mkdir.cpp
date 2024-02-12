@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     char* dir_name = argv[1];
-    int retval = fs_mkdir(dir_name, 0777);
+    int retval = fs_create_dir(dir_name);
     if (retval != 0) {
         fprintf(stderr, "Can't create directory: %s\n", dir_name);
     }

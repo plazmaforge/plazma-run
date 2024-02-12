@@ -12,6 +12,7 @@
 #include "fslib_nix.h"
 #endif
 
+#include "strlib.h"
 #include "fslib.h"
 
 /* C Style */
@@ -189,6 +190,106 @@ static int to_errno_win(DWORD error_code) {
 }
 #endif
 
+/* General Functions          */
+
+#ifdef _WIN32
+int fs_is_drive_path(const char* path) {
+    if (!path) {
+        return 0;
+    }
+    return (isalpha (path[0]) 
+      && path[1] == ':' 
+      && LIB_IS_DIR_SEPARATOR (path[2]));
+}
+#endif
+
+int fs_is_absolute_path(const char* path) {
+    if (!path) {
+        return 0;
+    }
+
+    if (LIB_IS_DIR_SEPARATOR(path[0])) {
+        return 1;
+    }
+
+#ifdef _WIN32
+    /* Recognize drive letter on native Windows */
+    return fs_is_drive_path(path);
+#endif
+
+    return 0;
+}
+
+/**
+ * Skips dir separators and returns a pointer to the first non-dir separator char 
+ */
+const char* fs_skip_dir_separators(const char* path) {
+    if (!path) {
+        return NULL;
+    }
+    while (LIB_IS_DIR_SEPARATOR(path[0]))
+        path++;
+    return path;
+}
+
+/**
+ * Skips non-dir separators and returns a pointer to the first dir separator char 
+ */
+const char* fs_skip_nondir_separators(const char* path) {
+    if (!path) {
+        return NULL;
+    }
+    while (path[0] && !LIB_IS_DIR_SEPARATOR(path[0]))
+        path++;
+    return path;
+}
+
+const char* fs_skip_root(const char* file_name) {
+    if (!file_name) {
+        return NULL;
+    }
+#ifdef _WIN32
+
+    /* Skip \\server\share or //server/share */
+    if (LIB_IS_DIR_SEPARATOR(file_name[0]) &&
+        LIB_IS_DIR_SEPARATOR(file_name[1]) &&
+        file_name[2] &&
+        !LIB_IS_DIR_SEPARATOR(file_name[2])) {
+
+        const char* p = strchr(file_name + 2, LIB_DIR_SEPARATOR);
+        const char* q = strchr(file_name + 2, '/');
+
+        if (p == NULL || (q != NULL && q < p))
+            p = q;
+
+        if (p && p > file_name + 2 && p[1]) {
+            file_name = p + 1;
+            file_name = fs_skip_nondir_separators(file_name);
+
+            /* Possibly skip a backslash after the share name */
+            file_name = fs_skip_dir_separators(file_name);
+            return (char*) file_name;
+        }
+    }
+#endif
+
+    /* Skip initial slashes */
+    if (LIB_IS_DIR_SEPARATOR(file_name[0])) {
+        file_name = fs_skip_dir_separators(file_name);
+        return (char*) file_name;
+    }
+
+#ifdef _WIN32
+    /* Skip X:\ */
+    if (fs_is_drive_path(file_name))
+        return (char*) file_name + 3;
+#endif
+
+    return NULL;
+}
+
+/* POSIX Style                */
+
 int fs_access(const char* file_name, int mode) {
 #ifdef _WIN32
     wchar_t* wfile_name = char_wchar(file_name);
@@ -360,7 +461,100 @@ int fs_rmdir(const char* file_name) {
 #endif
 }
 
-///////////////////
+////////////////////////////////
+
+int fs_mkdir_all(const char* path, int mode) {
+    char* fn;
+    char* p;
+
+    if (path == NULL || *path == '\0') {
+        errno = EINVAL;
+        return -1;
+    }
+
+    /* try to create the full path first */
+    if (fs_mkdir(path, mode) == 0) {
+        return 0;
+    }
+
+    if (errno == EEXIST) {
+        //if (!fs_file_test(path, LIB_FILE_TEST_IS_DIR)) {
+        //    errno = ENOTDIR;
+        //    return -1;
+        //}
+        return 0;
+    }
+
+    /* walk the full path and try creating each element */
+    fn = lib_strdup(path);
+
+    if (fs_is_absolute_path(fn))
+        p = (char*) fs_skip_root(fn);
+    else
+        p = fn;
+
+    do {
+
+        /* skip non-dir separators: search first dir separator */
+        while (*p && !LIB_IS_DIR_SEPARATOR(*p))
+            p++;
+
+        /* replace dir separartor to NULL-terminal char */
+        if (!*p)
+            p = NULL;
+        else
+            *p = '\0';
+
+        //if (!fs_file_test(fn, LIB_FILE_TEST_EXISTS)) {
+            if (fs_mkdir(fn, mode) == -1 && errno != EEXIST) {
+                int save_errno = errno;
+                if (errno != ENOENT || !p) {
+                    free(fn);
+                    errno = save_errno;
+                    return -1;
+                }
+            }
+        //} else if (!fs_file_test(fn, LIB_FILE_TEST_IS_DIR)) {
+        //    free(fn);
+        //    errno = ENOTDIR;
+        //    return -1;
+        //}
+
+        /* restore dir separator */
+        if (p) {
+            *p++ = LIB_DIR_SEPARATOR;
+
+            /* skip dir separators: search first non-dir separator char*/
+            while (*p && LIB_IS_DIR_SEPARATOR(*p))
+                p++;
+        }
+
+    } while (p);
+
+    free(fn);
+
+    return 0;
+}
+
+////////////////////////////////
+
+/* Human Style                */
+
+int fs_create_dir(const char* file_name) {
+    return fs_mkdir(file_name, 0777);
+}
+
+int fs_create_dir_all(const char* file_name) {
+    return fs_mkdir_all(file_name, 0777);
+}
+
+int fs_remove_file(const char* file_name) {
+    return fs_remove(file_name);
+}
+
+int fs_remove_dir(const char* file_name) {
+    return fs_rmdir(file_name);
+}
 
 /* C++ Style - Migration Task */
 

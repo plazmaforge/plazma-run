@@ -6,6 +6,17 @@
 
 #include "pathlib.h"
 
+#ifdef _WIN32
+
+#define LIB_DIR_SEPARATOR '\'
+#define LIB_IS_DIR_SEPARATOR(c) ((c) == LIB_DIR_SEPARATOR || (c) == '/')
+
+#else  /* !_WIN32 */
+
+#define LIB_DIR_SEPARATOR '/'
+#define LIB_IS_DIR_SEPARATOR(c) ((c) == LIB_DIR_SEPARATOR)
+
+#endif /* !_WIN32 */
 
 const int FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
 const int FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
@@ -106,14 +117,23 @@ int is_current_find_path(const char* path);
  */
 int match_file(const char* name, const char* pattern);
 
+/* General Functions          */
 
-////
+#ifdef _WIN32
+int fs_is_drive_path(const char* path);
+#endif
+
+int fs_is_absolute_path(const char* path);
+
+/* POSIX Style                */
 
 int fs_access(const char* file_name, int mode);
 
 int fs_chmod(const char* file_name, int mode);
 
 int fs_mkdir(const char* file_name, int mode);
+
+int fs_mkdir_all(const char* path, int mode);
 
 int fs_chdir(const char* file_name);
 
@@ -123,7 +143,15 @@ int fs_remove(const char* file_name);
 
 int fs_rmdir(const char* file_name);
 
-////
+/* Human Style                */
+
+int fs_create_dir(const char* file_name);
+
+int fs_create_dir_all(const char* file_name);
+
+int fs_remove_file(const char* file_name);
+
+int fs_remove_dir(const char* file_name);
 
 /* C++ Style - Migration Task */
 
