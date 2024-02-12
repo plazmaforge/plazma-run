@@ -197,9 +197,29 @@ int fs_is_drive_path(const char* path) {
     if (!path) {
         return 0;
     }
+    /* first [3] chars: 'X:\' */
     return (isalpha (path[0]) 
       && path[1] == ':' 
-      && LIB_IS_DIR_SEPARATOR (path[2]));
+      && LIB_IS_DIR_SEPARATOR(path[2]));
+}
+
+int fs_starts_drive_path(const char* path) {
+    if (!path) {
+        return 0;
+    }
+    /* first [2] chars: 'X:' */
+    return (isalpha (path[0]) && path[1] == ':'); 
+}
+
+int fs_is_unc_path(const char* path) {
+    /* 
+      first [2] chars: '\\'  
+      and check next non-dir separator char 
+    */
+    return (LIB_IS_DIR_SEPARATOR(path[0]) &&
+        LIB_IS_DIR_SEPARATOR(path[1]) &&
+        path[2] &&
+        !LIB_IS_DIR_SEPARATOR(path[2]));
 }
 #endif
 
@@ -244,45 +264,42 @@ const char* fs_skip_nondir_separators(const char* path) {
     return path;
 }
 
-const char* fs_skip_root(const char* file_name) {
-    if (!file_name) {
+const char* fs_skip_root(const char* path) {
+    if (!path) {
         return NULL;
     }
 #ifdef _WIN32
 
     /* Skip \\server\share or //server/share */
-    if (LIB_IS_DIR_SEPARATOR(file_name[0]) &&
-        LIB_IS_DIR_SEPARATOR(file_name[1]) &&
-        file_name[2] &&
-        !LIB_IS_DIR_SEPARATOR(file_name[2])) {
+    if (fs_is_unc_path(path)) {
 
-        const char* p = strchr(file_name + 2, LIB_DIR_SEPARATOR);
-        const char* q = strchr(file_name + 2, '/');
+        const char* p = strchr(path + 2, LIB_DIR_SEPARATOR);
+        const char* q = strchr(path + 2, '/');
 
         if (p == NULL || (q != NULL && q < p))
             p = q;
 
-        if (p && p > file_name + 2 && p[1]) {
-            file_name = p + 1;
-            file_name = fs_skip_nondir_separators(file_name);
+        if (p && p > path + 2 && p[1]) {
+            path = p + 1;
+            path = fs_skip_nondir_separators(path);
 
             /* Possibly skip a backslash after the share name */
-            file_name = fs_skip_dir_separators(file_name);
-            return (char*) file_name;
+            path = fs_skip_dir_separators(path);
+            return (char*) path;
         }
     }
 #endif
 
     /* Skip initial slashes */
-    if (LIB_IS_DIR_SEPARATOR(file_name[0])) {
-        file_name = fs_skip_dir_separators(file_name);
-        return (char*) file_name;
+    if (LIB_IS_DIR_SEPARATOR(path[0])) {
+        path = fs_skip_dir_separators(path);
+        return (char*) path;
     }
 
 #ifdef _WIN32
     /* Skip X:\ */
-    if (fs_is_drive_path(file_name))
-        return (char*) file_name + 3;
+    if (fs_is_drive_path(path))
+        return (char*) path + 3;
 #endif
 
     return NULL;
@@ -290,13 +307,13 @@ const char* fs_skip_root(const char* file_name) {
 
 /* POSIX Style                */
 
-int fs_access(const char* file_name, int mode) {
+int fs_access(const char* path, int mode) {
 #ifdef _WIN32
-    wchar_t* wfile_name = char_wchar(file_name);
+    wchar_t* wpath = char_wchar(path);
     int retval;
     int save_errno;
 
-    if (wfile_name == NULL) {
+    if (!wpath) {
         errno = EINVAL;
         return -1;
     }
@@ -305,159 +322,159 @@ int fs_access(const char* file_name, int mode) {
 #define X_OK 1
 #endif
 
-    retval = _waccess(wfile_name, mode & ~X_OK);
+    retval = _waccess(wpath, mode & ~X_OK);
     save_errno = errno;
-    free(wfile_name);
+    free(wpath);
     errno = save_errno;
     return retval;
 #else
-    return access(file_name, mode);
+    return access(path, mode);
 #endif
 }
 
-int fs_chmod(const char* file_name, int mode) {
+int fs_chmod(const char* path, int mode) {
 #ifdef _WIN32
-    wchar_t* wfile_name = char_wchar(file_name);
+    wchar_t* wpath = char_wchar(path);
     int retval;
     int save_errno;
 
-    if (!wfile_name) {
+    if (!wpath) {
         errno = EINVAL;
         return -1;
     }    
 
-    retval = _wchmod(wfile_name, mode);
+    retval = _wchmod(wpath, mode);
     save_errno = errno;
-    free(wfile_name);
+    free(wpath);
     errno = save_errno;
     return retval;
 #else
-    return chmod(file_name, mode);
+    return chmod(path, mode);
 #endif
 }
 
-int fs_mkdir(const char* file_name, int mode) {
+int fs_mkdir(const char* path, int mode) {
 #ifdef _WIN32
-    wchar_t* wfile_name = char_wchar(file_name);
+    wchar_t* wpath = char_wchar(path);
     int retval;
     int save_errno;
 
-    if (!wfile_name) {
+    if (!wpath) {
         errno = EINVAL;
         return -1;
     }
 
-    retval = _wmkdir(wfile_name);
+    retval = _wmkdir(wpath);
     save_errno = errno;
-    free(wfile_name);
+    free(wpath);
     errno = save_errno;
     return retval;
 #else
-    return mkdir(file_name, mode);
+    return mkdir(path, mode);
 #endif
 }
 
-int fs_chdir(const char* file_name) {
+int fs_chdir(const char* path) {
 #ifdef _WIN32
-    wchar_t* wfile_name = char_wchar(file_name);
+    wchar_t* wpath = char_wchar(path);
     int retval;
     int save_errno;
 
-    if (!wfile_name) {
+    if (!wpath) {
         errno = EINVAL;
         return -1;
     }
 
-    retval = _wchdir(wfile_name);
+    retval = _wchdir(wpath);
     save_errno = errno;
-    free(wfile_name);
+    free(wpath);
     errno = save_errno;
     return retval;
 #else
-    return chdir(file_name);
+    return chdir(path);
 #endif
 }
 
-int fs_rename(const char* old_file_name, const char* new_file_name) {
+int fs_rename(const char* old_path, const char* new_path) {
 #ifdef _WIN32
-    wchar_t* wold_file_name;
-    wchar_t* wnew_file_name;
+    wchar_t* wold_path;
+    wchar_t* wnew_path;
     int retval;
     int save_errno = 0;
 
-    wold_file_name = char_wchar(old_file_name);
-    if (!wold_file_name) {
+    wold_path = char_wchar(old_path);
+    if (!wold_path) {
         errno = EINVAL;
         return -1;
     }
 
-    wnew_file_name = char_wchar(new_file_name);
-    if (!wnew_file_name) {
-        free(wold_file_name);
+    wnew_path = char_wchar(new_path);
+    if (!wnew_path) {
+        free(wold_path);
         errno = EINVAL;
         return -1;
     }
 
-    if (MoveFileExW(wold_file_name, wnew_file_name, MOVEFILE_REPLACE_EXISTING)) {
+    if (MoveFileExW(wold_path, wnew_path, MOVEFILE_REPLACE_EXISTING)) {
         retval = 0;
     } else {
         retval = -1;
         save_errno = to_errno_win(GetLastError());
     }
 
-    free(wold_file_name);
-    free(wnew_file_name);
+    free(wold_path);
+    free(wnew_path);
 
     errno = save_errno;
     return retval;
 #else
-    return rename(old_file_name, new_file_name);
+    return rename(old_path, new_path);
 #endif
 }
 
-int fs_remove(const char* file_name) {
+int fs_remove(const char* path) {
 #ifdef _WIN32
-    wchar_t* wfile_name = char_wchar(file_name);
+    wchar_t* wpath = char_wchar(path);
     int retval;
     int save_errno;
 
-    if (!wfile_name) {
+    if (!path) {
         errno = EINVAL;
         return -1;
     }
 
-    retval = _wremove(wfile_name);
+    retval = _wremove(wpath);
     if (retval == -1) {
-        retval = _wrmdir(wfile_name);
+        retval = _wrmdir(wpath);
     }
         
     save_errno = errno;
-    free(wfile_name);
+    free(wpath);
     errno = save_errno;    
     return retval;
 #else
-    return remove(file_name);
+    return remove(path);
 #endif
 }
 
-int fs_rmdir(const char* file_name) {
+int fs_rmdir(const char* path) {
 #ifdef _WIN32
-    wchar_t* wfile_name = char_wchar(file_name);
+    wchar_t* wpath = char_wchar(path);
     int retval;
     int save_errno;
 
-    if (!wfile_name) {
+    if (!wpath) {
         errno = EINVAL;
         return -1;
     }
 
-    retval = _wrmdir(wfile_name);
+    retval = _wrmdir(wpath);
     save_errno = errno;
-    free(wfile_name);
+    free(wpath);
     errno = save_errno;
     return retval;
 #else
-    return rmdir(file_name);
+    return rmdir(path);
 #endif
 }
 
@@ -536,24 +553,22 @@ int fs_mkdir_all(const char* path, int mode) {
     return 0;
 }
 
-////////////////////////////////
-
 /* Human Style                */
 
-int fs_create_dir(const char* file_name) {
-    return fs_mkdir(file_name, 0777);
+int fs_create_dir(const char* path) {
+    return fs_mkdir(path, 0777);
 }
 
-int fs_create_dir_all(const char* file_name) {
-    return fs_mkdir_all(file_name, 0777);
+int fs_create_dir_all(const char* path) {
+    return fs_mkdir_all(path, 0777);
 }
 
-int fs_remove_file(const char* file_name) {
-    return fs_remove(file_name);
+int fs_remove_file(const char* path) {
+    return fs_remove(path);
 }
 
-int fs_remove_dir(const char* file_name) {
-    return fs_rmdir(file_name);
+int fs_remove_dir(const char* path) {
+    return fs_rmdir(path);
 }
 
 /* C++ Style - Migration Task */

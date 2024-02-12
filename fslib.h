@@ -127,31 +127,31 @@ int fs_is_absolute_path(const char* path);
 
 /* POSIX Style                */
 
-int fs_access(const char* file_name, int mode);
+int fs_access(const char* path, int mode);
 
-int fs_chmod(const char* file_name, int mode);
+int fs_chmod(const char* path, int mode);
 
-int fs_mkdir(const char* file_name, int mode);
+int fs_mkdir(const char* path, int mode);
 
 int fs_mkdir_all(const char* path, int mode);
 
-int fs_chdir(const char* file_name);
+int fs_chdir(const char* path);
 
-int fs_rename(const char* old_file_name, const char* new_file_name);
+int fs_rename(const char* old_path, const char* new_path);
 
-int fs_remove(const char* file_name);
+int fs_remove(const char* path);
 
-int fs_rmdir(const char* file_name);
+int fs_rmdir(const char* path);
 
 /* Human Style                */
 
-int fs_create_dir(const char* file_name);
+int fs_create_dir(const char* path);
 
-int fs_create_dir_all(const char* file_name);
+int fs_create_dir_all(const char* path);
 
-int fs_remove_file(const char* file_name);
+int fs_remove_file(const char* path);
 
-int fs_remove_dir(const char* file_name);
+int fs_remove_dir(const char* path);
 
 /* C++ Style - Migration Task */
 
