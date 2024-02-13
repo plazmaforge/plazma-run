@@ -86,7 +86,7 @@ static int _is_dir(WIN32_FIND_DATAW file) {
 
 // Convert directory name to WIN32 find path: add '\*'
 // [allocate]
-static char* get_find_path(const char* dirName) {
+static char* fs_get_find_path(const char* dirName) {
     if (dirName == NULL) {
         return NULL;
     }
@@ -190,7 +190,7 @@ static wchar_t* getRealPathW(const wchar_t* wpath) {
 
 void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
 
-    char* path = get_find_path(dirName); // convert 'dirName' to WIN32 find path: add '\*'
+    char* path = fs_get_find_path(dirName); // convert 'dirName' to WIN32 find path: add '\*'
     wchar_t* wpath = char_wchar(path);
     //printf("path    : '%s'\n", path);
 
@@ -223,10 +223,10 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
             }
 
             char* fullName = NULL;
-            if (is_current_find_path(dirName)) {
+            if (fs_is_current_find_path(dirName)) {
                fullName = strdup(fileName);
             } else {
-               fullName = get_file_path(dirName, fileName); // [allocate]
+               fullName = fs_get_file_path(dirName, fileName); // [allocate]
             }
             
             //printf("match:fullName: %s\n", fullName);
@@ -262,7 +262,7 @@ fs_dir_t* fs_open_dir(const char* dir_name) {
         return NULL;
     }
 
-    char* path = get_find_path(dir_name); // convert 'dir_name' to WIN32 find path: add '\*'
+    char* path = fs_get_find_path(dir_name); // convert 'dir_name' to WIN32 find path: add '\*'
     wchar_t* wpath = char_wchar(path);
     //printf("path    : '%s'\n", path);
 
