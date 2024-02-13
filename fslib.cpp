@@ -318,7 +318,7 @@ char* fs_get_dir_name (const char* file_name) {
             drive_colon_dot[2] = '.';
             drive_colon_dot[3] = '\0';
 
-            return g_strdup(drive_colon_dot);
+            return lib_strdup(drive_colon_dot);
         }
 #endif
         return lib_strdup(".");
