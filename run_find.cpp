@@ -129,12 +129,12 @@ int main(int argc, char* argv[]) {
     config->ignoreCase = ignoreCase;
     config->printFileName = true; // TODO: add optional
 
-    int wildcardIndex = get_wildcard_index(fileName);
+    int wildcardIndex = wc_get_wildcard_index(fileName);
 
     if (wildcardIndex >= 0) {
 
         //printf("%s: Find operation doesn't support wildcard\n", argv[0]);
-        int pathIndex = get_wildcard_path_index(wildcardIndex, fileName);
+        int pathIndex = wc_get_wildcard_path_index(wildcardIndex, fileName);
         char* dirName = NULL;
 
         if (pathIndex >= 0) {

@@ -13,6 +13,7 @@
 #endif
 
 #include "strlib.h"
+#include "wclib.h"
 #include "fslib.h"
 
 /* C Style */
@@ -42,10 +43,10 @@ char* fs_get_file_path(const char* dir_name, const char* file_name) {
     }
 
     int sep_len = 0;
-    if (isPathSeparator(dir_name[len1 - 1])) { // cross-platform separator
+    if (path_is_path_separator(dir_name[len1 - 1])) { // cross-platform separator
         sep_len++;
     }
-    if (isPathSeparator(file_name[0])) {      // cross-platform separator
+    if (path_is_path_separator(file_name[0])) {      // cross-platform separator
         sep_len++;
     }
     if (sep_len == 2) {
@@ -73,78 +74,8 @@ char* fs_get_file_path(const char* dir_name, const char* file_name) {
 }
 
 int fs_match_file(const char* name, const char* pattern) {
-    if (name == NULL || pattern == NULL) {
-        return 0;
-    }
-
-    do {
-        switch (*pattern) {
-        case '\0':
-            /* Only end of string matches NUL */
-            return *name == '\0';
-
-        case '/':
-        case '\\':
-        case ':':
-            /* Invalid pattern */
-            return 0;
-
-        case '?':
-            /* Any character except NUL matches question mark */
-            if (*name == '\0')
-                return 0;
-
-            /* Consume character and continue scanning */
-            name++;
-            pattern++;
-            break;
-
-        case '*':
-            /* Any sequence of characters match asterisk */
-            switch (pattern[1]) {
-            case '\0':
-                /* Trailing asterisk matches anything */
-                return 1;
-
-            case '*':
-            case '?':
-            case '/':
-            case '\\':
-            case ':':
-                /* Invalid pattern */
-                return 0;
-
-            default:
-                /* Find the next matching character */
-                while (*name != pattern[1]) {
-                    if (*name == '\0')
-                        return 0;
-                    name++;
-                }
-
-                /* Terminate sequence on trailing match */
-                if (fs_match_file(name, pattern + 1))
-                    return 1;
-
-                /* No match, continue from next character */
-                name++;
-            }
-            break;
-
-        default:
-            /* Only character itself matches */
-            if (*pattern != *name)
-                return 0;
-
-            /* Character passes */
-            name++;
-            pattern++;
-        }
-    } while (1);
-
-    return 0;
+    return wc_match_file(name, pattern);
 }
-
 
 ////////////////////
 
@@ -909,7 +840,7 @@ int fs_scandir(const char* dir_name, const char* pattern, file_t*** files, int m
         return -1;
     }
 
-    char** patterns = split_path(pattern); // split pattern by level
+    char** patterns = path_split_path(pattern); // split pattern by level
     int pattern_count = lib_stralen(patterns);
 
     //printf(">>pattern_count : %d\n", pattern_count);
@@ -983,8 +914,8 @@ void scandir(const char* dirName, const char* pattern, std::vector<std::string>&
     if (max_depth < 0) {
         level = 0;
     }
-    int total_level = countPathLevel(pattern); // count path level in pattern
-    char* level_pattern = getLevelPath(pattern, level); // [allocate]
+    int total_level = path_count_path_level(pattern); // count path level in pattern
+    char* level_pattern = path_get_level_path(pattern, level); // [allocate]
 
     //printf("scandir : %s\n", dirName);
     //printf("total   : %d\n", total_level);

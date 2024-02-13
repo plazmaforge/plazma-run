@@ -4,7 +4,7 @@
 /*
  Returns true if a char is cross-platform path separator: '/', '\'
 */
-bool isPathSeparator(char ch);
+bool path_is_path_separator(char ch);
 
 /*
  Returns count of path level:
@@ -13,7 +13,7 @@ bool isPathSeparator(char ch);
  '/abc/def     -> 2
  '/abc/def/xyz -> 3
 */
-int countPathLevel(const char* path);
+int path_count_path_level(const char* path);
 
 /*
  Returns path of level:
@@ -22,8 +22,8 @@ int countPathLevel(const char* path);
  '/abc/def/xyz', 2 -> 'xyz'
  The level starts with '0'
 */
-char* getLevelPath(const char* path, int level);
+char* path_get_level_path(const char* path, int level);
 
-char** split_path(const char* path);
+char** path_split_path(const char* path);
 
 #endif // PLAZMA_LIB_PATHLIB_H
