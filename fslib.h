@@ -8,7 +8,7 @@
 
 #ifdef _WIN32
 
-#define LIB_DIR_SEPARATOR '\'
+#define LIB_DIR_SEPARATOR '\\'
 #define LIB_IS_DIR_SEPARATOR(c) ((c) == LIB_DIR_SEPARATOR || (c) == '/')
 
 #else  /* !_WIN32 */
