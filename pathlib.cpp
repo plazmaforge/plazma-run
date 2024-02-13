@@ -3,7 +3,7 @@
 
 #include "pathlib.h"
 
-bool isPatchChar(char ch) {
+bool isPathSeparator(char ch) {
     return ch  == '\\' || ch == '/';
 }
 
@@ -13,7 +13,7 @@ int countPathLevel(const char* path) {
     }
 
     int start = 0;
-    if (isPatchChar(path[start])) {
+    if (isPathSeparator(path[start])) {
         start++;
     }
     if (path[start] == '\0') {
@@ -27,7 +27,7 @@ int countPathLevel(const char* path) {
 
     // find start level
     while ((ch = path[i]) != '\0') {
-        if (isPatchChar(ch)) {
+        if (isPathSeparator(ch)) {
             level++;
         }
         i++;
@@ -43,7 +43,7 @@ char* getLevelPath(const char* path, int level) {
     }
 
     int start = 0;
-    if (isPatchChar(path[start])) {
+    if (isPathSeparator(path[start])) {
         start++;
     }
     if (path[start] == '\0') {
@@ -57,7 +57,7 @@ char* getLevelPath(const char* path, int level) {
 
     // find start level
     while ((ch = path[i]) != '\0') {
-        if (isPatchChar(ch)) {
+        if (isPathSeparator(ch)) {
             curr_level++;
             if (level - curr_level == 1) {
                 start = i + 1;

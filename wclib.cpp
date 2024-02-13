@@ -3,19 +3,19 @@
 
 #include "wclib.h"
 
-static bool isPatchChar(char ch) {
+static bool is_path_separator(char ch) {
     return ch  == '\\' || ch == '/';
 }
 
-bool isWildcardChar(char ch) {
+bool is_wildcard_char(char ch) {
     return (ch == '*' || ch == '?' || ch == '[' || ch == ']');
 }
 
-int isWildcard(const char* pattern) {
-    return getWildcardIndex(pattern) != -1;
+int is_wildcard_pattern(const char* pattern) {
+    return get_wildcard_index(pattern) != -1;
 }
 
-int getWildcardIndex(const char* pattern) {
+int get_wildcard_index(const char* pattern) {
     if (pattern == NULL) {
         return -1;
     }
@@ -24,7 +24,7 @@ int getWildcardIndex(const char* pattern) {
         return -1;
     }
     for (int i = 0; i < len; i++) {
-        if (isWildcardChar(pattern[i])) {
+        if (is_wildcard_char(pattern[i])) {
             return i;
         }
     }
@@ -32,18 +32,18 @@ int getWildcardIndex(const char* pattern) {
 }
 
 // ../a/name*.text - > 4 -> '/'
-int getWildcardPathIndex(const char* pattern, const char* fileName) {
+int get_wildcard_path_index(const char* pattern, const char* fileName) {
     if (pattern == NULL || fileName == NULL) {
         return -1;
     }
-    int wildcardIndex = getWildcardIndex(pattern);
+    int wildcardIndex = get_wildcard_index(pattern);
     if (wildcardIndex < 0) {
         return -1;
     }
-    return getWildcardPathIndex(wildcardIndex, fileName);
+    return get_wildcard_path_index(wildcardIndex, fileName);
 }
 
-int getWildcardPathIndex(int wildcardIndex, const char* fileName) {
+int get_wildcard_path_index(int wildcardIndex, const char* fileName) {
     if (fileName == NULL) {
         return -1;
     }
@@ -51,7 +51,7 @@ int getWildcardPathIndex(int wildcardIndex, const char* fileName) {
     // go from end to start
     bool found = false;
     while (i >= 0) {
-        if (isPatchChar(fileName[i])) {
+        if (is_path_separator(fileName[i])) {
             found = true;
             break;
         }

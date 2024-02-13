@@ -4,21 +4,21 @@
 /*
  Returns true if a char is a wildcard char: '*', '?' , '[', ']'
 */
-bool isWildcardChar(char ch);
+bool is_wildcard_char(char ch);
 
 /*
  Returns true if a pattern is a wildcard
 */
-int isWildcard(const char* pattern);
+int is_wildcard_pattern(const char* pattern);
 
 /*
  Returns start position of a wildcard char
 */
-int getWildcardIndex(const char* pattern);
+int get_wildcard_index(const char* pattern);
 
 // ../a/name*.text - > 4 -> '/'
-int getWildcardPathIndex(const char* pattern, const char* fileName);
+int get_wildcard_path_index(const char* pattern, const char* fileName);
 
-int getWildcardPathIndex(int wildcardIndex, const char* fileName);
+int get_wildcard_path_index(int wildcardIndex, const char* fileName);
 
 #endif // PLAZMA_LIB_WCLIB_H

@@ -12,13 +12,13 @@
 #define LIB_DIR_SEPARATOR_STR "\\"
 #define LIB_IS_DIR_SEPARATOR(c) ((c) == LIB_DIR_SEPARATOR || (c) == '/')
 
-#else  /* !_WIN32 */
+#else
 
 #define LIB_DIR_SEPARATOR '/'
 #define LIB_DIR_SEPARATOR_STR "/"
 #define LIB_IS_DIR_SEPARATOR(c) ((c) == LIB_DIR_SEPARATOR)
 
-#endif /* !_WIN32 */
+#endif
 
 const int FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
 const int FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
@@ -87,37 +87,44 @@ typedef struct file_t {
 
 /**
  * Build full file path
+ * 
+ * [allocate]
  */
-// [allocate]
-char* get_file_path(const char* dir_name, const char* file_name);
+char* fs_get_file_path(const char* dir_name, const char* file_name);
 
 /**
  * Return normalize full file path
+ * 
+ * [allocate]
  */
-// [allocate]
-char* get_normalize_path(const char* dir_name, const char* file_name);
+char* fs_get_normalize_path(const char* dir_name, const char* file_name);
 
 /**
  * Return real file path
+ * 
+ * [allocate]
  */
-// [allocate]
-char* get_real_path(const char* path);
+char* fs_get_real_path(const char* path);
 
 /**
  * Return current find path
+ * - Unix    : '.'
+ * - Windows : './ *'
  */
-const char* get_current_find_path();
+const char* fs_get_current_find_path();
 
 
 /**
  * Return true if a path is current find path
+ * - Unix    : '.'
+ * - Windows : './ *'
  */
-int is_current_find_path(const char* path);
+int fs_is_current_find_path(const char* path);
 
 /**
  * Return true if a file name is matched by a pattern
  */
-int match_file(const char* name, const char* pattern);
+int fs_match_file(const char* name, const char* pattern);
 
 /* General Functions          */
 
@@ -127,8 +134,19 @@ int fs_is_drive_path(const char* path);
 
 int fs_is_absolute_path(const char* path);
 
+/**
+ * Return base file name
+ * 
+ * [allocate]
+ */
+
 char* fs_get_base_name(const char* file_name);
 
+/**
+ * Return directory name
+ * 
+ * [allocate]
+ */
 char* fs_get_dir_name (const char* file_name);
 
 /* POSIX Style                */
@@ -159,6 +177,33 @@ int fs_remove_file(const char* path);
 
 int fs_remove_dir(const char* path);
 
+////
+
+file_t* fs_file_new();
+
+void fs_file_free(file_t* file);
+
+void fs_files_free(file_t** files);
+
+int fs_files_init(file_t*** files, size_t size);
+
+int fs_files_reinit(file_t*** files, size_t size);
+
+////
+
+int fs_is_dirent_dir(fs_dirent_t* dirent);
+
+fs_dir_t* fs_open_dir(const char* dir_name);
+
+fs_dirent_t* fs_read_dir(fs_dir_t* dir);
+
+int fs_close_dir(fs_dir_t* dir);
+
+////
+
+int fs_scandir(const char* dir_name, const char* pattern, file_t*** files, int max_depth);
+
+
 /* C++ Style - Migration Task */
 
 /**
@@ -186,29 +231,5 @@ std::vector<std::string> getFiles(const char* dirName, const char* pattern);
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files);
 
 void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level);
-
-int scandir2(const char* dir_name, const char* pattern, file_t*** files, int max_depth);
-
-////
-
-file_t* file_new();
-
-void file_free(file_t* file);
-
-void files_free(file_t** files);
-
-int files_init(file_t*** files, size_t size);
-
-int files_reinit(file_t*** files, size_t size);
-
-////
-
-int is_dir(fs_dirent_t* dirent);
-
-fs_dir_t* open_dir(const char* dir_name);
-
-fs_dirent_t* read_dir(fs_dir_t* dir);
-
-int close_dir(fs_dir_t* dir);
 
 #endif // PLAZMA_LIB_FSLIB_H

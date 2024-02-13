@@ -129,12 +129,12 @@ int main(int argc, char* argv[]) {
     config->ignoreCase = ignoreCase;
     config->printFileName = true; // TODO: add optional
 
-    int wildcardIndex = getWildcardIndex(fileName);
+    int wildcardIndex = get_wildcard_index(fileName);
 
     if (wildcardIndex >= 0) {
 
         //printf("%s: Find operation doesn't support wildcard\n", argv[0]);
-        int pathIndex = getWildcardPathIndex(wildcardIndex, fileName);
+        int pathIndex = get_wildcard_path_index(wildcardIndex, fileName);
         char* dirName = NULL;
 
         if (pathIndex >= 0) {
@@ -168,17 +168,17 @@ int main(int argc, char* argv[]) {
         
          
         file_t** files2 = NULL;
-        int z = scandir2(dirName, pattern, &files2, FS_SCANDIR_RECURSIVE);
+        int z = fs_scandir(dirName, pattern, &files2, FS_SCANDIR_RECURSIVE);
 
         for (int i = 0; i < z; i++) {
             //printf("%s\n", files2[i]->name);
             find(files2[i]->name, input, inputSize, config);
             //free(files2[i]);
-            //file_free(files2[i]);
+            //fs_file_free(files2[i]);
         }
 
         //free(files2);
-        files_free(files2);
+        fs_files_free(files2);
         //printf("file_count : %d\n", z);
         
         

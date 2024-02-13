@@ -4,7 +4,7 @@
 /*
  Returns true if a char is cross-platform path separator: '/', '\'
 */
-bool isPatchChar(char ch);
+bool isPathSeparator(char ch);
 
 /*
  Returns count of path level:

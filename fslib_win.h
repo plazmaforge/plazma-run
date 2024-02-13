@@ -32,23 +32,23 @@
 #include "wstrlib.h"
 #include "fslib.h"
 
-static int match_file_internal(const char* pattern, const char* name, int mode);
+static int fs_match_file_internal(const char* pattern, const char* name, int mode);
 
-static int match_file_internal(const char* pattern, const char* name);
+static int fs_match_file_internal(const char* pattern, const char* name);
 
 static wchar_t* getRealPathW(const wchar_t* wpath);
 
 // [allocate]
-char* get_normalize_path(const char* dir_name, const char* file_name) { 
-    if (is_current_find_path(dir_name)) {
-        return strdup(file_name);                  // [allocate]
+char* fs_get_normalize_path(const char* dir_name, const char* file_name) { 
+    if (fs_is_current_find_path(dir_name)) {
+        return strdup(file_name);                     // [allocate]
     } else {
-        return get_file_path(dir_name, file_name); // [allocate]
+        return fs_get_file_path(dir_name, file_name); // [allocate]
     }
 }
 
 // [allocate]
-char* get_real_path(const char* path) {
+char* fs_get_real_path(const char* path) {
     if (!path) {
         return NULL;
     }
@@ -67,11 +67,11 @@ char* get_real_path(const char* path) {
     return real_path;
 }
 
-const char* get_current_find_path() {
+const char* fs_get_current_find_path() {
     return "./*"; // Why not '.\*'?
 }
 
-int is_current_find_path(const char* path) {
+int fs_is_current_find_path(const char* path) {
     if (!path) {
         return 0;
     }
@@ -80,7 +80,7 @@ int is_current_find_path(const char* path) {
 
 ////
 
-static int is_dir(WIN32_FIND_DATAW file) {
+static int _is_dir(WIN32_FIND_DATAW file) {
     return file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 }
 
@@ -207,10 +207,10 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
         char* fileName = wchar_char(wfileName); // [allocate]
 
         //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
-        if (pattern == NULL || match_file_internal(level_pattern, fileName)) {
+        if (pattern == NULL || fs_match_file_internal(level_pattern, fileName)) {
 
             int mode = 0; // 0 - notning, 1 - file, 2 - dir
-            if (!is_dir(file)) {
+            if (!_is_dir(file)) {
                 // We add the file from last pattern level only
                 mode = (level == 0 || level == total_level - 1) ? 1 : 0;
             } else {
@@ -250,14 +250,14 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
 
 ////
 
-int is_dir(fs_dirent_t* dirent) {
+int fs_is_dirent_dir(fs_dirent_t* dirent) {
     if (!dirent) {
         return 0;
     }
     return dirent->fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 }
 
-fs_dir_t* open_dir(const char* dir_name) {
+fs_dir_t* fs_open_dir(const char* dir_name) {
     if (!dir_name) {
         return NULL;
     }
@@ -285,7 +285,7 @@ fs_dir_t* open_dir(const char* dir_name) {
     return dir;
 }
 
-fs_dirent_t* read_dir(fs_dir_t* dir) {
+fs_dirent_t* fs_read_dir(fs_dir_t* dir) {
     if (!dir) {
         return NULL;
     }
@@ -311,7 +311,7 @@ fs_dirent_t* read_dir(fs_dir_t* dir) {
     return dir->dirent;
 }
 
-int close_dir(fs_dir_t* dir) {
+int fs_close_dir(fs_dir_t* dir) {
     if (!dir) {
         return 0;
     }
@@ -321,7 +321,7 @@ int close_dir(fs_dir_t* dir) {
     return 0;
 }
 
-static int match_file_internal(const char* pattern, const char* name, int mode) {
+static int fs_match_file_internal(const char* pattern, const char* name, int mode) {
 
     // PathMatchSpecA
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
@@ -332,11 +332,11 @@ static int match_file_internal(const char* pattern, const char* name, int mode) 
     //return PathMatchSpecW(wname, wpattern);
     //return PathMatchSpecA(name, pattern);
 
-    return match_file(name, pattern); // rotate pattern, name !
+    return fs_match_file(name, pattern); // rotate pattern, name !
 }
 
-static int match_file_internal(const char* pattern, const char* name) {
-    return match_file_internal(pattern, name, 0);
+static int fs_match_file_internal(const char* pattern, const char* name) {
+    return fs_match_file_internal(pattern, name, 0);
 }
 
 #endif
