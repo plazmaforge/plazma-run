@@ -334,13 +334,18 @@ char* fs_get_dir_name (const char* file_name) {
         base++;
     else if (fs_is_unc_path(file_name) && base >= file_name + 2) {
 
-        /* \\server\share\ */
+        /* \\server\share  -> \\server\share\ */
+        /* \\server\share\ -> \\server\share\ */
+
         const char *p = file_name + 2;
 
         while (*p && !LIB_IS_DIR_SEPARATOR(*p))
             p++;
 
         if (p == base + 1) {
+
+            /* \\server\share -> \\server\share\ */
+
             len = strlen(file_name) + 1;
             base = lib_strnew(len + 1);
             strcpy(base, file_name);
@@ -350,6 +355,9 @@ char* fs_get_dir_name (const char* file_name) {
         }
 
         if (LIB_IS_DIR_SEPARATOR(*p)) {
+
+            /* \\server\share\ -> \\server\share\ */
+
             p++;
 
             while (*p && !LIB_IS_DIR_SEPARATOR(*p))
