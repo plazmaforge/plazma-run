@@ -240,6 +240,135 @@ int fs_is_absolute_path(const char* path) {
     return 0;
 }
 
+char* fs_get_base_name(const char* file_name) {
+
+    ssize_t base;
+    ssize_t last_nonslash;
+    size_t len;
+    char* retval;
+
+    if (!file_name) {
+        return NULL;
+    }
+
+    if (file_name[0] == '\0') {
+        // return lib_strdup (".");                  // TODO: (?)
+        return NULL;
+    }
+
+    last_nonslash = strlen(file_name) - 1;
+
+    while (last_nonslash >= 0 && LIB_IS_DIR_SEPARATOR(file_name[last_nonslash]))
+        last_nonslash--;
+
+    if (last_nonslash == -1)
+        /* string only containing slashes */
+        // return lib_strdup(LIB_DIR_SEPARATOR_STR); // TODO: (?)
+        return NULL;
+
+#ifdef _WIN32
+    if (last_nonslash == 1 && fs_starts_drive_path(file_name))
+        /* string only containing slashes and a drive */
+        // return lib_strdup(LIB_DIR_SEPARATOR_STR); // TODO: (?)
+        return NULL;
+#endif
+    base = last_nonslash;
+
+    while (base >= 0 && !LIB_IS_DIR_SEPARATOR(file_name[base]))
+        base--;
+
+#ifdef _WIN32
+    if (base == -1 && fs_starts_drive_path(file_name))
+        base = 1;
+#endif
+
+    len = last_nonslash - base;
+    retval = (char*) malloc(len + 1);
+    memcpy(retval, file_name + (base + 1), len);
+    retval[len] = '\0';
+
+    return retval;
+}
+
+char* fs_get_dir_name (const char* file_name) {
+
+    char* base;
+    size_t len;
+
+    if (!file_name) {
+        return NULL;
+    }
+
+    base = (char*) strrchr(file_name, LIB_DIR_SEPARATOR);
+
+#ifdef _WIN32
+    char* q;
+    q = (char*) strrchr(file_name, '/');
+    if (base == NULL || (q != NULL && q > base))
+        base = q;
+#endif
+
+    if (!base) {
+#ifdef _WIN32
+        if (fs_starts_drive_path(file_name)) {
+            char drive_colon_dot[4];
+
+            drive_colon_dot[0] = file_name[0];
+            drive_colon_dot[1] = ':';
+            drive_colon_dot[2] = '.';
+            drive_colon_dot[3] = '\0';
+
+            return g_strdup(drive_colon_dot);
+        }
+#endif
+        return lib_strdup(".");
+    }
+
+    /* skip next dir separartors: right-to-left */
+    while (base > file_name && LIB_IS_DIR_SEPARATOR(*base))
+        base--;
+
+#ifdef _WIN32
+    
+    if (base == file_name + 1 && fs_starts_drive_path(file_name))
+        base++;
+    else if (fs_is_unc_path(file_name) && base >= file_name + 2) {
+
+        /* \\server\share\ */
+        const char *p = file_name + 2;
+
+        while (*p && !LIB_IS_DIR_SEPARATOR(*p))
+            p++;
+
+        if (p == base + 1) {
+            len = strlen(file_name) + 1;
+            base = lib_strnew(len + 1);
+            strcpy(base, file_name);
+            base[len - 1] = LIB_DIR_SEPARATOR;
+            base[len] = 0;
+            return base;
+        }
+
+        if (LIB_IS_DIR_SEPARATOR(*p)) {
+            p++;
+
+            while (*p && !LIB_IS_DIR_SEPARATOR(*p))
+                p++;
+
+            if (p == base + 1)
+                base++;
+        }
+    }
+#endif
+
+    len = 1 + base - file_name;
+    base = lib_strnew(len + 1);
+    memmove(base, file_name, len);
+    base[len] = 0;
+
+    return base;
+}
+
 /**
  * Skips dir separators and returns a pointer to the first non-dir separator char 
  */

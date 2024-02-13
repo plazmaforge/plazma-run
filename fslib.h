@@ -9,11 +9,13 @@
 #ifdef _WIN32
 
 #define LIB_DIR_SEPARATOR '\\'
+#define LIB_DIR_SEPARATOR_STR "\\"
 #define LIB_IS_DIR_SEPARATOR(c) ((c) == LIB_DIR_SEPARATOR || (c) == '/')
 
 #else  /* !_WIN32 */
 
 #define LIB_DIR_SEPARATOR '/'
+#define LIB_DIR_SEPARATOR_STR "/"
 #define LIB_IS_DIR_SEPARATOR(c) ((c) == LIB_DIR_SEPARATOR)
 
 #endif /* !_WIN32 */
@@ -124,6 +126,10 @@ int fs_is_drive_path(const char* path);
 #endif
 
 int fs_is_absolute_path(const char* path);
+
+char* fs_get_base_name(const char* file_name);
+
+char* fs_get_dir_name (const char* file_name);
 
 /* POSIX Style                */
 

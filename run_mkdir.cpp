@@ -6,6 +6,8 @@
 
 void printUsage() {
     printf("Usage: run-mkdir <dir>\n");
+    printf("project-1   : %s\n", fs_get_dir_name("Users/user/Projects/project"));
+    printf("project-2   : %s\n", fs_get_dir_name("Users/user/Projects/project/"));
 }
 
 int main(int argc, char* argv[]) {
