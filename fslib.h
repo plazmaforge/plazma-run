@@ -8,20 +8,28 @@
 
 #ifdef _WIN32
 
-#define LIB_DIR_SEPARATOR '\\'
-#define LIB_DIR_SEPARATOR_STR "\\"
-#define LIB_IS_DIR_SEPARATOR(c) ((c) == LIB_DIR_SEPARATOR || (c) == '/')
+#define FS_DIR_SEPARATOR '\\'
+#define FS_DIR_SEPARATOR_STR "\\"
+#define FS_IS_DIR_SEPARATOR(c) ((c) == FS_DIR_SEPARATOR || (c) == '/')
 
 #else
 
-#define LIB_DIR_SEPARATOR '/'
-#define LIB_DIR_SEPARATOR_STR "/"
-#define LIB_IS_DIR_SEPARATOR(c) ((c) == LIB_DIR_SEPARATOR)
+#define FS_DIR_SEPARATOR '/'
+#define FS_DIR_SEPARATOR_STR "/"
+#define FS_IS_DIR_SEPARATOR(c) ((c) == FS_DIR_SEPARATOR)
 
 #endif
 
 const int FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
 const int FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
+
+typedef enum {
+  FS_FILE_CHECK_IS_REGULAR    = 1 << 0,
+  FS_FILE_CHECK_IS_SYMLINK    = 1 << 1,
+  FS_FILE_CHECK_IS_DIR        = 1 << 2,
+  FS_FILE_CHECK_IS_EXECUTABLE = 1 << 3,
+  FS_FILE_CHECK_EXISTS        = 1 << 4
+} fs_file_check_t;
 
 #ifdef _WIN32
 #include <windows.h>
@@ -134,12 +142,21 @@ int fs_is_drive_path(const char* path);
 
 int fs_is_absolute_path(const char* path);
 
+int fs_exists(const char* file_name);
+
+int fs_is_regular(const char* file_name);
+
+int fs_is_dir(const char* file_name);
+
+int fs_is_executable(const char* file_name);
+
+int fs_file_check(const char* file_name, fs_file_check_t check);
+
 /**
  * Return base file name
  * 
  * [allocate]
  */
-
 char* fs_get_base_name(const char* file_name);
 
 /**
@@ -148,6 +165,26 @@ char* fs_get_base_name(const char* file_name);
  * [allocate]
  */
 char* fs_get_dir_name (const char* file_name);
+
+/**
+ * Return base file name (alias fs_get_base_name)
+ * 
+ * [allocate]
+ */
+char* fs_get_file_name(const char* file_name);
+
+/**
+ * Return file extension
+ * 
+ * [allocate]
+ */
+char* fs_get_file_ext(const char* file_name);
+
+/**
+ * Find file extension (without allocation)
+ * 
+ */
+const char* fs_find_file_ext(const char* file_name);
 
 /* POSIX Style                */
 

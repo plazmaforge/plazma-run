@@ -55,7 +55,7 @@ char* fs_get_file_path(const char* dir_name, const char* file_name) {
     char* path = lib_strnew(len);
     strcpy(path, dir_name);
     if (sep_len == 1) {
-        path[dir_len] = LIB_DIR_SEPARATOR;
+        path[dir_len] = FS_DIR_SEPARATOR;
         path[dir_len + 1] = '\0'; // ???: Maybe for next strcat
     }
     // shift file_name if erase 1 position
@@ -123,7 +123,7 @@ int fs_is_drive_path(const char* path) {
     /* first [3] chars: 'X:\' */
     return (isalpha (path[0]) 
       && path[1] == ':' 
-      && LIB_IS_DIR_SEPARATOR(path[2]));
+      && FS_IS_DIR_SEPARATOR(path[2]));
 }
 
 int fs_starts_drive_path(const char* path) {
@@ -139,10 +139,10 @@ int fs_is_unc_path(const char* path) {
       first [2] chars: '\\'  
       and check next non-dir separator char 
     */
-    return (LIB_IS_DIR_SEPARATOR(path[0]) &&
-        LIB_IS_DIR_SEPARATOR(path[1]) &&
+    return (FS_IS_DIR_SEPARATOR(path[0]) &&
+        FS_IS_DIR_SEPARATOR(path[1]) &&
         path[2] &&
-        !LIB_IS_DIR_SEPARATOR(path[2]));
+        !FS_IS_DIR_SEPARATOR(path[2]));
 }
 #endif
 
@@ -151,7 +151,7 @@ int fs_is_absolute_path(const char* path) {
         return 0;
     }
 
-    if (LIB_IS_DIR_SEPARATOR(path[0])) {
+    if (FS_IS_DIR_SEPARATOR(path[0])) {
         return 1;
     }
 
@@ -161,6 +161,22 @@ int fs_is_absolute_path(const char* path) {
 #endif
 
     return 0;
+}
+
+int fs_exists(const char* file_name) {
+    return fs_file_check(file_name, FS_FILE_CHECK_EXISTS);
+}
+
+int fs_is_regular(const char* file_name) {
+    return fs_file_check(file_name, FS_FILE_CHECK_IS_REGULAR);
+}
+
+int fs_is_dir(const char* file_name) {
+    return fs_file_check(file_name, FS_FILE_CHECK_IS_DIR);
+}
+
+int fs_is_executable(const char* file_name) {
+    return fs_file_check(file_name, FS_FILE_CHECK_IS_EXECUTABLE);
 }
 
 char* fs_get_base_name(const char* file_name) {
@@ -181,23 +197,23 @@ char* fs_get_base_name(const char* file_name) {
 
     last_nonslash = strlen(file_name) - 1;
 
-    while (last_nonslash >= 0 && LIB_IS_DIR_SEPARATOR(file_name[last_nonslash]))
+    while (last_nonslash >= 0 && FS_IS_DIR_SEPARATOR(file_name[last_nonslash]))
         last_nonslash--;
 
     if (last_nonslash == -1)
         /* string only containing slashes */
-        // return lib_strdup(LIB_DIR_SEPARATOR_STR); // TODO: (?)
+        // return lib_strdup(FS_DIR_SEPARATOR_STR); // TODO: (?)
         return NULL;
 
 #ifdef _WIN32
     if (last_nonslash == 1 && fs_starts_drive_path(file_name))
         /* string only containing slashes and a drive */
-        // return lib_strdup(LIB_DIR_SEPARATOR_STR); // TODO: (?)
+        // return lib_strdup(FS_DIR_SEPARATOR_STR); // TODO: (?)
         return NULL;
 #endif
     base = last_nonslash;
 
-    while (base >= 0 && !LIB_IS_DIR_SEPARATOR(file_name[base]))
+    while (base >= 0 && !FS_IS_DIR_SEPARATOR(file_name[base]))
         base--;
 
 #ifdef _WIN32
@@ -222,7 +238,7 @@ char* fs_get_dir_name (const char* file_name) {
         return NULL;
     }
 
-    base = (char*) strrchr(file_name, LIB_DIR_SEPARATOR);
+    base = (char*) strrchr(file_name, FS_DIR_SEPARATOR);
 
 #ifdef _WIN32
     char* q;
@@ -248,7 +264,7 @@ char* fs_get_dir_name (const char* file_name) {
     }
 
     /* skip next dir separartors: right-to-left */
-    while (base > file_name && LIB_IS_DIR_SEPARATOR(*base))
+    while (base > file_name && FS_IS_DIR_SEPARATOR(*base))
         base--;
 
 #ifdef _WIN32
@@ -262,7 +278,7 @@ char* fs_get_dir_name (const char* file_name) {
 
         const char *p = file_name + 2;
 
-        while (*p && !LIB_IS_DIR_SEPARATOR(*p))
+        while (*p && !FS_IS_DIR_SEPARATOR(*p))
             p++;
 
         if (p == base + 1) {
@@ -272,18 +288,18 @@ char* fs_get_dir_name (const char* file_name) {
             len = strlen(file_name) + 1;
             base = lib_strnew(len);
             strcpy(base, file_name);
-            base[len - 1] = LIB_DIR_SEPARATOR;
+            base[len - 1] = FS_DIR_SEPARATOR;
             base[len] = '\0';
             return base;
         }
 
-        if (LIB_IS_DIR_SEPARATOR(*p)) {
+        if (FS_IS_DIR_SEPARATOR(*p)) {
 
             /* \\server\share\ -> \\server\share\ */
 
             p++;
 
-            while (*p && !LIB_IS_DIR_SEPARATOR(*p))
+            while (*p && !FS_IS_DIR_SEPARATOR(*p))
                 p++;
 
             if (p == base + 1)
@@ -300,6 +316,25 @@ char* fs_get_dir_name (const char* file_name) {
     return base;
 }
 
+char* fs_get_file_name(const char* file_name) {
+    return fs_get_base_name(file_name);
+}
+
+const char* fs_find_file_ext(const char* file_name) {
+    if (!file_name) {
+        return NULL;
+    }
+    return strrchr(file_name, '.');
+}
+
+char* fs_get_file_ext(const char* file_name) {
+    if (!file_name) {
+        return NULL;
+    }
+    const char* file_ext = fs_find_file_ext(file_name);
+    return lib_strdup(file_ext);
+}
+
 /**
  * Skips dir separators and returns a pointer to the first non-dir separator char 
  */
@@ -307,7 +342,7 @@ const char* fs_skip_dir_separators(const char* path) {
     if (!path) {
         return NULL;
     }
-    while (LIB_IS_DIR_SEPARATOR(path[0]))
+    while (FS_IS_DIR_SEPARATOR(path[0]))
         path++;
     return path;
 }
@@ -319,7 +354,7 @@ const char* fs_skip_nondir_separators(const char* path) {
     if (!path) {
         return NULL;
     }
-    while (path[0] && !LIB_IS_DIR_SEPARATOR(path[0]))
+    while (path[0] && !FS_IS_DIR_SEPARATOR(path[0]))
         path++;
     return path;
 }
@@ -333,7 +368,7 @@ const char* fs_skip_root(const char* path) {
     /* Skip \\server\share or //server/share */
     if (fs_is_unc_path(path)) {
 
-        const char* p = strchr(path + 2, LIB_DIR_SEPARATOR);
+        const char* p = strchr(path + 2, FS_DIR_SEPARATOR);
         const char* q = strchr(path + 2, '/');
 
         if (p == NULL || (q != NULL && q < p))
@@ -351,7 +386,7 @@ const char* fs_skip_root(const char* path) {
 #endif
 
     /* Skip initial slashes */
-    if (LIB_IS_DIR_SEPARATOR(path[0])) {
+    if (FS_IS_DIR_SEPARATOR(path[0])) {
         path = fs_skip_dir_separators(path);
         return (char*) path;
     }
@@ -540,11 +575,127 @@ int fs_rmdir(const char* path) {
 
 ////////////////////////////////
 
+#ifdef _WIN32
+int _fs_is_executable(const char* file_name) {
+    if (!file_name) {
+        return 0;
+    }
+    const char* file_ext = fs_find_file_ext(file_name);
+    if (!file_ext)
+        return 0;
+
+    return (_stricmp(lastdot, ".exe") == 0 ||
+        _stricmp(lastdot, ".cmd") == 0 ||
+        _stricmp(lastdot, ".bat") == 0 ||
+        _stricmp(lastdot, ".com") == 0)
+}
+#endif
+
+int fs_file_check(const char* file_name, fs_file_check_t check) {
+    if (!file_name) {
+        return 0;
+    }
+
+#ifdef _WIN32
+    DWORD attributes;
+    wchar_t *wfile_name;
+
+/* stuff missing in std vc6 api */
+#ifndef INVALID_FILE_ATTRIBUTES
+#define INVALID_FILE_ATTRIBUTES -1
+#endif
+#ifndef FILE_ATTRIBUTE_DEVICE
+#define FILE_ATTRIBUTE_DEVICE 64
+#endif
+
+    wfile_name = char_wchar(file_name);
+    if (!wfile_name)
+        return 0;
+
+    attributes = GetFileAttributesW(wfile_name);
+    free(wfile_name);
+
+    if (attributes == INVALID_FILE_ATTRIBUTES)
+        return 0;
+
+    if (check & FS_FILE_CHECK_EXISTS)
+        return 1;
+
+    if (check & FS_FILE_CHECK_IS_REGULAR) {
+        if ((attributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) == 0)
+            return 1;
+    }
+
+    if (check & FS_FILE_CHECK_IS_DIR) {
+        if ((attributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+            return 1;
+    }
+
+    if (check & FS_FILE_CHECK_IS_EXECUTABLE) {
+        return _fs_is_executable(file_name);
+    }
+
+    return 0;
+#else
+    if ((check & FS_FILE_CHECK_EXISTS) && (access(file_name, F_OK) == 0))
+        return 1;
+
+    if ((check & FS_FILE_CHECK_IS_EXECUTABLE) && (access(file_name, X_OK) == 0)) {
+        if (getuid() != 0)
+            return 1;
+
+        /* For root, on some POSIX systems, access (filename, X_OK)
+         * will succeed even if no executable bits are set on the
+         * file. We fall through to a stat test to avoid that.
+         */
+    } else {
+        int _check = check;
+        _check &= ~FS_FILE_CHECK_IS_EXECUTABLE;
+        check = (fs_file_check_t) _check;
+    }
+
+    if (check & FS_FILE_CHECK_IS_SYMLINK) {
+        struct stat s;
+
+        if ((lstat(file_name, &s) == 0) && S_ISLNK(s.st_mode))
+            return 1;
+    }
+
+    if (check & (FS_FILE_CHECK_IS_REGULAR |
+                 FS_FILE_CHECK_IS_DIR |
+                 FS_FILE_CHECK_IS_EXECUTABLE)) {
+                    
+        struct stat s;
+
+        if (stat(file_name, &s) == 0) {
+
+            if ((check & FS_FILE_CHECK_IS_REGULAR) && S_ISREG(s.st_mode))
+                return 1;
+
+            if ((check & FS_FILE_CHECK_IS_DIR) && S_ISDIR(s.st_mode))
+                return 1;
+
+            /* The extra test for root when access (file, X_OK) succeeds.
+             */
+            if ((check & FS_FILE_CHECK_IS_EXECUTABLE) &&
+                ((s.st_mode & S_IXOTH) ||
+                 (s.st_mode & S_IXUSR) ||
+                 (s.st_mode & S_IXGRP)))
+                return 1;
+        }
+    }
+
+    return 0;
+#endif
+}
+
+////////////////////////////////
+
 int fs_mkdir_all(const char* path, int mode) {
     char* fn;
     char* p;
 
-    if (path == NULL || *path == '\0') {
+    if (lib_stremp(path)) {
         errno = EINVAL;
         return -1;
     }
@@ -555,10 +706,10 @@ int fs_mkdir_all(const char* path, int mode) {
     }
 
     if (errno == EEXIST) {
-        //if (!fs_file_test(path, LIB_FILE_TEST_IS_DIR)) {
-        //    errno = ENOTDIR;
-        //    return -1;
-        //}
+        if (!fs_file_check(path, FS_FILE_CHECK_IS_DIR)) {
+           errno = ENOTDIR;
+           return -1;
+        }
         return 0;
     }
 
@@ -573,7 +724,7 @@ int fs_mkdir_all(const char* path, int mode) {
     do {
 
         /* skip non-dir separators: search first dir separator */
-        while (*p && !LIB_IS_DIR_SEPARATOR(*p))
+        while (*p && !FS_IS_DIR_SEPARATOR(*p))
             p++;
 
         /* replace dir separartor to NULL-terminal char */
@@ -582,7 +733,7 @@ int fs_mkdir_all(const char* path, int mode) {
         else
             *p = '\0';
 
-        //if (!fs_file_test(fn, LIB_FILE_TEST_EXISTS)) {
+        if (!fs_file_check(fn, FS_FILE_CHECK_EXISTS)) {
             if (fs_mkdir(fn, mode) == -1 && errno != EEXIST) {
                 int save_errno = errno;
                 if (errno != ENOENT || !p) {
@@ -591,18 +742,18 @@ int fs_mkdir_all(const char* path, int mode) {
                     return -1;
                 }
             }
-        //} else if (!fs_file_test(fn, LIB_FILE_TEST_IS_DIR)) {
-        //    free(fn);
-        //    errno = ENOTDIR;
-        //    return -1;
-        //}
+        } else if (!fs_file_check(fn, FS_FILE_CHECK_IS_DIR)) {
+           free(fn);
+           errno = ENOTDIR;
+           return -1;
+        }
 
         /* restore dir separator */
         if (p) {
-            *p++ = LIB_DIR_SEPARATOR;
+            *p++ = FS_DIR_SEPARATOR;
 
             /* skip dir separators: search first non-dir separator char*/
-            while (*p && LIB_IS_DIR_SEPARATOR(*p))
+            while (*p && FS_IS_DIR_SEPARATOR(*p))
                 p++;
         }
 
