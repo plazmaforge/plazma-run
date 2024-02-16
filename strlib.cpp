@@ -3,14 +3,18 @@
 
 #include "strlib.h"
 
+int lib_stremp(const char* str) {
+    return !str || str[0] == '\0';
+}
+
 const char* lib_strsaf(const char* str) {
     return str ? str : "";
 }
 
 char* lib_strnew(size_t size) {
-  if (size < 0) {
-    return NULL;
-  }
+  //if (size < 0) {
+  //  return NULL;
+  //}
   char* dst = (char*) malloc(size + 1);
   if (!dst) {
     return NULL;
@@ -22,11 +26,11 @@ char* lib_strnew(size_t size) {
   return dst;
 }
 
-char* lib_strnew(const char* str) {
-  return lib_strdup(str);
-}
+// char* lib_strnews(const char* str) {
+//   return lib_strdup(str);
+// }
 
-char* lib_strnew(const char* str1, const char* str2) {
+char* lib_strapp(const char* str1, const char* str2) {
   if (!str1) {
     return NULL;
   }
@@ -41,7 +45,7 @@ char* lib_strnew(const char* str1, const char* str2) {
   return dst;  
 }
 
-char* lib_strnew(const char* str1, const char* str2, const char* str3) {
+char* lib_strappv(const char* str1, const char* str2, const char* str3) {
   if (!str1) {
     return NULL;
   }
@@ -59,26 +63,26 @@ char* lib_strnew(const char* str1, const char* str2, const char* str3) {
   return dst;
 }
 
-char* lib_strnew(const char* str1, const char* str2, const char* str3, const char* str4) {
-  if (!str1) {
-    return NULL;
-  }
-  char* dst = lib_strnew(lib_strlen(str1) + lib_strlen(str2) + lib_strlen(str3) + lib_strlen(str4));
-  if (!dst) {
-    return NULL;
-  }
-  lib_strcpy(dst, str1);
-  if (str2) {
-    lib_strcat(dst, str2);
-  }
-  if (str3) {
-    lib_strcat(dst, str3);
-  }
-  if (str4) {
-    lib_strcat(dst, str4);
-  }
-  return dst;
-}
+// char* lib_strnew(const char* str1, const char* str2, const char* str3, const char* str4) {
+//   if (!str1) {
+//     return NULL;
+//   }
+//   char* dst = lib_strnew(lib_strlen(str1) + lib_strlen(str2) + lib_strlen(str3) + lib_strlen(str4));
+//   if (!dst) {
+//     return NULL;
+//   }
+//   lib_strcpy(dst, str1);
+//   if (str2) {
+//     lib_strcat(dst, str2);
+//   }
+//   if (str3) {
+//     lib_strcat(dst, str3);
+//   }
+//   if (str4) {
+//     lib_strcat(dst, str4);
+//   }
+//   return dst;
+// }
 
 char* lib_strcat(char* str1, const char* str2) {
   if (!str1) {
@@ -210,11 +214,38 @@ char* lib_strdup_uq(const char* src) {
     return NULL;
   }
   size_t len = strlen(src);
-  //char* dst = NULL;
   if (lib_is_strn_qt(src, len)) {  
      return lib_strndup(src + 1, len - 2);
   } else {
      return lib_strdup(src);
   }
-  //return dst;
 }
+
+int lib_stralen(/*const*/ char** array) {
+    if (!array) {
+        return 0;
+    }
+    /*const*/ char* e = NULL;
+    /*const*/ char** elements = array;
+    int count = 0;
+    while ((e = *elements) != NULL) {
+        count++;
+        elements++;
+    }
+    return count;
+}
+
+void lib_strafree(char** array) {
+    if (!array) {
+        return;
+    }
+    char* e = NULL;
+    char** elements = array;
+    int count = 0;
+    while ((e = *elements) != NULL) {
+        free(e);
+        elements++;
+    }
+    free(array);
+}
+

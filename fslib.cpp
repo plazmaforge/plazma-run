@@ -23,30 +23,23 @@ char* fs_get_file_path(const char* dir_name, const char* file_name) {
     if (!dir_name && !file_name) {
         return NULL;
     }
-    if (!dir_name) {
-        return strdup(file_name);
+    if (lib_stremp(dir_name)) {
+        return lib_strdup(file_name);
     }
 
     // TODO: Ups...May be NULL: No file name
-    if (!file_name) {
-        return strdup(dir_name);
+    if (lib_stremp(file_name)) {
+        return lib_strdup(dir_name);
     }
 
-    int len1 = strlen(dir_name);
-    if (len1 == 0) {
-        return strdup(file_name);
-    }
-
-    int len2 = strlen(file_name);
-    if (len2 == 0) {
-        return strdup(dir_name);
-    }
-
+    int dir_len = lib_strlen(dir_name);
+    int file_len = lib_strlen(file_name);
     int sep_len = 0;
-    if (path_is_path_separator(dir_name[len1 - 1])) { // cross-platform separator
+
+    if (path_is_path_separator(dir_name[dir_len - 1])) { // cross-platform separator
         sep_len++;
     }
-    if (path_is_path_separator(file_name[0])) {      // cross-platform separator
+    if (path_is_path_separator(file_name[0])) {          // cross-platform separator
         sep_len++;
     }
     if (sep_len == 2) {
@@ -57,14 +50,13 @@ char* fs_get_file_path(const char* dir_name, const char* file_name) {
         sep_len = 1;  // add 1 position between dir and file
     }
 
-    int len = len1 + sep_len + len2;
+    int len = dir_len + sep_len + file_len;
 
-    char* path = (char*) malloc(len + 1);
+    char* path = lib_strnew(len);
     strcpy(path, dir_name);
     if (sep_len == 1) {
-        path[len1] = LIB_DIR_SEPARATOR; // TODO: OS/FS File separator (!)
-        path[len1 + 1] = '\0'; // ???: Maybe for next strcat
-        //strcat(path, "/");
+        path[dir_len] = LIB_DIR_SEPARATOR;
+        path[dir_len + 1] = '\0'; // ???: Maybe for next strcat
     }
     // shift file_name if erase 1 position
     strcat(path, sep_len == -1 ? file_name + 1 : file_name);
@@ -214,7 +206,7 @@ char* fs_get_base_name(const char* file_name) {
 #endif
 
     len = last_nonslash - base;
-    retval = (char*) malloc(len + 1);
+    retval = lib_strnew(len);
     memcpy(retval, file_name + (base + 1), len);
     retval[len] = '\0';
 
@@ -278,10 +270,10 @@ char* fs_get_dir_name (const char* file_name) {
             /* \\server\share -> \\server\share\ */
 
             len = strlen(file_name) + 1;
-            base = lib_strnew(len + 1);
+            base = lib_strnew(len);
             strcpy(base, file_name);
             base[len - 1] = LIB_DIR_SEPARATOR;
-            base[len] = 0;
+            base[len] = '\0';
             return base;
         }
 
@@ -301,9 +293,9 @@ char* fs_get_dir_name (const char* file_name) {
 #endif
 
     len = 1 + base - file_name;
-    base = lib_strnew(len + 1);
+    base = lib_strnew(len);
     memmove(base, file_name, len);
-    base[len] = 0;
+    base[len] = '\0';
 
     return base;
 }
@@ -641,36 +633,6 @@ int fs_remove_dir(const char* path) {
 
 ////////
 
-// [strlib]
-int lib_stralen(/*const*/ char** array) {
-    if (!array) {
-        return 0;
-    }
-    /*const*/ char* e = NULL;
-    /*const*/ char** elements = array;
-    int count = 0;
-    while ((e = *elements) != NULL) {
-        count++;
-        elements++;
-    }
-    return count;
-}
-
-// [strlib]
-void lib_strafree(char** array) {
-    if (!array) {
-        return;
-    }
-    char* e = NULL;
-    char** elements = array;
-    int count = 0;
-    while ((e = *elements) != NULL) {
-        free(e);
-        elements++;
-    }
-    free(array);
-}
-
 // [fslib]
 file_t* fs_file_new() {
   file_t* file = (file_t*) malloc(sizeof(struct file_t));
@@ -844,12 +806,9 @@ int fs_scandir(const char* dir_name, const char* pattern, file_t*** files, int m
     int pattern_count = lib_stralen(patterns);
 
     //printf(">>pattern_count : %d\n", pattern_count);
-    //printf(">>total_level   : %d\n", total_level);
     //printf(">>scandir       : %s\n", dir_name);
-    //printf(">>total         : %d\n", total_level);
     //printf(">>level         : %d\n", level);
     //printf(">>pattern       : %s\n", pattern);
-    //printf(">>select        : %s\n", level_pattern);
 
     int file_count = 0;
     int size = 10; // start size
