@@ -584,7 +584,7 @@ const wchar_t* _fs_wfind_file_ext(const wchar_t* wfile_name) {
         return 0;
     }
 
-    const wchar_t* name;
+    const wchar_t* name = wfile_name;
     const wchar_t* dot = NULL;
 
     do {
@@ -795,10 +795,12 @@ int _fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATI
     buf->st_ino = 0;
     buf->st_mode = 0;
 
+
     if ((handle_info->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
         buf->st_mode |= S_IFDIR | S_IXUSR | S_IXGRP | S_IXOTH;
     else
         buf->st_mode |= S_IFREG;
+
 
     /* S_IFCHR - unsupported */
     /* S_IFIFO - unsupported */
@@ -814,6 +816,7 @@ int _fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATI
         if (_fs_is_wexecutable(wfile_name))
             buf->st_mode |= S_IXUSR | S_IXGRP | S_IXOTH;            
     }
+
 
     buf->st_nlink = handle_info->nNumberOfLinks;
     buf->st_uid = buf->st_gid = 0;
@@ -876,6 +879,7 @@ int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
     }
 
     success = GetFileInformationByHandle(file_handle, &handle_info);
+
     
     if (!success) {
         error_code = GetLastError();
@@ -884,7 +888,10 @@ int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
         return -1;
     }
 
+
     int retval = _fs_fill_stat_info(wfile_name, &handle_info, buf);
+
+    CloseHandle(file_handle);
 
     return retval;
 
