@@ -167,7 +167,7 @@ int main(int argc, char* argv[]) {
         //printf("New Scandir \n");
         
          
-        file_t** files2 = NULL;
+        fs_file_t** files2 = NULL;
         int z = fs_scandir(dirName, pattern, &files2, FS_SCANDIR_RECURSIVE);
 
         for (int i = 0; i < z; i++) {

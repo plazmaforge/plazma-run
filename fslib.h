@@ -86,10 +86,10 @@ typedef struct fs_dir_t {
 
 #endif
 
-typedef struct file_t {
+typedef struct fs_file_t {
   const char* name;
   int type;
-} file_t;
+} fs_file_t;
 
 /* C Style */
 
@@ -216,15 +216,15 @@ int fs_remove_dir(const char* path);
 
 ////
 
-file_t* fs_file_new();
+fs_file_t* fs_file_new();
 
-void fs_file_free(file_t* file);
+void fs_file_free(fs_file_t* file);
 
-void fs_files_free(file_t** files);
+void fs_files_free(fs_file_t** files);
 
-int fs_files_init(file_t*** files, size_t size);
+int fs_files_init(fs_file_t*** files, size_t size);
 
-int fs_files_reinit(file_t*** files, size_t size);
+int fs_files_reinit(fs_file_t*** files, size_t size);
 
 ////
 
@@ -238,7 +238,7 @@ int fs_close_dir(fs_dir_t* dir);
 
 ////
 
-int fs_scandir(const char* dir_name, const char* pattern, file_t*** files, int max_depth);
+int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, int max_depth);
 
 
 /* C++ Style - Migration Task */

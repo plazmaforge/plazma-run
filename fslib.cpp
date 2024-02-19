@@ -767,11 +767,11 @@ int fs_mkdir_all(const char* path, int mode) {
 /* Human Style                */
 
 int fs_create_dir(const char* path) {
-    return fs_mkdir(path, 0777);
+    return fs_mkdir(path, 0775);
 }
 
 int fs_create_dir_all(const char* path) {
-    return fs_mkdir_all(path, 0777);
+    return fs_mkdir_all(path, 0775);
 }
 
 int fs_remove_file(const char* path) {
@@ -785,8 +785,8 @@ int fs_remove_dir(const char* path) {
 ////////
 
 // [fslib]
-file_t* fs_file_new() {
-  file_t* file = (file_t*) malloc(sizeof(struct file_t));
+fs_file_t* fs_file_new() {
+  fs_file_t* file = (fs_file_t*) malloc(sizeof(struct fs_file_t));
   if (!file) {
     return NULL;
   }
@@ -795,7 +795,7 @@ file_t* fs_file_new() {
 }
 
 // [fslib]
-void fs_file_free(file_t* file) {
+void fs_file_free(fs_file_t* file) {
     if (!file) {
         return;
     }
@@ -804,12 +804,12 @@ void fs_file_free(file_t* file) {
 }
 
 // [fslib]
-void fs_files_free(file_t** files) {
+void fs_files_free(fs_file_t** files) {
     if (!files) {
         return;
     }
-    file_t* file = NULL;
-    file_t** elements = files;
+    fs_file_t* file = NULL;
+    fs_file_t** elements = files;
     while ((file = *elements) != NULL) {
         fs_file_free(file);
         elements++;
@@ -818,9 +818,9 @@ void fs_files_free(file_t** files) {
 }
 
 // [fslib]
-int fs_files_init(file_t*** files, size_t size) {
+int fs_files_init(fs_file_t*** files, size_t size) {
     // NULL-terminate array: +1
-    file_t** list = (struct file_t**) calloc(size + 1, sizeof(struct file_t*)); 
+    fs_file_t** list = (struct fs_file_t**) calloc(size + 1, sizeof(struct fs_file_t*)); 
     if (!list) {
         return -1;
     }
@@ -830,9 +830,9 @@ int fs_files_init(file_t*** files, size_t size) {
 }
 
 // [fslib]
-int fs_files_reinit(file_t*** files, size_t size) {
+int fs_files_reinit(fs_file_t*** files, size_t size) {
     // NULL-terminate array: +1
-    file_t** list = (struct file_t **) realloc( /*(file_t *)*/ *files, (size + 1) * sizeof(struct file_t *));
+    fs_file_t** list = (struct fs_file_t **) realloc( /*(fs_file_t *)*/ *files, (size + 1) * sizeof(struct fs_file_t *));
     list[size] = NULL;
     if (!list) {
         return -1;
@@ -848,7 +848,7 @@ int fs_is_ignore_file(const char* file_name) {
     return (strcmp(file_name, ".") == 0 || strcmp(file_name, "..") == 0);
 }
 
-int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pattern_count, file_t*** files, int* file_count, int level, int max_depth) {
+int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pattern_count, fs_file_t*** files, int* file_count, int level, int max_depth) {
 
     fs_dir_t* dir = fs_open_dir(dir_name);
     if (!dir) {
@@ -896,7 +896,7 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
 
                 //printf("try   : add_file\n");
                 int index = *file_count; // old file_count
-                file_t** list = *files;
+                fs_file_t** list = *files;
 
                 if (list[index] == NULL) { // NULL-terminate array: +1
                     const int inc = 10;	/* increase by this much */
@@ -909,7 +909,7 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
                     }
                 }
 
-                file_t* file_s = fs_file_new(); // (file_t*) malloc(sizeof(struct file_t));
+                fs_file_t* file_s = fs_file_new(); // (file_t*) malloc(sizeof(struct file_t));
                 file_s->name = strdup(full_name);
 
                 //printf("try  : index        : %d\n", *file_count);
@@ -948,7 +948,7 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
     return 0;
 }
 
-int fs_scandir(const char* dir_name, const char* pattern, file_t*** files, int max_depth) {
+int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, int max_depth) {
     if (!dir_name) {
         return -1;
     }
