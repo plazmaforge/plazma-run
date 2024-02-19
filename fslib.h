@@ -31,6 +31,14 @@ typedef enum {
   FS_FILE_CHECK_EXISTS        = 1 << 4
 } fs_file_check_t;
 
+#if (defined(__MINGW64_VERSION_MAJOR) || defined(_MSC_VER)) && !defined(_WIN64)
+typedef struct _stat32 fs_stat_t;
+#elif defined(__MINGW64_VERSION_MAJOR) && defined(_WIN64)
+typedef struct _stat64 fs_stat_t;
+#else
+typedef struct stat fs_stat_t;
+#endif
+
 #ifdef _WIN32
 #include <windows.h>
 
@@ -45,10 +53,11 @@ typedef BY_HANDLE_FILE_INFORMATION fs_file_info_t;
 
 /* Directory entry    */
 typedef struct fs_dirent_t {
-    //fs_file_info_t info;
     int type; // OS Indepentent
     char* name;
     WIN32_FIND_DATAW fd;
+    //BY_HANDLE_FILE_INFORMATION fi;
+    //fs_file_info_t fi;
 } fs_dirent_t;
 
 typedef struct fs_dir_t {
@@ -73,10 +82,11 @@ typedef struct stat fs_file_info_t;
 
 /* Directory entry    */
 typedef struct fs_dirent_t {
-    //fs_file_info_t info;
     int type; // OS Indepentent
     char* name;
     struct dirent* fd;
+    //struct stat* fi;
+    //fs_file_info_t fi;
 } fs_dirent_t;
 
 typedef struct fs_dir_t {
@@ -87,8 +97,9 @@ typedef struct fs_dir_t {
 #endif
 
 typedef struct fs_file_t {
-  const char* name;
   int type;
+  /*const*/ char* name;
+  fs_stat_t* stat;
 } fs_file_t;
 
 /* C Style */
@@ -215,6 +226,12 @@ int fs_remove_file(const char* path);
 int fs_remove_dir(const char* path);
 
 ////
+
+int fs_stat(const char* path, fs_stat_t* buf);
+
+////
+
+fs_file_t* fs_get_file(const char* file_name);
 
 fs_file_t* fs_file_new();
 

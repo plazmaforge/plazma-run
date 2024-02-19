@@ -540,7 +540,9 @@ void find(const char* fileName, const char* input, int inputSize, const FindConf
     }
 
     if (config->printFileName) {
-        printf(">> %s\n", getRealPath(fileName));
+        char* real_path = fs_get_real_path(fileName);
+        printf(">> %s\n", real_path);
+        free(real_path);
     }
 
     printData(positions, data, fileSize, inputSize, config);

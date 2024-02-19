@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+//#include <stdint.h>
 
 #ifdef _WIN32
 #include <sys/utime.h>
@@ -576,6 +577,41 @@ int fs_rmdir(const char* path) {
 ////////////////////////////////
 
 #ifdef _WIN32
+
+const wcahr_t* _fs_wfind_file_ext(const wchar_t* wfile_name) {
+    if (!wfile_name) {
+        return 0;
+    }
+
+    const wchar_t* name;
+    const wchar_t* dot = NULL;
+
+    do {
+        wchar_t* last_dot = wcschr(name, L'.');
+        if (last_dot == NULL)
+            break;
+
+        dot = last_dot;
+        name = &last_dot[1];
+    } while (1);
+
+    return dot;
+}
+
+int _fs_is_wexecutable(const wchar_t* wfile_name) {
+    if (!wfile_name) {
+        return 0;
+    }
+    const wchar_t* wfile_ext = _fs_wfind_file_ext(wfile_name);
+    if (!wfile_ext)
+        return 0;
+    }
+    return (wcsicmp(wfile_ext, L".exe") == 0 ||
+            wcsicmp(wfile_ext, L".com") == 0 ||
+            wcsicmp(wfile_ext, L".bat") == 0 ||
+            wcsicmp(wfile_ext, L".cmd") == 0);
+}
+
 int _fs_is_executable(const char* file_name) {
     if (!file_name) {
         return 0;
@@ -583,11 +619,10 @@ int _fs_is_executable(const char* file_name) {
     const char* file_ext = fs_find_file_ext(file_name);
     if (!file_ext)
         return 0;
-
-    return (_stricmp(lastdot, ".exe") == 0 ||
-        _stricmp(lastdot, ".cmd") == 0 ||
-        _stricmp(lastdot, ".bat") == 0 ||
-        _stricmp(lastdot, ".com") == 0)
+    return (_stricmp(file_ext, ".exe") == 0 ||
+            _stricmp(file_ext, ".cmd") == 0 ||
+            _stricmp(file_ext, ".bat") == 0 ||
+            _stricmp(file_ext, ".com") == 0);
 }
 #endif
 
@@ -691,6 +726,192 @@ int fs_file_check(const char* file_name, fs_file_check_t check) {
 
 ////////////////////////////////
 
+
+#ifdef _WIN32
+
+#  ifdef _MSC_VER
+#    ifndef S_IXUSR
+#      define _S_IRUSR _S_IREAD
+#      define _S_IWUSR _S_IWRITE
+#      define _S_IXUSR _S_IEXEC
+#      define S_IRUSR _S_IRUSR
+#      define S_IWUSR _S_IWUSR
+#      define S_IXUSR _S_IXUSR
+#      define S_IRGRP (S_IRUSR >> 3)
+#      define S_IWGRP (S_IWUSR >> 3)
+#      define S_IXGRP (S_IXUSR >> 3)
+#      define S_IROTH (S_IRGRP >> 3)
+#      define S_IWOTH (S_IWGRP >> 3)
+#      define S_IXOTH (S_IXGRP >> 3)
+#    endif
+#    ifndef S_ISDIR
+#      define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
+#    endif
+#  endif
+
+//
+
+/*
+ * https://support.microsoft.com/en-ca/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
+ *
+ * FT = UT * 10000000 + 116444736000000000.
+ * 
+ * UT = (FT - 116444736000000000) / 10000000.
+ * 
+ * Converts FILETIME to unix epoch time in form
+ * of a signed 64-bit integer (can be negative).
+ *
+ */
+
+static int64_t _fs_ftime_to_utime(const FILETIME *ft/*, int32_t* nsec*/) {
+
+  int64_t result;
+
+  /* 1 unit of FILETIME is 100ns */
+  const int64_t hundreds_of_usec_per_sec = 10000000;
+
+  /* The difference between January 1, 1601 UTC (FILETIME epoch) and UNIX epoch
+   * in hundreds of nanoseconds.
+   */
+  const int64_t filetime_unix_epoch_offset = 116444736000000000;
+
+  result = ((int64_t) ft->dwLowDateTime) | (((int64_t) ft->dwHighDateTime) << 32);
+  result -= filetime_unix_epoch_offset;
+
+  //if (nsec)
+  //  *nsec = (result % hundreds_of_usec_per_sec) * 100;
+
+  return result / hundreds_of_usec_per_sec;
+}
+
+int _fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATION* handle_info, fs_stat_t* buf)
+
+    if (!wfile_name || !handle_info || !buf) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    buf->st_ino = 0;
+    buf->st_mode = 0;
+
+    if ((handle_info->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+        buf->st_mode |= S_IFDIR | S_IXUSR | S_IXGRP | S_IXOTH;
+    else
+        buf->st_mode |= S_IFREG;
+
+    /* S_IFCHR - unsupported */
+    /* S_IFIFO - unsupported */
+    /* S_IFBLK - unsupported */
+
+    /* MS stat() behaviour,  */
+    buf->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
+
+    if ((handle_info->dwFileAttributes & FILE_ATTRIBUTE_READONLY) != FILE_ATTRIBUTE_READONLY)
+        buf->st_mode |= S_IWUSR | S_IWGRP | S_IWOTH;
+
+    if (!S_ISDIR(statbuf->st_mode)) {
+        if (_fs_is_wexecutable(wfile_name))
+            buf->st_mode |= S_IXUSR | S_IXGRP | S_IXOTH;            
+    }
+
+    buf->st_nlink = handle_info->nNumberOfLinks;
+    buf->st_uid = statbuf->st_gid = 0;
+    buf->st_size = (((uint64_t) handle_info->nFileSizeHigh) << 32) | handle_info->nFileSizeLow;
+    buf->st_ctime = _fs_ftime_to_utime(&handle_info->ftCreationTime);
+    buf->st_mtime = _fs_ftime_to_utime(&handle_info->ftLastWriteTime);
+    buf->st_atime = _fs_ftime_to_utime(&handle_info->ftLastAccessTime);
+
+    return 0;
+}
+
+int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
+
+    if (!wfile_name || !buf) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    BY_HANDLE_FILE_INFORMATION handle_info;
+    //FILE_STANDARD_INFO std_info;
+
+    DWORD attributes;
+    DWORD open_flags;
+    DWORD error_code;
+    HANDLE file_handle;
+    BOOL success;
+
+    //int is_symlink = 0;
+    int is_directory = 0;
+
+    attributes = GetFileAttributesW(wfile_name);
+
+    if (attributes == INVALID_FILE_ATTRIBUTES) {
+        error_code = GetLastError();
+        errno = w32_error_to_errno(error_code);
+        return -1;
+    }
+
+    //is_symlink = (attributes & FILE_ATTRIBUTE_REPARSE_POINT) == FILE_ATTRIBUTE_REPARSE_POINT;
+    is_directory = (attributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY;
+
+    open_flags = FILE_ATTRIBUTE_NORMAL;
+
+    // if (for_symlink && is_symlink)
+    //  open_flags |= FILE_FLAG_OPEN_REPARSE_POINT;
+
+    if (is_directory)
+        open_flags |= FILE_FLAG_BACKUP_SEMANTICS;
+
+    file_handle = CreateFileW(filename, FILE_READ_ATTRIBUTES | FILE_READ_EA,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                              NULL, OPEN_EXISTING,
+                              open_flags,
+                              NULL);
+
+    if (file_handle == INVALID_HANDLE_VALUE) {
+        error_code = GetLastError();
+        errno = w32_error_to_errno(error_code);
+        return -1;
+    }
+
+    success = GetFileInformationByHandle(file_handle, &handle_info);
+    
+    if (!success) {
+        error_code = GetLastError();
+        errno = w32_error_to_errno(error_code);
+        CloseHandle(file_handle);
+        return -1;
+    }
+
+    int retval = _fs_fill_stat_info(wfile_name, &handle_info, &buf);
+
+    return retval;
+
+}
+
+int _fs_stat(const char* file_name, fs_stat_t* buf) {
+    wchar_t *wfile_name = char_wchar(file_name);
+    if (!wfile_name) {
+        errno = EINVAL;
+        return -1;
+    }
+    int retval = _fs_wstat(wfile_name, buf);
+    free(wfile_name);
+    return retval;
+}
+
+#endif
+
+int fs_stat(const char* path, fs_stat_t* buf) {
+    #ifdef _WIN32
+    return _fs_stat(path, buf);
+    #else
+    return stat(path, buf);
+    #endif
+}
+
+////////////////////////////////
+
 int fs_mkdir_all(const char* path, int mode) {
     char* fn;
     char* p;
@@ -784,6 +1005,39 @@ int fs_remove_dir(const char* path) {
 
 ////////
 
+fs_stat_t* fs_stat_new() {
+    fs_stat_t* stat = (fs_stat_t*) malloc(sizeof(fs_stat_t));
+    //if (!stat) {
+    //    return NULL;
+    //}
+    return stat;
+}
+
+fs_file_t* fs_get_file(const char* file_name) {
+    if (!file_name) {
+        return NULL;
+    }
+    char* path = fs_get_real_path(file_name);
+    if (!path) {
+        return NULL;
+    }
+    fs_file_t* file = fs_file_new();
+    if (!file) {
+        return NULL;
+    }
+    file->name = path;
+
+    fs_stat_t* stat = fs_stat_new();
+    if (!stat) {
+        return file;
+    }
+    file->stat = stat;
+
+    fs_stat(path, file->stat);
+
+    return file;
+}
+
 // [fslib]
 fs_file_t* fs_file_new() {
   fs_file_t* file = (fs_file_t*) malloc(sizeof(struct fs_file_t));
@@ -791,6 +1045,7 @@ fs_file_t* fs_file_new() {
     return NULL;
   }
   file->name = NULL;
+  file->stat = NULL;
   return file;
 }
 
@@ -799,7 +1054,12 @@ void fs_file_free(fs_file_t* file) {
     if (!file) {
         return;
     }
-    //free(file->name);
+    if (file->name)  {
+        free(file->name);
+    }
+    if (file->stat)  {
+        free(file->stat);
+    }            
     free(file);
 }
 
@@ -862,6 +1122,8 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
         pattern = patterns[level];
     } 
 
+    int use_stat = 1;
+
     while ((file = fs_read_dir(dir)) != NULL) {
 
         char* file_name = file->name;
@@ -909,8 +1171,16 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
                     }
                 }
 
-                fs_file_t* file_s = fs_file_new(); // (file_t*) malloc(sizeof(struct file_t));
+                fs_file_t* file_s = fs_file_new();
                 file_s->name = strdup(full_name);
+
+                if (use_stat) {
+                    char* real_path = fs_get_real_path(file_s->name);
+                    fs_stat_t* stat = fs_stat_new();
+                    fs_stat(real_path, stat);
+                    file_s->stat = stat;
+                    free(real_path);
+                }
 
                 //printf("try  : index        : %d\n", *file_count);
                 //printf("try  : reserved     : %d\n", *reserved);

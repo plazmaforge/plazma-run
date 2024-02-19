@@ -168,13 +168,23 @@ int main(int argc, char* argv[]) {
         
          
         fs_file_t** files2 = NULL;
+        fs_file_t* file = NULL;
         int z = fs_scandir(dirName, pattern, &files2, FS_SCANDIR_RECURSIVE);
 
         for (int i = 0; i < z; i++) {
-            //printf("%s\n", files2[i]->name);
+            file = files2[i];
+
+            //fs_stat_t* stat_s = file->stat;
+            //if (stat_s) {
+            //    printf("%s %lld bytes\n", file->name, stat_s->st_size);
+            //} else {
+            //    printf("%s\n", file->name);
+            //}
+
             find(files2[i]->name, input, inputSize, config);
-            //free(files2[i]);
-            //fs_file_free(files2[i]);
+
+            //free(file);
+            //fs_file_free(file);
         }
 
         //free(files2);
