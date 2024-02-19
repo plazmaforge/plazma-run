@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 //#include <stdint.h>
 
 #ifdef _WIN32
@@ -578,7 +579,7 @@ int fs_rmdir(const char* path) {
 
 #ifdef _WIN32
 
-const wcahr_t* _fs_wfind_file_ext(const wchar_t* wfile_name) {
+const wchar_t* _fs_wfind_file_ext(const wchar_t* wfile_name) {
     if (!wfile_name) {
         return 0;
     }
@@ -603,7 +604,7 @@ int _fs_is_wexecutable(const wchar_t* wfile_name) {
         return 0;
     }
     const wchar_t* wfile_ext = _fs_wfind_file_ext(wfile_name);
-    if (!wfile_ext)
+    if (!wfile_ext) {
         return 0;
     }
     return (wcsicmp(wfile_ext, L".exe") == 0 ||
@@ -784,7 +785,7 @@ static int64_t _fs_ftime_to_utime(const FILETIME *ft/*, int32_t* nsec*/) {
   return result / hundreds_of_usec_per_sec;
 }
 
-int _fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATION* handle_info, fs_stat_t* buf)
+int _fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATION* handle_info, fs_stat_t* buf) {
 
     if (!wfile_name || !handle_info || !buf) {
         errno = EINVAL;
@@ -809,13 +810,13 @@ int _fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATI
     if ((handle_info->dwFileAttributes & FILE_ATTRIBUTE_READONLY) != FILE_ATTRIBUTE_READONLY)
         buf->st_mode |= S_IWUSR | S_IWGRP | S_IWOTH;
 
-    if (!S_ISDIR(statbuf->st_mode)) {
+    if (!S_ISDIR(buf->st_mode)) {
         if (_fs_is_wexecutable(wfile_name))
             buf->st_mode |= S_IXUSR | S_IXGRP | S_IXOTH;            
     }
 
     buf->st_nlink = handle_info->nNumberOfLinks;
-    buf->st_uid = statbuf->st_gid = 0;
+    buf->st_uid = buf->st_gid = 0;
     buf->st_size = (((uint64_t) handle_info->nFileSizeHigh) << 32) | handle_info->nFileSizeLow;
     buf->st_ctime = _fs_ftime_to_utime(&handle_info->ftCreationTime);
     buf->st_mtime = _fs_ftime_to_utime(&handle_info->ftLastWriteTime);
@@ -847,7 +848,7 @@ int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
 
     if (attributes == INVALID_FILE_ATTRIBUTES) {
         error_code = GetLastError();
-        errno = w32_error_to_errno(error_code);
+        errno = to_errno_win(error_code);
         return -1;
     }
 
@@ -862,7 +863,7 @@ int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
     if (is_directory)
         open_flags |= FILE_FLAG_BACKUP_SEMANTICS;
 
-    file_handle = CreateFileW(filename, FILE_READ_ATTRIBUTES | FILE_READ_EA,
+    file_handle = CreateFileW(wfile_name, FILE_READ_ATTRIBUTES | FILE_READ_EA,
                               FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                               NULL, OPEN_EXISTING,
                               open_flags,
@@ -870,7 +871,7 @@ int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
 
     if (file_handle == INVALID_HANDLE_VALUE) {
         error_code = GetLastError();
-        errno = w32_error_to_errno(error_code);
+        errno = to_errno_win(error_code);
         return -1;
     }
 
@@ -878,12 +879,12 @@ int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
     
     if (!success) {
         error_code = GetLastError();
-        errno = w32_error_to_errno(error_code);
+        errno = to_errno_win(error_code);
         CloseHandle(file_handle);
         return -1;
     }
 
-    int retval = _fs_fill_stat_info(wfile_name, &handle_info, &buf);
+    int retval = _fs_fill_stat_info(wfile_name, &handle_info, buf);
 
     return retval;
 

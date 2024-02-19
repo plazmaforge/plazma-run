@@ -41,6 +41,7 @@ typedef struct stat fs_stat_t;
 
 #ifdef _WIN32
 #include <windows.h>
+#include <sys/stat.h>
 
 /* File descriptor    */
 typedef HANDLE fs_fd_t;
