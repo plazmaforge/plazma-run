@@ -264,7 +264,7 @@ int fs_get_dirent_type(fs_dirent_t* dirent) {
     if (dirent->fd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
         return FS_LNK;
     }
-    if (dirent->fd.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE) {
+    if (dirent->fd.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) {
         return FS_DIR;
     }
     return FS_REG;

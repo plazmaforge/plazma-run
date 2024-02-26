@@ -231,7 +231,7 @@ char* fs_get_base_name(const char* file_name) {
     return retval;
 }
 
-char* fs_get_dir_name (const char* file_name) {
+char* fs_get_dir_name(const char* file_name) {
 
     char* base;
     size_t len;
@@ -655,7 +655,7 @@ int fs_file_check(const char* file_name, fs_file_check_t check) {
     }
 
     if (check & FS_FILE_CHECK_IS_REGULAR) {
-        if (!(attributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE))
+        if (!(attributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)))
             return 1;
     }
 
@@ -753,6 +753,26 @@ int fs_file_check(const char* file_name, fs_file_check_t check) {
 #    endif
 #  endif
 
+
+#ifndef S_ISLNK
+#  ifdef _S_ISLNK
+#    define S_ISLNK(m) _S_ISLNK(m)
+#  else
+#    ifdef _S_IFLNK
+#      define S_ISLNK(m) ((m & S_IFMT) == _S_IFLNK)
+#    else
+#      ifdef S_IFLNK
+#	     define S_ISLNK(m) ((m & S_IFMT) == S_IFLNK)
+#      else
+#        define _S_IFLNK 0x1200
+#        define S_IFLNK _S_IFLNK
+#	     define S_ISLNK(m) ((m & S_IFMT) == S_IFLNK)
+#      endif
+#    endif
+#  endif
+#endif
+
+
 //
 
 /*
@@ -800,7 +820,7 @@ int _fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATI
     buf->st_uid = 0;
     buf->st_gid = 0;
 
-    if ((handle_info->dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) {
+    if (handle_info->dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) {
         buf->st_mode |= S_IFDIR | S_IXUSR | S_IXGRP | S_IXOTH;
     } else if (handle_info->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
         buf->st_mode |= S_IFLNK;
