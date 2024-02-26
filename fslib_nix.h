@@ -110,6 +110,13 @@ int fs_is_dirent_dir(fs_dirent_t* dirent) {
     return dirent->fd->d_type == DT_DIR;
 }
 
+int fs_get_dirent_type(fs_dirent_t* dirent) {
+    if (!dirent) {
+        return 0;
+    }
+    return dirent->fd->d_type;
+}
+
 fs_dir_t* fs_open_dir(const char* dir_name) {
     if (!dir_name) {
         return NULL;

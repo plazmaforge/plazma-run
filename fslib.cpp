@@ -636,14 +636,6 @@ int fs_file_check(const char* file_name, fs_file_check_t check) {
     DWORD attributes;
     wchar_t *wfile_name;
 
-/* stuff missing in std vc6 api */
-#ifndef INVALID_FILE_ATTRIBUTES
-#define INVALID_FILE_ATTRIBUTES -1
-#endif
-#ifndef FILE_ATTRIBUTE_DEVICE
-#define FILE_ATTRIBUTE_DEVICE 64
-#endif
-
     wfile_name = char_wchar(file_name);
     if (!wfile_name)
         return 0;
@@ -657,13 +649,18 @@ int fs_file_check(const char* file_name, fs_file_check_t check) {
     if (check & FS_FILE_CHECK_EXISTS)
         return 1;
 
+    if (check & FS_FILE_CHECK_IS_SYMLINK) {
+        if (attributes & FILE_ATTRIBUTE_REPARSE_POINT)
+            return 1;
+    }
+
     if (check & FS_FILE_CHECK_IS_REGULAR) {
-        if ((attributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) == 0)
+        if (!(attributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE))
             return 1;
     }
 
     if (check & FS_FILE_CHECK_IS_DIR) {
-        if ((attributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+        if (attributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE))
             return 1;
     }
 
@@ -748,6 +745,12 @@ int fs_file_check(const char* file_name, fs_file_check_t check) {
 #    ifndef S_ISDIR
 #      define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
 #    endif
+#    ifndef S_ISREG
+#      define S_ISREG(m) (((m) & _S_IFMT) == _S_IFREG)
+#    endif
+#    ifndef S_ISLNK
+#      define S_ISLNK(m) (((m) & _S_IFMT) == _S_IFLNK)
+#    endif
 #  endif
 
 //
@@ -794,13 +797,16 @@ int _fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATI
 
     buf->st_ino = 0;
     buf->st_mode = 0;
+    buf->st_uid = 0;
+    buf->st_gid = 0;
 
-
-    if ((handle_info->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+    if ((handle_info->dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) {
         buf->st_mode |= S_IFDIR | S_IXUSR | S_IXGRP | S_IXOTH;
-    else
+    } else if (handle_info->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+        buf->st_mode |= S_IFLNK;
+    } else {
         buf->st_mode |= S_IFREG;
-
+    }
 
     /* S_IFCHR - unsupported */
     /* S_IFIFO - unsupported */
@@ -814,12 +820,10 @@ int _fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATI
 
     if (!S_ISDIR(buf->st_mode)) {
         if (_fs_is_wexecutable(wfile_name))
-            buf->st_mode |= S_IXUSR | S_IXGRP | S_IXOTH;            
+            buf->st_mode |= S_IXUSR | S_IXGRP | S_IXOTH;
     }
 
-
     buf->st_nlink = handle_info->nNumberOfLinks;
-    buf->st_uid = buf->st_gid = 0;
     buf->st_size = (((uint64_t) handle_info->nFileSizeHigh) << 32) | handle_info->nFileSizeLow;
     buf->st_ctime = _fs_ftime_to_utime(&handle_info->ftCreationTime);
     buf->st_mtime = _fs_ftime_to_utime(&handle_info->ftLastWriteTime);
@@ -879,7 +883,6 @@ int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
     }
 
     success = GetFileInformationByHandle(file_handle, &handle_info);
-
     
     if (!success) {
         error_code = GetLastError();
@@ -887,7 +890,6 @@ int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
         CloseHandle(file_handle);
         return -1;
     }
-
 
     int retval = _fs_fill_stat_info(wfile_name, &handle_info, buf);
 
@@ -1041,9 +1043,76 @@ fs_file_t* fs_get_file(const char* file_name) {
     }
     file->stat = stat;
 
+    /* Get stat info */
     fs_stat(path, file->stat);
 
+    /* Get file type by stat mode */
+    file->type = fs_file_get_file_type_by_mode(stat->st_mode);
+
     return file;
+}
+
+const char* fs_file_get_file_name(fs_file_t* file) {
+    if (!file) {
+        return 0;
+    }
+    return file->name;
+}
+
+int fs_file_get_file_type(fs_file_t* file) {
+    if (!file) {
+        return 0;
+    }
+    return file->type;
+}
+
+uint64_t fs_file_get_file_size(fs_file_t* file) {
+    if (!file || !file->stat) {
+        return 0;
+    }
+    return file->stat->st_size;
+}
+
+int fs_file_get_file_mode(fs_file_t* file) {
+    if (!file || !file->stat) {
+        return 0;
+    }
+    return file->stat->st_mode;
+}
+
+int fs_file_get_file_type_by_mode(int mode) {    
+    #ifdef _WIN32
+    /* FS_DIR, FS_REG, FS_LNK only */
+    if (S_ISDIR(mode)) {
+        return FS_DIR;
+    } else if (S_ISREG(mode)) {
+        return FS_REG;
+    } else if (S_ISLNK(mode)) {
+        return FS_LNK;
+    }
+    return FS_UNKNOWN;
+    #else
+    /* Base */
+    if (S_ISDIR(mode)) {
+        return FS_DIR;
+    } else if (S_ISREG(mode)) {
+        return FS_REG;
+    } else if (S_ISLNK(mode)) {
+        return FS_LNK;
+    /* Other */
+    } else if (S_ISFIFO(mode)) {
+        return FS_FIFO;
+    } else if (S_ISCHR(mode)) {
+        return FS_CHR;
+    } else if (S_ISBLK(mode)) {
+        return FS_BLK;
+    } else if (S_ISSOCK(mode)) {
+        return FS_SOCK;
+    } else if (S_ISWHT(mode)) {
+        return FS_WHT;
+    }
+    return FS_UNKNOWN;
+    #endif
 }
 
 // [fslib]
@@ -1135,10 +1204,11 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
     while ((file = fs_read_dir(dir)) != NULL) {
 
         char* file_name = file->name;
+        int file_type = fs_get_dirent_type(file);
         int is_ignore = fs_is_ignore_file(file_name);
         int is_match = is_ignore ? 0 : (pattern == NULL || fs_match_file_internal(pattern, file_name));
         int is_dir_ = fs_is_dirent_dir(file);
-
+        
         //printf("find [%s] [%s%s] [%d] %s, %s, %s\n", (is_match ? "+" : " "), (is_dir_ ? "D" : " "), (is_ignore ? "I" : " "), level, dir_name, file_name, pattern);
 
         if (is_match) {
@@ -1181,6 +1251,7 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
 
                 fs_file_t* file_s = fs_file_new();
                 file_s->name = strdup(full_name);
+                file_s->type = file_type;                
 
                 if (use_stat) {
                     char* real_path = fs_get_real_path(file_s->name);

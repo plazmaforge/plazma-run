@@ -3,10 +3,21 @@
 
 #include <string>
 #include <vector>
+#include <sys/stat.h>
 
 #include "pathlib.h"
 
 #ifdef _WIN32
+
+#include <windows.h>
+
+/* Stuff missing in std vc6 api */
+#ifndef INVALID_FILE_ATTRIBUTES
+#define INVALID_FILE_ATTRIBUTES -1
+#endif
+#ifndef FILE_ATTRIBUTE_DEVICE
+#define FILE_ATTRIBUTE_DEVICE 64
+#endif
 
 #define FS_DIR_SEPARATOR '\\'
 #define FS_DIR_SEPARATOR_STR "\\"
@@ -14,14 +25,26 @@
 
 #else
 
+#include <dirent.h>
+
 #define FS_DIR_SEPARATOR '/'
 #define FS_DIR_SEPARATOR_STR "/"
 #define FS_IS_DIR_SEPARATOR(c) ((c) == FS_DIR_SEPARATOR)
 
 #endif
 
-const int FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
-const int FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
+/*
+ * File types
+ */
+#define FS_UNKNOWN       0
+#define FS_FIFO          1
+#define FS_CHR           2
+#define FS_DIR           4
+#define FS_BLK           6
+#define FS_REG           8
+#define FS_LNK          10
+#define FS_SOCK         12
+#define FS_WHT          14
 
 typedef enum {
   FS_FILE_CHECK_IS_REGULAR    = 1 << 0,
@@ -30,6 +53,9 @@ typedef enum {
   FS_FILE_CHECK_IS_EXECUTABLE = 1 << 3,
   FS_FILE_CHECK_EXISTS        = 1 << 4
 } fs_file_check_t;
+
+const int FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
+const int FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
 
 #if (defined(__MINGW64_VERSION_MAJOR) || defined(_MSC_VER)) && !defined(_WIN64)
 typedef struct _stat32 fs_stat_t;
@@ -40,8 +66,6 @@ typedef struct stat fs_stat_t;
 #endif
 
 #ifdef _WIN32
-#include <windows.h>
-#include <sys/stat.h>
 
 /* File descriptor    */
 typedef HANDLE fs_fd_t;
@@ -57,8 +81,6 @@ typedef struct fs_dirent_t {
     int type; // OS Indepentent
     char* name;
     WIN32_FIND_DATAW fd;
-    //BY_HANDLE_FILE_INFORMATION fi;
-    //fs_file_info_t fi;
 } fs_dirent_t;
 
 typedef struct fs_dir_t {
@@ -67,9 +89,6 @@ typedef struct fs_dir_t {
 } fs_dir_t;
 
 #else
-
-#include <dirent.h>
-#include <sys/stat.h>
 
 /* File descriptor    */
 typedef int fs_fd_t;     
@@ -86,8 +105,6 @@ typedef struct fs_dirent_t {
     int type; // OS Indepentent
     char* name;
     struct dirent* fd;
-    //struct stat* fi;
-    //fs_file_info_t fi;
 } fs_dirent_t;
 
 typedef struct fs_dir_t {
@@ -99,7 +116,7 @@ typedef struct fs_dir_t {
 
 typedef struct fs_file_t {
   int type;
-  /*const*/ char* name;
+  char* name;
   fs_stat_t* stat;
 } fs_file_t;
 
@@ -234,6 +251,18 @@ int fs_stat(const char* path, fs_stat_t* buf);
 
 fs_file_t* fs_get_file(const char* file_name);
 
+const char* fs_file_get_file_name(fs_file_t* file);
+
+int fs_file_get_file_type(fs_file_t* file);
+
+uint64_t fs_file_get_file_size(fs_file_t* file);
+
+int fs_file_get_file_mode(fs_file_t* file);
+
+int fs_file_get_file_type_by_mode(int mode);
+
+////
+
 fs_file_t* fs_file_new();
 
 void fs_file_free(fs_file_t* file);
@@ -247,6 +276,8 @@ int fs_files_reinit(fs_file_t*** files, size_t size);
 ////
 
 int fs_is_dirent_dir(fs_dirent_t* dirent);
+
+int fs_get_dirent_type(fs_dirent_t* dirent);
 
 fs_dir_t* fs_open_dir(const char* dir_name);
 

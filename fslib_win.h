@@ -254,7 +254,20 @@ int fs_is_dirent_dir(fs_dirent_t* dirent) {
     if (!dirent) {
         return 0;
     }
-    return dirent->fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+    return dirent->fd.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE);
+}
+
+int fs_get_dirent_type(fs_dirent_t* dirent) {
+    if (!dirent) {
+        return 0;
+    }
+    if (dirent->fd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+        return FS_LNK;
+    }
+    if (dirent->fd.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE) {
+        return FS_DIR;
+    }
+    return FS_REG;
 }
 
 fs_dir_t* fs_open_dir(const char* dir_name) {
