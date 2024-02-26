@@ -84,6 +84,17 @@ static int _is_dir(WIN32_FIND_DATAW file) {
     return file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 }
 
+static void _fs_normalize_slash(char* path, size_t len) {
+    if (!path) {
+        return;
+    }
+    for (size_t i = 0; i < len; i++) {
+        if (path[i] == '/') {
+                path[i] = '\\';
+        }
+    }
+}
+
 // Convert directory name to WIN32 find path: add '\*'
 // [allocate]
 static char* fs_get_find_path(const char* dirName) {
@@ -97,7 +108,7 @@ static char* fs_get_find_path(const char* dirName) {
     if (len == 0) {
         add = 3;
     } else {
-        if (dirName[len - 1] == '\\') {
+        if (dirName[len - 1] == '\\' || dirName[len - 1] == '/') {
             add = 1;
         }
     }
@@ -112,6 +123,7 @@ static char* fs_get_find_path(const char* dirName) {
         if (add == 1) {
            strcat(path, "*");
         }
+        _fs_normalize_slash(path, len);
     }
     
     path[len + 1] = '\0';
