@@ -67,6 +67,22 @@ char* fs_get_file_path(const char* dir_name, const char* file_name) {
     return path;
 }
 
+char* fs_get_normalize_slash(char* path) {
+    if (!path) {
+        return NULL;
+    }
+    char* npath = lib_strdup(path);
+    _fs_normalize_slash(npath, lib_strlen(npath));
+    return npath;
+}
+
+void fs_normalize_slash(char* path) {
+    if (!path) {
+        return;
+    }
+    _fs_normalize_slash(path, lib_strlen(path));
+}
+
 int fs_match_file(const char* name, const char* pattern) {
     return wc_match_file(name, pattern);
 }
@@ -146,6 +162,7 @@ int fs_is_unc_path(const char* path) {
         path[2] &&
         !FS_IS_DIR_SEPARATOR(path[2]));
 }
+
 #endif
 
 int fs_is_absolute_path(const char* path) {
@@ -727,6 +744,24 @@ int fs_file_check(const char* file_name, fs_file_check_t check) {
 
 #ifdef _WIN32
 
+#ifndef S_ISLNK
+#  ifdef _S_ISLNK
+#    define S_ISLNK(m) _S_ISLNK(m)
+#  else
+#    ifdef _S_IFLNK
+#      define S_ISLNK(m) ((m & S_IFMT) == _S_IFLNK)
+#    else
+#      ifdef S_IFLNK
+#	     define S_ISLNK(m) ((m & S_IFMT) == S_IFLNK)
+#      else
+#        define _S_IFLNK 0x1200
+#        define S_IFLNK _S_IFLNK
+#	     define S_ISLNK(m) ((m & S_IFMT) == S_IFLNK)
+#      endif
+#    endif
+#  endif
+#endif
+
 #  ifdef _MSC_VER
 #    ifndef S_IXUSR
 #      define _S_IRUSR _S_IREAD
@@ -752,26 +787,6 @@ int fs_file_check(const char* file_name, fs_file_check_t check) {
 #      define S_ISLNK(m) (((m) & _S_IFMT) == _S_IFLNK)
 #    endif
 #  endif
-
-
-#ifndef S_ISLNK
-#  ifdef _S_ISLNK
-#    define S_ISLNK(m) _S_ISLNK(m)
-#  else
-#    ifdef _S_IFLNK
-#      define S_ISLNK(m) ((m & S_IFMT) == _S_IFLNK)
-#    else
-#      ifdef S_IFLNK
-#	     define S_ISLNK(m) ((m & S_IFMT) == S_IFLNK)
-#      else
-#        define _S_IFLNK 0x1200
-#        define S_IFLNK _S_IFLNK
-#	     define S_ISLNK(m) ((m & S_IFMT) == S_IFLNK)
-#      endif
-#    endif
-#  endif
-#endif
-
 
 //
 

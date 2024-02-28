@@ -8,6 +8,7 @@
 #include <fnmatch.h>
 #include <limits.h> /* PATH_MAX */
 
+#include "strlib.h"
 #include "fslib.h"
 
 static int fs_match_file_internal(const char* pattern, const char* name, int mode);
@@ -31,6 +32,19 @@ char* fs_get_real_path(const char* path) {
     return strdup(buf);
 }
 
+// [allocate]
+char* fs_get_current_dir() {
+  /* Current directory */
+  char buf[PATH_MAX];
+  //errno = 0;
+  if (getcwd(buf, sizeof(buf)) == NULL) {
+       return NULL;
+  } else {
+       return strdup(buf);
+  }
+  return NULL;
+}
+
 const char* fs_get_current_find_path() {
     return ".";
 }
@@ -44,11 +58,15 @@ int fs_is_current_find_path(const char* path) {
 
 ////
 
-static int _is_dir(struct dirent* file) {
+static int _fs_is_dir(struct dirent* file) {
     if (file == NULL) {
         return false;
     }
     return file->d_type == DT_DIR;
+}
+
+static void _fs_normalize_slash(char* path, size_t len) {
+    lib_replace_len(path, len, '\\', '/');
 }
 
 void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
@@ -69,7 +87,7 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
         if (pattern == NULL || fs_match_file_internal(level_pattern, fileName)) {
 
             int mode = 0; // 0 - notning, 1 - file, 2 - dir
-            if (!_is_dir(file)) {
+            if (!_fs_is_dir(file)) {
                 // We add the file from last pattern level only
                 mode = (level == 0 || level == total_level - 1) ? 1 : 0;
             } else {

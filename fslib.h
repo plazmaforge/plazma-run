@@ -137,11 +137,30 @@ char* fs_get_file_path(const char* dir_name, const char* file_name);
 char* fs_get_normalize_path(const char* dir_name, const char* file_name);
 
 /**
+ * Return normalize slash file path
+ * 
+ * [allocate]
+ */
+char* fs_get_normalize_slash(char* path);
+
+/**
+ * Normalize slash file path
+ */
+void fs_normalize_slash(char* path);
+
+/**
  * Return real file path
  * 
  * [allocate]
  */
 char* fs_get_real_path(const char* path);
+
+/**
+ * Return current directory
+ * 
+ * [allocate]
+ */
+char* fs_get_current_dir();
 
 /**
  * Return current find path

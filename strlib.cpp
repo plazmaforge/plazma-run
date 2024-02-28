@@ -15,7 +15,7 @@ char* lib_strnew(size_t size) {
   //if (size < 0) {
   //  return NULL;
   //}
-  char* dst = (char*) malloc(size + 1);
+  char* dst = (char*) malloc(size * sizeof(char) + 1);
   if (!dst) {
     return NULL;
   }
@@ -247,5 +247,23 @@ void lib_strafree(char** array) {
         elements++;
     }
     free(array);
+}
+
+void lib_replace_len(char* path, size_t len, char from, char to) {
+    if (!path) {
+        return;
+    }
+    for (size_t i = 0; i < len; i++) {
+        if (path[i] == from) {
+            path[i] = to;
+        }
+    }
+}
+
+void lib_replace(char* path, char from, char to) {
+    if (!path) {
+        return;
+    }
+    lib_replace_len(path, lib_strlen(path), from, to);
 }
 

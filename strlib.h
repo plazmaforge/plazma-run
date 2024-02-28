@@ -45,4 +45,8 @@ int lib_stralen(/*const*/ char** array);
 
 void lib_strafree(char** array);
 
+void lib_replace_len(char* path, size_t len, char from, char to);
+
+void lib_replace(char* path, char from, char to);
+
 #endif // PLAZMA_LIB_STRLIB_H

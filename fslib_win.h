@@ -29,6 +29,7 @@
 //#include <shlobj.h>
 //#include <shlwapi.h>
 
+#include "strlib.h"
 #include "wstrlib.h"
 #include "fslib.h"
 
@@ -37,6 +38,8 @@ static int fs_match_file_internal(const char* pattern, const char* name, int mod
 static int fs_match_file_internal(const char* pattern, const char* name);
 
 static wchar_t* getRealPathW(const wchar_t* wpath);
+
+static wchar_t* getCurrentDirW();
 
 // [allocate]
 char* fs_get_normalize_path(const char* dir_name, const char* file_name) { 
@@ -67,6 +70,17 @@ char* fs_get_real_path(const char* path) {
     return real_path;
 }
 
+// [allocate]
+char* fs_get_current_dir() {
+    wchar_t* wcurrent_dir = getCurrentDirW();
+    if (!wcurrent_dir) {
+        return NULL;
+    }
+    char* current_dir = wchar_char(wcurrent_dir);
+    free(wcurrent_dir);
+    return current_dir;
+}
+
 const char* fs_get_current_find_path() {
     return "./*"; // Why not '.\*'?
 }
@@ -80,19 +94,12 @@ int fs_is_current_find_path(const char* path) {
 
 ////
 
-static int _is_dir(WIN32_FIND_DATAW file) {
+static int _fs_is_dir(WIN32_FIND_DATAW file) {
     return file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 }
 
 static void _fs_normalize_slash(char* path, size_t len) {
-    if (!path) {
-        return;
-    }
-    for (size_t i = 0; i < len; i++) {
-        if (path[i] == '/') {
-                path[i] = '\\';
-        }
-    }
+    lib_replace_len(path, len, '/', '\\');
 }
 
 // Convert directory name to WIN32 find path: add '\*'
@@ -196,6 +203,15 @@ static wchar_t* getRealPathW(const wchar_t* wpath) {
     return _wcsdup(buf);
 }
 
+static wchar_t* getCurrentDirW() {
+    /* Current directory */
+    WCHAR buf[MAX_PATH];
+    if (GetCurrentDirectoryW(sizeof(buf) / sizeof(WCHAR), buf) != 0) {
+      return _wcsdup(buf);
+    }
+    return NULL;
+}
+
 #endif
 
 // https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
@@ -222,7 +238,7 @@ void scandir_internal(const char* dirName, const char* pattern, std::vector<std:
         if (pattern == NULL || fs_match_file_internal(level_pattern, fileName)) {
 
             int mode = 0; // 0 - notning, 1 - file, 2 - dir
-            if (!_is_dir(file)) {
+            if (!_fs_is_dir(file)) {
                 // We add the file from last pattern level only
                 mode = (level == 0 || level == total_level - 1) ? 1 : 0;
             } else {
