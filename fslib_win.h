@@ -109,14 +109,21 @@ static char* fs_get_find_path(const char* dirName) {
         return NULL;
     }
 
+    //printf("get_find_path: input: %s\n", dirName);
+
     int len = strlen(dirName);
     int add = 0;
 
     if (len == 0) {
-        add = 3;
+        add = 3;     // add: './*' - current dir
     } else {
         if (dirName[len - 1] == '\\' || dirName[len - 1] == '/') {
-            add = 1;
+            add = 1; // add: '*'
+        } else {
+            if (dirName[len - 1] != '*') {
+                //printf("get_find_path: %s: '*'\n", dirName);
+                add = 2; // add: '\*'
+            }
         }
     }
 
@@ -127,13 +134,19 @@ static char* fs_get_find_path(const char* dirName) {
         strcpy(path, "./*"); // Why not '.\*'?
     } else {
         strcpy(path, dirName);
-        if (add == 1) {
+        if (add == 2) {
+           strcat(path, "\\");
+           strcat(path, "*");
+        } else if (add == 1) {
            strcat(path, "*");
         }
         _fs_normalize_slash(path, len);
     }
     
     path[len + 1] = '\0';
+
+    //printf("get_find_path: output: %s\n", path);
+            
     return path;
 }
 
@@ -305,10 +318,12 @@ fs_dir_t* fs_open_dir(const char* dir_name) {
 
     char* path = fs_get_find_path(dir_name); // convert 'dir_name' to WIN32 find path: add '\*'
     wchar_t* wpath = char_wchar(path);
+
     //printf("path    : '%s'\n", path);
 
     WIN32_FIND_DATAW _file;
     HANDLE _dir = FindFirstFileW(wpath, &_file);
+
     if (_dir == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
         fprintf(stderr, "Directory not found: %s\n", dir_name);
         return NULL;
@@ -321,25 +336,30 @@ fs_dir_t* fs_open_dir(const char* dir_name) {
         FindClose(_dir);
         return NULL;
     }
+
     dir->ptr = _dir;
     dir->dirent = NULL;
     return dir;
 }
 
 fs_dirent_t* fs_read_dir(fs_dir_t* dir) {
+
     if (!dir) {
         return NULL;
     }
+
     if (!dir->dirent) {
         dir->dirent = (fs_dirent_t*) malloc(sizeof(fs_dirent_t));
         dir->dirent->type = 0;
         dir->dirent->name = NULL;
     }
+
     if (!dir->dirent) {
         return NULL;
     }
 
     if (FindNextFileW(dir->ptr, &dir->dirent->fd) == 0) {
+        //printf("find_next: NULL\n");
         return NULL;
     }
 
@@ -349,6 +369,8 @@ fs_dirent_t* fs_read_dir(fs_dir_t* dir) {
     char* name = wchar_char(dir->dirent->fd.cFileName); // [allocate]
 
     dir->dirent->name = name;
+    //printf("find_next: %s\n", name);
+
     return dir->dirent;
 }
 

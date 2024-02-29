@@ -5,7 +5,7 @@
 #include "getopt.h"
 #include "fslib.h"
 
-#define KILOBYTE_FACTOR ((u_int64_t) 1024)
+#define KILOBYTE_FACTOR ((uint64_t) 1024)
 #define MEGABYTE_FACTOR (KILOBYTE_FACTOR * KILOBYTE_FACTOR)
 #define GIGABYTE_FACTOR (MEGABYTE_FACTOR * KILOBYTE_FACTOR)
 #define TERABYTE_FACTOR (GIGABYTE_FACTOR * KILOBYTE_FACTOR)
@@ -92,7 +92,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    char* dir_name = fs_get_current_dir();
+    char* dir_name = fs_get_current_dir();; //fs_get_current_find_path();
+    //printf("Current Dir: %s\n", dir_name);
+
     char* pattern = NULL;
     fs_file_t** files = NULL;
     fs_file_t* file = NULL;

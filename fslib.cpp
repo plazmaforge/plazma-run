@@ -1121,7 +1121,8 @@ long _fs_file_get_file_time(fs_file_t* file, int index) {
         return 0;
     }
 
-    #if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
+   
+    #if (!defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)) && !defined(_WIN32)
     struct timespec timespec_v;
 
     if (index == 1) {
@@ -1285,8 +1286,17 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
     fs_dirent_t* file;
     //errno = 0;
     const char* pattern = NULL;
-    if (patterns)  {
-        pattern = patterns[level];
+
+    // BUG (!) 
+    if (patterns && level >= 0)  {
+        if (level > pattern_count - 1) {
+            if (pattern_count == 1) {
+                // patterns: '*' or '*.*'
+                pattern = patterns[0];
+            }
+        } else {
+            pattern = patterns[level];
+        }
     } 
 
     int use_stat = 1;
@@ -1299,7 +1309,7 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
         int is_ignore = fs_is_ignore_file(file_name);
         int is_match = is_ignore ? 0 : (pattern == NULL || fs_match_file_internal(pattern, file_name));
         int is_dir_ = fs_is_dirent_dir(file);
-        
+
         //printf("find [%s] [%s%s] [%d] %s, %s, %s\n", (is_match ? "+" : " "), (is_dir_ ? "D" : " "), (is_ignore ? "I" : " "), level, dir_name, file_name, pattern);
 
         if (is_match) {
@@ -1438,6 +1448,7 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
     //if (errno != 0) {
         // TODO: stderr: error
     //}
+
     fs_close_dir(dir);
     return 0;
 }
