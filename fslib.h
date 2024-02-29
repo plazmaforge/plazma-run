@@ -278,6 +278,14 @@ uint64_t fs_file_get_file_size(fs_file_t* file);
 
 int fs_file_get_file_mode(fs_file_t* file);
 
+long fs_file_get_file_atime(fs_file_t* file);
+
+long fs_file_get_file_mtime(fs_file_t* file);
+
+long fs_file_get_file_ctime(fs_file_t* file);
+
+int fs_file_is_dir(fs_file_t* file);
+
 int fs_file_get_file_type_by_mode(int mode);
 
 ////
@@ -306,7 +314,7 @@ int fs_close_dir(fs_dir_t* dir);
 
 ////
 
-int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, int max_depth);
+int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, int max_depth, int file_only);
 
 
 /* C++ Style - Migration Task */
