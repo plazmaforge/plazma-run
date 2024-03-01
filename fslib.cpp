@@ -1446,72 +1446,93 @@ int fs_compare_by_time(long time1, long time2) {
     //return time1 > time2 ? -1 : 1; // ^   
 }
 
-int fs_compare(const void* v1, const void* v2, int mode, int is_dir_first) {
-    if (mode < 1 || mode > 3) {
+int fs_compare(const void* v1, const void* v2, fs_file_sort_t file_sort, bool asc, bool is_dir_first) {
+
+    if (file_sort < 1 || file_sort > 3) {
         return 0;
     }
 
     if (!v1 && !v2) {
         return 0;
     }
+
     if (!v1) {
-        return -1;
+        return asc ? -1 : 1;
     }
     if (!v2) {
-        return 1;
+        return asc ? 1 : -1;
     }
 
     fs_file_t* f1 = *((fs_file_t**) v1);
     fs_file_t* f2 = *((fs_file_t**) v2);
 
+    int cmp = 0;
     if (is_dir_first) {
         /* Sort by type before: DIR is priority then other types */
         int type1 = f1->type;
         int type2 = f2->type;
-        int cmp = fs_compare_by_type(type1, type2);
+        cmp = fs_compare_by_type(type1, type2);
         if (cmp != 0) {
             return cmp;
         }
     }
 
-    if (mode == 1) {
+    cmp = 0;
+    if (file_sort == FS_FILE_SORT_BY_NAME) {
+
         /* Sort By name */
         char *name1 = f1->name;
         char *name2 = f2->name;
+        cmp = fs_compare_by_name(name1, name2);
+    } else if (file_sort == FS_FILE_SORT_BY_SIZE) {
 
-        return fs_compare_by_name(name1, name2);
-    }
-
-    if (mode == 2) {
         /* Sort By size */
         uint64_t size1 = fs_file_get_file_size(f1);
         uint64_t size2 = fs_file_get_file_size(f2);
+        cmp = fs_compare_by_size(size1, size2);
+    } else if (file_sort == FS_FILE_SORT_BY_TIME) {
 
-        return fs_compare_by_size(size1, size2);
-    }
-
-    if (mode == 3) {
         /* Sort By time */
         long time1 = fs_file_get_file_mtime(f1);
         long time2 = fs_file_get_file_mtime(f2);
-
-        return fs_compare_by_size(time1, time2);
+        cmp = fs_compare_by_size(time1, time2);
     }
 
-    return 0;
+    return (asc || cmp == 0) ? cmp : (cmp * -1);
+}
 
+int fs_file_sort_by_alpha(const void* v1, const void* v2) {
+    return fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, true, false);
 }
 
 int fs_file_sort_by_name(const void* v1, const void* v2) {
-    return fs_compare(v1, v2, 1, true);
+    return fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, true, true);
 }
 
 int fs_file_sort_by_size(const void* v1, const void* v2) {
-    return fs_compare(v1, v2, 2, false);
+    return fs_compare(v1, v2, FS_FILE_SORT_BY_SIZE, true, false);
 }
 
 int fs_file_sort_by_time(const void* v1, const void* v2) {
-    return fs_compare(v1, v2, 3, false);
+    return fs_compare(v1, v2, FS_FILE_SORT_BY_TIME, true, false);
+}
+
+////
+
+int fs_file_sort_by_alpha_desc(const void* v1, const void* v2) {
+    return fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, false, false);
+}
+
+int fs_file_sort_by_name_desc(const void* v1, const void* v2) {
+    return fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, false, true);
+}
+
+int fs_file_sort_by_size_desc(const void* v1, const void* v2) {
+    return fs_compare(v1, v2, FS_FILE_SORT_BY_SIZE, false, false);
+}
+
+int fs_file_sort_by_time_desc(const void* v1, const void* v2) {
+    return fs_compare(v1, v2, FS_FILE_SORT_BY_TIME, false, false);
 }
 
 int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, int max_depth, int file_only) {
@@ -1528,7 +1549,7 @@ int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, in
     //printf(">>pattern       : %s\n", pattern);
 
     int file_count = 0;
-    int size = 1000; // start size
+    int size = 10; // start size
 
     fs_files_init(files, size);
 
@@ -1537,9 +1558,16 @@ int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, in
     lib_strafree(patterns);
 
     if (files && file_count > 0) {
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_alpha);
         qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_name);
         //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_size);
         //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_time);
+
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_alpha_desc);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_name_desc);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_size_desc);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_time_desc);
+
     }
     
     return file_count;

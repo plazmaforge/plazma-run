@@ -57,6 +57,13 @@ typedef enum {
 const int FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
 const int FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
 
+typedef enum {
+  FS_FILE_SORT_NONE           = 0,
+  FS_FILE_SORT_BY_NAME        = 1,
+  FS_FILE_SORT_BY_SIZE        = 2,
+  FS_FILE_SORT_BY_TIME        = 3,
+} fs_file_sort_t;
+
 #if (defined(__MINGW64_VERSION_MAJOR) || defined(_MSC_VER)) && !defined(_WIN64)
 typedef struct _stat32 fs_stat_t;
 #elif defined(__MINGW64_VERSION_MAJOR) && defined(_WIN64)
