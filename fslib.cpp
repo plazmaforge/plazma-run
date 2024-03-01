@@ -1383,55 +1383,7 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
                 //printf("try  : file_count   : %d\n", *file_count);
 
             }
-    
-            // if (mode == 1) {
-
-            //     //printf("try   : add_file\n");
-            //     int index = *file_count; // old file_count
-            //     fs_file_t** list = *files;
-
-            //     if (list[index] == NULL) { // NULL-terminate array: +1
-            //         const int inc = 10;	/* increase by this much */
-            //         int size = index + inc;
-            //         if (fs_files_reinit(files, size) != 0) {                        
-            //             free(full_name);
-            //             fs_files_free(*files);
-            //             fs_close_dir(dir);
-            //             return -1;
-            //         }
-            //     }
-
-            //     fs_file_t* file_s = fs_file_new();
-            //     file_s->name = strdup(full_name);
-            //     file_s->type = file_type;                
-
-            //     if (use_stat) {
-            //         char* real_path = fs_get_real_path(file_s->name);
-            //         fs_stat_t* stat = fs_stat_new();
-            //         fs_stat(real_path, stat);
-            //         file_s->stat = stat;
-            //         free(real_path);
-            //     }
-
-            //     //printf("try  : index        : %d\n", *file_count);
-            //     //printf("try  : reserved     : %d\n", *reserved);
-
-            //     list = *files;
-            //     list[index] = file_s; 
-            //     //*files[*file_count] = file_s; // Doesn't work
-
-            //     *file_count = *file_count + 1;
-                 
-            //     // Shift NULL marker (size + 1): for allocation without fulling NULL
-            //     index = *file_count; // new file_count
-            //     if (list[index] != NULL) {
-            //         list[index] = NULL;
-            //     }
-
-            //     //printf("try  : file_count   : %d\n", *file_count);
-            // } else 
-            
-            
+                
             if (mode == 2) {
                //printf("try   : add_dir\n");
 
@@ -1453,6 +1405,115 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
     return 0;
 }
 
+int fs_compare_by_type(int type1, int type2) {
+    if (type1 == FS_DIR && type2 != FS_DIR) {
+        return -1;
+    }
+
+    if (type2 == FS_DIR && type1 != FS_DIR) {
+        return 1;
+    }
+
+    return 0;
+}
+
+int fs_compare_by_name(const char* name1, const char* name2) {
+    if (!name1 && !name2) {
+        return 0;
+    }
+    if (!name1) {
+        return -1;
+    }
+    if (!name2) {
+        return 1;
+    }
+    return strcmp(name1, name2);
+}
+
+int fs_compare_by_size(uint64_t size1, uint64_t size2) {
+    if (size2 == size1) {
+        return 0;
+    }
+    return size1 > size2 ? 1 : -1; // 
+    //return size1 > size2 ? -1 : 1; // ^   
+}
+
+int fs_compare_by_time(long time1, long time2) {
+    if (time2 == time1) {
+        return 0;
+    }
+    return time1 > time2 ? 1 : -1; // 
+    //return time1 > time2 ? -1 : 1; // ^   
+}
+
+int fs_compare(const void* v1, const void* v2, int mode, int is_dir_first) {
+    if (mode < 1 || mode > 3) {
+        return 0;
+    }
+
+    if (!v1 && !v2) {
+        return 0;
+    }
+    if (!v1) {
+        return -1;
+    }
+    if (!v2) {
+        return 1;
+    }
+
+    fs_file_t* f1 = *((fs_file_t**) v1);
+    fs_file_t* f2 = *((fs_file_t**) v2);
+
+    if (is_dir_first) {
+        /* Sort by type before: DIR is priority then other types */
+        int type1 = f1->type;
+        int type2 = f2->type;
+        int cmp = fs_compare_by_type(type1, type2);
+        if (cmp != 0) {
+            return cmp;
+        }
+    }
+
+    if (mode == 1) {
+        /* Sort By name */
+        char *name1 = f1->name;
+        char *name2 = f2->name;
+
+        return fs_compare_by_name(name1, name2);
+    }
+
+    if (mode == 2) {
+        /* Sort By size */
+        uint64_t size1 = fs_file_get_file_size(f1);
+        uint64_t size2 = fs_file_get_file_size(f2);
+
+        return fs_compare_by_size(size1, size2);
+    }
+
+    if (mode == 3) {
+        /* Sort By time */
+        long time1 = fs_file_get_file_mtime(f1);
+        long time2 = fs_file_get_file_mtime(f2);
+
+        return fs_compare_by_size(time1, time2);
+    }
+
+    return 0;
+
+}
+
+int fs_file_sort_by_name(const void* v1, const void* v2) {
+    return fs_compare(v1, v2, 1, true);
+}
+
+int fs_file_sort_by_size(const void* v1, const void* v2) {
+    return fs_compare(v1, v2, 2, false);
+}
+
+int fs_file_sort_by_time(const void* v1, const void* v2) {
+    return fs_compare(v1, v2, 3, false);
+}
+
 int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, int max_depth, int file_only) {
     if (!dir_name) {
         return -1;
@@ -1467,7 +1528,7 @@ int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, in
     //printf(">>pattern       : %s\n", pattern);
 
     int file_count = 0;
-    int size = 10; // start size
+    int size = 1000; // start size
 
     fs_files_init(files, size);
 
@@ -1475,6 +1536,12 @@ int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, in
 
     lib_strafree(patterns);
 
+    if (files && file_count > 0) {
+        qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_name);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_size);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_time);
+    }
+    
     return file_count;
 }
 
