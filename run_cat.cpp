@@ -32,7 +32,6 @@ int main(int argc, char* argv[]) {
     FileData* fileData = NULL;
     char* allData = NULL;
     size_t fileSize = 0;
-
     size_t totalSize = 0;
 
     for (int i = 1; i < argc; i++) {
@@ -40,7 +39,7 @@ int main(int argc, char* argv[]) {
         fileSize = 0;
 
         fileData = new FileData();
-        fileData->data = readBytes(fileName, fileSize);
+        fileData->data = read_bytes_size(fileName, fileSize);
         fileData->size = fileSize;
 
         fileList[i - 1] = fileData;
@@ -48,7 +47,7 @@ int main(int argc, char* argv[]) {
     }
 
     // V1
-    char* totalData = (char*) malloc(totalSize);
+    char* totalData = (char*) malloc(totalSize * sizeof(char));
     int offset = 0;
 
     for (int j = 0; j < fileCount; j++) {

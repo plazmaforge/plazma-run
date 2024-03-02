@@ -12,11 +12,11 @@ typedef struct {
     bool show_text;
 } dump_config_t;
 
-char* readBytes(const char* fileName);
+char* read_bytes(const char* file_name);
 
-char* readBytes(const char* fileName, size_t& size);
+char* read_bytes_size(const char* file_name, size_t& size);
 
-void writeBytes(const char* fileName, char* data, size_t& size);
+void write_bytes_size(const char* file_name, char* data, size_t& size);
 
 void dump_file(const char* file_name, dump_config_t* config);
 

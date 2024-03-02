@@ -12,15 +12,15 @@
 
 // https://www.delftstack.com/howto/c/read-binary-file-in-c/
 
-char* readBytes(const char* fileName) {
+char* read_bytes(const char* file_name) {
     size_t size = 0;
-    return readBytes(fileName, size);
+    return read_bytes_size(file_name, size);
 }
 
-char* readBytes(const char* fileName, size_t& size) {
+char* read_bytes_size(const char* file_name, size_t& size) {
 
   // Read
-  FILE* in_file = fopen(fileName, "rb");
+  FILE* in_file = fopen(file_name, "rb");
   if (!in_file) {
     perror("fopen");
     return NULL;
@@ -28,7 +28,7 @@ char* readBytes(const char* fileName, size_t& size) {
   }
 
   struct stat sb;
-  if (stat(fileName, &sb) == -1) {
+  if (stat(file_name, &sb) == -1) {
     perror("stat");
     return NULL;
     //exit(EXIT_FAILURE);
@@ -38,7 +38,7 @@ char* readBytes(const char* fileName, size_t& size) {
     size = sb.st_size;
   }
 
-  char* data = (char*) malloc(size);
+  char* data = (char*) malloc(size * sizeof(char));
   //fread(data, sb.st_size, 1, in_file);
   fread(data, size, 1, in_file);
   //printf("read data: size = %lu\n", size);
@@ -51,10 +51,10 @@ char* readBytes(const char* fileName, size_t& size) {
 
 }
 
-void writeBytes(const char* fileName, char* data, size_t& size) {
+void write_bytes_size(const char* file_name, char* data, size_t& size) {
 
   // Write
-  FILE* output_file = fopen(fileName, "wb+");
+  FILE* output_file = fopen(file_name, "wb+");
   if (!output_file) {
     perror("fopen");
     return;
@@ -176,9 +176,9 @@ void dump_file(const char* file_name, dump_config_t* config) {
 
 void dump_file_size(const char* file_name, size_t& size, dump_config_t* config) {
 
-  char* data = readBytes(file_name, size);
+  char* data = read_bytes_size(file_name, size);
 
-  //printf("HEX: file=%s, size=%lu\n", fileName, size);
+  //printf("HEX: file=%s, size=%lu\n", file_name, size);
   dump_bytes(data, size, config);
   free(data);
   

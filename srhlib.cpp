@@ -518,7 +518,7 @@ void printData(const Positions* positions, const char* data, int data_size, int 
 void find(const char* fileName, const char* input, int inputSize, const FindConfig* config) {
 
     size_t fileSize = 0;
-    char* data = readBytes(fileName, fileSize);
+    char* data = read_bytes_size(fileName, fileSize);
 
     if (data == NULL) {
         //printf("File '%s' not found\n", fileName);
