@@ -15,5 +15,11 @@ int main(int argc, char* argv[]) {
     }
 
     char* fileName = argv[1];
+
+    #ifdef _WIN32
+    char buf[655360];
+    setvbuf(stdout, buf, _IOFBF, 65536);
+    #endif
+
     dumpFile(fileName);
 }
