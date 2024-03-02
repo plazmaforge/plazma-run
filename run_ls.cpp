@@ -106,6 +106,12 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    #ifdef _WIN32
+    char _buf[65536];
+    setvbuf(stdout, _buf, _IOFBF, 65536);
+    #endif
+
+
     /*
     printf("SIZE_FORMAT_COUNT: %d\n" , SIZE_FORMAT_COUNT);
     printf("KILOBYTE_FACTOR  : %llu\n" , KILOBYTE_FACTOR);
@@ -130,7 +136,6 @@ int main(int argc, char *argv[]) {
         file = files[i];
 
         if (!file) {
-            printf("NUL-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             continue;
         }
 
