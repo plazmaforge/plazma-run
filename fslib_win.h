@@ -229,65 +229,65 @@ static wchar_t* getCurrentDirW() {
 
 // https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
 
-void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
+// void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
 
-    char* path = fs_get_find_path(dirName); // convert 'dirName' to WIN32 find path: add '\*'
-    wchar_t* wpath = char_wchar(path);
-    //printf("path    : '%s'\n", path);
+//     char* path = fs_get_find_path(dirName); // convert 'dirName' to WIN32 find path: add '\*'
+//     wchar_t* wpath = char_wchar(path);
+//     //printf("path    : '%s'\n", path);
 
-    WIN32_FIND_DATAW file;
-    HANDLE dir = FindFirstFileW(wpath, &file);
-    if (dir == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
-        fprintf(stderr, "Directory not found: %s\n", dirName);
-        return;
-    }
+//     WIN32_FIND_DATAW file;
+//     HANDLE dir = FindFirstFileW(wpath, &file);
+//     if (dir == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
+//         fprintf(stderr, "Directory not found: %s\n", dirName);
+//         return;
+//     }
                                                                                          
-    while (FindNextFileW(dir, &file) != 0) {
+//     while (FindNextFileW(dir, &file) != 0) {
 
-        wchar_t* wfileName = file.cFileName;
-        char* fileName = wchar_char(wfileName); // [allocate]
+//         wchar_t* wfileName = file.cFileName;
+//         char* fileName = wchar_char(wfileName); // [allocate]
 
-        //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
-        if (pattern == NULL || fs_match_file_internal(level_pattern, fileName)) {
+//         //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
+//         if (pattern == NULL || fs_match_file_internal(level_pattern, fileName)) {
 
-            int mode = 0; // 0 - notning, 1 - file, 2 - dir
-            if (!_fs_is_dir(file)) {
-                // We add the file from last pattern level only
-                mode = (level == 0 || level == total_level - 1) ? 1 : 0;
-            } else {
-                // Recursive if max_depth != -1
-                mode = max_depth >= 0 ? 2 : 0;
-            }
+//             int mode = 0; // 0 - notning, 1 - file, 2 - dir
+//             if (!_fs_is_dir(file)) {
+//                 // We add the file from last pattern level only
+//                 mode = (level == 0 || level == total_level - 1) ? 1 : 0;
+//             } else {
+//                 // Recursive if max_depth != -1
+//                 mode = max_depth >= 0 ? 2 : 0;
+//             }
 
-            if (mode == 0) {
-                continue; // notning
-            }
+//             if (mode == 0) {
+//                 continue; // notning
+//             }
 
-            char* fullName = NULL;
-            if (fs_is_current_find_path(dirName)) {
-               fullName = strdup(fileName);
-            } else {
-               fullName = fs_get_file_path(dirName, fileName); // [allocate]
-            }
+//             char* fullName = NULL;
+//             if (fs_is_current_find_path(dirName)) {
+//                fullName = strdup(fileName);
+//             } else {
+//                fullName = fs_get_file_path(dirName, fileName); // [allocate]
+//             }
             
-            //printf("match:fullName: %s\n", fullName);
-            //printf("match: [%s] %s, %s, %s\n", (mode == 2 ? "D" : " "), fullName, dirName, fileName);
+//             //printf("match:fullName: %s\n", fullName);
+//             //printf("match: [%s] %s, %s, %s\n", (mode == 2 ? "D" : " "), fullName, dirName, fileName);
 
-            if (mode == 1) {
-                files.push_back(fullName);
-            } else if (mode == 2) {
-                scandir(fullName, pattern, files, level + 1);
-            }
+//             if (mode == 1) {
+//                 files.push_back(fullName);
+//             } else if (mode == 2) {
+//                 scandir(fullName, pattern, files, level + 1);
+//             }
 
-            free(fullName);
-        }
+//             free(fullName);
+//         }
 
-        free(fileName);
-    }
+//         free(fileName);
+//     }
 
-    free(path);
-    free(wpath);
-}
+//     free(path);
+//     free(wpath);
+// }
 
 ////
 

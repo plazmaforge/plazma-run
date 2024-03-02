@@ -69,55 +69,55 @@ static void _fs_normalize_slash(char* path, size_t len) {
     lib_replace_len(path, len, '\\', '/');
 }
 
-void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
+// void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
 
-    struct dirent* file;
-    DIR* dir = opendir(dirName);
-    if (dir == NULL) {
-        fprintf(stderr, "Directory not found: %s\n", dirName);
-        return;
-    }
+//     struct dirent* file;
+//     DIR* dir = opendir(dirName);
+//     if (dir == NULL) {
+//         fprintf(stderr, "Directory not found: %s\n", dirName);
+//         return;
+//     }
 
-    errno = 0;
-    while ((file = readdir(dir)) != NULL) {
+//     errno = 0;
+//     while ((file = readdir(dir)) != NULL) {
 
-        char* fileName = file->d_name;
+//         char* fileName = file->d_name;
 
-        //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
-        if (pattern == NULL || fs_match_file_internal(level_pattern, fileName)) {
+//         //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
+//         if (pattern == NULL || fs_match_file_internal(level_pattern, fileName)) {
 
-            int mode = 0; // 0 - notning, 1 - file, 2 - dir
-            if (!_fs_is_dir(file)) {
-                // We add the file from last pattern level only
-                mode = (level == 0 || level == total_level - 1) ? 1 : 0;
-            } else {
-                // Recursive if max_depth != -1
-                mode = max_depth >= 0 ? 2 : 0;
-            }
+//             int mode = 0; // 0 - notning, 1 - file, 2 - dir
+//             if (!_fs_is_dir(file)) {
+//                 // We add the file from last pattern level only
+//                 mode = (level == 0 || level == total_level - 1) ? 1 : 0;
+//             } else {
+//                 // Recursive if max_depth != -1
+//                 mode = max_depth >= 0 ? 2 : 0;
+//             }
 
-            if (mode == 0) {
-                continue; // notning
-            }
+//             if (mode == 0) {
+//                 continue; // notning
+//             }
 
-            char* fullName = fs_get_file_path(dirName, fileName);
+//             char* fullName = fs_get_file_path(dirName, fileName);
 
-            //printf("match:fullName: %s\n", fullName);
-            //printf("match: [%s] %s, %s, %s\n", (mode == 2 ? "D" : " "), fullName, dirName, fileName);
+//             //printf("match:fullName: %s\n", fullName);
+//             //printf("match: [%s] %s, %s, %s\n", (mode == 2 ? "D" : " "), fullName, dirName, fileName);
 
-            if (mode == 1) {
-                files.push_back(fullName);
-            } else if (mode == 2) {
-                scandir(fullName, pattern, files, level + 1);
-            }
+//             if (mode == 1) {
+//                 files.push_back(fullName);
+//             } else if (mode == 2) {
+//                 scandir(fullName, pattern, files, level + 1);
+//             }
 
-            free(fullName);
-        }
-    }
-    if (errno != 0) {
-        // TODO: stderr: error
-    }
-    closedir(dir);
-}
+//             free(fullName);
+//         }
+//     }
+//     if (errno != 0) {
+//         // TODO: stderr: error
+//     }
+//     closedir(dir);
+// }
 
 ////
 

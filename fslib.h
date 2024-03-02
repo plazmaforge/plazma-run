@@ -326,30 +326,30 @@ int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, in
 
 /* C++ Style - Migration Task */
 
-/**
- * Build full file path 
- */
-// [allocate]
-char* getFilePath(const char* dirName, const char* fileName);
+// /**
+//  * Build full file path 
+//  */
+// // [allocate]
+// char* getFilePath(const char* dirName, const char* fileName);
 
-/**
- * Return real file path
- */
-// [allocate]
-char* getRealPath(const char* path);
+// /**
+//  * Return real file path
+//  */
+// // [allocate]
+// char* getRealPath(const char* path);
 
-std::string getCurrentFindPath();
+// std::string getCurrentFindPath();
 
-bool isCurrentFindPath(const char* path);
+// bool isCurrentFindPath(const char* path);
 
-////
+// ////
 
-std::vector<std::string> getFiles(const char* dirName);
+// std::vector<std::string> getFiles(const char* dirName);
 
-std::vector<std::string> getFiles(const char* dirName, const char* pattern);
+// std::vector<std::string> getFiles(const char* dirName, const char* pattern);
 
-void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files);
+// void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files);
 
-void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level);
+// void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level);
 
 #endif // PLAZMA_LIB_FSLIB_H

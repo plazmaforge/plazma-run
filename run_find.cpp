@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
             dirName = lib_strndup(fileName, pathIndex + 1);
             fileName = fileName + pathIndex + 1;
         } else {
-            dirName = lib_strdup(getCurrentFindPath().c_str());            
+            dirName = lib_strdup(fs_get_current_find_path());            
         }
 
         //printf("dir  : %s\n", dirName);
@@ -167,12 +167,12 @@ int main(int argc, char* argv[]) {
         //printf("New Scandir \n");
         
          
-        fs_file_t** files2 = NULL;
+        fs_file_t** files = NULL;
         fs_file_t* file = NULL;
-        int z = fs_scandir(dirName, pattern, &files2, FS_SCANDIR_RECURSIVE, true);
+        int z = fs_scandir(dirName, pattern, &files, FS_SCANDIR_RECURSIVE, true);
 
         for (int i = 0; i < z; i++) {
-            file = files2[i];
+            file = files[i];
 
             //fs_stat_t* stat_s = file->stat;
             //if (stat_s) {
@@ -181,14 +181,14 @@ int main(int argc, char* argv[]) {
             //    printf("%s\n", file->name);
             //}
 
-            find(files2[i]->name, input, inputSize, config);
+            find(files[i]->name, input, inputSize, config);
 
             //free(file);
             //fs_file_free(file);
         }
 
         //free(files2);
-        fs_files_free(files2);
+        fs_files_free(files);
         //printf("file_count : %d\n", z);
         
         
