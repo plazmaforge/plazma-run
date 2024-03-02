@@ -91,17 +91,28 @@ void writeBytes(const char* fileName, char* data, size_t& size) {
   // exit(EXIT_SUCCESS);
 }
 
-void dumpBytes(const char* data, size_t size) {
+void dump_bytes(const char* data, size_t size, dump_config_t* config) {
     if (data == NULL || size == 0) {
         return;
     }
-    int col_count = 32; //16;
+
+    int col_count = config ? config->col_count : 16;
+    if (col_count < DUMP_MIN_COL_COUNT || col_count > DUMP_MAX_COL_COUNT) {
+      col_count = DUMP_DEF_COL_COUNT;
+    }
+
     int row_count = size / col_count;
     if (size % col_count > 0) {
         row_count++;
     }
 
-    bool showText = true;
+    bool show_text = config ? config->show_text : DUMP_DEF_SHOW_TEXT;
+
+    //printf("size: %lu\n", size);
+    //printf("cols: %d\n", col_count);
+    //printf("rows: %d\n", row_count);
+    //printf("text: %d\n", show_text);
+
     int offset = 0;
     int i = 0;
     for (int row = 0; row < row_count; row++) {
@@ -119,9 +130,9 @@ void dumpBytes(const char* data, size_t size) {
             //printf("%02HHx", data[i]);
         }
 
-        if (!showText) {
+        if (!show_text) {
             printf("\n");
-            break;
+            continue;
         }
 
         // data/text separator
@@ -158,17 +169,17 @@ void dumpBytes(const char* data, size_t size) {
 
 }
 
-void dumpFile(const char* fileName) {
+void dump_file(const char* file_name, dump_config_t* config) {
     size_t size = 0;
-    dumpFile(fileName, size);
+    dump_file_size(file_name, size, config);
 }
 
-void dumpFile(const char* fileName, size_t& size) {
+void dump_file_size(const char* file_name, size_t& size, dump_config_t* config) {
 
-  char* data = readBytes(fileName, size);
+  char* data = readBytes(file_name, size);
 
   //printf("HEX: file=%s, size=%lu\n", fileName, size);
-  dumpBytes(data, size);
+  dump_bytes(data, size, config);
   free(data);
   
 }
