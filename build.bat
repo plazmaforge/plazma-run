@@ -34,6 +34,9 @@ rem compile
 %CC% %CFLAGS% run_mkdir.cpp -o run_mkdir.o
 %CC% %CFLAGS% run_rmdir.cpp -o run_rmdir.o
 
+%CC% %CFLAGS% test_echo.cpp -o test_echo.o
+%CC% %CFLAGS% test_locale.cpp -o test_locale.o
+
 rem link
 
 %CC% %LDFLAGS% getopt.o iolib.o run_dump.o -o run-dump.exe
@@ -44,3 +47,6 @@ rem link
 %CC% %LDFLAGS% getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o run_ls.o -o run-ls
 %CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_mkdir.o -o run-mkdir.exe
 %CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_rmdir.o -o run-rmdir.exe
+
+%CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
+%CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_locale.o -o test-locale

@@ -45,6 +45,8 @@ $CC $CFLAGS run_mkdir.cpp -o run_mkdir.o
 $CC $CFLAGS run_rmdir.cpp -o run_rmdir.o
 
 $CC $CFLAGS test_getopt.cpp -o test_getopt.o
+$CC $CFLAGS test_echo.cpp -o test_echo.o
+$CC $CFLAGS test_locale.cpp -o test_locale.o
 
 # link
 ###########
@@ -58,4 +60,6 @@ $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_
 $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_rmdir.o -o run-rmdir
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
+$CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo
+$CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_locale.o -o test-locale
 
