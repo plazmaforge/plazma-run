@@ -1,10 +1,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cstring>
-#include <string>
-#include <cctype>
-#include <vector>
+#include <string.h>
+#include <ctype.h>
+
+//#include <string>
+//#include <vector>
 
 #include "getopt.h"
 #include "strlib.h"
@@ -12,9 +13,8 @@
 #include "pathlib.h"
 #include "wclib.h"
 #include "fslib.h"
-#include "srhlib.h"
 #include "syslib.h"
-
+#include "asklib.h"
 
 void printUsage() {
     printf("Usage: run-find <text> <file> \n");

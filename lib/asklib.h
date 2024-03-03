@@ -1,5 +1,5 @@
-#ifndef PLAZMA_LIB_SRHLIB_H
-#define PLAZMA_LIB_SRHLIB_H
+#ifndef PLAZMA_LIB_ASKLIB_H
+#define PLAZMA_LIB_ASKLIB_H
 
 #include <stdlib.h>
 
@@ -38,4 +38,4 @@ void printBynary(const Positions* positions, const char* data, int data_size, in
 
 void printText(const Positions* positions, const char* data, int data_size, int input_size);
 
-#endif // PLAZMA_LIB_SRHLIB_H
+#endif // PLAZMA_LIB_ASKLIB_H
