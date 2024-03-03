@@ -26,16 +26,16 @@ struct FindConfig {
     bool printFileName;
 };
 
-void find(const char* fileName, const char* input, int inputSize, const FindConfig* config);
+void ask_find(const char* file_name, const char* input, int input_size, const FindConfig* config);
 
-void printData(const Positions* positions, const char* data, int data_size, int input_size, const FindConfig* config);
+void ask_print_data(const Positions* positions, const char* data, int data_size, int input_size, const FindConfig* config);
 
-Positions* findBinary(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config);
+Positions* ask_find_binary(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config);
 
-Positions* findText(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config);
+Positions* ask_find_text(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config);
 
-void printBynary(const Positions* positions, const char* data, int data_size, int input_size);
+void ask_print_binary(const Positions* positions, const char* data, int data_size, int input_size);
 
-void printText(const Positions* positions, const char* data, int data_size, int input_size);
+void ask_print_text(const Positions* positions, const char* data, int data_size, int input_size);
 
 #endif // PLAZMA_LIB_ASKLIB_H

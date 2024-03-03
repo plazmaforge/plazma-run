@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
             //    printf("%s\n", file->name);
             //}
 
-            find(files[i]->name, input, inputSize, config);
+            ask_find(files[i]->name, input, inputSize, config);
 
             //free(file);
             //fs_file_free(file);
@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
     }
 
     //config->printFileName = false;
-    find(fileName, input, inputSize, config);
+    ask_find(fileName, input, inputSize, config);
 
     free(config);
     restore_locale(); // Important for WIN32: The locale was changed for the terminal

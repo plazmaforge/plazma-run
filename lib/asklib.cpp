@@ -4,7 +4,7 @@
 #include "iolib.h"
 #include "asklib.h"
 
-int getWidth(int value) {
+int get_width(int value) {
     // abs!
     if (value < 10) {
         return 1;
@@ -18,48 +18,46 @@ int getWidth(int value) {
     return 0;
 }
 
-void calcWidth(const Positions* positions, int& indexWidth) {
+void calc_width_index(const Positions* positions, int& index_width) {
     if (positions == NULL) {
         return;
     }
-    Position* curr = positions->first;
-    
-    int maxIndex = 0;
+    Position* curr = positions->first;    
+    int max_index = 0;
     while (curr != NULL) {
-        if (curr->index > maxIndex) {
-            maxIndex = curr->index;
+        if (curr->index > max_index) {
+            max_index = curr->index;
         }
         curr = curr->next;
     }
-    indexWidth = getWidth(maxIndex);
+    index_width = get_width(max_index);
 }
 
-void calcWidth(const Positions* positions, int& rowWidth, int& colWidth) {
+void calc_width_cell(const Positions* positions, int& row_width, int& col_width) {
     if (positions == NULL) {
         return;
     }
-    Position* curr = positions->first;
-    
-    int maxRow = 0;
-    int maxCol = 0;
+    Position* curr = positions->first;    
+    int max_row = 0;
+    int max_col = 0;
     while (curr != NULL) {
-        if (curr->row > maxRow) {
-            maxRow = curr->row;
+        if (curr->row > max_row) {
+            max_row = curr->row;
         }
-        if (curr->col > maxCol) {
-            maxCol = curr->col;
+        if (curr->col > max_col) {
+            max_col = curr->col;
         }
         curr = curr->next;
     }
-    rowWidth = getWidth(maxRow);
-    colWidth = getWidth(maxCol);
-    if (rowWidth == 0 || colWidth == 0) {
-      rowWidth = 0;
-      colWidth = 0;
+    row_width = get_width(max_row);
+    col_width = get_width(max_col);
+    if (row_width == 0 || col_width == 0) {
+      row_width = 0;
+      col_width = 0;
     }
 }
 
-int skipLine(const char* data, size_t data_size, size_t pos) {
+int skip_line(const char* data, size_t data_size, size_t pos) {
     char c = data[pos];
     if (c == '\r') {
         if (pos + 1 < data_size && data[pos + 1] == '\n') {
@@ -78,8 +76,8 @@ int skipLine(const char* data, size_t data_size, size_t pos) {
 ////
 
 bool contains(const char* data, const char* input, int start, int size) {
-    for (size_t j = 0; j < size; j++) {
-        if (data[start + j] != input[j]) {
+    for (size_t i = 0; i < size; i++) {
+        if (data[start + i] != input[i]) {
             return false;
         }
     }
@@ -87,8 +85,8 @@ bool contains(const char* data, const char* input, int start, int size) {
 }
 
 bool icontains(const char* data, const char* input, int start, int size) {
-    for (size_t j = 0; j < size; j++) {
-        if (std::tolower(data[start + j]) != std::tolower(input[j])) {
+    for (size_t i = 0; i < size; i++) {
+        if (std::tolower(data[start + i]) != std::tolower(input[i])) {
             return false;
         }
     }
@@ -97,7 +95,7 @@ bool icontains(const char* data, const char* input, int start, int size) {
 
 ////
 
-Positions* findBinary(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config) {
+Positions* ask_find_binary(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config) {
     if (data == NULL || input == NULL || data_size == 0 || input_size == 0) {
         return NULL;
     }
@@ -107,11 +105,11 @@ Positions* findBinary(const char* data, size_t data_size, const char* input, siz
     }
 
     // by default
-    bool findFirstOnly = false;
+    bool find_first_only = false;
 
     // by config
     if (config != NULL) {
-        findFirstOnly = config->findFirstOnly;
+        find_first_only = config->findFirstOnly;
     }
 
     Positions* positions = NULL;
@@ -125,14 +123,6 @@ Positions* findBinary(const char* data, size_t data_size, const char* input, siz
 
         bool found = contains(data, input, pos, input_size);
 
-        // bool found = true;
-        // for (size_t j = 0; j < input_size; j++) {
-        //     if (data[pos + j] != input[j]) {
-        //         found = false;
-        //         break;
-        //     }
-        // }
-
         if (found) {
             Position* position = new Position();
             position->index = pos;
@@ -154,7 +144,7 @@ Positions* findBinary(const char* data, size_t data_size, const char* input, siz
                 positions->size++;
             }
 
-            if (findFirstOnly) {
+            if (find_first_only) {
                 return positions;
             }
         }
@@ -163,7 +153,7 @@ Positions* findBinary(const char* data, size_t data_size, const char* input, siz
     return positions;
 }
 
-void fixedEndRowIndex(const char* data, size_t data_size, const char* input, size_t input_size, Position* curr) {
+void fixed_end_row_index(const char* data, size_t data_size, const char* input, size_t input_size, Position* curr) {
     if (curr == NULL) {
         return;
     }
@@ -177,6 +167,7 @@ void fixedEndRowIndex(const char* data, size_t data_size, const char* input, siz
     //printf("input_size: %lu\n", input_size);
     //printf("startRowIndex: %d\n", curr->startRowIndex);
     //printf("endRowIndex: %d\n", curr->endRowIndex);
+
     for (size_t pos = curr->index; pos < data_size; pos++) {
         char c = data[pos];
         if (c == '\r' || c == '\n') {
@@ -187,7 +178,7 @@ void fixedEndRowIndex(const char* data, size_t data_size, const char* input, siz
     //printf("endRowIndex: %d\n", curr->endRowIndex);     
 }
 
-Positions* findText(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config) {
+Positions* ask_find_text(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config) {
     if (data == NULL || input == NULL || data_size == 0 || input_size == 0) {
         return NULL;
     }
@@ -197,13 +188,13 @@ Positions* findText(const char* data, size_t data_size, const char* input, size_
     }
 
     // by default
-    bool findFirstOnly = false;
-    bool ignoreCase = false;
+    bool find_first_only = false;
+    bool ignore_case = false;
 
     // by config
     if (config != NULL) {
-        findFirstOnly = config->findFirstOnly;
-        ignoreCase = config->ignoreCase;
+        find_first_only = config->findFirstOnly;
+        ignore_case = config->ignoreCase;
     }
 
     int row = 1;
@@ -214,19 +205,19 @@ Positions* findText(const char* data, size_t data_size, const char* input, size_
     Positions* positions = NULL;
     Position* curr = NULL;
     
-    int startRowIndex = 0;
-    int endRowIndex = 0;
+    int start_row_index = 0;
+    int end_row_index = 0;
 
     for (size_t pos = 0; pos < data_size; pos++) {
 
         if (pos + input_size > data_size) {
-            fixedEndRowIndex(data, data_size, input, input_size, curr);
+            fixed_end_row_index(data, data_size, input, input_size, curr);
             return positions;
         }
 
         skip = 0;
         newline = false;
-        while ((skip = skipLine(data, data_size, pos)) > 0) {
+        while ((skip = skip_line(data, data_size, pos)) > 0) {
             
             if (curr != NULL && !newline) {
                 curr->endRowIndex = pos;
@@ -235,32 +226,32 @@ Positions* findText(const char* data, size_t data_size, const char* input, size_
             pos += skip;
             row++;
             if (pos >= data_size) {
-                fixedEndRowIndex(data, data_size, input, input_size, curr);
+                fixed_end_row_index(data, data_size, input, input_size, curr);
                 return positions;
             }
         }
 
         if (newline) {
             col = 1;
-            startRowIndex = pos; // start row position
+            start_row_index = pos; // start row position
         } else if (pos > 0) {
             col++;
         }
 
-        bool found = ignoreCase ? icontains(data, input, pos, input_size) : contains(data, input, pos, input_size);
+        bool found = ignore_case ? icontains(data, input, pos, input_size) : contains(data, input, pos, input_size);
 
         if (found) {
             Position* position = new Position();
             position->index = pos;
             position->row = row;
             position->col = col;
-            position->startRowIndex = startRowIndex;
-            position->endRowIndex = startRowIndex + input_size;
+            position->startRowIndex = start_row_index;
+            position->endRowIndex = start_row_index + input_size;
             position->prev = NULL;
             position->next = NULL;
 
             if (curr != NULL && curr->row == row) {
-                fixedEndRowIndex(data, data_size, input, input_size, curr);
+                fixed_end_row_index(data, data_size, input, input_size, curr);
             }
 
             if (positions == NULL) {
@@ -278,50 +269,50 @@ Positions* findText(const char* data, size_t data_size, const char* input, size_
                 positions->size++;
             }
 
-            if (findFirstOnly) {
-                fixedEndRowIndex(data, data_size, input, input_size, curr);
+            if (find_first_only) {
+                fixed_end_row_index(data, data_size, input, input_size, curr);
                 return positions;
             }
         }
 
     }
 
-    fixedEndRowIndex(data, data_size, input, input_size, curr);
+    fixed_end_row_index(data, data_size, input, input_size, curr);
     return positions;
 }
 
-void printTextPosition(const Position* position, const char* data, int data_size, int input_size, const char* format, int width) {
+void ask_print_text_position(const Position* position, const char* data, int data_size, int input_size, const char* format, int width) {
     if (position == NULL) {
         return;
     }
-    bool printFullLine = true;
-    bool printUnderLine = false;
+    bool print_full_line = true;
+    bool print_under_line = false;
 
-    int startIndex = 0;
-    int endIndex = 0;
-    int endIndex2 = 0;
+    int start_index = 0;
+    int end_index = 0;
+    int end_index2 = 0;
     int pad = 0;
     int count = input_size; // TODO: count char - not len
 
-    if (printFullLine) {
-        startIndex = position->startRowIndex; // full line
-        endIndex = position->endRowIndex;     // full line
-        endIndex2 = endIndex;
+    if (print_full_line) {
+        start_index = position->startRowIndex; // full line
+        end_index = position->endRowIndex;     // full line
+        end_index2 = end_index;
         pad = position->index - position->startRowIndex; // TODO: count char - not len
     } else {
-        startIndex = position->index;
-        endIndex = startIndex + input_size;
+        start_index = position->index;
+        end_index = start_index + input_size;
 
         int delta = 10;
-        int rest = data_size - endIndex;
+        int rest = data_size - end_index;
         delta = rest < delta ? rest : delta;
-        endIndex2 = endIndex + delta;
+        end_index2 = end_index + delta;
     }
 
     char c;
 
     printf(format, position->row, position->col);
-    for (size_t i = startIndex; i < endIndex2; i++)  {
+    for (size_t i = start_index; i < end_index2; i++)  {
         c = data[i];
         if (c == '\r' || c == '\n') {
             break;
@@ -351,7 +342,7 @@ void printTextPosition(const Position* position, const char* data, int data_size
       width = 5 + row_width + col_width;
     }
 
-    if (!printUnderLine) {
+    if (!print_under_line) {
         return;
     }
 
@@ -372,49 +363,49 @@ void printTextPosition(const Position* position, const char* data, int data_size
 
 }
 
-void printText(const Positions* positions, const char* data, int data_size, int input_size) {
+void ask_print_text(const Positions* positions, const char* data, int data_size, int input_size) {
     if (positions == NULL) {
         return;
     }
     Position* curr = positions->first;
 
-    bool fixedFormat = true;
+    bool fixed_format = true;
     int width = 0;
     std::string format;
 
-    if (fixedFormat) {
+    if (fixed_format) {
         format = "[%d: %d] ";
     } else {
         int rowWidth = 0; 
         int colWidth = 0;
-        calcWidth(positions, rowWidth, colWidth);
+        calc_width_cell(positions, rowWidth, colWidth);
         width = rowWidth + colWidth + 5;
         format = "[%" + std::to_string(rowWidth) + "d: %" + std::to_string(colWidth) + "d] ";
 
     }
     const char* fmt = format.c_str();
     while (curr != NULL) {
-        printTextPosition(curr, data, data_size, input_size, fmt, width);
+        ask_print_text_position(curr, data, data_size, input_size, fmt, width);
         curr = curr->next;
     }
 }
 
-void printBynaryPosition(const Position* position, const char* data, int data_size, int input_size, const char* format, int width) {
+void ask_print_binary_position(const Position* position, const char* data, int data_size, int input_size, const char* format, int width) {
     if (position == NULL) {
         return;
     }
-    int startIndex = position->index; 
-    int endIndex = startIndex + input_size;
+    int start_index = position->index; 
+    int end_index = start_index + input_size;
 
     int delta = 10;
-    int rest = data_size - endIndex;
+    int rest = data_size - end_index;
     delta = rest < delta ? rest : delta;
-    int endIndex2 = endIndex + delta;
+    int end_index2 = end_index + delta;
     char c;
 
     printf(format, position->index);
 
-    for (size_t i = startIndex; i < endIndex2; i++)  {
+    for (size_t i = start_index; i < end_index2; i++)  {
         c = data[i];
         if (!std::isprint(c)) {
             //c = ' ';
@@ -443,7 +434,7 @@ void printBynaryPosition(const Position* position, const char* data, int data_si
     }
 
     // Underline word
-    for (size_t i = startIndex; i < endIndex; i++)  {
+    for (size_t i = start_index; i < end_index; i++)  {
         printf("_");
     }
 
@@ -451,28 +442,27 @@ void printBynaryPosition(const Position* position, const char* data, int data_si
 
 }
 
-void printBynary(const Positions* positions, const char* data, int data_size, int input_size) {
+void ask_print_binary(const Positions* positions, const char* data, int data_size, int input_size) {
     if (positions == NULL) {
         return;
     }
     Position* curr = positions->first;
 
-    bool fixedFormat = true;
+    bool fixed_format = true;
     int width = 0;
     std::string format;
 
-    if (fixedFormat) {
+    if (fixed_format) {
         format = "[%d] ";
     } else {
-        int indexWidth = 0; 
-        calcWidth(positions, indexWidth);
-        width = indexWidth + 3;
-        format = "[%" + std::to_string(indexWidth) + "d] ";
-
+        int index_width = 0; 
+        calc_width_index(positions, index_width);
+        width = index_width + 3;
+        format = "[%" + std::to_string(index_width) + "d] ";
     }
     const char* fmt = format.c_str();
     while (curr != NULL) {
-        printBynaryPosition(curr, data, data_size, input_size, fmt, width);
+        ask_print_binary_position(curr, data, data_size, input_size, fmt, width);
         curr = curr->next;
     }
 }
@@ -497,41 +487,41 @@ void destroy(Positions* positions) {
 
 ////
 
-Positions* findData(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config) {
+Positions* ask_find_data(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config) {
     if (config->binaryMode) {
-        return findBinary(data, data_size, input, input_size, config);
+        return ask_find_binary(data, data_size, input, input_size, config);
     } else {
-        return findText(data, data_size, input, input_size, config);
+        return ask_find_text(data, data_size, input, input_size, config);
     }
 }
 
-void printData(const Positions* positions, const char* data, int data_size, int input_size, const FindConfig* config) {
+void ask_print_data(const Positions* positions, const char* data, int data_size, int input_size, const FindConfig* config) {
     if (config->binaryMode) {
-        printBynary(positions, data, data_size, input_size);
+        ask_print_binary(positions, data, data_size, input_size);
     } else {
-        printText(positions, data, data_size, input_size);
+        ask_print_text(positions, data, data_size, input_size);
     }
 }
 
 ////
 
-void find(const char* fileName, const char* input, int inputSize, const FindConfig* config) {
+void ask_find(const char* file_name, const char* input, int input_size, const FindConfig* config) {
 
-    size_t fileSize = 0;
-    char* data = read_bytes_size(fileName, fileSize);
+    size_t file_size = 0;
+    char* data = read_bytes_size(file_name, file_size);
 
     if (data == NULL) {
         //printf("File '%s' not found\n", fileName);
         return;
     }
 
-    if (fileSize == 0) {
+    if (file_size == 0) {
         //printf("File '%s' is empty\n", fileName);
         free(data);
         return;
     }
 
-    Positions* positions = findData(data, fileSize, input, inputSize, config);
+    Positions* positions = ask_find_data(data, file_size, input, input_size, config);
     
     if (positions == NULL) {
         //printf("Not found\n");
@@ -540,18 +530,12 @@ void find(const char* fileName, const char* input, int inputSize, const FindConf
     }
 
     if (config->printFileName) {
-        char* real_path = fs_get_real_path(fileName);
+        char* real_path = fs_get_real_path(file_name);
         printf(">> %s\n", real_path);
         free(real_path);
     }
 
-    printData(positions, data, fileSize, inputSize, config);
-
-    // if (config->binaryMode) {
-    //     printBynary(positions, data, fileSize, inputSize);
-    // } else {
-    //     printText(positions, data, fileSize, inputSize);
-    // }
+    ask_print_data(positions, data, file_size, input_size, config);
 
     destroy(positions);
     free(data);
