@@ -18,11 +18,11 @@ int get_width(int value) {
     return 0;
 }
 
-void calc_width_index(const Positions* positions, int& index_width) {
+void calc_width_index(const ask_positions_t* positions, int& index_width) {
     if (positions == NULL) {
         return;
     }
-    Position* curr = positions->first;    
+    ask_position_t* curr = positions->first;
     int max_index = 0;
     while (curr != NULL) {
         if (curr->index > max_index) {
@@ -33,11 +33,11 @@ void calc_width_index(const Positions* positions, int& index_width) {
     index_width = get_width(max_index);
 }
 
-void calc_width_cell(const Positions* positions, int& row_width, int& col_width) {
+void calc_width_cell(const ask_positions_t* positions, int& row_width, int& col_width) {
     if (positions == NULL) {
         return;
     }
-    Position* curr = positions->first;    
+    ask_position_t* curr = positions->first;
     int max_row = 0;
     int max_col = 0;
     while (curr != NULL) {
@@ -93,9 +93,47 @@ bool icontains(const char* data, const char* input, int start, int size) {
     return true;
 }
 
+ask_config_t* ask_config_new() {
+    ask_config_t* config = (ask_config_t*) malloc(sizeof(ask_config_t));
+    if (!config) {
+        return NULL;
+    }
+    config->binary_mode = false;
+    config->find_first_only = false;
+    config->ignore_case = false;
+    config->print_file_name = false;
+    return config;
+}
+
+ask_position_t* ask_position_new() {
+    ask_position_t* position = (ask_position_t*) malloc(sizeof(ask_position_t));
+    if (!position) {
+        return NULL;
+    }
+    position->index = 0;
+    position->col = 0;
+    position->row = 0;
+    position->start_row_index = 0;
+    position->end_row_index = 0;
+    position->prev = NULL;
+    position->next = NULL;
+    return position;
+}
+
+ask_positions_t* ask_positions_new() {
+    ask_positions_t* positions = (ask_positions_t*) malloc(sizeof(ask_positions_t));
+    if (!positions) {
+        return NULL;
+    }
+    positions->first = NULL;
+    positions->last = NULL;
+    positions->size = 0;
+    return positions;
+}
+
 ////
 
-Positions* ask_find_binary(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config) {
+ask_positions_t* ask_find_binary(const char* data, size_t data_size, const char* input, size_t input_size, const ask_config* config) {
     if (data == NULL || input == NULL || data_size == 0 || input_size == 0) {
         return NULL;
     }
@@ -109,11 +147,11 @@ Positions* ask_find_binary(const char* data, size_t data_size, const char* input
 
     // by config
     if (config != NULL) {
-        find_first_only = config->findFirstOnly;
+        find_first_only = config->find_first_only;
     }
 
-    Positions* positions = NULL;
-    Position* curr = NULL;
+    ask_positions_t* positions = NULL;
+    ask_position_t* curr = NULL;
     
     for (size_t pos = 0; pos < data_size; pos++) {
 
@@ -124,19 +162,27 @@ Positions* ask_find_binary(const char* data, size_t data_size, const char* input
         bool found = contains(data, input, pos, input_size);
 
         if (found) {
-            Position* position = new Position();
+            ask_position_t* position = ask_position_new();
+            if (!position) {
+                // error
+                return positions;
+            }
             position->index = pos;
             position->prev = NULL;
             position->next = NULL;
 
             if (positions == NULL) {
                 curr = position;
-                positions = new Positions();
+                positions = ask_positions_new();
+                if (!positions) {
+                    // error
+                    return positions;
+                }
                 positions->first = curr;
                 positions->last = curr;
                 positions->size = 1;
             } else {
-                Position* prev = curr;
+                ask_position_t* prev = curr;
                 curr->next = position;
                 curr = position;
                 curr->prev = prev;
@@ -153,11 +199,11 @@ Positions* ask_find_binary(const char* data, size_t data_size, const char* input
     return positions;
 }
 
-void fixed_end_row_index(const char* data, size_t data_size, const char* input, size_t input_size, Position* curr) {
+void fixed_end_row_index(const char* data, size_t data_size, const char* input, size_t input_size, ask_position_t* curr) {
     if (curr == NULL) {
         return;
     }
-    if (curr->endRowIndex > curr->startRowIndex + input_size) {
+    if (curr->end_row_index > curr->start_row_index + input_size) {
         return;
     }
     if (curr->index >= data_size) {
@@ -165,20 +211,20 @@ void fixed_end_row_index(const char* data, size_t data_size, const char* input, 
     }
 
     //printf("input_size: %lu\n", input_size);
-    //printf("startRowIndex: %d\n", curr->startRowIndex);
-    //printf("endRowIndex: %d\n", curr->endRowIndex);
+    //printf("startRowIndex: %d\n", curr->start_row_index);
+    //printf("endRowIndex: %d\n", curr->end_row_index);
 
     for (size_t pos = curr->index; pos < data_size; pos++) {
         char c = data[pos];
         if (c == '\r' || c == '\n') {
-            curr->endRowIndex = pos;
+            curr->end_row_index = pos;
             break;
         }
     }
-    //printf("endRowIndex: %d\n", curr->endRowIndex);     
+    //printf("endRowIndex: %d\n", curr->end_row_index);     
 }
 
-Positions* ask_find_text(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config) {
+ask_positions_t* ask_find_text(const char* data, size_t data_size, const char* input, size_t input_size, const ask_config* config) {
     if (data == NULL || input == NULL || data_size == 0 || input_size == 0) {
         return NULL;
     }
@@ -193,8 +239,8 @@ Positions* ask_find_text(const char* data, size_t data_size, const char* input, 
 
     // by config
     if (config != NULL) {
-        find_first_only = config->findFirstOnly;
-        ignore_case = config->ignoreCase;
+        find_first_only = config->find_first_only;
+        ignore_case = config->ignore_case;
     }
 
     int row = 1;
@@ -202,8 +248,8 @@ Positions* ask_find_text(const char* data, size_t data_size, const char* input, 
     int skip = 0;
     bool newline = false;
 
-    Positions* positions = NULL;
-    Position* curr = NULL;
+    ask_positions_t* positions = NULL;
+    ask_position_t* curr = NULL;
     
     int start_row_index = 0;
     int end_row_index = 0;
@@ -220,7 +266,7 @@ Positions* ask_find_text(const char* data, size_t data_size, const char* input, 
         while ((skip = skip_line(data, data_size, pos)) > 0) {
             
             if (curr != NULL && !newline) {
-                curr->endRowIndex = pos;
+                curr->end_row_index = pos;
             }
             newline = true;
             pos += skip;
@@ -241,12 +287,16 @@ Positions* ask_find_text(const char* data, size_t data_size, const char* input, 
         bool found = ignore_case ? icontains(data, input, pos, input_size) : contains(data, input, pos, input_size);
 
         if (found) {
-            Position* position = new Position();
+            ask_position_t* position = ask_position_new();
+            if (!position) {
+                // error
+                return positions;
+            }
             position->index = pos;
             position->row = row;
             position->col = col;
-            position->startRowIndex = start_row_index;
-            position->endRowIndex = start_row_index + input_size;
+            position->start_row_index = start_row_index;
+            position->end_row_index = start_row_index + input_size;
             position->prev = NULL;
             position->next = NULL;
 
@@ -256,12 +306,16 @@ Positions* ask_find_text(const char* data, size_t data_size, const char* input, 
 
             if (positions == NULL) {
                 curr = position;
-                positions = new Positions();
+                positions = ask_positions_new();
+                if (!positions) {
+                    // error
+                    return NULL;
+                }
                 positions->first = curr;
                 positions->last = curr;
                 positions->size = 1;
             } else {
-                Position* prev = curr;
+                ask_position_t* prev = curr;
                 curr->next = position;
                 curr = position;
                 curr->prev = prev;
@@ -281,7 +335,7 @@ Positions* ask_find_text(const char* data, size_t data_size, const char* input, 
     return positions;
 }
 
-void ask_print_text_position(const Position* position, const char* data, int data_size, int input_size, const char* format, int width) {
+void ask_print_text_position(const ask_position_t* position, const char* data, int data_size, int input_size, const char* format, int width) {
     if (position == NULL) {
         return;
     }
@@ -295,10 +349,10 @@ void ask_print_text_position(const Position* position, const char* data, int dat
     int count = input_size; // TODO: count char - not len
 
     if (print_full_line) {
-        start_index = position->startRowIndex; // full line
-        end_index = position->endRowIndex;     // full line
+        start_index = position->start_row_index; // full line
+        end_index = position->end_row_index;     // full line
         end_index2 = end_index;
-        pad = position->index - position->startRowIndex; // TODO: count char - not len
+        pad = position->index - position->start_row_index; // TODO: count char - not len
     } else {
         start_index = position->index;
         end_index = start_index + input_size;
@@ -363,11 +417,11 @@ void ask_print_text_position(const Position* position, const char* data, int dat
 
 }
 
-void ask_print_text(const Positions* positions, const char* data, int data_size, int input_size) {
+void ask_print_text(const ask_positions_t* positions, const char* data, int data_size, int input_size) {
     if (positions == NULL) {
         return;
     }
-    Position* curr = positions->first;
+    ask_position_t* curr = positions->first;
 
     bool fixed_format = true;
     int width = 0;
@@ -390,7 +444,7 @@ void ask_print_text(const Positions* positions, const char* data, int data_size,
     }
 }
 
-void ask_print_binary_position(const Position* position, const char* data, int data_size, int input_size, const char* format, int width) {
+void ask_print_binary_position(const ask_position_t* position, const char* data, int data_size, int input_size, const char* format, int width) {
     if (position == NULL) {
         return;
     }
@@ -442,11 +496,11 @@ void ask_print_binary_position(const Position* position, const char* data, int d
 
 }
 
-void ask_print_binary(const Positions* positions, const char* data, int data_size, int input_size) {
+void ask_print_binary(const ask_positions_t* positions, const char* data, int data_size, int input_size) {
     if (positions == NULL) {
         return;
     }
-    Position* curr = positions->first;
+    ask_position_t* curr = positions->first;
 
     bool fixed_format = true;
     int width = 0;
@@ -467,12 +521,12 @@ void ask_print_binary(const Positions* positions, const char* data, int data_siz
     }
 }
 
-void destroy(Positions* positions) {
+void ask_positions_destroy(ask_positions_t* positions) {
     if (positions == NULL) {
         return;
     }
-    Position* curr = positions->first;
-    Position* next = NULL;
+    ask_position_t* curr = positions->first;
+    ask_position_t* next = NULL;
     while (curr != NULL) {
         next = curr->next;
         curr->prev = NULL;
@@ -487,16 +541,16 @@ void destroy(Positions* positions) {
 
 ////
 
-Positions* ask_find_data(const char* data, size_t data_size, const char* input, size_t input_size, const FindConfig* config) {
-    if (config->binaryMode) {
+ask_positions_t* ask_find_data(const char* data, size_t data_size, const char* input, size_t input_size, const ask_config* config) {
+    if (config->binary_mode) {
         return ask_find_binary(data, data_size, input, input_size, config);
     } else {
         return ask_find_text(data, data_size, input, input_size, config);
     }
 }
 
-void ask_print_data(const Positions* positions, const char* data, int data_size, int input_size, const FindConfig* config) {
-    if (config->binaryMode) {
+void ask_print_data(const ask_positions_t* positions, const char* data, int data_size, int input_size, const ask_config* config) {
+    if (config->binary_mode) {
         ask_print_binary(positions, data, data_size, input_size);
     } else {
         ask_print_text(positions, data, data_size, input_size);
@@ -505,7 +559,7 @@ void ask_print_data(const Positions* positions, const char* data, int data_size,
 
 ////
 
-void ask_find(const char* file_name, const char* input, int input_size, const FindConfig* config) {
+void ask_find(const char* file_name, const char* input, int input_size, const ask_config* config) {
 
     size_t file_size = 0;
     char* data = read_bytes_size(file_name, file_size);
@@ -521,7 +575,7 @@ void ask_find(const char* file_name, const char* input, int input_size, const Fi
         return;
     }
 
-    Positions* positions = ask_find_data(data, file_size, input, input_size, config);
+    ask_positions_t* positions = ask_find_data(data, file_size, input, input_size, config);
     
     if (positions == NULL) {
         //printf("Not found\n");
@@ -529,7 +583,7 @@ void ask_find(const char* file_name, const char* input, int input_size, const Fi
         return;
     }
 
-    if (config->printFileName) {
+    if (config->print_file_name) {
         char* real_path = fs_get_real_path(file_name);
         printf(">> %s\n", real_path);
         free(real_path);
@@ -537,7 +591,7 @@ void ask_find(const char* file_name, const char* input, int input_size, const Fi
 
     ask_print_data(positions, data, file_size, input_size, config);
 
-    destroy(positions);
+    ask_positions_destroy(positions);
     free(data);
 
 }

@@ -74,22 +74,22 @@ int main(int argc, char* argv[]) {
     }
 
     // Config
-    bool binaryMode = false;
-    bool findFirstOnly = false;
-    bool ignoreCase = false;
+    bool binary_mode = false;
+    bool find_first_only = false;
+    bool ignore_case = false;
 
     bool error = false;
     int opt;
     while ((opt = getopt(argc, argv, "bil")) != -1) {
         switch (opt) {
         case 'b':
-            binaryMode = true;
+            binary_mode = true;
             break;
         case 'i':
-            ignoreCase = true;
+            ignore_case = true;
             break;
         case 'l':
-            findFirstOnly = true;
+            find_first_only = true;
             break;
         case '?':
             error = true;
@@ -109,99 +109,64 @@ int main(int argc, char* argv[]) {
     }
                                         
     char* input = lib_strdup_uq(argv[optind]);
-    char* fileName = lib_strdup_uq(argv[++optind]);
+    char* file_name = lib_strdup_uq(argv[++optind]);
 
     //printf("input: %s\n", input);
-    //printf("file : %s\n", fileName);
+    //printf("file : %s\n", file_name);
 
-
-    size_t inputSize = strlen(input);
-    if (inputSize == 0) {
+    size_t input_size = strlen(input);
+    if (input_size == 0) {
         //printf("Input is empty\n");
         return 0;
     }
 
     init_locale();
 
-    FindConfig* config = new FindConfig();
-    config->binaryMode = binaryMode;
-    config->findFirstOnly = findFirstOnly;
-    config->ignoreCase = ignoreCase;
-    config->printFileName = true; // TODO: add optional
+    ask_config* config = ask_config_new();
+    config->binary_mode = binary_mode;
+    config->find_first_only = find_first_only;
+    config->ignore_case = ignore_case;
+    config->print_file_name = true; // TODO: add optional
 
-    int wildcardIndex = wc_get_wildcard_index(fileName);
+    int wildcard_index = wc_get_wildcard_index(file_name);
 
-    if (wildcardIndex >= 0) {
+    if (wildcard_index >= 0) {
 
-        //printf("%s: Find operation doesn't support wildcard\n", argv[0]);
-        int pathIndex = wc_get_wildcard_path_index(wildcardIndex, fileName);
-        char* dirName = NULL;
+        int path_index = wc_get_wildcard_path_index(wildcard_index, file_name);
+        char* dir_name = NULL;
 
-        if (pathIndex >= 0) {
-            //printf("found '/': %d\n", pathIndex);
-            dirName = lib_strndup(fileName, pathIndex + 1);
-            fileName = fileName + pathIndex + 1;
+        if (path_index >= 0) {
+            dir_name = lib_strndup(file_name, path_index + 1);
+            file_name = file_name + path_index + 1;
         } else {
-            dirName = lib_strdup(fs_get_current_find_path());            
+            dir_name = lib_strdup(fs_get_current_find_path());            
         }
 
-        //printf("dir  : %s\n", dirName);
-        //printf("file : %s\n", fileName);
+        //printf("dir  : %s\n", dir_name);
+        //printf("file : %s\n", file_name);
 
-        //config->printFileName = true;
-        char* pattern = fileName;
-
-        //for (int k = 0; k < 1000; k++) {
-    
-        /*
-        std::vector<std::string> files;
-        scandir(dirName, pattern, files, FS_SCANDIR_RECURSIVE);
-
-        for (int i = 0; i < files.size(); i++) {
-            //printf("%s\n", files[i].c_str());
-            find(files[i].c_str(), input, inputSize, config);
-        }
-        //printf("file_count : %lu\n", files.size());
-        */
-
-        //printf("New Scandir \n");
-        
-         
+        char* pattern = file_name;         
         fs_file_t** files = NULL;
         fs_file_t* file = NULL;
-        int z = fs_scandir(dirName, pattern, &files, FS_SCANDIR_RECURSIVE, true);
+        int file_count = fs_scandir(dir_name, pattern, &files, FS_SCANDIR_RECURSIVE, true);
 
-        for (int i = 0; i < z; i++) {
+        for (int i = 0; i < file_count; i++) {
             file = files[i];
-
-            //fs_stat_t* stat_s = file->stat;
-            //if (stat_s) {
-            //    printf("%s %lld bytes\n", file->name, stat_s->st_size);
-            //} else {
-            //    printf("%s\n", file->name);
-            //}
-
-            ask_find(files[i]->name, input, inputSize, config);
+            ask_find(files[i]->name, input, input_size, config);
 
             //free(file);
             //fs_file_free(file);
         }
 
-        //free(files2);
         fs_files_free(files);
-        //printf("file_count : %d\n", z);
-        
-        
-        //}
                 
-        free(dirName);
+        free(dir_name);
         free(config);
         restore_locale(); // Important for WIN32: The locale was changed for the terminal
         return 0;
     }
 
-    //config->printFileName = false;
-    ask_find(fileName, input, inputSize, config);
+    ask_find(file_name, input, input_size, config);
 
     free(config);
     restore_locale(); // Important for WIN32: The locale was changed for the terminal
