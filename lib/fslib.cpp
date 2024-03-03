@@ -1269,11 +1269,22 @@ int fs_files_reinit(fs_file_t*** files, size_t size) {
     return 0;
 }
 
-int fs_is_ignore_file(const char* file_name) {
+int fs_is_recursive_ignore_file(const char* file_name) {
     if (!file_name) {
         return 1;
     }
     return (strcmp(file_name, ".") == 0 || strcmp(file_name, "..") == 0);
+}
+
+int fs_is_classic_ignore_file(const char* file_name) {
+    if (!file_name || file_name[0] == '\0') {
+        return 1;
+    }
+    return file_name[0] == '.';
+}
+
+int fs_is_ignore_file(const char* file_name) {
+    return 0; //return fs_is_recursive_ignore_file(file_name) || fs_is_classic_ignore_file(file_name);
 }
 
 int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pattern_count, fs_file_t*** files, int* file_count, int level, int max_depth, int file_only) {
@@ -1299,16 +1310,24 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
         }
     } 
 
-    int use_stat = 1;
-    int use_dir = !file_only;
+    bool use_stat = true;          // optional
+    bool use_dir = !file_only;     // optional
+    bool use_force_pattern = true; // optional
+    bool is_force_pattern = use_force_pattern && pattern && pattern_count == 1;
 
     while ((file = fs_read_dir(dir)) != NULL) {
 
         char* file_name = file->name;
         int file_type = fs_get_dirent_type(file);
-        int is_ignore = fs_is_ignore_file(file_name);
+        int is_recursive_ignore = fs_is_recursive_ignore_file(file_name); // ., ..
+        int is_ignore = fs_is_ignore_file(file_name);                     // .git, .svn
+        int is_force_ignore = is_recursive_ignore || is_ignore;
         int is_match = is_ignore ? 0 : (pattern == NULL || fs_match_file_internal(pattern, file_name));
         int is_dir_ = fs_is_dirent_dir(file);
+
+        if (!is_match && is_dir_ && is_force_pattern && !is_force_ignore) {
+            is_match = 1;
+        }
 
         //printf("find [%s] [%s%s] [%d] %s, %s, %s\n", (is_match ? "+" : " "), (is_dir_ ? "D" : " "), (is_ignore ? "I" : " "), level, dir_name, file_name, pattern);
 
@@ -1316,15 +1335,19 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
 
             //printf("match [%d] %s, %s, %s\n", level, dir_name, file_name, pattern);
 
-            int mode = 0; // 0 - notning, 1 - file, 2 - dir: recursive, 3 - dir: use only
+            int mode = 0; // 0 - notning, 1 - add file/dir, 2 - scandir recursive
             if (!is_dir_) {
                 // We add the file from last pattern level only
-                mode = (level == 0 || level == pattern_count - 1) ? 1 : 0;
+                if (level == 0 || level == pattern_count - 1 || is_force_pattern) {
+                    mode = 1; // add file
+                }
             } else {
                 // Recursive if max_depth != -1
-                mode = max_depth >= 0 ? 2 : 0;
+                if (max_depth >= 0 && !is_recursive_ignore) {
+                    mode = 2;
+                }
                 if (mode == 0 && use_dir) {
-                    mode = 3;
+                    mode = 1; // add dir
                 }
             }
 
@@ -1336,7 +1359,7 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
 
             //printf("match: full_name    : %s\n", full_name);
 
-            if (mode == 1 || (mode == 3)) {
+            if (mode == 1) {
 
                 //printf("try   : add_file\n");
                 int index = *file_count; // old file_count
