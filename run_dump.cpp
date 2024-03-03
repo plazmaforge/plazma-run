@@ -5,14 +5,14 @@
 #include "getopt.h"
 #include "iolib.h"
 
-void print_usage() {
+void usage() {
     printf("Usage: run-dump [-w 16|32] <file>\n");
 }
 
 int main(int argc, char* argv[]) {
 
     if (argc < 2) {
-        print_usage();
+        usage();
         return 0;
     }
 
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (error) {
-        print_usage();
+        usage();
         return 0;
     }
 

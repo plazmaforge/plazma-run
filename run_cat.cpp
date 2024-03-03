@@ -7,62 +7,60 @@
 #include "wstrlib.h"
 #include "syslib.h"
 
-struct FileData {
+struct file_data_t {
     char* data;
     size_t size;
 };
 
-void printUsage() {
+void usage() {
     printf("Usage: run-cat <file...>\n");
 }
 
 int main(int argc, char* argv[]) {
 
     if (argc < 2) {
-        printUsage();
+        usage();
         return 0;
     }
 
-    int fileCount = argc - 1;
+    int file_count = argc - 1;
 
-    FileData** fileList = (FileData**) malloc(sizeof(FileData) * fileCount);
-    //int* fileSize = (int*) malloc(file_count);
+    file_data_t** file_list = (file_data_t**) malloc(sizeof(file_data_t) * file_count);
 
-    char* fileName = NULL;
-    FileData* fileData = NULL;
+    char* file_name = NULL;
+    file_data_t* file_data = NULL;
     char* allData = NULL;
-    size_t fileSize = 0;
-    size_t totalSize = 0;
+    size_t file_size = 0;
+    size_t total_size = 0;
 
     for (int i = 1; i < argc; i++) {
-        fileName = argv[i];
-        fileSize = 0;
+        file_name = argv[i];
+        file_size = 0;
 
-        fileData = new FileData();
-        fileData->data = read_bytes_size(fileName, fileSize);
-        fileData->size = fileSize;
+        file_data = (file_data_t*) malloc(sizeof(file_data_t));
+        file_data->data = read_bytes_size(file_name, file_size);
+        file_data->size = file_size;
 
-        fileList[i - 1] = fileData;
-        totalSize += fileSize; 
+        file_list[i - 1] = file_data;
+        total_size += file_size; 
     }
 
     // V1
-    char* totalData = (char*) malloc(totalSize * sizeof(char));
+    char* total_data = (char*) malloc(total_size * sizeof(char));
     int offset = 0;
 
-    for (int j = 0; j < fileCount; j++) {
+    for (int j = 0; j < file_count; j++) {
 
-        fileData = fileList[j];
+        file_data = file_list[j];
         
-        for (int i = 0; i < fileData->size; i++) {
-            totalData[i + offset] = fileData->data[i];
+        for (int i = 0; i < file_data->size; i++) {
+            total_data[i + offset] = file_data->data[i];
         }
 
-        offset += fileData->size;
+        offset += file_data->size;
 
     }
 
-    //setlocale(LC_ALL, "");
     init_locale(); // WIN32 fast output with setvbuf(?)
 
     #ifdef _WIN32
@@ -71,17 +69,13 @@ int main(int argc, char* argv[]) {
     #endif
 
     // incorrect last chars: non printable char
-    //printf("%s", totalData);
-    //printf("%ls", char_wchar(totalData));   // IMPORTANT for WIN32 
-    //wprintf(L"%ls", char_wchar(totalData)); // IMPORTANT for WIN32
+    //printf("%s", total_data);
+    //printf("%ls", char_wchar(total_data));   // IMPORTANT for WIN32 
+    //wprintf(L"%ls", char_wchar(total_data)); // IMPORTANT for WIN32
 
- 
-    for (int i = 0; i < totalSize; i++) {                                            
-        printf("%c", totalData[i]);
+    for (int i = 0; i < total_size; i++) {
+        printf("%c", total_data[i]);
     }
-
-    //char* fileName = argv[1];
-    //hexDump(fileName);
 
     restore_locale(); // Important for WIN32: The locale was changed for the terminal
 }

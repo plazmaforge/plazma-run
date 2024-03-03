@@ -4,15 +4,13 @@
 
 #include "fslib.h"
 
-void printUsage() {
+void usage() {
     printf("Usage: run-mkdir <dir>\n");
-    //printf("project-1   : %s\n", fs_get_dir_name("Users/user/Projects/project"));
-    //printf("project-2   : %s\n", fs_get_dir_name("Users/user/Projects/project/"));
 }
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        printUsage();
+        usage();
         return 0;
     }
     char* dir_name = argv[1];

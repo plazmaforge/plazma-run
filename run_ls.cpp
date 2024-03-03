@@ -45,10 +45,6 @@ int get_size_format_index(uint64_t size, int min_index) {
     return  -1;
 }
 
-void printUsage() {
-    printf("Usage: run-ls\n");
-}
-
 void format_file_date_time(time_t time, char* buf, int buf_len, bool use_time) {
     struct tm *timev = localtime(&time);
     memset(buf, 0, buf_len);
@@ -72,6 +68,10 @@ void format_file_size(uint64_t size) {
     } else {
         printf("%12llu    ", size);
     }
+}
+
+void usage() {
+    printf("Usage: run-ls\n");
 }
 
 int main(int argc, char *argv[]) {

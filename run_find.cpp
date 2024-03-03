@@ -4,9 +4,6 @@
 #include <string.h>
 #include <ctype.h>
 
-//#include <string>
-//#include <vector>
-
 #include "getopt.h"
 #include "strlib.h"
 #include "wstrlib.h"
@@ -16,7 +13,7 @@
 #include "syslib.h"
 #include "asklib.h"
 
-void printUsage() {
+void usage() {
     printf("Usage: run-find <text> <file> \n");
 }
 
@@ -69,7 +66,7 @@ int main(int argc, char* argv[]) {
     int min_arg = 2; // <text> <file>
     if (argc < min_arg + 1) {
         printf("%s: Incorrect argument count\n", argv[0]);
-        printUsage();
+        usage();
         return 0;
     }
 
@@ -98,13 +95,13 @@ int main(int argc, char* argv[]) {
     }
 
     if (error) {
-        printUsage();
+        usage();
         return 0;
     }
 
     if (argc - optind != min_arg) {
         printf("%s: Incorrect argument count\n", argv[0]);
-        printUsage();
+        usage();
         return 0;
     }
                                         

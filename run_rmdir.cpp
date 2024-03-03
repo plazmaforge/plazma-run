@@ -4,13 +4,13 @@
 
 #include "fslib.h"
 
-void printUsage() {
+void usage() {
     printf("Usage: run-rmdir <dir>\n");
 }
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        printUsage();
+        usage();
         return 0;
     }
     char* dir_name = argv[1];

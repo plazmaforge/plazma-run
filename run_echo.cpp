@@ -9,18 +9,18 @@
 #include "syslib.h"
 //#include "sysinfo.h"
 
-void printUsage() {
+void usage() {
     printf("Usage: run-echo <text>\n");
 }
 
-void printInput(const char* input) {
+void print_input(const char* input) {
     if (!input) {
         return;
     }
     printf("%s\n", input);
 }
 
-void printTest(const char* input) {
+void print_test(const char* input) {
     if (!input) {
         return;
     }
@@ -43,13 +43,13 @@ void printTest(const char* input) {
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        printUsage();
+        usage();
         return 0;
     }
 
     init_locale();
 
-    printInput(argv[1]);
+    print_input(argv[1]);
 
     restore_locale(); // Important for WIN32: The locale was changed for the terminal
     return 0;

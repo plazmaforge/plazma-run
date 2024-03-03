@@ -10,11 +10,7 @@
 #include "sysinfo.h"
 #include "syslocale_os.h"
 
-void printSysInfo() {    
-    print_sys_info();
-}
-
-void printUsage() {
+void usage() {
     printf("Usage: run-sysinfo\n");
 }
 
@@ -22,7 +18,7 @@ int main(int argc, char* argv[]) {
 
     init_locale_os();
 
-    printSysInfo();
+    print_sys_info();
 
     restore_locale_os();
 
