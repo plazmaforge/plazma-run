@@ -171,7 +171,7 @@ fs_dirent_t* fs_read_dir(fs_dir_t* dir) {
         return NULL;
     }
     dir->dirent->fd = fd;
-    dir->dirent->type = fd->d_type; // TODO: Use Universal type
+    dir->dirent->type = fs_get_dirent_type(dir->dirent);
     dir->dirent->name = fd->d_name;
     return dir->dirent;
 }

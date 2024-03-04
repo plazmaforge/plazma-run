@@ -350,26 +350,26 @@ fs_dirent_t* fs_read_dir(fs_dir_t* dir) {
 
     if (!dir->dirent) {
         dir->dirent = (fs_dirent_t*) malloc(sizeof(fs_dirent_t));
-        dir->dirent->type = 0;
-        dir->dirent->name = NULL;
-    }
+    } else {
+       if (dir->dirent->name) {
+           free(dir->dirent->name);                            // [free]
+       }
+    }  
 
     if (!dir->dirent) {
         return NULL;
     }
 
+    dir->dirent->type = 0;
+    dir->dirent->name = NULL;
+
     if (FindNextFileW(dir->ptr, &dir->dirent->fd) == 0) {
-        //printf("find_next: NULL\n");
         return NULL;
     }
 
     //dir->dirent->fd = fd;
-    //dir->dirent->type = fd->d_type; // TODO: Use Universal type
-
-    char* name = wchar_char(dir->dirent->fd.cFileName); // [allocate]
-
-    dir->dirent->name = name;
-    //printf("find_next: %s\n", name);
+    dir->dirent->type = fs_get_dirent_type(dir->dirent);
+    dir->dirent->name = wchar_char(dir->dirent->fd.cFileName); // [allocate]
 
     return dir->dirent;
 }
