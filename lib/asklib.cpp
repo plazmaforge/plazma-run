@@ -1,21 +1,27 @@
 #include <stdio.h>
+#include <math.h>
 
 #include "fslib.h"
 #include "iolib.h"
+#include "strlib.h"
 #include "asklib.h"
 
-int get_width(int value) {
-    // abs!
-    if (value < 10) {
-        return 1;
-    } else if (value < 100) {
-        return 2;
-    } else if (value < 1000) {
-        return 3;
-    } else if (value < 10000) {
-        return 4;
+int get_digit_count(int n) {
+    if (n == 0) {
+         return 1;
     }
-    return 0;
+    int value = abs(n);
+    int count = (int) log10(value);
+    count++;
+    if (n < 0) {
+        count++;
+    }
+    return count;
+}
+
+int get_width(int value) {
+    int count = get_digit_count(value);
+    return (count > 4) ? 0 : count;
 }
 
 void calc_width_index(const ask_positions_t* positions, int& index_width) {
@@ -383,15 +389,8 @@ void ask_print_text_position(const ask_position_t* position, const char* data, i
 
     // Whitespace before underline
     if (width <= 0) {
-      int row_width = std::to_string(position->row).length();
-      int col_width = std::to_string(position->col).length();
-
-      //char* str = (char*) malloc(100);
-      //sprintf(str,"%i",position->row);
-      //int row_width = strlen(str);
-
-      //printf("%s", str);
-      //printf("%i", row_width);
+      int row_width = get_digit_count(position->row);
+      int col_width = get_digit_count(position->col);
 
       width = 5 + row_width + col_width;
     }
@@ -418,34 +417,38 @@ void ask_print_text_position(const ask_position_t* position, const char* data, i
 }
 
 void ask_print_text(const ask_positions_t* positions, const char* data, int data_size, int input_size) {
-    if (positions == NULL) {
+    if (!positions) {
         return;
     }
     ask_position_t* curr = positions->first;
+    if (!curr) {
+        return;
+    }
 
     bool fixed_format = true;
     int width = 0;
-    std::string format;
+    char format[50];
 
     if (fixed_format) {
-        format = "[%d: %d] ";
+        strcpy(format, "[%d: %d] ");
     } else {
-        int rowWidth = 0; 
-        int colWidth = 0;
-        calc_width_cell(positions, rowWidth, colWidth);
-        width = rowWidth + colWidth + 5;
-        format = "[%" + std::to_string(rowWidth) + "d: %" + std::to_string(colWidth) + "d] ";
+        int row_width = 0; 
+        int col_width = 0;
+        calc_width_cell(positions, row_width, col_width);
+        width = row_width + col_width + 5;
 
+        sprintf(format, "[_%id: _%id] ", row_width, col_width);
+        lib_replace_len(format, sizeof(format) / sizeof(char), '_', '%');
     }
-    const char* fmt = format.c_str();
-    while (curr != NULL) {
-        ask_print_text_position(curr, data, data_size, input_size, fmt, width);
+
+    while (curr) {
+        ask_print_text_position(curr, data, data_size, input_size, format, width);
         curr = curr->next;
     }
 }
 
 void ask_print_binary_position(const ask_position_t* position, const char* data, int data_size, int input_size, const char* format, int width) {
-    if (position == NULL) {
+    if (!position) {
         return;
     }
     int start_index = position->index; 
@@ -473,7 +476,7 @@ void ask_print_binary_position(const ask_position_t* position, const char* data,
 
     // Whitespace before underline
     if (width <= 0) {
-      width = std::to_string(position->index).length();
+      width = get_digit_count(position->index);
       width = 3 + width;
     }
 
@@ -497,32 +500,36 @@ void ask_print_binary_position(const ask_position_t* position, const char* data,
 }
 
 void ask_print_binary(const ask_positions_t* positions, const char* data, int data_size, int input_size) {
-    if (positions == NULL) {
+    if (!positions) {
         return;
     }
     ask_position_t* curr = positions->first;
+    if (!curr) {
+        return;
+    }
 
     bool fixed_format = true;
     int width = 0;
-    std::string format;
+    char format[50];
 
     if (fixed_format) {
-        format = "[%d] ";
+        strcpy(format, "[%d] ");
     } else {
         int index_width = 0; 
         calc_width_index(positions, index_width);
         width = index_width + 3;
-        format = "[%" + std::to_string(index_width) + "d] ";
+        sprintf(format, "[_%id] ", index_width);
+        lib_replace_len(format, sizeof(format) / sizeof(char), '_', '%');
     }
-    const char* fmt = format.c_str();
-    while (curr != NULL) {
-        ask_print_binary_position(curr, data, data_size, input_size, fmt, width);
+
+    while (curr) {
+        ask_print_binary_position(curr, data, data_size, input_size, format, width);
         curr = curr->next;
     }
 }
 
 void ask_positions_destroy(ask_positions_t* positions) {
-    if (positions == NULL) {
+    if (!positions) {
         return;
     }
     ask_position_t* curr = positions->first;
@@ -564,7 +571,7 @@ void ask_find(const char* file_name, const char* input, int input_size, const as
     size_t file_size = 0;
     char* data = read_bytes_size(file_name, file_size);
 
-    if (data == NULL) {
+    if (!data) {
         //printf("File '%s' not found\n", fileName);
         return;
     }
@@ -577,7 +584,7 @@ void ask_find(const char* file_name, const char* input, int input_size, const as
 
     ask_positions_t* positions = ask_find_data(data, file_size, input, input_size, config);
     
-    if (positions == NULL) {
+    if (!positions) {
         //printf("Not found\n");
         free(data);
         return;
