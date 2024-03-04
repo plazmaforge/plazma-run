@@ -17,9 +17,9 @@ int wc_is_wildcard_pattern(const char* pattern);
 int wc_get_wildcard_index(const char* pattern);
 
 // ../a/name*.text - > 4 -> '/'
-int wc_get_wildcard_path_index(const char* pattern, const char* fileName);
+int wc_get_wildcard_path_index_by_pattern(const char* pattern, const char* file_name);
 
-int wc_get_wildcard_path_index(int wildcardIndex, const char* fileName);
+int wc_get_wildcard_path_index(int wildcard_index, const char* file_name);
 
 int wc_match_file(const char* name, const char* pattern);
 

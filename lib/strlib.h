@@ -27,7 +27,7 @@ char* lib_strdup(const char* src);
 
 char* lib_strndup(const char* src, size_t size);
 
-int lib_is_strn_qt(const char* src, size_t size, char quote);
+int lib_is_strn_qt_opt(const char* src, size_t size, char quote);
 
 int lib_is_str_qt(const char* src, char quote);
 
@@ -35,7 +35,7 @@ int lib_is_strn_qt(const char* src, size_t size);
 
 int lib_is_str_qt(const char* src);
 
-char* lib_strdup_qt(const char* src, char quote);
+char* lib_strdup_qt_opt(const char* src, char quote);
 
 char* lib_strdup_qt(const char* src);
 

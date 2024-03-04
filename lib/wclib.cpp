@@ -32,7 +32,7 @@ int wc_get_wildcard_index(const char* pattern) {
 }
 
 // ../a/name*.text - > 4 -> '/'
-int wc_get_wildcard_path_index(const char* pattern, const char* file_name) {
+int wc_get_wildcard_path_index_by_pattern(const char* pattern, const char* file_name) {
     if (pattern == NULL || file_name == NULL) {
         return -1;
     }

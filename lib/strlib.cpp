@@ -155,7 +155,7 @@ char* lib_strndup(const char* src, size_t size) {
   return dst;
 }
 
-int lib_is_strn_qt(const char* src, size_t size, char quote) {
+int lib_is_strn_qt_opt(const char* src, size_t size, char quote) {
   if (!src || size <= 0) {
     return 0;
   }
@@ -166,14 +166,14 @@ int lib_is_str_qt(const char* src, char quote) {
   if (!src) {
     return 0;
   }
-  return lib_is_strn_qt(src, strlen(src), quote);
+  return lib_is_strn_qt_opt(src, strlen(src), quote);
 }
 
 int lib_is_strn_qt(const char* src, size_t size) {
   if (!src || size <= 0) {
     return 0;
   }
-  return lib_is_strn_qt(src, size, '\'') || lib_is_strn_qt(src, size, '"');
+  return lib_is_strn_qt_opt(src, size, '\'') || lib_is_strn_qt_opt(src, size, '"');
 }
 
 int lib_is_str_qt(const char* src) {
@@ -183,7 +183,7 @@ int lib_is_str_qt(const char* src) {
   return lib_is_strn_qt(src, strlen(src));
 }
 
-char* lib_strdup_qt(const char* src, char quote) {
+char* lib_strdup_qt_opt(const char* src, char quote) {
   if (!src) {
     return NULL;
   }
@@ -206,7 +206,7 @@ char* lib_strdup_qt(const char* src, char quote) {
 }
 
 char* lib_strdup_qt(const char* src) {
-    return lib_strdup_qt(src, '\'');
+    return lib_strdup_qt_opt(src, '\'');
 }
 
 char* lib_strdup_uq(const char* src) {
