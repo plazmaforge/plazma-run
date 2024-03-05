@@ -44,6 +44,8 @@ $CC $CFLAGS run_ls.cpp -o run_ls.o
 
 $CC $CFLAGS run_mkdir.cpp -o run_mkdir.o
 $CC $CFLAGS run_rmdir.cpp -o run_rmdir.o
+$CC $CFLAGS run_mv.cpp -o run_mv.o
+$CC $CFLAGS run_rm.cpp -o run_rm.o
 
 $CC $CFLAGS test_getopt.cpp -o test_getopt.o
 $CC $CFLAGS test_echo.cpp -o test_echo.o
@@ -60,6 +62,8 @@ $CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o
 $CC $LDFLAGS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o run_ls.o -o run-ls
 $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_mkdir.o -o run-mkdir
 $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_rmdir.o -o run-rmdir
+$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_mv.o -o run-mv
+$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_rm.o -o run-rm
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo
