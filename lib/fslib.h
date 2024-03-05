@@ -259,6 +259,10 @@ int fs_move(const char* old_path, const char* new_path);
 
 int fs_remove(const char* path);
 
+int fs_copy(const char* src_file_name, const char* dst_file_name);
+
+int fs_copy_opt(const char* src_file_name, const char* dst_file_name, int buf_size);
+
 int fs_rmdir(const char* path);
 
 /* Human Style                */

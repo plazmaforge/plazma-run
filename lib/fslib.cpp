@@ -574,6 +574,39 @@ int fs_move(const char* old_path, const char* new_path) {
     return retval;    
 }
 
+int fs_copy(const char* src_file_name, const char* dst_file_name) {
+    return fs_copy_opt(src_file_name, dst_file_name, 4096);
+}
+
+int fs_copy_opt(const char* src_file_name, const char* dst_file_name, int buf_size) {
+
+    FILE* src_file = fopen(src_file_name, "rb");
+    if (!src_file) {
+        //strerror(errno)
+        return -1;
+    }
+
+    FILE* dst_file = fopen(dst_file_name, "wb");
+    if (!dst_file) {
+        fclose(src_file);
+        return -1;
+    }
+
+    int buffer[buf_size];
+    int bytes;
+
+    while ((bytes = fread(buffer, 1, buf_size, src_file)) != 0) {
+        if (fwrite(buffer, 1, bytes, dst_file) != bytes) {
+            fclose(src_file);
+            fclose(dst_file);
+            return -1;
+        }
+    }
+    fclose(src_file);
+    fclose(dst_file);
+    return 0;    
+}
+
 int fs_remove(const char* path) {
 #ifdef _WIN32
     wchar_t* wpath = char_wchar(path);
