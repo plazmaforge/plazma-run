@@ -546,6 +546,34 @@ int fs_rename(const char* old_path, const char* new_path) {
 #endif
 }
 
+int fs_move(const char* old_path, const char* new_path) {
+    if (!old_path || !new_path) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    /*
+    If 'new_path' is a directory then
+    we create new 'dst_file_name' = 'new_path' + 'base_name'
+    where 'base_name' = 'get_base_name'(from 'old_path')
+    */
+
+    char* dst_file_name = (char*) new_path;
+    bool is_dst_dir = false;
+    if (fs_is_dir(new_path)) {
+        is_dst_dir = true;
+        char* base_name = fs_get_base_name(old_path);          // [allocate]
+        dst_file_name = fs_get_file_path(new_path, base_name); // [allocate]
+        free(base_name);
+    }
+
+    int retval = fs_rename(old_path, dst_file_name);
+    if (is_dst_dir) {
+        free(dst_file_name);
+    }
+    return retval;    
+}
+
 int fs_remove(const char* path) {
 #ifdef _WIN32
     wchar_t* wpath = char_wchar(path);

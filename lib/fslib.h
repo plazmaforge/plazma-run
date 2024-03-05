@@ -255,6 +255,8 @@ int fs_chdir(const char* path);
 
 int fs_rename(const char* old_path, const char* new_path);
 
+int fs_move(const char* old_path, const char* new_path);
+
 int fs_remove(const char* path);
 
 int fs_rmdir(const char* path);
