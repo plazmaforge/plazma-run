@@ -153,8 +153,10 @@ socket_fd_t socket_connect(const char* host, int port) {
 
 	/* In Unix/Mac, getaddrinfo() is the most convenient way to get
 	 * server information. */
+	char port_s[4];
+	sprintf(port_s, "%i", port);
 
-	if ((ai_err = getaddrinfo(host, "80", &hints, &res)) != 0) { fprintf(stderr, "can't resolve %s:%s: %s\n", host, "80", gai_strerror(ai_err)); return -1; }
+	if ((ai_err = getaddrinfo(host, port_s, &hints, &res)) != 0) { fprintf(stderr, "can't resolve %s:%s: %s\n", host, port_s, gai_strerror(ai_err)); return -1; }
 	if ((fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1) __err_connect("socket");
 
 	/* The following two setsockopt() are used by ftplib
@@ -338,14 +340,14 @@ nf_file_t* http_parse_url(const char* fn, const char* mode) {
 	if (proxy == 0) {
 		fp->host = strdup(fp->http_host); // when there is no proxy, server name is identical to http_host name.
 		//fp->port = strdup(*q? q : "80");
-		fp->port = 80; // TODO
+		fp->port = *q? atoi(q) : 80;
 		fp->path = strdup(*p ? p : "/");
 	} else {
 		fp->host = (strstr(proxy, "http://") == proxy)? strdup(proxy + proto_len) : strdup(proxy);
 		for (q = fp->host; *q && *q != ':'; ++q);
 		if (*q == ':') *q++ = 0; 
 		//fp->port = strdup(*q ? q : "80");
-		fp->port = 80; // TODO
+		fp->port = *q? atoi(q) : 80;
 		fp->path = strdup(fn);
 	}
 
