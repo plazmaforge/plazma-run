@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "getopt.h"
-#include "iolib.h"
+#include "dumplib.h"
 
 void usage() {
     printf("Usage: run-dump [-w 16|32] <file>\n");
