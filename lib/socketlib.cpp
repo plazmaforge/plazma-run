@@ -331,7 +331,7 @@ off_t net_seek(nf_file_t* fp, int64_t off, int whence) {
 ////
 
 const char* HTTP_PREFIX = "http://";
-const char* HTTPS_PREFIX = "http://";
+const char* HTTPS_PREFIX = "https://";
 const int HTTP_PORT = 80;
 
 const char* http_get_url_prefix(const char* url) {
@@ -361,6 +361,8 @@ nf_file_t* http_parse_url(const char* url, const char* mode) {
 		return NULL;
 	}
 	const char* prefix = http_get_url_prefix(url);
+	printf("prefix %s\n", prefix);
+
 	if (!prefix) {
 		return NULL;
 	}
