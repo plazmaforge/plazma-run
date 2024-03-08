@@ -131,6 +131,7 @@ int socket_connect_fd(socket_fd_t socket_fd, const struct sockaddr* addr, int le
 socket_fd_t socket_connect(const char* host, int port) {
 
 #ifdef _WIN32    
+        socket_init(LIB_SOCKET_INIT_WSA);
 #define __err_connect(func) do { fprintf(stderr, "%s: %d\n", func, WSAGetLastError());	return LIB_SOCKET_NULL;} while (0)
 #else
 #define __err_connect(func) do { perror(func); /*freeaddrinfo(res);*/ return LIB_SOCKET_NULL; } while (0)
@@ -152,7 +153,7 @@ socket_fd_t socket_connect(const char* host, int port) {
 	//if ((ai_err = getaddrinfo(host, port_s, &hints, &res)) != 0) { fprintf(stderr, "can't resolve %s:%s: %s\n", host, port_s, gai_strerror(ai_err)); return -1; }
 
 	//if ((fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1) __err_connect("socket");
-	if ((fd = socket_create(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == LIB_SOCKET_NULL) __err_connect("socket");
+	if ((fd = socket_create(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == LIB_SOCKET_NULL) __err_connect("socket2");
 
 	/* The following two setsockopt() are used by ftplib
 	 * (http://nbpfaus.net/~pfau/ftplib/). I am not sure if they

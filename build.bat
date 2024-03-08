@@ -15,7 +15,7 @@ rem compile
 %CC% %CFLAGS% lib/wclib.cpp -o wclib.o
 %CC% %CFLAGS% lib/iolib.cpp -o iolib.o
 %CC% %CFLAGS% lib/dumplib.cpp -o dumplib.o
-%CC% %CFLAGS% lib/fmtlib.cpp -o fmtliblib.o
+%CC% %CFLAGS% lib/fmtlib.cpp -o fmtlib.o
 %CC% %CFLAGS% lib/socketlib.cpp -o socketlib.o
 %CC% %CFLAGS% lib/asklib.cpp -o asklib.o
 %CC% %CFLAGS% lib/syscpu.cpp -o syscpu.o
