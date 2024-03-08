@@ -82,7 +82,7 @@ int socket_setopt(socket_fd_t fd, int level, int name, const void* val, int len)
 }
 
 static int socket_getopt(socket_fd_t fd, int level, int name, void* val, int* len) {
-    return getsockopt(fd, level, name, val, len);
+    return getsockopt(fd, level, name, (char*) val, len);
 }
 #else
 
