@@ -6,17 +6,19 @@
 #include <fcntl.h>
 #include <errno.h>
 
+//#include <netinet/in.h>
+
 #include "socketlib.h"
 
 static void socket_set_socketaddr(struct sockaddr_in *a, const char* host, int port) {
     a->sin_len = sizeof(struct sockaddr_in);
     a->sin_family = AF_INET;
-    a->sin_port = port;
+    a->sin_port = htons(port);
 
     struct in_addr addr;
 	addr.s_addr = inet_addr(host);
 
-    a->sin_addr = addr;
+    a->sin_addr.s_addr = addr.s_addr;
 }
 
 static socket_fd_t socket_create_nonblock(int domain, int type, int protocol) {
@@ -120,44 +122,37 @@ ssize_t socket_write(socket_fd_t fd, void* ptr, size_t len) {
 
 ////
 
-int socket_connect_fd(socket_fd_t socket_fd, const sockaddr* addr, int len) {
-    if (0 != connect(socket_fd, (struct sockaddr*) &addr, len))
+int socket_connect_fd(socket_fd_t socket_fd, const struct sockaddr* addr, socklen_t len) {
+    if (0 != connect(socket_fd, /*(struct sockaddr*) &addr*/ addr, len))
         return -1;
     return 0;
 }
 
 socket_fd_t socket_connect(const char* host, int port) {
-    
-	// socket_fd_t fd;
-    // if ((fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == LIB_SOCKET_NULL) {
-    //     return LIB_SOCKET_NULL;
-    // }
 
-    // struct sockaddr_in server;
-    // socket_set_socketaddr(&server, host, port);
-    // const struct sockaddr* addr = (struct sockaddr*) &server;
-
-    // if (socket_connect_fd(fd, addr, addr->sa_len) != 0) {
-	// 	printf("POINT-ERR-2\n");
-    //     return LIB_SOCKET_NULL;
-    // }
-
-#define __err_connect(func) do { perror(func); freeaddrinfo(res); return -1; } while (0)
+#ifdef _WIN32    
+#define __err_connect(func) do { fprintf(stderr, "%s: %d\n", func, WSAGetLastError());	return LIB_SOCKET_NULL;} while (0)
+#else
+#define __err_connect(func) do { perror(func); /*freeaddrinfo(res);*/ return LIB_SOCKET_NULL; } while (0)
+#endif
 
 	int ai_err, on = 1, fd;
 	struct linger lng = { 0, 0 };
-	struct addrinfo hints, *res = 0;
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
+
+	//struct addrinfo hints, *res = 0;
+	//memset(&hints, 0, sizeof(struct addrinfo));
+	//hints.ai_family = AF_UNSPEC;
+	//hints.ai_socktype = SOCK_STREAM;
 
 	/* In Unix/Mac, getaddrinfo() is the most convenient way to get
 	 * server information. */
-	char port_s[4];
-	sprintf(port_s, "%i", port);
+	//char port_s[4];
+	//sprintf(port_s, "%i", port);
 
-	if ((ai_err = getaddrinfo(host, port_s, &hints, &res)) != 0) { fprintf(stderr, "can't resolve %s:%s: %s\n", host, port_s, gai_strerror(ai_err)); return -1; }
-	if ((fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1) __err_connect("socket");
+	//if ((ai_err = getaddrinfo(host, port_s, &hints, &res)) != 0) { fprintf(stderr, "can't resolve %s:%s: %s\n", host, port_s, gai_strerror(ai_err)); return -1; }
+
+	//if ((fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1) __err_connect("socket");
+	if ((fd = socket_create(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == LIB_SOCKET_NULL) __err_connect("socket");
 
 	/* The following two setsockopt() are used by ftplib
 	 * (http://nbpfaus.net/~pfau/ftplib/). I am not sure if they
@@ -166,8 +161,31 @@ socket_fd_t socket_connect(const char* host, int port) {
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1) __err_connect("setsockopt");
 	if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
 
-	if (connect(fd, res->ai_addr, res->ai_addrlen) != 0) __err_connect("connect");
-	freeaddrinfo(res);
+	//if (connect(fd, res->ai_addr, res->ai_addrlen) != 0) __err_connect("connect");
+	//if (socket_connect_fd(fd, res->ai_addr, res->ai_addrlen) != 0) __err_connect("connect");
+
+    // struct sockaddr_in server;
+    // socket_set_socketaddr(&server, host, port);
+    // const struct sockaddr* addr = (struct sockaddr*) &server;
+
+	struct sockaddr_in server;
+	struct hostent *hp = 0;
+		if (true/*isalpha(host[0])*/) hp = gethostbyname(host);
+	else {
+		struct in_addr addr;
+		addr.s_addr = inet_addr(host);
+		hp = gethostbyaddr((char*) &addr, 4, AF_INET);
+	}
+	if (hp == 0) __err_connect("gethost");
+
+	// connect
+	server.sin_addr.s_addr = *((unsigned long*) hp->h_addr);
+	server.sin_family = AF_INET;
+	server.sin_port = htons(port);
+
+	if (socket_connect_fd(fd, (struct sockaddr*) &server, sizeof(server)) != 0) __err_connect("connect");
+
+	//freeaddrinfo(res);
 
 	return fd;
 }
@@ -312,43 +330,78 @@ off_t net_seek(nf_file_t* fp, int64_t off, int whence) {
 
 ////
 
-nf_file_t* http_parse_url(const char* fn, const char* mode) {
+const char* HTTP_PREFIX = "http://";
+const char* HTTPS_PREFIX = "http://";
+const int HTTP_PORT = 80;
+
+const char* http_get_url_prefix(const char* url) {
+	if (!url) {
+		return NULL;
+	}
+	if (strstr(url, HTTP_PREFIX) == url) {
+		return HTTP_PREFIX;
+	}
+	if (strstr(url, HTTPS_PREFIX) == url) {
+		return HTTPS_PREFIX;
+	}
+	return NULL;
+}
+
+char* lib_strchr_end(char* str, int c) {
+	if (!str) {
+		return NULL;
+	}
+	char* val;
+	for (val = str; *val && *val != c; ++val);
+	return val;
+}
+
+nf_file_t* http_parse_url(const char* url, const char* mode) {
+	if (!url) {
+		return NULL;
+	}
+	const char* prefix = http_get_url_prefix(url);
+	if (!prefix) {
+		return NULL;
+	}
+	int prefix_len = strlen(prefix);
+	if (url[prefix_len] == '\0') {
+		return NULL;
+	}
+
 	nf_file_t* fp;
-	char *p, *proxy, *q;
-	int l;
-
-	if (strstr(fn, "http://") != fn) return 0;
-
-	int proto_len = 7; // 8
+	char* proxy;
+	char *p;
+	char* q;
+	int len;
 
 	// set ->http_host
-	for (p = (char*) fn + proto_len; *p && *p != '/'; ++p);
-	l = p - fn - proto_len;
+	p = lib_strchr_end(((char*) url) + prefix_len, '/');
+	len = p - url - prefix_len;
 
 	fp = (nf_file_t*) calloc(1, sizeof(nf_file_t));
-	fp->http_host = (char*) calloc(l + 1, 1);
-	strncpy(fp->http_host, fn + proto_len, l);
-	fp->http_host[l] = 0;
+	fp->http_host = (char*) calloc(len + 1, 1);
+	strncpy(fp->http_host, url + prefix_len, len);
+	fp->http_host[len] = 0;
 
-	for (q = fp->http_host; *q && *q != ':'; ++q);
+	q = lib_strchr_end(fp->http_host, ':');
 	if (*q == ':') *q++ = 0;
 
 	// get http_proxy
 	proxy = getenv("http_proxy");
 
 	// set ->host, ->port and ->path
-	if (proxy == 0) {
+	if (!proxy) {
 		fp->host = strdup(fp->http_host); // when there is no proxy, server name is identical to http_host name.
-		//fp->port = strdup(*q? q : "80");
-		fp->port = *q? atoi(q) : 80;
+		fp->port = *q ? atoi(q) : HTTP_PORT;
 		fp->path = strdup(*p ? p : "/");
 	} else {
-		fp->host = (strstr(proxy, "http://") == proxy)? strdup(proxy + proto_len) : strdup(proxy);
-		for (q = fp->host; *q && *q != ':'; ++q);
+		prefix = http_get_url_prefix(proxy);
+		fp->host = prefix ? strdup(proxy + strlen(prefix)) : strdup(proxy);
+		q = lib_strchr_end(fp->host, ':');
 		if (*q == ':') *q++ = 0; 
-		//fp->port = strdup(*q ? q : "80");
-		fp->port = *q? atoi(q) : 80;
-		fp->path = strdup(fn);
+		fp->port = *q? atoi(q) : HTTP_PORT;
+		fp->path = strdup(url);
 	}
 
 	fp->type = LIB_NF_TYPE_HTTP;
@@ -372,33 +425,35 @@ int http_connect_file(nf_file_t* fp /*const char* host, int port, const char* pa
 	}
 
 	int ret;
-	int l = 0;
+	int len = 0;
 	char* buf;
 	char* p;
 
 	buf = (char*) calloc(0x10000, 1);
 	
-    l += sprintf(buf + l, "GET %s HTTP/1.0\r\nHost: %s\r\n", fp->path, fp->host);
-    l += sprintf(buf + l, "Range: bytes=%lld-\r\n", (long long) fp->offset);
-	l += sprintf(buf + l, "\r\n");
+    len += sprintf(buf + len, "GET %s HTTP/1.0\r\nHost: %s\r\n", fp->path, fp->host);
+    len += sprintf(buf + len, "Range: bytes=%lld-\r\n", (long long) fp->offset);
+	len += sprintf(buf + len, "\r\n");
 
-	int ssize = socket_write(fp->fd, buf, l);
+	int ssize = socket_write(fp->fd, buf, len);
 
 	printf("\n");
 	printf("write_size: %i\n", ssize);
 	printf("\n");
 	printf("%s\n", buf);
 
-	l = 0;
-	while (socket_read(fp->fd, buf + l, 1)) { // read HTTP header
-		printf("%c", buf[l]); // TODO
-		if (buf[l] == '\n' && l >= 3)
-			if (strncmp(buf + l - 3, "\r\n\r\n", 4) == 0) break;
-		++l;
+	len = 0;
+	while (socket_read(fp->fd, buf + len, 1)) { // read HTTP header
+		//printf("%c", buf[len]);
+		if (buf[len] == '\n' && len >= 3)
+			if (strncmp(buf + len - 3, "\r\n\r\n", 4) == 0) break;
+		++len;
 	}
 
-	buf[l] = 0;
-	if (l < 14) { // prematured header
+	printf("%s\n", buf);
+
+	buf[len] = 0;
+	if (len < 14) { // prematured header
 	    //printf("Header\n");
 		socket_close(fp->fd);
 		fp->fd = -1;

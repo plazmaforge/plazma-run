@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 
 	buf = (char*) calloc(0x100000, 1);
 
-    nf_file_t* fp = http_parse_url("http://captive.apple.com", "r");
+    nf_file_t* fp = http_parse_url("http://captive.apple.com:80/alaska.html", "r");
     //nf_file_t fp = net_open
 
     if (!fp) {
@@ -28,8 +28,8 @@ int main(int argc, char *argv[]) {
     }
 
     printf("host     : %s\n", fp->host);
-    printf("host     : %i\n", fp->port);
-    printf("host     : %s\n", fp->path);
+    printf("port     : %i\n", fp->port);
+    printf("path     : %s\n", fp->path);
 
     printf("http_host: %s\n", fp->http_host);
 
