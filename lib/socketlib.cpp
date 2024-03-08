@@ -108,16 +108,6 @@ int socket_init(int flags) {
     return 0;
 }
 
-static bool is_socket_init = false;
-
-int socket_init_default() {
-	if (is_socket_init) {
-		return 0;
-	}
-	is_socket_init = true;
-	return 0; // Notning
-}
-
 void socket_close(socket_fd_t socket_fd) {
     if (socket_fd == LIB_SOCKET_NULL) return;
     close(socket_fd);
@@ -193,14 +183,6 @@ socket_fd_t socket_connect(const char* host, int port) {
 	/* The following two setsockopt() are used by ftplib
 	 * (http://nbpfaus.net/~pfau/ftplib/). I am not sure if they
 	 * necessary. */
-
-// #ifdef _WIN32  
-// 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*) &on, sizeof(on)) == -1) __err_connect("setsockopt");
-// 	if (setsockopt(fd, SOL_SOCKET, SO_LINGER, (char*) &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
-// #else
-// 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1) __err_connect("setsockopt");
-// 	if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
-// #endif
 
 	if (socket_setopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1) __err_connect("setsockopt");
 	if (socket_setopt(fd, SOL_SOCKET, SO_LINGER, &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
@@ -405,7 +387,7 @@ nf_file_t* http_parse_url(const char* url, const char* mode) {
 		return NULL;
 	}
 	const char* prefix = http_get_url_prefix(url);
-	printf("prefix %s\n", prefix);
+	//printf("prefix %s\n", prefix);
 
 	if (!prefix) {
 		return NULL;
