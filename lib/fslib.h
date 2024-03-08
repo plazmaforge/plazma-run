@@ -2,7 +2,6 @@
 #define PLAZMA_LIB_FSLIB_H
 
 #include <string>
-#include <vector>
 #include <sys/stat.h>
 
 #include "pathlib.h"

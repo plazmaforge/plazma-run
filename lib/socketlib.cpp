@@ -1,12 +1,11 @@
 #include <stdlib.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 
-//#include <netinet/in.h>
+#include <cctype>
 
 #include "socketlib.h"
 
@@ -48,6 +47,16 @@ int socket_init(int flags) {
     return 0;
 }
 
+static bool is_socket_init = false;
+
+int socket_init_default() {
+	if (is_socket_init) {
+		return 0;
+	}
+	is_socket_init = true;
+	return socket_init(LIB_SOCKET_INIT_WSA);
+}
+
 void socket_close(socket_fd_t socket_fd) {
     if (socket_fd == LIB_SOCKET_NULL) return;
     closesocket(socket_fd);
@@ -68,7 +77,13 @@ ssize_t socket_read(socket_fd_t fd, void* ptr, size_t len) {
 ssize_t socket_write(socket_fd_t fd, void* ptr, size_t len) {
     return send(fd, (char*) ptr, len, 0);
 }
+int socket_setopt(socket_fd_t fd, int level, int name, const void* val, int len) {
+	return setsockopt(fd, level, name, (char*) val, len);
+}
 
+static int socket_getopt(socket_fd_t fd, int level, int name, void* val, int* len) {
+    return getsockopt(fd, level, name, val, len);
+}
 #else
 
 // #include <pthread.h>
@@ -91,6 +106,16 @@ int socket_init(int flags) {
         return sigaction(SIGPIPE, &sa, NULL);
     }
     return 0;
+}
+
+static bool is_socket_init = false;
+
+int socket_init_default() {
+	if (is_socket_init) {
+		return 0;
+	}
+	is_socket_init = true;
+	return 0; // Notning
 }
 
 void socket_close(socket_fd_t socket_fd) {
@@ -118,6 +143,14 @@ ssize_t socket_read(socket_fd_t fd, void* ptr, size_t len) {
 ssize_t socket_write(socket_fd_t fd, void* ptr, size_t len) {
     return write(fd, ptr, len);
 }
+
+int socket_setopt(socket_fd_t fd, int level, int name, const void* val, int len) {
+	return setsockopt(fd, level, name, val, len);
+}
+
+static int socket_getopt(socket_fd_t fd, int level, int name, void* val, int* len) {
+    return getsockopt(fd, level, name, val, (socklen_t*) len);
+}
 #endif
 
 ////
@@ -131,15 +164,17 @@ int socket_connect_fd(socket_fd_t socket_fd, const struct sockaddr* addr, int le
 socket_fd_t socket_connect(const char* host, int port) {
 
 #ifdef _WIN32    
-        socket_init(LIB_SOCKET_INIT_WSA);
+    socket_init_default();
 #define __err_connect(func) do { fprintf(stderr, "%s: %d\n", func, WSAGetLastError());	return LIB_SOCKET_NULL;} while (0)
 #else
 #define __err_connect(func) do { perror(func); /*freeaddrinfo(res);*/ return LIB_SOCKET_NULL; } while (0)
 #endif
 
-	int ai_err, on = 1, fd;
+	socket_fd_t fd;
+	int on = 1;
 	struct linger lng = { 0, 0 };
 
+	//int ai_err
 	//struct addrinfo hints, *res = 0;
 	//memset(&hints, 0, sizeof(struct addrinfo));
 	//hints.ai_family = AF_UNSPEC;
@@ -151,21 +186,24 @@ socket_fd_t socket_connect(const char* host, int port) {
 	//sprintf(port_s, "%i", port);
 
 	//if ((ai_err = getaddrinfo(host, port_s, &hints, &res)) != 0) { fprintf(stderr, "can't resolve %s:%s: %s\n", host, port_s, gai_strerror(ai_err)); return -1; }
-
 	//if ((fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1) __err_connect("socket");
-	if ((fd = socket_create(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == LIB_SOCKET_NULL) __err_connect("socket2");
+
+	if ((fd = socket_create(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == LIB_SOCKET_NULL) __err_connect("socket");
 
 	/* The following two setsockopt() are used by ftplib
 	 * (http://nbpfaus.net/~pfau/ftplib/). I am not sure if they
 	 * necessary. */
 
-#ifdef _WIN32  
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*) &on, sizeof(on)) == -1) __err_connect("setsockopt");
-	if (setsockopt(fd, SOL_SOCKET, SO_LINGER, (char*) &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
-#else
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1) __err_connect("setsockopt");
-	if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
-#endif
+// #ifdef _WIN32  
+// 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*) &on, sizeof(on)) == -1) __err_connect("setsockopt");
+// 	if (setsockopt(fd, SOL_SOCKET, SO_LINGER, (char*) &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
+// #else
+// 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1) __err_connect("setsockopt");
+// 	if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
+// #endif
+
+	if (socket_setopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1) __err_connect("setsockopt");
+	if (socket_setopt(fd, SOL_SOCKET, SO_LINGER, &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
 
 	//if (connect(fd, res->ai_addr, res->ai_addrlen) != 0) __err_connect("connect");
 	//if (socket_connect_fd(fd, res->ai_addr, res->ai_addrlen) != 0) __err_connect("connect");
@@ -176,7 +214,7 @@ socket_fd_t socket_connect(const char* host, int port) {
 
 	struct sockaddr_in server;
 	struct hostent *hp = 0;
-		if (true/*isalpha(host[0])*/) hp = gethostbyname(host);
+		if (isalpha(host[0])) hp = gethostbyname(host);
 	else {
 		struct in_addr addr;
 		addr.s_addr = inet_addr(host);
