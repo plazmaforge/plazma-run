@@ -2,6 +2,7 @@
 #define PLAZMA_LIB_FMTLIB_H
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <time.h>
 
 #define KILOBYTE_FACTOR ((uint64_t) 1024)

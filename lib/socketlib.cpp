@@ -11,7 +11,7 @@
 #include "socketlib.h"
 
 static void socket_set_socketaddr(struct sockaddr_in *a, const char* host, int port) {
-    a->sin_len = sizeof(struct sockaddr_in);
+    //a->sin_len = sizeof(struct sockaddr_in); // WIN32 (?)
     a->sin_family = AF_INET;
     a->sin_port = htons(port);
 
@@ -62,11 +62,11 @@ socket_fd_t socket_create(int domain, int type, int protocol) {
 }
 
 ssize_t socket_read(socket_fd_t fd, void* ptr, size_t len) {
-    return recv(fd, ptr, len, 0);
+    return recv(fd, (char*) ptr, len, 0);
 }
 
 ssize_t socket_write(socket_fd_t fd, void* ptr, size_t len) {
-    return send(fd, ptr, len, 0);
+    return send(fd, (char*) ptr, len, 0);
 }
 
 #else
@@ -122,7 +122,7 @@ ssize_t socket_write(socket_fd_t fd, void* ptr, size_t len) {
 
 ////
 
-int socket_connect_fd(socket_fd_t socket_fd, const struct sockaddr* addr, socklen_t len) {
+int socket_connect_fd(socket_fd_t socket_fd, const struct sockaddr* addr, int len) {
     if (0 != connect(socket_fd, /*(struct sockaddr*) &addr*/ addr, len))
         return -1;
     return 0;
@@ -158,8 +158,13 @@ socket_fd_t socket_connect(const char* host, int port) {
 	 * (http://nbpfaus.net/~pfau/ftplib/). I am not sure if they
 	 * necessary. */
 
+#ifdef _WIN32  
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*) &on, sizeof(on)) == -1) __err_connect("setsockopt");
+	if (setsockopt(fd, SOL_SOCKET, SO_LINGER, (char*) &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
+#else
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1) __err_connect("setsockopt");
 	if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
+#endif
 
 	//if (connect(fd, res->ai_addr, res->ai_addrlen) != 0) __err_connect("connect");
 	//if (socket_connect_fd(fd, res->ai_addr, res->ai_addrlen) != 0) __err_connect("connect");

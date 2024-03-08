@@ -1,6 +1,8 @@
 #ifndef PLAZMA_LIB_SOCKETLIB_H
 #define PLAZMA_LIB_SOCKETLIB_H
 
+#include <stdint.h>
+
 #ifdef _WIN32
 #include <winsock2.h>
 #else
