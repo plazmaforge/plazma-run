@@ -80,12 +80,24 @@ ssize_t socket_read(socket_fd_t fd, void* ptr, size_t len);
 
 ssize_t socket_write(socket_fd_t fd, void* ptr, size_t len);
 
-nf_file_t* http_parse_url(const char* fn, const char* mode);
+nf_file_t* net_ftp_parse_url(const char* fn, const char* mode);
 
-int http_connect_file(nf_file_t* fp /*const char* host, int port, const char* path*/);
+int net_ftp_connect_file(nf_file_t* fp);
+
+nf_file_t* net_http_parse_url(const char* fn, const char* mode);
+
+int net_http_connect_file(nf_file_t* fp);
 
 off_t net_read(nf_file_t* fp, void* buf, off_t len);
 
 off_t net_seek(nf_file_t* fp, int64_t off, int whence);
+
+nf_file_t* net_parse_url(const char* url, const char* mode);
+
+int net_connect_file(nf_file_t* fp);
+
+nf_file_t* net_open(const char* url, const char* mode);
+
+char* net_get_file_contents(nf_file_t* fp, int* size);
 
 #endif // PLAZMA_LIB_SOCKETLIB_H

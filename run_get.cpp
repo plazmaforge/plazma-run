@@ -7,41 +7,64 @@ void usage() {
     printf("Usage: run-get\n");
 }
 
-int main(int argc, char *argv[]) {
+int run(const char* url) {
 
-	char* buf;
-	int type = 4; 
-    int l;
+    if (!url) {
+        return 1;
+    }
 
 // #ifdef _WIN32
 // 	net_win32_init();
 // #endif
 
-	buf = (char*) calloc(0x100000, 1);
+    // "http://captive.apple.com"
 
-    nf_file_t* fp = http_parse_url("http://captive.apple.com:80/alaska.html", "r");
-    //nf_file_t fp = net_open
-
+    nf_file_t* fp = net_parse_url(url, NULL);
     if (!fp) {
-        fprintf(stderr, "Error parse url\n");
         return 1;
     }
 
-    printf("host     : %s\n", fp->host);
-    printf("port     : %i\n", fp->port);
-    printf("path     : %s\n", fp->path);
+    //printf("host     : %s\n", fp->host);
+    //printf("port     : %i\n", fp->port);
+    //printf("path     : %s\n", fp->path);
+    //printf("http_host: %s\n", fp->http_host);
 
-    printf("http_host: %s\n", fp->http_host);
-
-    if (http_connect_file(fp) != 0) {
-        fprintf(stderr, "Error http connect\n");
+    if (net_connect_file(fp) != 0) {
         return 1;
     }
 
-	net_read(fp, buf, 10000);
+    int size = 0;
+    char* buf = net_get_file_contents(fp, &size);
+    printf("%s", buf);
+
+    //int len = 0;
+    //int buf_len = 20;
+
+    //printf("len: %i, ready: %i\n", len, fp->is_ready);
+    //printf("starting...\n");
+
+    //while ((len = net_read(fp, buf, buf_len)) != 0) {
+       //len = net_read(fp, buf, buf_len);
+       //printf("len: %i, ready: %i\n", len, fp->is_ready);
+       //printf("%s", buf);
+    //}
+
+    //len = net_read(fp, buf, 10000);
+    // printf("len: %i, ready: %i", len, fp->is_ready);
+	//net_read(fp, buf, 10000);
 	//net_seek(fp, 20000, SEEK_SET);
 	//net_seek(fp, 10000, SEEK_SET);
-	//l = net_read(fp, buf+10000, 10000000) + 10000;
+	//len = net_read(fp, buf+10000, 10000000) + 10000;
 
-    printf("%s \n", buf);
+    return 0;
+
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        usage();
+        return 0;
+    }
+    const char* url = argv[1];
+    run(url);
 }

@@ -257,7 +257,8 @@ off_t _net_read(socket_fd_t fd, void *buf, off_t len) {
 		 * are not immediately available. */
 
 		if (curr == 0) break;
-		l += curr; rest -= curr;
+		l += curr; 
+		rest -= curr;
 	}
 	return l;
 }
@@ -271,17 +272,15 @@ off_t net_read(nf_file_t* fp, void* buf, off_t len) {
 
 	// if (fp->type == LIB_NF_TYPE_FTP) {
 	// 	if (fp->is_ready == 0) {
-	// 		if (!fp->no_reconnect) ftp_reconnect(fp);
-	// 		ftp_connect_file(fp);
+	// 		if (!fp->no_reconnect) net_ftp_reconnect(fp);
+	// 		net_ftp_connect_file(fp);
 	// 	}
-
 	// } 
 	
 	if (fp->type == LIB_NF_TYPE_HTTP) {
 		if (fp->is_ready == 0) {
-			http_connect_file(fp);
+			net_http_connect_file(fp);
 		}
-			
 	}
 
 	if (fp->type == LIB_NF_TYPE_LOCAL) { // on Windows, the following block is necessary; not on UNIX
@@ -356,20 +355,78 @@ off_t net_seek(nf_file_t* fp, int64_t off, int whence) {
 
 ////
 
+const char* FTP_PREFIX = "ftp://";
+const char* FTPS_PREFIX = "ftps://";
+const int FTP_PORT = 21;
+
 const char* HTTP_PREFIX = "http://";
 const char* HTTPS_PREFIX = "https://";
 const int HTTP_PORT = 80;
 
-const char* http_get_url_prefix(const char* url) {
+bool net_is_ftp_url(const char* url) {
+	if (!url) {
+		return false;
+	}
+	return (strstr(url, FTP_PREFIX) == url || strstr(url, FTPS_PREFIX) == url);
+}
+
+bool net_is_http_url(const char* url) {
+	if (!url) {
+		return false;
+	}
+	return (strstr(url, HTTP_PREFIX) == url || strstr(url, HTTPS_PREFIX) == url);
+}
+
+const char* net_get_ftp_prefix(const char* url) {
 	if (!url) {
 		return NULL;
 	}
+
+	// FTP
+	if (strstr(url, FTP_PREFIX) == url) {
+		return FTP_PREFIX;
+	}
+	if (strstr(url, FTPS_PREFIX) == url) {
+		return FTPS_PREFIX;
+	}
+
+	return NULL;
+}
+
+const char* net_get_http_prefix(const char* url) {
+	if (!url) {
+		return NULL;
+	}
+
+	// HTTP
 	if (strstr(url, HTTP_PREFIX) == url) {
 		return HTTP_PREFIX;
 	}
 	if (strstr(url, HTTPS_PREFIX) == url) {
 		return HTTPS_PREFIX;
 	}
+
+	return NULL;
+}
+
+const char* net_get_url_prefix2(const char* url) {
+	if (!url) {
+		return NULL;
+	}
+	const char* prefix = NULL;
+
+	// FTP
+	prefix = net_get_ftp_prefix(url);
+	if (prefix) {
+		return prefix;
+	}
+
+	// HTTP
+	prefix = net_get_http_prefix(url);
+	if (prefix) {
+		return prefix;
+	}
+
 	return NULL;
 }
 
@@ -382,18 +439,54 @@ char* lib_strchr_end(char* str, int c) {
 	return val;
 }
 
-nf_file_t* http_parse_url(const char* url, const char* mode) {
+nf_file_t* net_ftp_parse_url(const char* url, const char* mode) {
 	if (!url) {
 		return NULL;
 	}
-	const char* prefix = http_get_url_prefix(url);
-	//printf("prefix %s\n", prefix);
+	const char* prefix = net_get_ftp_prefix(url);
 
 	if (!prefix) {
 		return NULL;
 	}
 	int prefix_len = strlen(prefix);
 	if (url[prefix_len] == '\0') {
+		return NULL;
+	}
+
+	nf_file_t* fp;
+
+	fp = (nf_file_t*) calloc(1, sizeof(nf_file_t));
+
+	// TODO
+
+	fp->type = LIB_NF_TYPE_FTP;
+	//fp->ctrl_fd = fp->fd = -1;
+
+	fp->fd = -1;
+	fp->seek_offset = 0;
+	return fp;
+}
+
+int net_ftp_connect_file(nf_file_t* fp) {
+	// TODO
+	return -1;
+}
+
+nf_file_t* net_http_parse_url(const char* url, const char* mode) {
+	if (!url) {
+		fprintf(stderr, "Cannot parse HTTP url. Url is NULL\n");
+		return NULL;
+	}
+	const char* prefix = net_get_http_prefix(url);
+
+	if (!prefix) {
+		fprintf(stderr, "Cannot parse HTTP url: %s\n", url);
+		return NULL;
+	}
+
+	int prefix_len = strlen(prefix);
+	if (url[prefix_len] == '\0') {
+		fprintf(stderr, "Cannot parse HTTP url. Url is empty\n");
 		return NULL;
 	}
 
@@ -424,7 +517,7 @@ nf_file_t* http_parse_url(const char* url, const char* mode) {
 		fp->port = *q ? atoi(q) : HTTP_PORT;
 		fp->path = strdup(*p ? p : "/");
 	} else {
-		prefix = http_get_url_prefix(proxy);
+		prefix = net_get_http_prefix(proxy);
 		fp->host = prefix ? strdup(proxy + strlen(prefix)) : strdup(proxy);
 		q = lib_strchr_end(fp->host, ':');
 		if (*q == ':') *q++ = 0; 
@@ -442,12 +535,15 @@ nf_file_t* http_parse_url(const char* url, const char* mode) {
 
 ////
 
-int http_connect_file(nf_file_t* fp /*const char* host, int port, const char* path*/) {
+int net_http_connect_file(nf_file_t* fp) {
+	if (!fp) {
+		return -1;
+	}
 
 	fp->fd = socket_connect(fp->host, fp->port);
 
 	if (fp->fd == LIB_SOCKET_NULL) {
-		fprintf(stderr, "Cannot connect: host: %s port: %i", fp->host, fp->port);
+		fprintf(stderr, "Cannot open HTTP connection. host: %s port: %i\n", fp->host, fp->port);
 		fp->fd = -1;
 		return -1;
 	}
@@ -457,7 +553,7 @@ int http_connect_file(nf_file_t* fp /*const char* host, int port, const char* pa
 	char* buf;
 	char* p;
 
-	buf = (char*) calloc(0x10000, 1);
+	buf = (char*) calloc(65536, 1);
 	
     len += sprintf(buf + len, "GET %s HTTP/1.0\r\nHost: %s\r\n", fp->path, fp->host);
     len += sprintf(buf + len, "Range: bytes=%lld-\r\n", (long long) fp->offset);
@@ -465,10 +561,10 @@ int http_connect_file(nf_file_t* fp /*const char* host, int port, const char* pa
 
 	int ssize = socket_write(fp->fd, buf, len);
 
-	printf("\n");
-	printf("write_size: %i\n", ssize);
-	printf("\n");
-	printf("%s\n", buf);
+	//printf("\n");
+	//printf("write_size: %i\n", ssize);
+	//printf("\n");
+	//printf("%s\n", buf);
 
 	len = 0;
 	while (socket_read(fp->fd, buf + len, 1)) { // read HTTP header
@@ -478,7 +574,7 @@ int http_connect_file(nf_file_t* fp /*const char* host, int port, const char* pa
 		++len;
 	}
 
-	printf("%s\n", buf);
+	//printf("%s\n", buf);
 
 	buf[len] = 0;
 	if (len < 14) { // prematured header
@@ -509,3 +605,105 @@ int http_connect_file(nf_file_t* fp /*const char* host, int port, const char* pa
 	return 0;
 }
 
+int net_connect_file(nf_file_t* fp) {
+	if (!fp) {
+		return -1;
+	}
+
+	if (fp->type == LIB_NF_TYPE_FTP) {
+		return net_ftp_connect_file(fp);
+	}
+
+	if (fp->type == LIB_NF_TYPE_HTTP) {
+		return net_http_connect_file(fp);
+	}
+
+	return -1;
+}
+
+nf_file_t* net_parse_url(const char* url, const char* mode) {
+	if (!url) {
+		return NULL;
+	}
+
+	nf_file_t* fp = NULL;
+
+	if (net_is_ftp_url(url)) {
+		// FTP
+		fp = net_ftp_parse_url(url, mode);
+	} else if (net_is_http_url(url)) {
+		// HTTP
+		fp = net_http_parse_url(url, mode);
+	}
+
+	return fp;
+}
+
+nf_file_t* net_open(const char* url, const char* mode) {
+	if (!url) {
+		return NULL;
+	}
+	nf_file_t* fp = NULL;
+
+	if (net_is_ftp_url(url)) {
+		// FTP
+		fp = net_ftp_parse_url(url, mode);
+		if (!fp) {
+			return NULL;
+		}
+		net_ftp_connect_file(fp);
+	} else if (net_is_http_url(url)) {
+		// HTTP
+		fp = net_http_parse_url(url, mode);
+		if (!fp) {
+			return NULL;
+		}
+		net_http_connect_file(fp);
+	}
+
+	if (fp && fp->fd == -1) {
+		//net_close(fp);
+		return NULL;
+	}
+	return fp;
+}
+
+char* net_get_file_contents(nf_file_t* fp, int* size) {
+	if (!fp) {
+		return NULL;
+	}
+	int init_size = 65536;
+	int buf_size = 4096;
+	int inc_size = 0;
+	char* buf = (char*) calloc(init_size, 1);
+	int bytes = 0;
+	int total = 0;
+	int allocated = init_size;
+
+	//printf("init size     : %i\n",init_size);
+	//printf("buffer size   : %i\n", buf_size);
+
+    while ((bytes = net_read(fp, &buf[total], buf_size)) != 0) {
+		//printf("read size     : %i\n", bytes);
+	    if (total + bytes >= allocated) {
+		    inc_size = bytes < buf_size ? bytes : buf_size;
+		    allocated += inc_size;
+		    //printf("increment size: %i\n", inc_size);
+		    //printf("realloc size  : %i\n", allocated + 1);
+		    buf = (char*) realloc(buf, (allocated + 1) * sizeof(char));
+	    }
+	    total += bytes;
+    }
+
+	buf[total] = '\0';
+
+	//printf("total size    : %i\n", total);
+	//printf("[n-2]         : %c\n", buf[total - 2]);
+	//printf("[n-1]         : %i\n", buf[total - 1]);
+	//printf("[n]           : %i\n", buf[total]);
+	
+	if (size) {
+		*size = total;
+	}
+	return buf;
+}
