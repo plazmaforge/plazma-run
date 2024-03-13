@@ -219,10 +219,12 @@ socket_fd_t socket_connect(const char* host, int port) {
 ////
 
 static int socket_wait(int fd, int is_read) {
+	//printf("socket_wait: start\n");
 	fd_set fds, *fdr = 0, *fdw = 0;
 	struct timeval tv;
 	int ret;
-	tv.tv_sec = 5; tv.tv_usec = 0; // 5 seconds time out
+	tv.tv_sec = 5;  // 1 seconds time out
+	tv.tv_usec = 0;
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
 	if (is_read) fdr = &fds;
@@ -236,6 +238,7 @@ static int socket_wait(int fd, int is_read) {
 	else if (ret == SOCKET_ERROR)
 		fprintf(stderr, "select: %d\n", WSAGetLastError());
 #endif
+    //printf("socket_wait: end\n");
 	return ret;
 }
 
@@ -535,6 +538,114 @@ nf_file_t* net_http_parse_url(const char* url, const char* mode) {
 
 ////
 
+void print_buf_v1(const char* buf, int len, const char* marker) {
+	if (!buf || len <= 0) {
+		return;
+	}
+	char c = 0;
+	int i = 0;
+	bool line = true;
+	while (i < len) {
+		if (line) {
+			printf("%s", marker);
+		}
+		line = false;
+		c = buf[i];
+		if (c == '\r') {
+			if (i + 1 < len && buf[i + 1] == '\n') {
+				// shift '\n'
+				i++;
+			}
+			line = true;
+		} else if (c == '\n') {
+			line = true;
+		}
+		if (line) {
+			printf("\n");
+		} else {
+			printf("%c", c);
+		}
+		i++;
+	}
+}
+
+void print_buf_v2(const char* buf, int len, const char* marker) {
+	if (!buf || len <= 0) {
+		return;
+	}
+	char c = 0;
+	int i = 0;
+	bool line = true;
+	while (i < len) {
+		if (line) {
+			if (i > 0) {
+			    printf("\n");
+		    }
+			printf("%s", marker);
+		}
+		line = false;
+		c = buf[i];
+		if (c == '\r') {
+			if (i + 1 == len) {
+				// last '\r'
+				printf("\n");
+				break;
+			} else {
+				if (i + 2 == len - 1 && strncmp(buf + i, "\r\n\r", 3) == 0) {
+					// last '\r\n\r'
+					printf("\n");
+					break;
+				} else if (i + 3 == len - 1 && strncmp(buf + i, "\r\n\r\n", 4) == 0) {
+					// last '\r\n\r\n'
+					printf("\n");
+					break;
+				} else if (buf[i + 1] == '\n') {
+					// shift '\n'
+					i++;
+				}
+			}
+			line = true;
+		} else if (c == '\n') {
+			if (i + 1 == len) {
+				// last '\n'
+				printf("\n");
+				break;
+			}
+			line = true;
+		}
+		if (!line) {
+			printf("%c", c);
+		}	
+		i++;
+	}
+}
+
+void print_buf(const char* buf, int len, const char* marker) {
+	print_buf_v1(buf, len, marker);
+}
+
+void print_test_buf(const char* buf, int len) {
+	if (!buf || len <= 0) {
+		return;
+	}
+	char c = 0;
+	int i = 0;
+	bool line = true;
+	while (i < len) {
+		c = buf[i];
+		if (c == '\r') {
+			printf("[R]");
+		} else if (c == '\n') {
+			printf("[N]");
+		} else {
+			printf("%c", c);
+		}	
+		i++;
+	}
+}
+
+////
+
 int net_http_connect_file(nf_file_t* fp) {
 	if (!fp) {
 		return -1;
@@ -553,8 +664,14 @@ int net_http_connect_file(nf_file_t* fp) {
 	char* buf;
 	char* p;
 
+	bool verbose = true;
+	bool separate = false;
 	buf = (char*) calloc(65536, 1);
-	
+
+	/*
+	 WARNING! HTTP/1.1 is slow
+	*/
+
     len += sprintf(buf + len, "GET %s HTTP/1.0\r\nHost: %s\r\n", fp->path, fp->host);
     len += sprintf(buf + len, "Range: bytes=%lld-\r\n", (long long) fp->offset);
 	len += sprintf(buf + len, "\r\n");
@@ -564,7 +681,14 @@ int net_http_connect_file(nf_file_t* fp) {
 	//printf("\n");
 	//printf("write_size: %i\n", ssize);
 	//printf("\n");
-	//printf("%s\n", buf);
+
+	if (verbose && ssize > 0) {
+		if (separate) {
+			printf("\n");
+		}
+		print_buf(buf, ssize, "> ");
+		//print_test_buf(buf, ssize);
+	}
 
 	len = 0;
 	while (socket_read(fp->fd, buf + len, 1)) { // read HTTP header
@@ -574,7 +698,16 @@ int net_http_connect_file(nf_file_t* fp) {
 		++len;
 	}
 
-	//printf("%s\n", buf);
+	if (verbose && len > 0) {
+		if (separate) {
+			printf("\n");
+		}
+		print_buf(buf, len, "< ");
+		//print_test_buf(buf, len);
+		if (separate) {
+			printf("\n");
+		}
+	}	
 
 	buf[len] = 0;
 	if (len < 14) { // prematured header
@@ -668,12 +801,12 @@ nf_file_t* net_open(const char* url, const char* mode) {
 	return fp;
 }
 
-char* net_get_file_contents(nf_file_t* fp, int* size) {
+char* net_get_file_contents(nf_file_t* fp, int* size, int init_size, int buf_size) {
 	if (!fp) {
 		return NULL;
 	}
-	int init_size = 65536;
-	int buf_size = 4096;
+	//int init_size = 65536;
+	//int buf_size = 4096;
 	int inc_size = 0;
 	char* buf = (char*) calloc(init_size, 1);
 	int bytes = 0;
@@ -707,3 +840,8 @@ char* net_get_file_contents(nf_file_t* fp, int* size) {
 	}
 	return buf;
 }
+
+char* net_get_file_contents(nf_file_t* fp, int* size) {
+	return net_get_file_contents(fp, size, 65536, 4096);
+}
+

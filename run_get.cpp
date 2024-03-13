@@ -24,10 +24,10 @@ int run(const char* url) {
         return 1;
     }
 
-    //printf("host     : %s\n", fp->host);
-    //printf("port     : %i\n", fp->port);
-    //printf("path     : %s\n", fp->path);
-    //printf("http_host: %s\n", fp->http_host);
+    printf("* host     : %s\n", fp->host);
+    printf("* port     : %i\n", fp->port);
+    printf("* path     : %s\n", fp->path);
+    printf("* http_host: %s\n", fp->http_host);
 
     if (net_connect_file(fp) != 0) {
         return 1;
