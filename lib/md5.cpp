@@ -327,7 +327,7 @@ exit:
 
 
 
-//#if defined(LIB_SELF_TEST)
+#if defined(LIB_SELF_TEST)
 
 /*
  * RFC 1321 test vectors
@@ -438,6 +438,6 @@ int main(int argc, char *argv[]) {
     lib_md5_self_test(1);
 }
 
-//#endif /* LIB_SELF_TEST */
+#endif /* LIB_SELF_TEST */
 
 //#endif /* LIB_MD5_C */

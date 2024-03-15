@@ -85,9 +85,9 @@ void lib_md_free(lib_md_context_t *ctx) {
 
 #define ALLOC(type)                                                        \
     do {                                                                   \
-        ctx->md_ctx = /*lib*/ calloc(1, sizeof(lib_##type##_context_t)); \
+        ctx->md_ctx = /*lib*/ calloc(1, sizeof(lib_##type##_context_t));   \
         if (ctx->md_ctx == NULL)                                           \
-        return -1;                                                         \        
+        return -1;                                                         \
     }                                                                      \
     while (0)
 
@@ -293,10 +293,6 @@ const lib_md_info_t *lib_md_info_from_ctx(const lib_md_context_t *ctx) {
     }
     return ctx->md_info;
 }
-
-///////
-// common
-///////
 
 //////
 

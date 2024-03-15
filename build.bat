@@ -27,6 +27,10 @@ rem compile
 %CC% %CFLAGS% lib/syslib.cpp -o syslib.o
 %CC% %CFLAGS% lib/getopt.cpp -o getopt.o
 
+%CC% %CFLAGS% lib/md5.cpp -o md5.o
+%CC% %CFLAGS% lib/md.cpp -o md.o
+%CC% %CFLAGS% lib/debug.cpp -o debug.o
+
 %CC% %CFLAGS% run_dump.cpp -o run_dump.o
 %CC% %CFLAGS% run_echo.cpp -o run_echo.o
 %CC% %CFLAGS% run_cat.cpp -o run_cat.o
@@ -40,7 +44,9 @@ rem compile
 %CC% %CFLAGS% run_mv.cpp -o run_mv.o
 %CC% %CFLAGS% run_rm.cpp -o run_rm.o
 %CC% %CFLAGS% run_cp.cpp -o run_cp.o
+
 %CC% %CFLAGS% run_get.cpp -o run_get.o
+%CC% %CFLAGS% run_md5.cpp -o run_md5.o
 
 %CC% %CFLAGS% test_getopt.cpp -o test_getopt.o
 %CC% %CFLAGS% test_echo.cpp -o test_echo.o
@@ -62,6 +68,7 @@ rem link
 %CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_cp.o -o run-cp.exe
 
 %CC% %LDFLAGS% socketlib.o run_get.o -o run-get.exe %LIBS%
+%CC% %LDFLAGS% md5.o run_md5.o -o run-md5
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
