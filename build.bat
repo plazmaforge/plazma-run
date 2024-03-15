@@ -68,7 +68,7 @@ rem link
 %CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_cp.o -o run-cp.exe
 
 %CC% %LDFLAGS% socketlib.o run_get.o -o run-get.exe %LIBS%
-%CC% %LDFLAGS% md5.o run_md5.o -o run-md5
+%CC% %LDFLAGS% md5.o run_md5.o -o run-md5.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
