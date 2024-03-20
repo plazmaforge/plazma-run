@@ -62,7 +62,7 @@ int run_hex_byte(const char* file_name) {
         //printf("%02X", c);
         printf("%c", c);
     }
-    
+    return 0;
 }
 
 int main(int argc, char* argv[]) {
