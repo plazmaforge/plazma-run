@@ -31,6 +31,19 @@ Renegotiation Info  : ff 01 00 01 00
 Extensions          : 00 00 00 00 00 0b 00 04 03 00 01 02
 */
 
+/*
+Server Certificate
+=========================================================
+
+Record Header       : 16 03 03 0c 3a  (3130)  - (handshake record)
+
+Handshake Header    : 0b 00 0c 36     (3126)  - (certificate)
+
+Certificates Length : 00 0c 33        (3123) 
+Certificates Length : 00 04 a7        (1191)
+
+*/
+
 void usage() {
     printf("Usage: run-ssl-dump <file>\n");
 }
@@ -230,14 +243,60 @@ int read_server_hello(const char* data, size_t& cur_pos, size_t data_len) {
             return ret;
         }
 
-        //read_server_extensions
-
         return 0;
     } else {
         fprintf(stderr, "Unsupported Server Version: %02x%02x", version_1, version_2);
         return -1;
     }
     return 0;    
+}
+
+int read_server_certificate(const char* data, size_t& cur_pos, size_t data_len) {
+    int buf_len = 3;
+    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+        return -1;
+    }
+
+    size_t certificates_len = to_size(data, cur_pos + 1);
+    printf("Certificates Length : (%lu)\n", certificates_len);
+    printf("Certificates Length : ");
+    print_buf(data, cur_pos, buf_len);
+    cur_pos += buf_len;
+
+    buf_len = 3;
+    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+        return -1;
+    }
+    size_t certificate_len = to_size(data, cur_pos + 1);
+    printf("Certificate Length  : (%lu)\n", certificate_len);
+    printf("Certificate Length  : ");
+    print_buf(data, cur_pos, buf_len);
+    cur_pos += buf_len;
+
+    size_t certificate_all_len = certificates_len - 3;
+    size_t certificate_first_len = certificate_len;
+
+    buf_len = certificate_all_len;
+    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+        return -1;
+    }
+
+    printf("Certificate         : ");
+    print_buf(data, cur_pos, buf_len);
+    cur_pos += buf_len;
+
+    ////
+
+    buf_len = 9;
+    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+        return -1;
+    }
+
+    printf("Next.......         : ");
+    print_buf(data, cur_pos, buf_len);
+    cur_pos += buf_len;
+
+    return -1;
 }
 
 int read_handshake_header(const char* data, size_t& cur_pos, size_t data_len) {
@@ -253,8 +312,13 @@ int read_handshake_header(const char* data, size_t& cur_pos, size_t data_len) {
     cur_pos += buf_len;
 
     if (handshake_type == 0x02) {
+
         // Server Hello    
         return read_server_hello(data, cur_pos, data_len);
+    } else if (handshake_type == 0x0b) {
+
+        // Server Certificate
+        return read_server_certificate(data, cur_pos, data_len);
     } else {
         fprintf(stderr, "Unsupported Handshake Header: %02x", handshake_type);
         return -1;
@@ -269,17 +333,21 @@ int read_record_header(const char* data, size_t& cur_pos, size_t data_len) {
         return -1;
     }
 
+    int first = cur_pos == 0;
     unsigned char record_type = data[cur_pos];
 
-    printf("Record Header       : ");
-    print_buf(data, cur_pos, buf_len);
-    cur_pos += buf_len;
-
     if (record_type == 0x16) {
+        printf("Record Header       : ");
+        print_buf(data, cur_pos, buf_len);
+        cur_pos += buf_len;
+    }
+
+    if (record_type == 0x16 || record_type == 0x0b) {
+
         // Handshake Record
         return read_handshake_header(data, cur_pos, data_len);
     } else {
-        fprintf(stderr, "Unsupported Record Header: %02x", record_type);
+        fprintf(stderr, "Unsupported Record Header: %02x\n", record_type);
         return -1;
     }
 
@@ -301,9 +369,10 @@ int run_ssl_dump(const char* file_name) {
     }
 
     size_t cur_pos = 0;
-    if (read_record_header(data, cur_pos, size) != 0) {
-        fprintf(stderr, "Parsing error\n");
-        return 1;
+    while (cur_pos <= size) {
+        if (read_record_header(data, cur_pos, size) != 0) {
+            return 1;
+        }
     }
     return 0;
 }
