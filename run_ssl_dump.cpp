@@ -6,28 +6,19 @@
 #include "dumplib.h"
 
 /*
-
 Server Hello
 =========================================================
 
 Record Header       : 16 03 03 00 3d (61) - (handshake record)
 
 Handshake Header    : 02 00 00 39    (57) - (server hello)
-
 Server Version      : 03 03               - TLS 1.2
-
-Server Random:      : e6 aa 4c ef 26 14 21 f7 79 ce f7 ce cb 4d 47 89 6b 8d 23 84 25 c6 d9 82 44 4f 57 4e 47 52 44 01 
- 
+Server Random       : e6 aa 4c ef 26 14 21 f7 79 ce f7 ce cb 4d 47 89 6b 8d 23 84 25 c6 d9 82 44 4f 57 4e 47 52 44 01 
 Session ID Length   : 00
-
 Cipher Suite        : c0 2b               -  TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-
 Compression Method  : 00
-
 Extensions Length   : 00 11           (17)
-
 Renegotiation Info  : ff 01 00 01 00 
-
 Extensions          : 00 00 00 00 00 0b 00 04 03 00 01 02
 */
 
@@ -38,9 +29,19 @@ Server Certificate
 Record Header       : 16 03 03 0c 3a  (3130)  - (handshake record)
 
 Handshake Header    : 0b 00 0c 36     (3126)  - (certificate)
-
 Certificates Length : 00 0c 33        (3123) 
 Certificates Length : 00 04 a7        (1191)
+*/
+
+/*
+
+Server Key Exchange
+=========================================================
+
+Record Header       : 16 03 03 01 2c
+
+Handshake Header    : 0c 00 01 28     - (server key exchange)
+Curve Info          : 03 00 1d        - ("curve x25519")
 
 */
 
@@ -71,6 +72,22 @@ void print_buf_line_ext(const char* name, const char* description, const char* b
 
 void print_buf_line(const char* name, const char* buf, size_t cur_pos, size_t buf_len) {
     print_buf_line_ext(name, NULL, buf, cur_pos, buf_len); 
+}
+
+void print_buf_line_fix(const char* name, const char* buf, size_t cur_pos, size_t buf_len, size_t fix_len) {
+    // cur_pos              new_pos
+    //    |        left_len    |          right_len  
+    //-------------------------------------------------
+    size_t rest_len = buf_len - fix_len;
+    size_t right_len = rest_len > fix_len ? fix_len : rest_len;
+    size_t left_len = buf_len - right_len;
+
+    printf("%s", name);
+    print_buf(buf, cur_pos, fix_len);
+    printf(" ... ");
+        
+    print_buf(buf, cur_pos + left_len, right_len);
+    printf("\n");
 }
 
 int check_buf_len(size_t cur_pos, size_t buf_len, size_t data_len) {
@@ -284,39 +301,99 @@ int read_server_certificate(const char* data, size_t& cur_pos, size_t data_len) 
     if (buf_len <= fix_len) {
         print_buf_line("Certificate         : ", data, cur_pos, buf_len);
     } else {
-        // cur_pos              new_pos
-        //    |        left_len    |          right_len  
-        //-------------------------------------------------
-        size_t rest_len = buf_len - fix_len; // from right size
-        size_t right_len = rest_len > fix_len ? fix_len : rest_len;
-        // if (rest_len > fix_len) {
-        //     right_len = fix_len;
-        // }
-
-        size_t left_len = buf_len - right_len;
-
-        printf("Certificate         : ");
-        print_buf(data, cur_pos, fix_len);
-        printf("...");
-        
-        print_buf(data, cur_pos + left_len, right_len);
-        printf("\n");
+        print_buf_line_fix("Certificate         : ", data, cur_pos, buf_len, fix_len);
     }
-
     cur_pos += buf_len;
 
-    ////
+    return 0;
+}
 
-    buf_len = 9;
+int read_server_key_exchange(const char* data, size_t& cur_pos, size_t data_len) {
+
+    // >> Curve Info
+    int buf_len = 3;
+    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+        return -1;
+    }    
+    print_buf_line("Curve Info          : ", data, cur_pos, buf_len);
+    cur_pos += buf_len;
+
+    // >> Public Key Len
+    buf_len = 1;
+    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+        return -1;
+    }    
+    size_t public_key_len = data[cur_pos];
+    printf("Public Key Len      : (%lu)\n", public_key_len);
+    print_buf_line("Public Key Len      : ", data, cur_pos, buf_len);
+    cur_pos += buf_len;
+
+    if (public_key_len == 0) {
+        return -1;
+    }
+
+    // >> Public Key
+    buf_len = public_key_len;
     if (!check_buf_len(cur_pos, buf_len, data_len)) {
         return -1;
     }
 
-    print_buf_line("Next.......         : ", data, cur_pos, buf_len);
+    print_buf_line("Public Key          : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
-    return -1;
+    // >> Signature Value
+    buf_len = 2;
+    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+        return -1;
+    }    
+    size_t signature_value = to_size(data, cur_pos);
+    printf("Signature Value     : (%lu)\n", signature_value);
+    print_buf_line("Signature Value     : ", data, cur_pos, buf_len);
+    cur_pos += buf_len;
+
+    if (signature_value == 0) {
+        return -1;
+    }
+
+    // >> Signature Len
+    buf_len = 2;
+    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+        return -1;
+    }    
+    size_t signature_len = to_size(data, cur_pos);
+    printf("Signature Len       : (%lu)\n", signature_len);
+    print_buf_line("Signature Len       : ", data, cur_pos, buf_len);
+    cur_pos += buf_len;
+
+    if (signature_len == 0) {
+        return -1;
+    }
+
+    // >> Signature
+    buf_len = signature_len;
+    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+        return -1;
+    }    
+    size_t fix_len = 16;
+    if (buf_len <= fix_len) {
+        print_buf_line("Signature           : ", data, cur_pos, buf_len);
+    } else {
+        print_buf_line_fix("Signature           : ", data, cur_pos, buf_len, fix_len);
+    }    
+    cur_pos += buf_len;
+
+    //print_buf_line("Next.......         : ", data, cur_pos, buf_len);
+    //cur_pos += buf_len;
+    //return -1;
+    return 0;
 }
+
+int read_server_hello_done(const char* data, size_t& cur_pos, size_t data_len) {
+    printf("Server Hello Done   : \n");
+    return 0;
+}
+
+////
 
 int read_handshake_header(const char* data, size_t& cur_pos, size_t data_len) {
     int buf_len = 4;
@@ -338,6 +415,15 @@ int read_handshake_header(const char* data, size_t& cur_pos, size_t data_len) {
 
         // Server Certificate
         return read_server_certificate(data, cur_pos, data_len);
+
+    } else if (handshake_type == 0x0c) {
+
+        // Server Key Exchange
+        return read_server_key_exchange(data, cur_pos, data_len);
+    } else if (handshake_type == 0x0e) {
+
+        // Server Hello Done
+        return read_server_hello_done(data, cur_pos, data_len);
     } else {
         fprintf(stderr, "Unsupported Handshake Header: %02x", handshake_type);
         return -1;
