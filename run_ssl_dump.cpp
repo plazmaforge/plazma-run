@@ -48,7 +48,7 @@ void usage() {
     printf("Usage: run-ssl-dump <file>\n");
 }
 
-int print_buf(const char* buf, size_t cur_pos, size_t buf_len) {
+void print_buf(const char* buf, size_t cur_pos, size_t buf_len) {
     //printf("\ncur_pos: %lu, buf_len: %lu\n", cur_pos, buf_len);
     size_t i = 0;
     while (i < buf_len) {
@@ -58,9 +58,19 @@ int print_buf(const char* buf, size_t cur_pos, size_t buf_len) {
         }
         i++;
     }
-    printf("\n");
+}
 
-    return 0;
+void print_buf_line_ext(const char* name, const char* description, const char* buf, size_t cur_pos, size_t buf_len) {
+    printf("%s", name);
+    print_buf(buf, cur_pos, buf_len);
+    if (description) {
+        printf(" %s", description);
+    }
+    printf("\n");
+}
+
+void print_buf_line(const char* name, const char* buf, size_t cur_pos, size_t buf_len) {
+    print_buf_line_ext(name, NULL, buf, cur_pos, buf_len); 
 }
 
 int check_buf_len(size_t cur_pos, size_t buf_len, size_t data_len) {
@@ -85,23 +95,21 @@ int read_session_id(const char* data, size_t& cur_pos, size_t data_len) {
         return -1;
     }
 
-    unsigned char session_id = data[cur_pos];
+    unsigned char session_id_len = data[cur_pos];
 
-    printf("Session ID Length   : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Session ID Length   : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
-    if (session_id == 0) {
+    if (session_id_len == 0) {
         return 0;
     }
 
-    buf_len = session_id;
+    buf_len = session_id_len;
     if (!check_buf_len(cur_pos, buf_len, data_len)) {
         return -1;
     }
 
-    printf("Session ID          : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Session ID          : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
     return 0;    
@@ -113,8 +121,7 @@ int read_cipher_suite(const char* data, size_t& cur_pos, size_t data_len) {
         return -1;
     }
 
-    printf("Cipher Suite        : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Cipher Suite        : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
     return 0;    
@@ -126,8 +133,7 @@ int read_compression_method(const char* data, size_t& cur_pos, size_t data_len) 
         return -1;
     }
 
-    printf("Compression Method  : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Compression Method  : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
     return 0;    
@@ -142,8 +148,7 @@ int read_server_random(const char* data, size_t& cur_pos, size_t data_len) {
         return -1;
     }
 
-    printf("Server Random       : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Server Random       : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
     return 0;    
@@ -171,8 +176,7 @@ int read_server_extensions(const char* data, size_t& cur_pos, size_t data_len) {
 
     printf("Extensions Length   : (%lu)\n", extensions_len);
 
-    printf("Extensions Length   : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Extensions Length   : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
     buf_len = 5;
@@ -180,8 +184,7 @@ int read_server_extensions(const char* data, size_t& cur_pos, size_t data_len) {
         return -1;
     }
 
-    printf("Renegotiation Info  : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Renegotiation Info  : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
     if (extensions_len == 0) {
@@ -193,8 +196,7 @@ int read_server_extensions(const char* data, size_t& cur_pos, size_t data_len) {
         return -1;
     }
 
-    printf("Extensions          : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Extensions          : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
     return 0;    
@@ -211,8 +213,7 @@ int read_server_hello(const char* data, size_t& cur_pos, size_t data_len) {
     unsigned char version_1 = data[cur_pos];
     unsigned char version_2 = data[cur_pos + 1];
 
-    printf("Server Version      : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Server Version      : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
     int ret = 0;
 
@@ -259,8 +260,7 @@ int read_server_certificate(const char* data, size_t& cur_pos, size_t data_len) 
 
     size_t certificates_len = to_size(data, cur_pos + 1);
     printf("Certificates Length : (%lu)\n", certificates_len);
-    printf("Certificates Length : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Certificates Length : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
     buf_len = 3;
@@ -269,8 +269,7 @@ int read_server_certificate(const char* data, size_t& cur_pos, size_t data_len) 
     }
     size_t certificate_len = to_size(data, cur_pos + 1);
     printf("Certificate Length  : (%lu)\n", certificate_len);
-    printf("Certificate Length  : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Certificate Length  : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
     size_t certificate_all_len = certificates_len - 3;
@@ -281,8 +280,29 @@ int read_server_certificate(const char* data, size_t& cur_pos, size_t data_len) 
         return -1;
     }
 
-    printf("Certificate         : ");
-    print_buf(data, cur_pos, buf_len);
+    size_t fix_len = 16;
+    if (buf_len <= fix_len) {
+        print_buf_line("Certificate         : ", data, cur_pos, buf_len);
+    } else {
+        // cur_pos              new_pos
+        //    |        left_len    |          right_len  
+        //-------------------------------------------------
+        size_t rest_len = buf_len - fix_len; // from right size
+        size_t right_len = rest_len > fix_len ? fix_len : rest_len;
+        // if (rest_len > fix_len) {
+        //     right_len = fix_len;
+        // }
+
+        size_t left_len = buf_len - right_len;
+
+        printf("Certificate         : ");
+        print_buf(data, cur_pos, fix_len);
+        printf("...");
+        
+        print_buf(data, cur_pos + left_len, right_len);
+        printf("\n");
+    }
+
     cur_pos += buf_len;
 
     ////
@@ -292,8 +312,7 @@ int read_server_certificate(const char* data, size_t& cur_pos, size_t data_len) 
         return -1;
     }
 
-    printf("Next.......         : ");
-    print_buf(data, cur_pos, buf_len);
+    print_buf_line("Next.......         : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
     return -1;
@@ -307,8 +326,8 @@ int read_handshake_header(const char* data, size_t& cur_pos, size_t data_len) {
 
     unsigned char handshake_type = data[cur_pos];
 
-    printf("Handshake Header    : ");
-    print_buf(data, cur_pos, buf_len);
+    printf("\n");
+    print_buf_line("Handshake Header    : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
     if (handshake_type == 0x02) {
@@ -337,8 +356,8 @@ int read_record_header(const char* data, size_t& cur_pos, size_t data_len) {
     unsigned char record_type = data[cur_pos];
 
     if (record_type == 0x16) {
-        printf("Record Header       : ");
-        print_buf(data, cur_pos, buf_len);
+        printf("\n");
+        print_buf_line("Record Header       : ", data, cur_pos, buf_len);
         cur_pos += buf_len;
     }
 
