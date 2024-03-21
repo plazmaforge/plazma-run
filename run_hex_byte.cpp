@@ -17,19 +17,23 @@ int check_byte(char b) {
 }
 
 int run_hex_byte(const char* file_name) {
+    
     if (!file_name) {
         fprintf(stderr, "File name is empty\n");
         return 1;
     }
+
     size_t size = 0;
     char* data = read_bytes_size(file_name, size);
     if (size == 0 || !data) {
         fprintf(stderr, "No input data\n");
         return 1;
     }
+
     if (size % 2 > 0) {
         free(data);
-        fprintf(stderr, "Invalid input data: file size % 2 > 0\n");
+        fprintf(stderr, "Invalid input data: file size [mod] 2 > 0\n");
+        //fprintf(stderr, "Invalid input data: file size [mod] 2 > 0. Ignore last byte.\n");
         return 1;
     }
 
@@ -37,7 +41,10 @@ int run_hex_byte(const char* file_name) {
     char* out_data = (char*) malloc(out_size);
     int i = 0;
     int j = 0;
-    char hex_str[2];
+
+    char hex_str[3];
+    hex_str[2] = '\0';
+
     unsigned long hex_val;
     char c;
 
@@ -51,17 +58,22 @@ int run_hex_byte(const char* file_name) {
            free(data);
            free(out_data);
            fprintf(stderr, "Invalid byte data\n");
+           //fprintf(stderr, "Invalid byte data. Ignore following data\n");
            return 1;
+           //break;
         }
+
         hex_str[0] = b1;
         hex_str[1] = b2;
 
         hex_val = strtoul(hex_str, NULL, 16);
         c = (char) hex_val;
         out_data[j] = c;
+
         //printf("%02X", c);
         printf("%c", c);
     }
+
     return 0;
 }
 
