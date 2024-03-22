@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "getopt.h"
-#include "dumplib.h"
+#include "iolib.h"
 
 /*
 Server Hello
@@ -90,73 +90,73 @@ void print_buf_line_fix(const char* name, const char* buf, size_t cur_pos, size_
     printf("\n");
 }
 
-int check_buf_len(size_t cur_pos, size_t buf_len, size_t data_len) {
-    if (cur_pos + buf_len - 1 >= data_len) {
+int check_buf_len(size_t cur_pos, size_t data_len, size_t buf_len) {
+    if (cur_pos + data_len - 1 >= buf_len) {
         return 0;
     }
     return 1;
 }
 
-size_t to_size(const char* data, size_t cur_pos) {
+size_t to_size(const char* buf, size_t cur_pos) {
     char hex_str[4];
-    sprintf(hex_str, "%02x%02x", (unsigned char) data[cur_pos], (unsigned char) data[cur_pos + 1]);
+    sprintf(hex_str, "%02x%02x", (unsigned char) buf[cur_pos], (unsigned char) buf[cur_pos + 1]);
     unsigned long hex_val = strtoul(hex_str, NULL, 16);
     return (size_t) hex_val;
 } 
 
 //// Common: Client/server
 
-int read_session_id(const char* data, size_t& cur_pos, size_t data_len) {
+int read_session_id(const char* buf, size_t& cur_pos, size_t buf_len) {
 
     // >> Session ID Length
-    size_t buf_len = 1;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    size_t data_len = 1;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    size_t session_id_len = data[cur_pos];
+    size_t session_id_len = buf[cur_pos];
 
-    print_buf_line("Session ID Length   : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Session ID Length   : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     if (session_id_len == 0) {
         return 0;
     }
 
     // >> Session ID
-    buf_len = session_id_len;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    data_len = session_id_len;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    print_buf_line("Session ID          : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Session ID          : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     return 0;    
 }
 
-int read_cipher_suite(const char* data, size_t& cur_pos, size_t data_len) {
+int read_cipher_suite(const char* buf, size_t& cur_pos, size_t buf_len) {
 
     // >> Cipher Suite    
-    int buf_len = 2;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    int data_len = 2;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    print_buf_line("Cipher Suite        : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Cipher Suite        : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     return 0;    
 }
 
-int read_compression_method(const char* data, size_t& cur_pos, size_t data_len) {
-    int buf_len = 1;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+int read_compression_method(const char* buf, size_t& cur_pos, size_t buf_len) {
+    int data_len = 1;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    print_buf_line("Compression Method  : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Compression Method  : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     return 0;    
 }
@@ -164,115 +164,115 @@ int read_compression_method(const char* data, size_t& cur_pos, size_t data_len) 
 ////
 
 
-int read_server_random(const char* data, size_t& cur_pos, size_t data_len) {
-    int buf_len = 32;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+int read_server_random(const char* buf, size_t& cur_pos, size_t buf_len) {
+    int data_len = 32;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    print_buf_line("Server Random       : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Server Random       : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     return 0;    
 }
 
-int read_server_session_id(const char* data, size_t& cur_pos, size_t data_len) {
-    return read_session_id(data, cur_pos, data_len);
+int read_server_session_id(const char* buf, size_t& cur_pos, size_t buf_len) {
+    return read_session_id(buf, cur_pos, buf_len);
 }
 
-int read_server_cipher_suite(const char* data, size_t& cur_pos, size_t data_len) {
-    return read_cipher_suite(data, cur_pos, data_len);
+int read_server_cipher_suite(const char* buf, size_t& cur_pos, size_t buf_len) {
+    return read_cipher_suite(buf, cur_pos, buf_len);
 }
 
-int read_server_compression_method(const char* data, size_t& cur_pos, size_t data_len) {
-    return read_compression_method(data, cur_pos, data_len);
+int read_server_compression_method(const char* buf, size_t& cur_pos, size_t buf_len) {
+    return read_compression_method(buf, cur_pos, buf_len);
 }
 
-int read_server_extensions(const char* data, size_t& cur_pos, size_t data_len) {
-    size_t buf_len = 2;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+int read_server_extensions(const char* buf, size_t& cur_pos, size_t buf_len) {
+    size_t data_len = 2;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    size_t extensions_len = to_size(data, cur_pos);
+    size_t extensions_len = to_size(buf, cur_pos);
 
     printf("Extensions Length   : (%lu)\n", extensions_len);
 
-    print_buf_line("Extensions Length   : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Extensions Length   : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
-    buf_len = 5;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    data_len = 5;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    size_t renegotiation_len = data[cur_pos + 4]; // last byte
+    size_t renegotiation_len = buf[cur_pos + 4]; // last byte
     printf("Renegotiation Len   : (%lu)\n", renegotiation_len);
 
-    print_buf_line("Renegotiation Info  : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Renegotiation Info  : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     if (extensions_len == 0) {
         return 0;
     }
 
-    //buf_len = 6; // go-OK
-    buf_len = extensions_len;
+    //data_len = 6; // go-OK
+    data_len = extensions_len;
 
     // TODO: HACK
     if (renegotiation_len == 0) {
         // shift renegation info block
-        buf_len -= 5;
+        data_len -= 5;
     }
 
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    print_buf_line("Extensions          : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Extensions          : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     return 0;    
 }
 
 ////
 
-int read_server_hello(const char* data, size_t& cur_pos, size_t data_len) {
-    int buf_len = 2;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+int read_server_hello(const char* buf, size_t& cur_pos, size_t buf_len) {
+    int data_len = 2;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    unsigned char version_1 = data[cur_pos];
-    unsigned char version_2 = data[cur_pos + 1];
+    unsigned char version_1 = buf[cur_pos];
+    unsigned char version_2 = buf[cur_pos + 1];
 
-    print_buf_line("Server Version      : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Server Version      : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
     int ret = 0;
 
     if (version_1 == 0x03 && version_2 == 0x03) {
 
-        ret = read_server_random(data, cur_pos, data_len);
+        ret = read_server_random(buf, cur_pos, buf_len);
         if (ret != 0) {
             return ret;
         }
 
-        ret = read_server_session_id(data, cur_pos, data_len);
+        ret = read_server_session_id(buf, cur_pos, buf_len);
         if (ret != 0) {
             return ret;
         }
 
-        ret = read_server_cipher_suite(data, cur_pos, data_len);
+        ret = read_server_cipher_suite(buf, cur_pos, buf_len);
         if (ret != 0) {
             return ret;
         }
 
-        ret = read_server_compression_method(data, cur_pos, data_len);
+        ret = read_server_compression_method(buf, cur_pos, buf_len);
         if (ret != 0) {
             return ret;
         }
 
-        ret = read_server_extensions(data, cur_pos, data_len);
+        ret = read_server_extensions(buf, cur_pos, buf_len);
         if (ret != 0) {
             return ret;
         }
@@ -285,161 +285,161 @@ int read_server_hello(const char* data, size_t& cur_pos, size_t data_len) {
     return 0;    
 }
 
-int read_server_certificate(const char* data, size_t& cur_pos, size_t data_len) {
-    int buf_len = 3;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+int read_server_certificate(const char* buf, size_t& cur_pos, size_t buf_len) {
+    int data_len = 3;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    size_t certificates_len = to_size(data, cur_pos + 1);
+    size_t certificates_len = to_size(buf, cur_pos + 1);
     printf("Certificates Length : (%lu)\n", certificates_len);
-    print_buf_line("Certificates Length : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Certificates Length : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
-    buf_len = 3;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    data_len = 3;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
-    size_t certificate_len = to_size(data, cur_pos + 1);
+    size_t certificate_len = to_size(buf, cur_pos + 1);
     printf("Certificate Length  : (%lu)\n", certificate_len);
-    print_buf_line("Certificate Length  : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Certificate Length  : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     size_t certificate_all_len = certificates_len - 3;
     size_t certificate_first_len = certificate_len;
 
-    buf_len = certificate_all_len;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    data_len = certificate_all_len;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
     size_t fix_len = 16;
-    if (buf_len <= fix_len) {
-        print_buf_line("Certificate         : ", data, cur_pos, buf_len);
+    if (data_len <= fix_len) {
+        print_buf_line("Certificate         : ", buf, cur_pos, data_len);
     } else {
-        print_buf_line_fix("Certificate         : ", data, cur_pos, buf_len, fix_len);
+        print_buf_line_fix("Certificate         : ", buf, cur_pos, data_len, fix_len);
     }
-    cur_pos += buf_len;
+    cur_pos += data_len;
 
     return 0;
 }
 
-int read_server_key_exchange(const char* data, size_t& cur_pos, size_t data_len) {
+int read_server_key_exchange(const char* buf, size_t& cur_pos, size_t buf_len) {
 
     // >> Curve Info
-    int buf_len = 3;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    int data_len = 3;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }    
-    print_buf_line("Curve Info          : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Curve Info          : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     // >> Public Key Len
-    buf_len = 1;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    data_len = 1;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }    
-    size_t public_key_len = data[cur_pos];
+    size_t public_key_len = buf[cur_pos];
     printf("Public Key Len      : (%lu)\n", public_key_len);
-    print_buf_line("Public Key Len      : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Public Key Len      : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     if (public_key_len == 0) {
         return -1;
     }
 
     // >> Public Key
-    buf_len = public_key_len;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    data_len = public_key_len;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    print_buf_line("Public Key          : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Public Key          : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     // >> Signature Value
-    buf_len = 2;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    data_len = 2;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }    
-    size_t signature_value = to_size(data, cur_pos);
+    size_t signature_value = to_size(buf, cur_pos);
     printf("Signature Value     : (%lu)\n", signature_value);
-    print_buf_line("Signature Value     : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Signature Value     : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     if (signature_value == 0) {
         return -1;
     }
 
     // >> Signature Len
-    buf_len = 2;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    data_len = 2;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }    
-    size_t signature_len = to_size(data, cur_pos);
+    size_t signature_len = to_size(buf, cur_pos);
     printf("Signature Len       : (%lu)\n", signature_len);
-    print_buf_line("Signature Len       : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Signature Len       : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     if (signature_len == 0) {
         return -1;
     }
 
     // >> Signature
-    buf_len = signature_len;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+    data_len = signature_len;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }    
     size_t fix_len = 16;
-    if (buf_len <= fix_len) {
-        print_buf_line("Signature           : ", data, cur_pos, buf_len);
+    if (data_len <= fix_len) {
+        print_buf_line("Signature           : ", buf, cur_pos, data_len);
     } else {
-        print_buf_line_fix("Signature           : ", data, cur_pos, buf_len, fix_len);
+        print_buf_line_fix("Signature           : ", buf, cur_pos, data_len, fix_len);
     }    
-    cur_pos += buf_len;
+    cur_pos += data_len;
 
-    //print_buf_line("Next.......         : ", data, cur_pos, buf_len);
-    //cur_pos += buf_len;
+    //print_buf_line("Next.......         : ", buf, cur_pos, data_len);
+    //cur_pos += data_len;
     //return -1;
     return 0;
 }
 
-int read_server_hello_done(const char* data, size_t& cur_pos, size_t data_len) {
+int read_server_hello_done(const char* buf, size_t& cur_pos, size_t buf_len) {
     printf("Server Hello Done   : \n");
     return 0;
 }
 
 ////
 
-int read_handshake_header(const char* data, size_t& cur_pos, size_t data_len) {
-    int buf_len = 4;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+int read_handshake_header(const char* buf, size_t& cur_pos, size_t buf_len) {
+    int data_len = 4;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
-    unsigned char handshake_type = data[cur_pos];
+    unsigned char handshake_type = buf[cur_pos];
 
     printf("\n");
-    print_buf_line("Handshake Header    : ", data, cur_pos, buf_len);
-    cur_pos += buf_len;
+    print_buf_line("Handshake Header    : ", buf, cur_pos, data_len);
+    cur_pos += data_len;
 
     if (handshake_type == 0x02) {
 
         // Server Hello    
-        return read_server_hello(data, cur_pos, data_len);
+        return read_server_hello(buf, cur_pos, buf_len);
     } else if (handshake_type == 0x0b) {
 
         // Server Certificate
-        return read_server_certificate(data, cur_pos, data_len);
+        return read_server_certificate(buf, cur_pos, buf_len);
 
     } else if (handshake_type == 0x0c) {
 
         // Server Key Exchange
-        return read_server_key_exchange(data, cur_pos, data_len);
+        return read_server_key_exchange(buf, cur_pos, buf_len);
     } else if (handshake_type == 0x0e) {
 
         // Server Hello Done
-        return read_server_hello_done(data, cur_pos, data_len);
+        return read_server_hello_done(buf, cur_pos, buf_len);
     } else {
         fprintf(stderr, "Unsupported Handshake Header: %02x\n", handshake_type);
         return -1;
@@ -448,25 +448,25 @@ int read_handshake_header(const char* data, size_t& cur_pos, size_t data_len) {
     return 0;    
 }
 
-int read_record_header(const char* data, size_t& cur_pos, size_t data_len) {
-    int buf_len = 5;
-    if (!check_buf_len(cur_pos, buf_len, data_len)) {
+int read_record_header(const char* buf, size_t& cur_pos, size_t buf_len) {
+    int data_len = 5;
+    if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
     }
 
     int first = cur_pos == 0;
-    unsigned char record_type = data[cur_pos];
+    unsigned char record_type = buf[cur_pos];
 
     if (record_type == 0x16) {
         printf("\n");
-        print_buf_line("Record Header       : ", data, cur_pos, buf_len);
-        cur_pos += buf_len;
+        print_buf_line("Record Header       : ", buf, cur_pos, data_len);
+        cur_pos += data_len;
     }
 
     if (record_type == 0x16 || record_type == 0x0b) {
 
         // Handshake Record
-        return read_handshake_header(data, cur_pos, data_len);
+        return read_handshake_header(buf, cur_pos, buf_len);
     } else {
         fprintf(stderr, "Unsupported Record Header: %02x\n", record_type);
         return -1;
@@ -483,15 +483,15 @@ int run_ssl_dump(const char* file_name) {
     }
 
     size_t size = 0;
-    char* data = read_bytes_size(file_name, size);
-    if (size == 0 || !data) {
-        fprintf(stderr, "No input data\n");
+    char* buf = read_bytes_size(file_name, size);
+    if (size == 0 || !buf) {
+        fprintf(stderr, "No input buf\n");
         return 1;
     }
 
     size_t cur_pos = 0;
     while (cur_pos <= size) {
-        if (read_record_header(data, cur_pos, size) != 0) {
+        if (read_record_header(buf, cur_pos, size) != 0) {
             return 1;
         }
     }
