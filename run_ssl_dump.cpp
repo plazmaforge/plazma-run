@@ -106,7 +106,7 @@ size_t to_size(const char* buf, size_t cur_pos) {
 
 //// Common: Client/server
 
-int read_session_id(const char* buf, size_t& cur_pos, size_t buf_len) {
+int read_session_id(const char* buf, size_t buf_len, size_t& cur_pos) {
 
     // >> Session ID Length
     size_t data_len = 1;
@@ -135,7 +135,7 @@ int read_session_id(const char* buf, size_t& cur_pos, size_t buf_len) {
     return 0;    
 }
 
-int read_cipher_suite(const char* buf, size_t& cur_pos, size_t buf_len) {
+int read_cipher_suite(const char* buf, size_t buf_len, size_t& cur_pos) {
 
     // >> Cipher Suite    
     int data_len = 2;
@@ -149,7 +149,7 @@ int read_cipher_suite(const char* buf, size_t& cur_pos, size_t buf_len) {
     return 0;    
 }
 
-int read_compression_method(const char* buf, size_t& cur_pos, size_t buf_len) {
+int read_compression_method(const char* buf, size_t buf_len, size_t& cur_pos) {
     int data_len = 1;
     if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
@@ -164,7 +164,7 @@ int read_compression_method(const char* buf, size_t& cur_pos, size_t buf_len) {
 ////
 
 
-int read_server_random(const char* buf, size_t& cur_pos, size_t buf_len) {
+int read_server_random(const char* buf, size_t buf_len, size_t& cur_pos) {
     int data_len = 32;
     if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
@@ -176,19 +176,19 @@ int read_server_random(const char* buf, size_t& cur_pos, size_t buf_len) {
     return 0;    
 }
 
-int read_server_session_id(const char* buf, size_t& cur_pos, size_t buf_len) {
-    return read_session_id(buf, cur_pos, buf_len);
+int read_server_session_id(const char* buf, size_t buf_len, size_t& cur_pos) {
+    return read_session_id(buf, buf_len, cur_pos);
 }
 
-int read_server_cipher_suite(const char* buf, size_t& cur_pos, size_t buf_len) {
-    return read_cipher_suite(buf, cur_pos, buf_len);
+int read_server_cipher_suite(const char* buf, size_t buf_len, size_t& cur_pos) {
+    return read_cipher_suite(buf, buf_len, cur_pos);
 }
 
-int read_server_compression_method(const char* buf, size_t& cur_pos, size_t buf_len) {
-    return read_compression_method(buf, cur_pos, buf_len);
+int read_server_compression_method(const char* buf, size_t buf_len, size_t& cur_pos) {
+    return read_compression_method(buf, buf_len, cur_pos);
 }
 
-int read_server_extensions(const char* buf, size_t& cur_pos, size_t buf_len) {
+int read_server_extensions(const char* buf, size_t buf_len, size_t& cur_pos) {
     size_t data_len = 2;
     if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
@@ -237,7 +237,7 @@ int read_server_extensions(const char* buf, size_t& cur_pos, size_t buf_len) {
 
 ////
 
-int read_server_hello(const char* buf, size_t& cur_pos, size_t buf_len) {
+int read_server_hello(const char* buf, size_t buf_len, size_t& cur_pos) {
     int data_len = 2;
     if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
@@ -252,27 +252,27 @@ int read_server_hello(const char* buf, size_t& cur_pos, size_t buf_len) {
 
     if (version_1 == 0x03 && version_2 == 0x03) {
 
-        ret = read_server_random(buf, cur_pos, buf_len);
+        ret = read_server_random(buf, buf_len, cur_pos);
         if (ret != 0) {
             return ret;
         }
 
-        ret = read_server_session_id(buf, cur_pos, buf_len);
+        ret = read_server_session_id(buf, buf_len, cur_pos);
         if (ret != 0) {
             return ret;
         }
 
-        ret = read_server_cipher_suite(buf, cur_pos, buf_len);
+        ret = read_server_cipher_suite(buf, buf_len, cur_pos);
         if (ret != 0) {
             return ret;
         }
 
-        ret = read_server_compression_method(buf, cur_pos, buf_len);
+        ret = read_server_compression_method(buf, buf_len, cur_pos);
         if (ret != 0) {
             return ret;
         }
 
-        ret = read_server_extensions(buf, cur_pos, buf_len);
+        ret = read_server_extensions(buf, buf_len, cur_pos);
         if (ret != 0) {
             return ret;
         }
@@ -285,7 +285,7 @@ int read_server_hello(const char* buf, size_t& cur_pos, size_t buf_len) {
     return 0;    
 }
 
-int read_server_certificate(const char* buf, size_t& cur_pos, size_t buf_len) {
+int read_server_certificate(const char* buf, size_t buf_len, size_t& cur_pos) {
     int data_len = 3;
     if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
@@ -324,7 +324,7 @@ int read_server_certificate(const char* buf, size_t& cur_pos, size_t buf_len) {
     return 0;
 }
 
-int read_server_key_exchange(const char* buf, size_t& cur_pos, size_t buf_len) {
+int read_server_key_exchange(const char* buf, size_t buf_len, size_t& cur_pos) {
 
     // >> Curve Info
     int data_len = 3;
@@ -404,14 +404,14 @@ int read_server_key_exchange(const char* buf, size_t& cur_pos, size_t buf_len) {
     return 0;
 }
 
-int read_server_hello_done(const char* buf, size_t& cur_pos, size_t buf_len) {
+int read_server_hello_done(const char* buf, size_t buf_len, size_t& cur_pos) {
     printf("Server Hello Done   : \n");
     return 0;
 }
 
 ////
 
-int read_handshake_header(const char* buf, size_t& cur_pos, size_t buf_len) {
+int read_handshake_header(const char* buf, size_t buf_len, size_t& cur_pos) {
     int data_len = 4;
     if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
@@ -426,20 +426,20 @@ int read_handshake_header(const char* buf, size_t& cur_pos, size_t buf_len) {
     if (handshake_type == 0x02) {
 
         // Server Hello    
-        return read_server_hello(buf, cur_pos, buf_len);
+        return read_server_hello(buf, buf_len, cur_pos);
     } else if (handshake_type == 0x0b) {
 
         // Server Certificate
-        return read_server_certificate(buf, cur_pos, buf_len);
+        return read_server_certificate(buf, buf_len, cur_pos);
 
     } else if (handshake_type == 0x0c) {
 
         // Server Key Exchange
-        return read_server_key_exchange(buf, cur_pos, buf_len);
+        return read_server_key_exchange(buf, buf_len, cur_pos);
     } else if (handshake_type == 0x0e) {
 
         // Server Hello Done
-        return read_server_hello_done(buf, cur_pos, buf_len);
+        return read_server_hello_done(buf, buf_len, cur_pos);
     } else {
         fprintf(stderr, "Unsupported Handshake Header: %02x\n", handshake_type);
         return -1;
@@ -448,7 +448,7 @@ int read_handshake_header(const char* buf, size_t& cur_pos, size_t buf_len) {
     return 0;    
 }
 
-int read_record_header(const char* buf, size_t& cur_pos, size_t buf_len) {
+int read_record_header(const char* buf, size_t buf_len, size_t& cur_pos) {
     int data_len = 5;
     if (!check_buf_len(cur_pos, data_len, buf_len)) {
         return -1;
@@ -466,7 +466,7 @@ int read_record_header(const char* buf, size_t& cur_pos, size_t buf_len) {
     if (record_type == 0x16 || record_type == 0x0b) {
 
         // Handshake Record
-        return read_handshake_header(buf, cur_pos, buf_len);
+        return read_handshake_header(buf, buf_len, cur_pos);
     } else {
         fprintf(stderr, "Unsupported Record Header: %02x\n", record_type);
         return -1;
@@ -491,7 +491,7 @@ int run_ssl_dump(const char* file_name) {
 
     size_t cur_pos = 0;
     while (cur_pos <= size) {
-        if (read_record_header(buf, cur_pos, size) != 0) {
+        if (read_record_header(buf, size, cur_pos) != 0) {
             return 1;
         }
     }
