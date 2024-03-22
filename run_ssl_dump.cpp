@@ -107,12 +107,14 @@ size_t to_size(const char* data, size_t cur_pos) {
 //// Common: Client/server
 
 int read_session_id(const char* data, size_t& cur_pos, size_t data_len) {
+
+    // >> Session ID Length
     size_t buf_len = 1;
     if (!check_buf_len(cur_pos, buf_len, data_len)) {
         return -1;
     }
 
-    unsigned char session_id_len = data[cur_pos];
+    size_t session_id_len = data[cur_pos];
 
     print_buf_line("Session ID Length   : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
@@ -121,6 +123,7 @@ int read_session_id(const char* data, size_t& cur_pos, size_t data_len) {
         return 0;
     }
 
+    // >> Session ID
     buf_len = session_id_len;
     if (!check_buf_len(cur_pos, buf_len, data_len)) {
         return -1;
@@ -133,6 +136,8 @@ int read_session_id(const char* data, size_t& cur_pos, size_t data_len) {
 }
 
 int read_cipher_suite(const char* data, size_t& cur_pos, size_t data_len) {
+
+    // >> Cipher Suite    
     int buf_len = 2;
     if (!check_buf_len(cur_pos, buf_len, data_len)) {
         return -1;
@@ -201,6 +206,9 @@ int read_server_extensions(const char* data, size_t& cur_pos, size_t data_len) {
         return -1;
     }
 
+    size_t renegotiation_len = data[cur_pos + 4]; // last byte
+    printf("Renegotiation Len   : (%lu)\n", renegotiation_len);
+
     print_buf_line("Renegotiation Info  : ", data, cur_pos, buf_len);
     cur_pos += buf_len;
 
@@ -208,7 +216,15 @@ int read_server_extensions(const char* data, size_t& cur_pos, size_t data_len) {
         return 0;
     }
 
+    //buf_len = 6; // go-OK
     buf_len = extensions_len;
+
+    // TODO: HACK
+    if (renegotiation_len == 0) {
+        // shift renegation info block
+        buf_len -= 5;
+    }
+
     if (!check_buf_len(cur_pos, buf_len, data_len)) {
         return -1;
     }
@@ -425,7 +441,7 @@ int read_handshake_header(const char* data, size_t& cur_pos, size_t data_len) {
         // Server Hello Done
         return read_server_hello_done(data, cur_pos, data_len);
     } else {
-        fprintf(stderr, "Unsupported Handshake Header: %02x", handshake_type);
+        fprintf(stderr, "Unsupported Handshake Header: %02x\n", handshake_type);
         return -1;
     }
 
