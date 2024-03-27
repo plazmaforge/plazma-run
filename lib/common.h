@@ -1,16 +1,34 @@
-#ifndef PLAZMA_LIB_COMMON_H
-#define PLAZMA_LIB_COMMON_H
+#ifndef PLAZMA_LIB_COMMON_2_H
+#define PLAZMA_LIB_COMMON_2_H
 
+#include <stdlib.h>
 #include <string.h>
+
 #include "alignment.h"
 #include "error.h"
 
-void lib_platform_zeroize(void *buf, size_t len) {
-    if (len > 0) {
-        // TODO
-        memset(buf, 0, len);
-    }
-}
+void lib_platform_zeroize(void* buf, size_t len);
+
+void lib_zeroize_and_free(void* buf, size_t len);
+
+// Link Error: duplicate
+
+// void lib_platform_zeroize(void* buf, size_t len) {
+//     if (len <= 0) {
+//         return;
+//     }
+//     // TODO
+//     memset(buf, 0, len);
+// }
+
+// void lib_zeroize_and_free(void* buf, size_t len) {
+//     if (!buf) {
+//         return;
+//     }
+//     lib_platform_zeroize(buf, len);
+//     /*lib*/ free(buf);
+// }
+
 
 /**
  * Perform a fast block XOR operation, such that
@@ -83,7 +101,5 @@ static inline void lib_xor(unsigned char *r,
         r[i] = a[i] ^ b[i];
     }
 }
-
-
 
 #endif // PLAZMA_LIB_COMMON_H

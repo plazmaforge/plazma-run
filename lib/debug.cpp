@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "common.h"
+//#include "common.h"
 #include "debug.h"
 
 /* DEBUG_BUF_SIZE must be at least 2 */
@@ -73,7 +73,7 @@ void lib_obj_debug_print_ret(const void* obj, int level,
      * Don't ignore WANT_WRITE however, since it is usually rare.
      */
 
-    if (ret == LIB_ERR_IO_WANT_READ) {
+    if (ret == -1 /*LIB_ERR_IO_WANT_READ*/ ) {
         return;
     }
 
