@@ -9,11 +9,16 @@
 #include "md5.h"
 #endif
 
+#if defined(LIB_MD_CAN_SHA256)
+#include "sha256.h"
+#endif
+
 #if defined(LIB_MD_C)
 #define MD_INFO(type, out_size, block_size) type, out_size, block_size,
 #else
 #define MD_INFO(type, out_size, block_size) type, out_size,
 #endif
+
 
 #if defined(LIB_MD_CAN_MD5)
 static const lib_md_info_t lib_md5_info = {
@@ -21,30 +26,45 @@ static const lib_md_info_t lib_md5_info = {
 };
 #endif
 
-const lib_md_info_t *lib_md_info_from_type(lib_md_type_t md_type) {
+#if defined(LIB_MD_CAN_SHA224)
+static const lib_md_info_t lib_sha224_info = {
+    MD_INFO(LIB_MD_SHA224, 28, 64)
+};
+#endif
+
+#if defined(LIB_MD_CAN_SHA256)
+ static const lib_md_info_t lib_sha256_info = {
+     MD_INFO(LIB_MD_SHA256, 32, 64)
+ };
+#endif
+
+const lib_md_info_t* lib_md_info_from_type(lib_md_type_t md_type) {
     switch (md_type) {
+
 #if defined(LIB_MD_CAN_MD5)
         case LIB_MD_MD5:
             return &lib_md5_info;
 #endif
+#if defined(LIB_MD_CAN_SHA224)
+        case LIB_MD_SHA224:
+            return &lib_sha224_info;
+#endif
+#if defined(LIB_MD_CAN_SHA256)
+        case LIB_MD_SHA256:
+            return &lib_sha256_info;
+#endif
+
         default:
             return NULL;
     }
 }
 
 unsigned char lib_md_get_size(const lib_md_info_t *md_info) {
-    if (md_info == NULL) {
-        return 0;
-    }
-    return md_info->size;
+    return md_info ? md_info->size : 0;
 }
 
 lib_md_type_t lib_md_get_type(const lib_md_info_t *md_info) {
-    if (md_info == NULL) {
-        return LIB_MD_NONE;
-    }
-
-    return md_info->type;
+    return md_info ? md_info->type : LIB_MD_NONE;
 }
 
 ////
@@ -67,6 +87,17 @@ void lib_md_free(lib_md_context_t *ctx) {
             lib_md5_free((lib_md5_context_t*) ctx->md_ctx);
             break;
 #endif
+#if defined(LIB_SHA224_C)
+        case LIB_MD_SHA224:
+            lib_sha256_free((lib_sha256_context_t*) ctx->md_ctx);
+            break;
+#endif
+#if defined(LIB_SHA256_C)
+        case LIB_MD_SHA256:
+            lib_sha256_free((lib_sha256_context_t*) ctx->md_ctx);
+            break;
+#endif
+
         default:
             /* Shouldn't happen */
             break;
@@ -74,7 +105,7 @@ void lib_md_free(lib_md_context_t *ctx) {
         free(ctx->md_ctx);
     }
 
-    #if defined(lib_md_C)
+    #if defined(LIB_MD_C)
         if (ctx->hmac_ctx != NULL) {
             lib_zeroize_and_free(ctx->hmac_ctx, 2 * ctx->md_info->block_size);
         }
@@ -86,6 +117,14 @@ void lib_md_free(lib_md_context_t *ctx) {
 #define ALLOC(type)                                                        \
     do {                                                                   \
         ctx->md_ctx = /*lib*/ calloc(1, sizeof(lib_##type##_context_t));   \
+        if (ctx->md_ctx == NULL)                                           \
+        return -1;                                                         \
+    }                                                                      \
+    while (0)
+
+#define ALLOC2(type)                                                        \
+    do {                                                                   \
+        ctx->md_ctx = /*lib*/ calloc(1, sizeof(mbedtls_##type##_context));   \
         if (ctx->md_ctx == NULL)                                           \
         return -1;                                                         \
     }                                                                      \
@@ -122,6 +161,19 @@ int lib_md_setup(lib_md_context_t *ctx, const lib_md_info_t *md_info, int hmac) 
             lib_md5_init((lib_md5_context_t*) ctx->md_ctx);
             break;
 #endif
+#if defined(LIB_SHA224_C)
+        case LIB_MD_SHA224:
+            ALLOC(sha256);
+            lib_sha256_init((lib_sha256_context_t*) ctx->md_ctx);
+            break;
+#endif
+#if defined(LIB_SHA256_C)
+        case LIB_MD_SHA256:
+            ALLOC(sha256);
+            lib_sha256_init((lib_sha256_context_t*) ctx->md_ctx);
+            break;
+#endif
+
         default:
             return LIB_ERR_MD_BAD_INPUT_DATA;
     }
@@ -155,6 +207,14 @@ int lib_md_starts(lib_md_context_t *ctx) {
         case LIB_MD_MD5:
             return lib_md5_starts((lib_md5_context_t*) ctx->md_ctx);
 #endif
+#if defined(LIB_SHA224_C)
+        case LIB_MD_SHA224:
+            return lib_sha256_starts((lib_sha256_context_t*) ctx->md_ctx, 1);
+#endif
+#if defined(LIB_SHA256_C)
+        case LIB_MD_SHA256:
+            return lib_sha256_starts((lib_sha256_context_t*) ctx->md_ctx, 0);
+#endif
         default:
             return LIB_ERR_MD_BAD_INPUT_DATA;
     }
@@ -172,7 +232,14 @@ int lib_md_update(lib_md_context_t *ctx, const unsigned char *input, size_t ilen
         case LIB_MD_MD5:
             return lib_md5_update((lib_md5_context_t*) ctx->md_ctx, input, ilen);
 #endif
-
+#if defined(LIB_SHA224_C)
+        case LIB_MD_SHA224:
+            return lib_sha256_update((lib_sha256_context_t*) ctx->md_ctx, input, ilen);
+#endif
+#if defined(LIB_SHA256_C)
+        case LIB_MD_SHA256:
+            return lib_sha256_update((lib_sha256_context_t*) ctx->md_ctx, input, ilen);
+#endif
         default:
             return LIB_ERR_MD_BAD_INPUT_DATA;
     }
@@ -190,14 +257,21 @@ int lib_md_finish(lib_md_context_t *ctx, unsigned char *output) {
         case LIB_MD_MD5:
             return lib_md5_finish((lib_md5_context_t*) ctx->md_ctx, output);
 #endif
+#if defined(LIB_SHA224_C)
+        case LIB_MD_SHA224:
+            return lib_sha256_finish((lib_sha256_context_t*) ctx->md_ctx, output);
+#endif
+#if defined(LIB_SHA256_C)
+        case LIB_MD_SHA256:
+            return lib_sha256_finish((lib_sha256_context_t*) ctx->md_ctx, output);
+#endif
+
         default:
             return LIB_ERR_MD_BAD_INPUT_DATA;
     }
 }
 
-int lib_md(const lib_md_info_t *md_info, const unsigned char *input, size_t ilen,
-               unsigned char *output)
-{
+int lib_md(const lib_md_info_t *md_info, const unsigned char *input, size_t ilen, unsigned char *output) {
     if (md_info == NULL) {
         return LIB_ERR_MD_BAD_INPUT_DATA;
     }
@@ -208,7 +282,14 @@ int lib_md(const lib_md_info_t *md_info, const unsigned char *input, size_t ilen
         case LIB_MD_MD5:
             return lib_md5(input, ilen, output);
 #endif
-
+#if defined(LIB_SHA224_C)
+        case LIB_MD_SHA224:
+            return lib_sha256(input, ilen, output, 1);
+#endif
+#if defined(LIB_SHA256_C)
+        case LIB_MD_SHA256:
+            return lib_sha256(input, ilen, output, 0);
+#endif
         default:
             return LIB_ERR_MD_BAD_INPUT_DATA;
     }
@@ -259,12 +340,12 @@ static const md_name_entry md_names[] = {
     { NULL, LIB_MD_NONE },
 };
 
-const lib_md_info_t *lib_md_info_from_string(const char *md_name) {
+const lib_md_info_t* lib_md_info_from_string(const char* md_name) {
     if (NULL == md_name) {
         return NULL;
     }
 
-    const md_name_entry *entry = md_names;
+    const md_name_entry* entry = md_names;
     while (entry->md_name != NULL &&
            strcmp(entry->md_name, md_name) != 0) {
         ++entry;

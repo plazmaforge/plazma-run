@@ -1,8 +1,24 @@
+#ifndef PLAZMA_LIB_MD_H
+#define PLAZMA_LIB_MD_H
+
 #include <stdlib.h>
 
 #define LIB_MD_C
+
+/* MD5     */
 #define LIB_MD_CAN_MD5
+#define LIB_CAN_MD5
 #define LIB_MD5_C
+
+/* SHA-224 */
+#define LIB_MD_CAN_SHA224
+#define LIB_CAN_SHA224
+#define LIB_SHA224_C
+
+/* SHA-256 */
+#define LIB_MD_CAN_SHA256
+#define LIB_CAN_SHA256
+#define LIB_SHA256_C
 
 #define LIB_ERR_MD_FEATURE_UNAVAILABLE                -0x5080
 #define LIB_ERR_MD_BAD_INPUT_DATA                     -0x5100
@@ -135,3 +151,5 @@ int lib_md_hmac_reset(lib_md_context_t* ctx);
 int lib_md_hmac(const lib_md_info_t* md_info, const unsigned char* key, size_t keylen,
                     const unsigned char* input, size_t ilen,
                     unsigned char* output);
+
+#endif /* PLAZMA_LIB_MD_H */
