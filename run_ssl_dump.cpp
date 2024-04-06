@@ -49,38 +49,38 @@ void usage() {
     printf("Usage: run-ssl-dump <file>\n");
 }
 
-void print_buf(const char* buf, size_t cur_pos, size_t buf_len) {
-    //printf("\ncur_pos: %lu, buf_len: %lu\n", cur_pos, buf_len);
+void print_buf(const char* buf, size_t cur_pos, size_t data_len) {
+    //printf("\ncur_pos: %lu, data_len: %lu\n", cur_pos, data_len);
     size_t i = 0;
-    while (i < buf_len) {
+    while (i < data_len) {
         printf("%02x", (unsigned char) buf[i + cur_pos]);
-        if (i < buf_len - 1) {
+        if (i < data_len - 1) {
             printf(" ");
         }
         i++;
     }
 }
 
-void print_buf_line_ext(const char* name, const char* description, const char* buf, size_t cur_pos, size_t buf_len) {
+void print_buf_line_ext(const char* name, const char* description, const char* buf, size_t cur_pos, size_t data_len) {
     printf("%s", name);
-    print_buf(buf, cur_pos, buf_len);
+    print_buf(buf, cur_pos, data_len);
     if (description) {
         printf(" %s", description);
     }
     printf("\n");
 }
 
-void print_buf_line(const char* name, const char* buf, size_t cur_pos, size_t buf_len) {
-    print_buf_line_ext(name, NULL, buf, cur_pos, buf_len); 
+void print_buf_line(const char* name, const char* buf, size_t cur_pos, size_t data_len) {
+    print_buf_line_ext(name, NULL, buf, cur_pos, data_len); 
 }
 
-void print_buf_line_fix(const char* name, const char* buf, size_t cur_pos, size_t buf_len, size_t fix_len) {
+void print_buf_line_fix(const char* name, const char* buf, size_t cur_pos, size_t data_len, size_t fix_len) {
     // cur_pos              new_pos
     //    |        left_len    |          right_len  
     //-------------------------------------------------
-    size_t rest_len = buf_len - fix_len;
+    size_t rest_len = data_len - fix_len;
     size_t right_len = rest_len > fix_len ? fix_len : rest_len;
-    size_t left_len = buf_len - right_len;
+    size_t left_len = data_len - right_len;
 
     printf("%s", name);
     print_buf(buf, cur_pos, fix_len);

@@ -4,6 +4,8 @@
 
 #include "md5.h"
 
+#define MD_SIZE 16
+
 void usage() {
     fprintf(stderr, "Usage: run-md5 <str>\n");
 }
@@ -12,8 +14,8 @@ void run_print_str(const char* str) {
     printf("MD5 (\"%s\") = ", str);
 }
 
-void run_print_sum(unsigned char sum[16], int upper) {
-    for (int i = 0; i < 16; i++) {
+void run_print_sum(unsigned char sum[MD_SIZE], int upper) {
+    for (int i = 0; i < MD_SIZE; i++) {
         if (upper) {
             printf("%02X", sum[i]);
         } else {
@@ -22,7 +24,7 @@ void run_print_sum(unsigned char sum[16], int upper) {
     }
 }
 
-void run_print_result(const char* str, unsigned char sum[16], int mode, int upper) {
+void run_print_result(const char* str, unsigned char sum[MD_SIZE], int mode, int upper) {
     if (mode == 1 || mode == 2) {
         run_print_sum(sum, upper);
     } else {
@@ -37,7 +39,7 @@ int run_md5(const char* str) {
         return -1;
     }
     int len = strlen(str);
-    unsigned char sum[16];
+    unsigned char sum[MD_SIZE];
     if (lib_md5((const unsigned char*) str, len, sum) != 0) {
         fprintf(stderr, "Error run md5 for string: %s\n", str);
         return -1;
