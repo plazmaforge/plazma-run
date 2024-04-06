@@ -33,9 +33,12 @@ $CC $CFLAGS lib/sysinfo.cpp -o sysinfo.o
 $CC $CFLAGS lib/syslib.cpp -o syslib.o
 $CC $CFLAGS lib/getopt.cpp -o getopt.o
 
-$CC $CFLAGS lib/md5.cpp -o md5.o
-$CC $CFLAGS lib/md.cpp -o md.o
+$CC $CFLAGS lib/common.cpp -o common.o
 $CC $CFLAGS lib/debug.cpp -o debug.o
+
+$CC $CFLAGS lib/md.cpp -o md.o
+$CC $CFLAGS lib/md5.cpp -o md5.o
+$CC $CFLAGS lib/sha256.cpp -o sha256.o
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
    $CC $CFLAGS lib/sysos_mac.mm -o sysos_mac.o
@@ -56,7 +59,13 @@ $CC $CFLAGS run_rm.cpp -o run_rm.o
 $CC $CFLAGS run_cp.cpp -o run_cp.o
 
 $CC $CFLAGS run_get.cpp -o run_get.o
+
 $CC $CFLAGS run_md5.cpp -o run_md5.o
+$CC $CFLAGS run_sha224.cpp -o run_sha224.o
+$CC $CFLAGS run_sha256.cpp -o run_sha256.o
+
+$CC $CFLAGS run_hex_byte.cpp -o run_hex_byte.o
+$CC $CFLAGS run_ssl_dump.cpp -o run_ssl_dump.o
 
 $CC $CFLAGS test_getopt.cpp -o test_getopt.o
 $CC $CFLAGS test_echo.cpp -o test_echo.o
@@ -77,8 +86,14 @@ $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_
 $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_rm.o -o run-rm
 $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_cp.o -o run-cp
 
-$CC $LDFLAGS socketlib.o debug.o run_get.o -o run-get
-$CC $LDFLAGS md5.o run_md5.o -o run-md5
+$CC $LDFLAGS common.o debug.o socketlib.o run_get.o -o run-get
+
+$CC $LDFLAGS common.o md5.o run_md5.o -o run-md5
+$CC $LDFLAGS common.o sha256.o run_sha224.o -o run-sha224
+$CC $LDFLAGS common.o sha256.o run_sha256.o -o run-sha256
+
+$CC $LDFLAGS getopt.o iolib.o run_hex_byte.o -o run-hex-byte
+$CC $LDFLAGS getopt.o iolib.o run_ssl_dump.o -o run-ssl-dump
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo

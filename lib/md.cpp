@@ -122,14 +122,6 @@ void lib_md_free(lib_md_context_t *ctx) {
     }                                                                      \
     while (0)
 
-#define ALLOC2(type)                                                        \
-    do {                                                                   \
-        ctx->md_ctx = /*lib*/ calloc(1, sizeof(mbedtls_##type##_context));   \
-        if (ctx->md_ctx == NULL)                                           \
-        return -1;                                                         \
-    }                                                                      \
-    while (0)
-
 // lib_##type##_init(((lib_##type##_context_t*)) ctx->md_ctx);                                \
 // return LIB_ERR_MD_ALLOC_FAILED;
 

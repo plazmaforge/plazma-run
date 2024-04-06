@@ -78,6 +78,8 @@ socket_fd_t socket_create(int domain, int type, int protocol);
 
 ssize_t socket_read(socket_fd_t fd, void* ptr, size_t len);
 
+socket_fd_t socket_connect(const char* host, int port);
+
 ssize_t socket_write(socket_fd_t fd, void* ptr, size_t len);
 
 nf_file_t* net_ftp_parse_url(const char* fn, const char* mode);

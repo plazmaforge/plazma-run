@@ -27,9 +27,12 @@ rem compile
 %CC% %CFLAGS% lib/syslib.cpp -o syslib.o
 %CC% %CFLAGS% lib/getopt.cpp -o getopt.o
 
-%CC% %CFLAGS% lib/md5.cpp -o md5.o
-%CC% %CFLAGS% lib/md.cpp -o md.o
+%CC% %CFLAGS% lib/common.cpp -o common.o
 %CC% %CFLAGS% lib/debug.cpp -o debug.o
+
+%CC% %CFLAGS% lib/md.cpp -o md.o
+%CC% %CFLAGS% lib/md5.cpp -o md5.o
+%CC% %CFLAGS% lib/sha256.cpp -o sha256.o
 
 %CC% %CFLAGS% run_dump.cpp -o run_dump.o
 %CC% %CFLAGS% run_echo.cpp -o run_echo.o
@@ -46,7 +49,13 @@ rem compile
 %CC% %CFLAGS% run_cp.cpp -o run_cp.o
 
 %CC% %CFLAGS% run_get.cpp -o run_get.o
+
 %CC% %CFLAGS% run_md5.cpp -o run_md5.o
+%CC% %CFLAGS% run_sha224.cpp -o run_sha224.o
+%CC% %CFLAGS% run_sha256.cpp -o run_sha256.o
+
+%CC% %CFLAGS% run_hex_byte.cpp -o run_hex_byte.o
+%CC% %CFLAGS% run_ssl_dump.cpp -o run_ssl_dump.o
 
 %CC% %CFLAGS% test_getopt.cpp -o test_getopt.o
 %CC% %CFLAGS% test_echo.cpp -o test_echo.o
@@ -67,9 +76,15 @@ rem link
 %CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_rm.o -o run-rm.exe
 %CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_cp.o -o run-cp.exe
 
-%CC% %LDFLAGS% socketlib.o run_get.o -o run-get.exe %LIBS%
-%CC% %LDFLAGS% md5.o run_md5.o -o run-md5.exe
+%CC% %LDFLAGS% common.o debug.o socketlib.o run_get.o -o run-get.exe %LIBS%
 
-%CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt
+%CC% %LDFLAGS% common.o md5.o run_md5.o -o run-md5.exe
+%CC% %LDFLAGS% common.o sha256.o run_sha224.o -o run-sha224.exe
+%CC% %LDFLAGS% common.o sha256.o run_sha256.o -o run-sha256.exe
+
+%CC% %LDFLAGS% getopt.o iolib.o run_hex_byte.o -o run-hex-byte.exe
+%CC% %LDFLAGS% getopt.o iolib.o run_ssl_dump.o -o run-ssl-dump.exe
+
+%CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_locale.o -o test-locale

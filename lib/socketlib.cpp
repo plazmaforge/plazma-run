@@ -128,6 +128,7 @@ socket_fd_t socket_create(int domain, int type, int protocol) {
 
 ssize_t socket_read(socket_fd_t fd, void* ptr, size_t len) {
     return read(fd, ptr, len);
+	//return recv(fd, ptr, len, 0);
 }
 
 ssize_t socket_write(socket_fd_t fd, void* ptr, size_t len) {
@@ -219,7 +220,6 @@ socket_fd_t socket_connect(const char* host, int port) {
 ////
 
 static int socket_wait(int fd, int is_read) {
-	//printf("socket_wait: start\n");
 	fd_set fds, *fdr = 0, *fdw = 0;
 	struct timeval tv;
 	int ret;
@@ -805,8 +805,6 @@ char* net_get_file_contents(nf_file_t* fp, int* size, int init_size, int buf_siz
 	if (!fp) {
 		return NULL;
 	}
-	//int init_size = 65536;
-	//int buf_size = 4096;
 	int inc_size = 0;
 	char* buf = (char*) calloc(init_size, 1);
 	int bytes = 0;

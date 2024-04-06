@@ -1,5 +1,5 @@
-#ifndef PLAZMA_LIB_COMMON_2_H
-#define PLAZMA_LIB_COMMON_2_H
+#ifndef PLAZMA_LIB_COMMON_H
+#define PLAZMA_LIB_COMMON_H
 
 #include <stdlib.h>
 #include <string.h>

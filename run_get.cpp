@@ -4,7 +4,7 @@
 #include "socketlib.h"
 
 void usage() {
-    printf("Usage: run-get\n");
+    printf("Usage: run-get <url>\n");
 }
 
 int run(const char* url) {
@@ -57,7 +57,6 @@ int run(const char* url) {
 	//len = net_read(fp, buf+10000, 10000000) + 10000;
 
     return 0;
-
 }
 
 int main(int argc, char *argv[]) {
@@ -66,5 +65,5 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     const char* url = argv[1];
-    run(url);
+    return run(url);
 }
