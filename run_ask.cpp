@@ -81,11 +81,11 @@ int main(int argc, char* argv[]) {
     config->ignore_case = ignore_case;
     config->print_file_name = true; // TODO: add optional
 
-    int wildcard_index = wc_get_wildcard_index(file_name);
+    int wildcard_index = lib_wc_get_wildcard_index(file_name);
 
     if (wildcard_index >= 0) {
 
-        int path_index = wc_get_wildcard_path_index(wildcard_index, file_name);
+        int path_index = lib_wc_get_wildcard_path_index(wildcard_index, file_name);
         char* dir_name = NULL;
 
         if (path_index >= 0) {

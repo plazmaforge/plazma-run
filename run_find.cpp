@@ -109,11 +109,11 @@ int main(int argc, char* argv[]) {
 
     init_locale();
 
-    int wildcard_index = wc_get_wildcard_index(file_name);
+    int wildcard_index = lib_wc_get_wildcard_index(file_name);
 
     if (wildcard_index >= 0) {
 
-        int path_index = wc_get_wildcard_path_index(wildcard_index, file_name);
+        int path_index = lib_wc_get_wildcard_path_index(wildcard_index, file_name);
         if (path_index >= 0) {
             dir_name = lib_strndup(file_name, path_index + 1);
             file_name = file_name + path_index + 1;

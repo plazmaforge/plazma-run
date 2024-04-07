@@ -84,7 +84,7 @@ void fs_normalize_slash(char* path) {
 }
 
 int fs_match_file(const char* name, const char* pattern) {
-    return wc_match_file(name, pattern);
+    return lib_wc_match_file(name, pattern);
 }
 
 ////////////////////
