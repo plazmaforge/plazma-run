@@ -221,8 +221,8 @@ const sys_info_t* get_sys_info() {
         sys_info->encoding = "UTF-8"; // TODO: ISO
     }
 
-    free_locale(format_locale);
-    free_locale(display_locale);
+    locale_free(format_locale);
+    locale_free(display_locale);
 
     /*
     if (isatty(STDOUT_FILENO) == 1) {

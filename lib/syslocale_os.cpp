@@ -20,7 +20,7 @@ void init_locale_os() {
     // const char* name = getLocaleValue(cflocale, kCFLocaleIdentifier);
     // name is NULL. Why?
     locale_t* locale = load_locale_os(); // TODO: Force load locale (Why?)
-    free_locale(locale);     
+    locale_free(locale);     
     #endif
 
     // debug = 1;

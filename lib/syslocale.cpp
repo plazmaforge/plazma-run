@@ -33,7 +33,7 @@ int equals_locale(const char* locale1, const char* locale2) {
   return strcmp(locale1, locale2) == 0;
 }
 
-/*static*/ locale_t* new_locale() {
+/*static*/ locale_t* locale_new() {
    locale_t* locale = (locale_t*) malloc(sizeof(locale_t));
    locale->name = NULL;
    locale->language = NULL;
@@ -44,7 +44,7 @@ int equals_locale(const char* locale1, const char* locale2) {
    return locale;
 }
 
-/*static*/ void free_locale(locale_t* locale) {
+/*static*/ void locale_free(locale_t* locale) {
     if (!locale) {
         return;
     }
@@ -71,7 +71,7 @@ char* parse_encoding(const char* locale) {
   if (locale_s->encoding) {
     encoding = strdup(locale_s->encoding);
   }
-  free_locale(locale_s);
+  locale_free(locale_s);
   return encoding;
 }
 
@@ -81,7 +81,7 @@ locale_t* parse_locale(const char* locale) {
   }
 
   if (strcmp(locale, "C") == 0) {
-    locale_t* locale_s = new_locale();
+    locale_t* locale_s = locale_new();
     locale_s->name = strdup(locale);
     return locale_s;
   }
@@ -119,7 +119,7 @@ locale_t* parse_locale(const char* locale) {
     
   }
   
-  locale_t* locale_s = new_locale();
+  locale_t* locale_s = locale_new();
   locale_s->name = strdup(locale);
   locale_s->language = language;
   locale_s->script = NULL;
