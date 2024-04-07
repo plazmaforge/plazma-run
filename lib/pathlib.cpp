@@ -3,17 +3,17 @@
 
 #include "pathlib.h"
 
-bool path_is_path_separator(char ch) {
+bool lib_path_is_path_separator(char ch) {
     return ch  == '\\' || ch == '/';
 }
 
-int path_count_path_level(const char* path) {
+int lib_path_count_path_level(const char* path) {
     if (path == NULL || path[0] == '\0') {
         return 0;
     }
 
     int start = 0;
-    if (path_is_path_separator(path[start])) {
+    if (lib_path_is_path_separator(path[start])) {
         start++;
     }
     if (path[start] == '\0') {
@@ -27,7 +27,7 @@ int path_count_path_level(const char* path) {
 
     // find start level
     while ((ch = path[i]) != '\0') {
-        if (path_is_path_separator(ch)) {
+        if (lib_path_is_path_separator(ch)) {
             level++;
         }
         i++;
@@ -37,13 +37,13 @@ int path_count_path_level(const char* path) {
 
 // [allocate]
 // level starts with '0'
-char* path_get_level_path(const char* path, int level) {
+char* lib_path_get_level_path(const char* path, int level) {
     if (path == NULL || path[0] == '\0' || level < 0) {
         return NULL;
     }
 
     int start = 0;
-    if (path_is_path_separator(path[start])) {
+    if (lib_path_is_path_separator(path[start])) {
         start++;
     }
     if (path[start] == '\0') {
@@ -57,7 +57,7 @@ char* path_get_level_path(const char* path, int level) {
 
     // find start level
     while ((ch = path[i]) != '\0') {
-        if (path_is_path_separator(ch)) {
+        if (lib_path_is_path_separator(ch)) {
             curr_level++;
             if (level - curr_level == 1) {
                 start = i + 1;
@@ -102,11 +102,11 @@ char* path_get_level_path(const char* path, int level) {
 ////
 
 // [allocate]
-char** path_split_path(const char* path) {
+char** lib_path_split_path(const char* path) {
     if (!path) {
         return NULL;
     }
-    int count = path_count_path_level(path);
+    int count = lib_path_count_path_level(path);
     if (count == 0) {
         return NULL;
     }
@@ -115,7 +115,7 @@ char** path_split_path(const char* path) {
     // TODO: Optimaze without 'getLevelPath'
     // Temp solution
     for (int i = 0; i < count; i++) {
-        result[i] = path_get_level_path(path, i);
+        result[i] = lib_path_get_level_path(path, i);
     }
 
     result[count] = NULL;
