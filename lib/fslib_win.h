@@ -33,25 +33,25 @@
 #include "wstrlib.h"
 #include "fslib.h"
 
-static int fs_match_file_internal(const char* pattern, const char* name, int mode);
+static int lib_fs_match_file_internal(const char* pattern, const char* name, int mode);
 
-static int fs_match_file_internal(const char* pattern, const char* name);
+static int lib_fs_match_file_internal(const char* pattern, const char* name);
 
 static wchar_t* getRealPathW(const wchar_t* wpath);
 
 static wchar_t* getCurrentDirW();
 
 // [allocate]
-char* fs_get_normalize_path(const char* dir_name, const char* file_name) { 
-    if (fs_is_current_find_path(dir_name)) {
+char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name) { 
+    if (lib_fs_is_current_find_path(dir_name)) {
         return strdup(file_name);                     // [allocate]
     } else {
-        return fs_get_file_path(dir_name, file_name); // [allocate]
+        return lib_fs_get_file_path(dir_name, file_name); // [allocate]
     }
 }
 
 // [allocate]
-char* fs_get_real_path(const char* path) {
+char* lib_fs_get_real_path(const char* path) {
     if (!path) {
         return NULL;
     }
@@ -71,7 +71,7 @@ char* fs_get_real_path(const char* path) {
 }
 
 // [allocate]
-char* fs_get_current_dir() {
+char* lib_fs_get_current_dir() {
     wchar_t* wcurrent_dir = getCurrentDirW();
     if (!wcurrent_dir) {
         return NULL;
@@ -81,11 +81,11 @@ char* fs_get_current_dir() {
     return current_dir;
 }
 
-const char* fs_get_current_find_path() {
+const char* lib_fs_get_current_find_path() {
     return "./*"; // Why not '.\*'?
 }
 
-int fs_is_current_find_path(const char* path) {
+int lib_fs_is_current_find_path(const char* path) {
     if (!path) {
         return 0;
     }
@@ -94,17 +94,17 @@ int fs_is_current_find_path(const char* path) {
 
 ////
 
-static int _fs_is_dir(WIN32_FIND_DATAW file) {
+static int _lib_fs_is_dir(WIN32_FIND_DATAW file) {
     return file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 }
 
-static void _fs_normalize_slash(char* path, size_t len) {
+static void _lib_fs_normalize_slash(char* path, size_t len) {
     lib_replace_len(path, len, '/', '\\');
 }
 
 // Convert directory name to WIN32 find path: add '\*'
 // [allocate]
-static char* fs_get_find_path(const char* dirName) {
+static char* lib_fs_get_find_path(const char* dirName) {
     if (dirName == NULL) {
         return NULL;
     }
@@ -140,7 +140,7 @@ static char* fs_get_find_path(const char* dirName) {
         } else if (add == 1) {
            strcat(path, "*");
         }
-        _fs_normalize_slash(path, len);
+        _lib_fs_normalize_slash(path, len);
     }
     
     path[len + 1] = '\0';
@@ -291,14 +291,14 @@ static wchar_t* getCurrentDirW() {
 
 ////
 
-int fs_is_dirent_dir(fs_dirent_t* dirent) {
+int lib_fs_is_dirent_dir(fs_dirent_t* dirent) {
     if (!dirent) {
         return 0;
     }
     return dirent->fd.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE);
 }
 
-int fs_get_dirent_type(fs_dirent_t* dirent) {
+int lib_fs_get_dirent_type(fs_dirent_t* dirent) {
     if (!dirent) {
         return 0;
     }
@@ -311,12 +311,12 @@ int fs_get_dirent_type(fs_dirent_t* dirent) {
     return FS_REG;
 }
 
-fs_dir_t* fs_open_dir(const char* dir_name) {
+fs_dir_t* lib_fs_open_dir(const char* dir_name) {
     if (!dir_name) {
         return NULL;
     }
 
-    char* path = fs_get_find_path(dir_name); // convert 'dir_name' to WIN32 find path: add '\*'
+    char* path = lib_fs_get_find_path(dir_name); // convert 'dir_name' to WIN32 find path: add '\*'
     wchar_t* wpath = char_wchar(path);
 
     //printf("path    : '%s'\n", path);
@@ -342,7 +342,7 @@ fs_dir_t* fs_open_dir(const char* dir_name) {
     return dir;
 }
 
-fs_dirent_t* fs_read_dir(fs_dir_t* dir) {
+fs_dirent_t* lib_fs_read_dir(fs_dir_t* dir) {
 
     if (!dir) {
         return NULL;
@@ -368,13 +368,13 @@ fs_dirent_t* fs_read_dir(fs_dir_t* dir) {
     }
 
     //dir->dirent->fd = fd;
-    dir->dirent->type = fs_get_dirent_type(dir->dirent);
+    dir->dirent->type = lib_fs_get_dirent_type(dir->dirent);
     dir->dirent->name = wchar_char(dir->dirent->fd.cFileName); // [allocate]
 
     return dir->dirent;
 }
 
-int fs_close_dir(fs_dir_t* dir) {
+int lib_fs_close_dir(fs_dir_t* dir) {
     if (!dir) {
         return 0;
     }
@@ -384,7 +384,7 @@ int fs_close_dir(fs_dir_t* dir) {
     return 0;
 }
 
-static int fs_match_file_internal(const char* pattern, const char* name, int mode) {
+static int lib_fs_match_file_internal(const char* pattern, const char* name, int mode) {
 
     // PathMatchSpecA
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
@@ -395,11 +395,11 @@ static int fs_match_file_internal(const char* pattern, const char* name, int mod
     //return PathMatchSpecW(wname, wpattern);
     //return PathMatchSpecA(name, pattern);
 
-    return fs_match_file(name, pattern); // rotate pattern, name !
+    return lib_fs_match_file(name, pattern); // rotate pattern, name !
 }
 
-static int fs_match_file_internal(const char* pattern, const char* name) {
-    return fs_match_file_internal(pattern, name, 0);
+static int lib_fs_match_file_internal(const char* pattern, const char* name) {
+    return lib_fs_match_file_internal(pattern, name, 0);
 }
 
 #endif

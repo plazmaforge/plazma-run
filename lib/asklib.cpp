@@ -591,7 +591,7 @@ void ask_find(const char* file_name, const char* input, int input_size, const as
     }
 
     if (config->print_file_name) {
-        char* real_path = fs_get_real_path(file_name);
+        char* real_path = lib_fs_get_real_path(file_name);
         printf(">> %s\n", real_path);
         free(real_path);
     }

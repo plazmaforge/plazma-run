@@ -133,47 +133,47 @@ typedef struct fs_file_t {
  * 
  * [allocate]
  */
-char* fs_get_file_path(const char* dir_name, const char* file_name);
+char* lib_fs_get_file_path(const char* dir_name, const char* file_name);
 
 /**
  * Return normalize full file path
  * 
  * [allocate]
  */
-char* fs_get_normalize_path(const char* dir_name, const char* file_name);
+char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name);
 
 /**
  * Return normalize slash file path
  * 
  * [allocate]
  */
-char* fs_get_normalize_slash(char* path);
+char* lib_fs_get_normalize_slash(char* path);
 
 /**
  * Normalize slash file path
  */
-void fs_normalize_slash(char* path);
+void lib_fs_normalize_slash(char* path);
 
 /**
  * Return real file path
  * 
  * [allocate]
  */
-char* fs_get_real_path(const char* path);
+char* lib_fs_get_real_path(const char* path);
 
 /**
  * Return current directory
  * 
  * [allocate]
  */
-char* fs_get_current_dir();
+char* lib_fs_get_current_dir();
 
 /**
  * Return current find path
  * - Unix    : '.'
  * - Windows : './ *'
  */
-const char* fs_get_current_find_path();
+const char* lib_fs_get_current_find_path();
 
 
 /**
@@ -181,152 +181,152 @@ const char* fs_get_current_find_path();
  * - Unix    : '.'
  * - Windows : './ *'
  */
-int fs_is_current_find_path(const char* path);
+int lib_fs_is_current_find_path(const char* path);
 
 /**
  * Return true if a file name is matched by a pattern
  */
-int fs_match_file(const char* name, const char* pattern);
+int lib_fs_match_file(const char* name, const char* pattern);
 
 /* General Functions          */
 
 #ifdef _WIN32
-int fs_is_drive_path(const char* path);
+int lib_fs_is_drive_path(const char* path);
 #endif
 
-int fs_is_absolute_path(const char* path);
+int lib_fs_is_absolute_path(const char* path);
 
-int fs_exists(const char* file_name);
+int lib_fs_exists(const char* file_name);
 
-int fs_is_regular(const char* file_name);
+int lib_fs_is_regular(const char* file_name);
 
-int fs_is_dir(const char* file_name);
+int lib_fs_is_dir(const char* file_name);
 
-int fs_is_executable(const char* file_name);
+int lib_fs_is_executable(const char* file_name);
 
-int fs_file_check(const char* file_name, fs_file_check_t check);
+int lib_fs_file_check(const char* file_name, fs_file_check_t check);
 
 /**
  * Return base file name
  * 
  * [allocate]
  */
-char* fs_get_base_name(const char* file_name);
+char* lib_fs_get_base_name(const char* file_name);
 
 /**
  * Return directory name
  * 
  * [allocate]
  */
-char* fs_get_dir_name (const char* file_name);
+char* lib_fs_get_dir_name (const char* file_name);
 
 /**
  * Return base file name (alias fs_get_base_name)
  * 
  * [allocate]
  */
-char* fs_get_file_name(const char* file_name);
+char* lib_fs_get_file_name(const char* file_name);
 
 /**
  * Return file extension
  * 
  * [allocate]
  */
-char* fs_get_file_ext(const char* file_name);
+char* lib_fs_get_file_ext(const char* file_name);
 
 /**
  * Find file extension (without allocation)
  * 
  */
-const char* fs_find_file_ext(const char* file_name);
+const char* lib_fs_find_file_ext(const char* file_name);
 
 /* POSIX Style                */
 
-int fs_access(const char* path, int mode);
+int lib_fs_access(const char* path, int mode);
 
-int fs_chmod(const char* path, int mode);
+int lib_fs_chmod(const char* path, int mode);
 
-int fs_mkdir(const char* path, int mode);
+int lib_fs_mkdir(const char* path, int mode);
 
-int fs_mkdir_all(const char* path, int mode);
+int lib_fs_mkdir_all(const char* path, int mode);
 
-int fs_chdir(const char* path);
+int lib_fs_chdir(const char* path);
 
-int fs_rename(const char* old_path, const char* new_path);
+int lib_fs_rename(const char* old_path, const char* new_path);
 
-int fs_move(const char* old_path, const char* new_path);
+int lib_fs_move(const char* old_path, const char* new_path);
 
-int fs_remove(const char* path);
+int lib_fs_remove(const char* path);
 
-int fs_copy(const char* src_file_name, const char* dst_file_name);
+int lib_fs_copy(const char* src_file_name, const char* dst_file_name);
 
-int fs_copy_opt(const char* src_file_name, const char* dst_file_name, int buf_size);
+int lib_fs_copy_opt(const char* src_file_name, const char* dst_file_name, int buf_size);
 
-int fs_rmdir(const char* path);
+int lib_fs_rmdir(const char* path);
 
 /* Human Style                */
 
-int fs_create_dir(const char* path);
+int lib_fs_create_dir(const char* path);
 
-int fs_create_dir_all(const char* path);
+int lib_fs_create_dir_all(const char* path);
 
-int fs_remove_file(const char* path);
+int lib_fs_remove_file(const char* path);
 
-int fs_remove_dir(const char* path);
-
-////
-
-int fs_stat(const char* path, fs_stat_t* buf);
+int lib_fs_remove_dir(const char* path);
 
 ////
 
-fs_file_t* fs_get_file(const char* file_name);
-
-const char* fs_file_get_file_name(fs_file_t* file);
-
-int fs_file_get_file_type(fs_file_t* file);
-
-uint64_t fs_file_get_file_size(fs_file_t* file);
-
-int fs_file_get_file_mode(fs_file_t* file);
-
-long fs_file_get_file_atime(fs_file_t* file);
-
-long fs_file_get_file_mtime(fs_file_t* file);
-
-long fs_file_get_file_ctime(fs_file_t* file);
-
-int fs_file_is_dir(fs_file_t* file);
-
-int fs_file_get_file_type_by_mode(int mode);
+int lib_fs_stat(const char* path, fs_stat_t* buf);
 
 ////
 
-fs_file_t* fs_file_new();
+fs_file_t* lib_fs_get_file(const char* file_name);
 
-void fs_file_free(fs_file_t* file);
+const char* lib_fs_file_get_file_name(fs_file_t* file);
 
-void fs_files_free(fs_file_t** files);
+int lib_fs_file_get_file_type(fs_file_t* file);
 
-int fs_files_init(fs_file_t*** files, size_t size);
+uint64_t lib_fs_file_get_file_size(fs_file_t* file);
 
-int fs_files_reinit(fs_file_t*** files, size_t size);
+int lib_fs_file_get_file_mode(fs_file_t* file);
 
-////
+long lib_fs_file_get_file_atime(fs_file_t* file);
 
-int fs_is_dirent_dir(fs_dirent_t* dirent);
+long lib_fs_file_get_file_mtime(fs_file_t* file);
 
-int fs_get_dirent_type(fs_dirent_t* dirent);
+long lib_fs_file_get_file_ctime(fs_file_t* file);
 
-fs_dir_t* fs_open_dir(const char* dir_name);
+int lib_fs_file_is_dir(fs_file_t* file);
 
-fs_dirent_t* fs_read_dir(fs_dir_t* dir);
-
-int fs_close_dir(fs_dir_t* dir);
+int lib_fs_file_get_file_type_by_mode(int mode);
 
 ////
 
-int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, int max_depth, int file_only);
+fs_file_t* lib_fs_file_new();
+
+void lib_fs_file_free(fs_file_t* file);
+
+void lib_fs_files_free(fs_file_t** files);
+
+int lib_fs_files_init(fs_file_t*** files, size_t size);
+
+int lib_fs_files_reinit(fs_file_t*** files, size_t size);
+
+////
+
+int lib_fs_is_dirent_dir(fs_dirent_t* dirent);
+
+int lib_fs_get_dirent_type(fs_dirent_t* dirent);
+
+fs_dir_t* lib_fs_open_dir(const char* dir_name);
+
+fs_dirent_t* lib_fs_read_dir(fs_dir_t* dir);
+
+int lib_fs_close_dir(fs_dir_t* dir);
+
+////
+
+int lib_fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, int max_depth, int file_only);
 
 
 /* C++ Style - Migration Task */

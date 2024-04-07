@@ -24,7 +24,7 @@ void print_file(fs_file_t* file) {
     if (!file) {
         return;
     }
-    char* path = file->name ? fs_get_real_path(file->name) : NULL;
+    char* path = file->name ? lib_fs_get_real_path(file->name) : NULL;
     print_file_path(path);
     free(path);
 }
@@ -33,7 +33,7 @@ void run_find(const char* dir_name, const char* pattern) {
 
     fs_file_t** files = NULL;
     fs_file_t* file = NULL;
-    int file_count = fs_scandir(dir_name, pattern, &files, FS_SCANDIR_RECURSIVE, true);
+    int file_count = lib_fs_scandir(dir_name, pattern, &files, FS_SCANDIR_RECURSIVE, true);
 
     for (int i = 0; i < file_count; i++) {
             file = files[i];
@@ -46,7 +46,7 @@ void run_find(const char* dir_name, const char* pattern) {
             //fs_file_free(file);
     }
 
-    fs_files_free(files);
+    lib_fs_files_free(files);
 }
 
 int main(int argc, char* argv[]) {
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
             dir_name = lib_strndup(file_name, path_index + 1);
             file_name = file_name + path_index + 1;
         } else {
-            dir_name = lib_strdup(fs_get_current_find_path());
+            dir_name = lib_strdup(lib_fs_get_current_find_path());
         }
 
         pattern = file_name;
@@ -126,18 +126,18 @@ int main(int argc, char* argv[]) {
 
     } else {
 
-        char* path = fs_get_real_path(file_name);
+        char* path = lib_fs_get_real_path(file_name);
         if (path) {
             print_file_path(path);
             free(path);
         } else {
-            dir_name = fs_get_dir_name(file_name);
+            dir_name = lib_fs_get_dir_name(file_name);
             if (!dir_name || strcmp(dir_name, ".") == 0) {
                 // Scandir in current directory for one file
                 if (dir_name) {
                     free(dir_name);
                 }
-                dir_name = lib_strdup(fs_get_current_find_path());
+                dir_name = lib_strdup(lib_fs_get_current_find_path());
                 pattern = file_name;
                 doit = true;
 

@@ -28,16 +28,16 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    char* dir_name = fs_get_current_dir();; //fs_get_current_find_path();
+    char* dir_name = lib_fs_get_current_dir();; //fs_get_current_find_path();
     //printf("Current Dir: %s\n", dir_name);
 
     char* pattern = NULL;
     fs_file_t** files = NULL;
     fs_file_t* file = NULL;
-    int file_count = fs_scandir(dir_name, pattern, &files, FS_SCANDIR_FLAT, false);
+    int file_count = lib_fs_scandir(dir_name, pattern, &files, FS_SCANDIR_FLAT, false);
 
     if (file_count <= 0) {
-        fs_files_free(files);
+        lib_fs_files_free(files);
         free(dir_name);
         return 0;
     }
@@ -76,10 +76,10 @@ int main(int argc, char *argv[]) {
         }
 
         char* path = file->name;
-        char* name = fs_get_base_name(path);
+        char* name = lib_fs_get_base_name(path);
 
         /* Print Marker  */
-        if (fs_file_is_dir(file)) {
+        if (lib_fs_file_is_dir(file)) {
             printf("[D]");
         } else {
             printf("   ");
@@ -87,19 +87,19 @@ int main(int argc, char *argv[]) {
         
         /* Print Size    */
         if (use_size & use_size_first) {
-            uint64_t size = fs_file_get_file_size(file);
+            uint64_t size = lib_fs_file_get_file_size(file);
             format_file_size(size);
         }
 
         /* Print DateTime */
         if (use_date) {
-            time_t time = fs_file_get_file_mtime(file);
+            time_t time = lib_fs_file_get_file_mtime(file);
             format_file_date_time(time, buf, BUF_LEN, use_time);
         }
 
         /* Print Size    */
         if (use_size & !use_size_first) {
-            uint64_t size = fs_file_get_file_size(file);
+            uint64_t size = lib_fs_file_get_file_size(file);
             format_file_size(size);
         }
 
@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
         free(name);
     }
 
-    fs_files_free(files);                        
+    lib_fs_files_free(files);                        
     free(dir_name);
 
     return 0;

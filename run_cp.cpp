@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     char* src_file_name = argv[1];
     char* dst_file_name = argv[2];
 
-    int retval = fs_copy(src_file_name, dst_file_name);
+    int retval = lib_fs_copy(src_file_name, dst_file_name);
     if (retval != 0) {
         fprintf(stderr, "Can't copy file from %s to %s: %s\n", src_file_name, dst_file_name, strerror(errno));
     }

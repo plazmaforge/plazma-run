@@ -21,7 +21,7 @@
 /* C Style */
 
 // [allocate]
-char* fs_get_file_path(const char* dir_name, const char* file_name) {
+char* lib_fs_get_file_path(const char* dir_name, const char* file_name) {
     if (!dir_name && !file_name) {
         return NULL;
     }
@@ -67,23 +67,23 @@ char* fs_get_file_path(const char* dir_name, const char* file_name) {
     return path;
 }
 
-char* fs_get_normalize_slash(char* path) {
+char* lib_fs_get_normalize_slash(char* path) {
     if (!path) {
         return NULL;
     }
     char* npath = lib_strdup(path);
-    _fs_normalize_slash(npath, lib_strlen(npath));
+    _lib_fs_normalize_slash(npath, lib_strlen(npath));
     return npath;
 }
 
-void fs_normalize_slash(char* path) {
+void lib_fs_normalize_slash(char* path) {
     if (!path) {
         return;
     }
-    _fs_normalize_slash(path, lib_strlen(path));
+    _lib_fs_normalize_slash(path, lib_strlen(path));
 }
 
-int fs_match_file(const char* name, const char* pattern) {
+int lib_fs_match_file(const char* name, const char* pattern) {
     return lib_wc_match_file(name, pattern);
 }
 
@@ -134,7 +134,7 @@ static int to_errno_win(DWORD error_code) {
 /* General Functions          */
 
 #ifdef _WIN32
-int fs_is_drive_path(const char* path) {
+int lib_fs_is_drive_path(const char* path) {
     if (!path) {
         return 0;
     }
@@ -144,7 +144,7 @@ int fs_is_drive_path(const char* path) {
       && FS_IS_DIR_SEPARATOR(path[2]));
 }
 
-int fs_starts_drive_path(const char* path) {
+int lib_fs_starts_drive_path(const char* path) {
     if (!path) {
         return 0;
     }
@@ -152,7 +152,7 @@ int fs_starts_drive_path(const char* path) {
     return (isalpha (path[0]) && path[1] == ':'); 
 }
 
-int fs_is_unc_path(const char* path) {
+int lib_fs_is_unc_path(const char* path) {
     /* 
       first [2] chars: '\\'  
       and check next non-dir separator char 
@@ -165,7 +165,7 @@ int fs_is_unc_path(const char* path) {
 
 #endif
 
-int fs_is_absolute_path(const char* path) {
+int lib_fs_is_absolute_path(const char* path) {
     if (!path) {
         return 0;
     }
@@ -176,29 +176,29 @@ int fs_is_absolute_path(const char* path) {
 
 #ifdef _WIN32
     /* Recognize drive letter on native Windows */
-    return fs_is_drive_path(path);
+    return lib_fs_is_drive_path(path);
 #endif
 
     return 0;
 }
 
-int fs_exists(const char* file_name) {
-    return fs_file_check(file_name, FS_FILE_CHECK_EXISTS);
+int lib_fs_exists(const char* file_name) {
+    return lib_fs_file_check(file_name, FS_FILE_CHECK_EXISTS);
 }
 
-int fs_is_regular(const char* file_name) {
-    return fs_file_check(file_name, FS_FILE_CHECK_IS_REGULAR);
+int lib_fs_is_regular(const char* file_name) {
+    return lib_fs_file_check(file_name, FS_FILE_CHECK_IS_REGULAR);
 }
 
-int fs_is_dir(const char* file_name) {
-    return fs_file_check(file_name, FS_FILE_CHECK_IS_DIR);
+int lib_fs_is_dir(const char* file_name) {
+    return lib_fs_file_check(file_name, FS_FILE_CHECK_IS_DIR);
 }
 
-int fs_is_executable(const char* file_name) {
-    return fs_file_check(file_name, FS_FILE_CHECK_IS_EXECUTABLE);
+int lib_fs_is_executable(const char* file_name) {
+    return lib_fs_file_check(file_name, FS_FILE_CHECK_IS_EXECUTABLE);
 }
 
-char* fs_get_base_name(const char* file_name) {
+char* lib_fs_get_base_name(const char* file_name) {
 
     ssize_t base;
     ssize_t last_nonslash;
@@ -225,7 +225,7 @@ char* fs_get_base_name(const char* file_name) {
         return NULL;
 
 #ifdef _WIN32
-    if (last_nonslash == 1 && fs_starts_drive_path(file_name))
+    if (last_nonslash == 1 && lib_fs_starts_drive_path(file_name))
         /* string only containing slashes and a drive */
         // return lib_strdup(FS_DIR_SEPARATOR_STR); // TODO: (?)
         return NULL;
@@ -236,7 +236,7 @@ char* fs_get_base_name(const char* file_name) {
         base--;
 
 #ifdef _WIN32
-    if (base == -1 && fs_starts_drive_path(file_name))
+    if (base == -1 && lib_fs_starts_drive_path(file_name))
         base = 1;
 #endif
 
@@ -248,7 +248,7 @@ char* fs_get_base_name(const char* file_name) {
     return retval;
 }
 
-char* fs_get_dir_name(const char* file_name) {
+char* lib_fs_get_dir_name(const char* file_name) {
 
     char* base;
     size_t len;
@@ -268,7 +268,7 @@ char* fs_get_dir_name(const char* file_name) {
 
     if (!base) {
 #ifdef _WIN32
-        if (fs_starts_drive_path(file_name)) {
+        if (lib_fs_starts_drive_path(file_name)) {
             char drive_colon_dot[4];
 
             drive_colon_dot[0] = file_name[0];
@@ -288,9 +288,9 @@ char* fs_get_dir_name(const char* file_name) {
 
 #ifdef _WIN32
     
-    if (base == file_name + 1 && fs_starts_drive_path(file_name))
+    if (base == file_name + 1 && lib_fs_starts_drive_path(file_name))
         base++;
-    else if (fs_is_unc_path(file_name) && base >= file_name + 2) {
+    else if (lib_fs_is_unc_path(file_name) && base >= file_name + 2) {
 
         /* \\server\share  -> \\server\share\ */
         /* \\server\share\ -> \\server\share\ */
@@ -335,29 +335,29 @@ char* fs_get_dir_name(const char* file_name) {
     return base;
 }
 
-char* fs_get_file_name(const char* file_name) {
-    return fs_get_base_name(file_name);
+char* lib_fs_get_file_name(const char* file_name) {
+    return lib_fs_get_base_name(file_name);
 }
 
-const char* fs_find_file_ext(const char* file_name) {
+const char* lib_fs_find_file_ext(const char* file_name) {
     if (!file_name) {
         return NULL;
     }
     return strrchr(file_name, '.');
 }
 
-char* fs_get_file_ext(const char* file_name) {
+char* lib_fs_get_file_ext(const char* file_name) {
     if (!file_name) {
         return NULL;
     }
-    const char* file_ext = fs_find_file_ext(file_name);
+    const char* file_ext = lib_fs_find_file_ext(file_name);
     return lib_strdup(file_ext);
 }
 
 /**
  * Skips dir separators and returns a pointer to the first non-dir separator char 
  */
-const char* fs_skip_dir_separators(const char* path) {
+const char* lib_fs_skip_dir_separators(const char* path) {
     if (!path) {
         return NULL;
     }
@@ -369,7 +369,7 @@ const char* fs_skip_dir_separators(const char* path) {
 /**
  * Skips non-dir separators and returns a pointer to the first dir separator char 
  */
-const char* fs_skip_nondir_separators(const char* path) {
+const char* lib_fs_skip_nondir_separators(const char* path) {
     if (!path) {
         return NULL;
     }
@@ -378,14 +378,14 @@ const char* fs_skip_nondir_separators(const char* path) {
     return path;
 }
 
-const char* fs_skip_root(const char* path) {
+const char* lib_fs_skip_root(const char* path) {
     if (!path) {
         return NULL;
     }
 #ifdef _WIN32
 
     /* Skip \\server\share or //server/share */
-    if (fs_is_unc_path(path)) {
+    if (lib_fs_is_unc_path(path)) {
 
         const char* p = strchr(path + 2, FS_DIR_SEPARATOR);
         const char* q = strchr(path + 2, '/');
@@ -395,10 +395,10 @@ const char* fs_skip_root(const char* path) {
 
         if (p && p > path + 2 && p[1]) {
             path = p + 1;
-            path = fs_skip_nondir_separators(path);
+            path = lib_fs_skip_nondir_separators(path);
 
             /* Possibly skip a backslash after the share name */
-            path = fs_skip_dir_separators(path);
+            path = lib_fs_skip_dir_separators(path);
             return (char*) path;
         }
     }
@@ -406,13 +406,13 @@ const char* fs_skip_root(const char* path) {
 
     /* Skip initial slashes */
     if (FS_IS_DIR_SEPARATOR(path[0])) {
-        path = fs_skip_dir_separators(path);
+        path = lib_fs_skip_dir_separators(path);
         return (char*) path;
     }
 
 #ifdef _WIN32
     /* Skip X:\ */
-    if (fs_is_drive_path(path))
+    if (lib_fs_is_drive_path(path))
         return (char*) path + 3;
 #endif
 
@@ -421,7 +421,7 @@ const char* fs_skip_root(const char* path) {
 
 /* POSIX Style                */
 
-int fs_access(const char* path, int mode) {
+int lib_fs_access(const char* path, int mode) {
 #ifdef _WIN32
     wchar_t* wpath = char_wchar(path);
     int retval;
@@ -446,7 +446,7 @@ int fs_access(const char* path, int mode) {
 #endif
 }
 
-int fs_chmod(const char* path, int mode) {
+int lib_fs_chmod(const char* path, int mode) {
 #ifdef _WIN32
     wchar_t* wpath = char_wchar(path);
     int retval;
@@ -467,7 +467,7 @@ int fs_chmod(const char* path, int mode) {
 #endif
 }
 
-int fs_mkdir(const char* path, int mode) {
+int lib_fs_mkdir(const char* path, int mode) {
 #ifdef _WIN32
     wchar_t* wpath = char_wchar(path);
     int retval;
@@ -488,7 +488,7 @@ int fs_mkdir(const char* path, int mode) {
 #endif
 }
 
-int fs_chdir(const char* path) {
+int lib_fs_chdir(const char* path) {
 #ifdef _WIN32
     wchar_t* wpath = char_wchar(path);
     int retval;
@@ -509,7 +509,7 @@ int fs_chdir(const char* path) {
 #endif
 }
 
-int fs_rename(const char* old_path, const char* new_path) {
+int lib_fs_rename(const char* old_path, const char* new_path) {
 #ifdef _WIN32
     wchar_t* wold_path;
     wchar_t* wnew_path;
@@ -546,7 +546,7 @@ int fs_rename(const char* old_path, const char* new_path) {
 #endif
 }
 
-int fs_move(const char* old_path, const char* new_path) {
+int lib_fs_move(const char* old_path, const char* new_path) {
     if (!old_path || !new_path) {
         errno = EINVAL;
         return -1;
@@ -560,25 +560,25 @@ int fs_move(const char* old_path, const char* new_path) {
 
     char* dst_file_name = (char*) new_path;
     bool is_dst_dir = false;
-    if (fs_is_dir(new_path)) {
+    if (lib_fs_is_dir(new_path)) {
         is_dst_dir = true;
-        char* base_name = fs_get_base_name(old_path);          // [allocate]
-        dst_file_name = fs_get_file_path(new_path, base_name); // [allocate]
+        char* base_name = lib_fs_get_base_name(old_path);          // [allocate]
+        dst_file_name = lib_fs_get_file_path(new_path, base_name); // [allocate]
         free(base_name);
     }
 
-    int retval = fs_rename(old_path, dst_file_name);
+    int retval = lib_fs_rename(old_path, dst_file_name);
     if (is_dst_dir) {
         free(dst_file_name);
     }
     return retval;    
 }
 
-int fs_copy(const char* src_file_name, const char* dst_file_name) {
-    return fs_copy_opt(src_file_name, dst_file_name, 4096);
+int lib_fs_copy(const char* src_file_name, const char* dst_file_name) {
+    return lib_fs_copy_opt(src_file_name, dst_file_name, 4096);
 }
 
-int fs_copy_opt(const char* src_file_name, const char* dst_file_name, int buf_size) {
+int lib_fs_copy_opt(const char* src_file_name, const char* dst_file_name, int buf_size) {
 
     FILE* src_file = fopen(src_file_name, "rb");
     if (!src_file) {
@@ -607,7 +607,7 @@ int fs_copy_opt(const char* src_file_name, const char* dst_file_name, int buf_si
     return 0;    
 }
 
-int fs_remove(const char* path) {
+int lib_fs_remove(const char* path) {
 #ifdef _WIN32
     wchar_t* wpath = char_wchar(path);
     int retval;
@@ -632,7 +632,7 @@ int fs_remove(const char* path) {
 #endif
 }
 
-int fs_rmdir(const char* path) {
+int lib_fs_rmdir(const char* path) {
 #ifdef _WIN32
     wchar_t* wpath = char_wchar(path);
     int retval;
@@ -657,7 +657,7 @@ int fs_rmdir(const char* path) {
 
 #ifdef _WIN32
 
-const wchar_t* _fs_wfind_file_ext(const wchar_t* wfile_name) {
+const wchar_t* _lib_fs_wfind_file_ext(const wchar_t* wfile_name) {
     if (!wfile_name) {
         return 0;
     }
@@ -677,11 +677,11 @@ const wchar_t* _fs_wfind_file_ext(const wchar_t* wfile_name) {
     return dot;
 }
 
-int _fs_is_wexecutable(const wchar_t* wfile_name) {
+int _lib_fs_is_wexecutable(const wchar_t* wfile_name) {
     if (!wfile_name) {
         return 0;
     }
-    const wchar_t* wfile_ext = _fs_wfind_file_ext(wfile_name);
+    const wchar_t* wfile_ext = _lib_fs_wfind_file_ext(wfile_name);
     if (!wfile_ext) {
         return 0;
     }
@@ -691,11 +691,11 @@ int _fs_is_wexecutable(const wchar_t* wfile_name) {
             wcsicmp(wfile_ext, L".cmd") == 0);
 }
 
-int _fs_is_executable(const char* file_name) {
+int _lib_fs_is_executable(const char* file_name) {
     if (!file_name) {
         return 0;
     }
-    const char* file_ext = fs_find_file_ext(file_name);
+    const char* file_ext = lib_fs_find_file_ext(file_name);
     if (!file_ext)
         return 0;
     return (_stricmp(file_ext, ".exe") == 0 ||
@@ -705,7 +705,7 @@ int _fs_is_executable(const char* file_name) {
 }
 #endif
 
-int fs_file_check(const char* file_name, fs_file_check_t check) {
+int lib_fs_file_check(const char* file_name, fs_file_check_t check) {
     if (!file_name) {
         return 0;
     }
@@ -743,7 +743,7 @@ int fs_file_check(const char* file_name, fs_file_check_t check) {
     }
 
     if (check & FS_FILE_CHECK_IS_EXECUTABLE) {
-        return _fs_is_executable(file_name);
+        return _lib_fs_is_executable(file_name);
     }
 
     return 0;
@@ -863,7 +863,7 @@ int fs_file_check(const char* file_name, fs_file_check_t check) {
  *
  */
 
-static int64_t _fs_ftime_to_utime(const FILETIME *ft/*, int32_t* nsec*/) {
+static int64_t _lib_fs_ftime_to_utime(const FILETIME *ft/*, int32_t* nsec*/) {
 
   int64_t result;
 
@@ -884,7 +884,7 @@ static int64_t _fs_ftime_to_utime(const FILETIME *ft/*, int32_t* nsec*/) {
   return result / hundreds_of_usec_per_sec;
 }
 
-int _fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATION* handle_info, fs_stat_t* buf) {
+int _lib_fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATION* handle_info, fs_stat_t* buf) {
 
     if (!wfile_name || !handle_info || !buf) {
         errno = EINVAL;
@@ -915,20 +915,20 @@ int _fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATI
         buf->st_mode |= S_IWUSR | S_IWGRP | S_IWOTH;
 
     if (!S_ISDIR(buf->st_mode)) {
-        if (_fs_is_wexecutable(wfile_name))
+        if (_lib_fs_is_wexecutable(wfile_name))
             buf->st_mode |= S_IXUSR | S_IXGRP | S_IXOTH;
     }
 
     buf->st_nlink = handle_info->nNumberOfLinks;
     buf->st_size = (((uint64_t) handle_info->nFileSizeHigh) << 32) | handle_info->nFileSizeLow;
-    buf->st_ctime = _fs_ftime_to_utime(&handle_info->ftCreationTime);
-    buf->st_mtime = _fs_ftime_to_utime(&handle_info->ftLastWriteTime);
-    buf->st_atime = _fs_ftime_to_utime(&handle_info->ftLastAccessTime);
+    buf->st_ctime = _lib_fs_ftime_to_utime(&handle_info->ftCreationTime);
+    buf->st_mtime = _lib_fs_ftime_to_utime(&handle_info->ftLastWriteTime);
+    buf->st_atime = _lib_fs_ftime_to_utime(&handle_info->ftLastAccessTime);
 
     return 0;
 }
 
-int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
+int _lib_fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
 
     if (!wfile_name || !buf) {
         errno = EINVAL;
@@ -987,7 +987,7 @@ int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
         return -1;
     }
 
-    int retval = _fs_fill_stat_info(wfile_name, &handle_info, buf);
+    int retval = _lib_fs_fill_stat_info(wfile_name, &handle_info, buf);
 
     CloseHandle(file_handle);
 
@@ -995,20 +995,20 @@ int _fs_wstat(const wchar_t* wfile_name, fs_stat_t* buf) {
 
 }
 
-int _fs_stat(const char* file_name, fs_stat_t* buf) {
+int _lib_fs_stat(const char* file_name, fs_stat_t* buf) {
     wchar_t *wfile_name = char_wchar(file_name);
     if (!wfile_name) {
         errno = EINVAL;
         return -1;
     }
-    int retval = _fs_wstat(wfile_name, buf);
+    int retval = _lib_fs_wstat(wfile_name, buf);
     free(wfile_name);
     return retval;
 }
 
 #endif
 
-int fs_stat(const char* path, fs_stat_t* buf) {
+int lib_fs_stat(const char* path, fs_stat_t* buf) {
     #ifdef _WIN32
     return _fs_stat(path, buf);
     #else
@@ -1018,7 +1018,7 @@ int fs_stat(const char* path, fs_stat_t* buf) {
 
 ////////////////////////////////
 
-int fs_mkdir_all(const char* path, int mode) {
+int lib_fs_mkdir_all(const char* path, int mode) {
     char* fn;
     char* p;
 
@@ -1028,12 +1028,12 @@ int fs_mkdir_all(const char* path, int mode) {
     }
 
     /* try to create the full path first */
-    if (fs_mkdir(path, mode) == 0) {
+    if (lib_fs_mkdir(path, mode) == 0) {
         return 0;
     }
 
     if (errno == EEXIST) {
-        if (!fs_file_check(path, FS_FILE_CHECK_IS_DIR)) {
+        if (!lib_fs_file_check(path, FS_FILE_CHECK_IS_DIR)) {
            errno = ENOTDIR;
            return -1;
         }
@@ -1043,8 +1043,8 @@ int fs_mkdir_all(const char* path, int mode) {
     /* walk the full path and try creating each element */
     fn = lib_strdup(path);
 
-    if (fs_is_absolute_path(fn))
-        p = (char*) fs_skip_root(fn);
+    if (lib_fs_is_absolute_path(fn))
+        p = (char*) lib_fs_skip_root(fn);
     else
         p = fn;
 
@@ -1060,8 +1060,8 @@ int fs_mkdir_all(const char* path, int mode) {
         else
             *p = '\0';
 
-        if (!fs_file_check(fn, FS_FILE_CHECK_EXISTS)) {
-            if (fs_mkdir(fn, mode) == -1 && errno != EEXIST) {
+        if (!lib_fs_file_check(fn, FS_FILE_CHECK_EXISTS)) {
+            if (lib_fs_mkdir(fn, mode) == -1 && errno != EEXIST) {
                 int save_errno = errno;
                 if (errno != ENOENT || !p) {
                     free(fn);
@@ -1069,7 +1069,7 @@ int fs_mkdir_all(const char* path, int mode) {
                     return -1;
                 }
             }
-        } else if (!fs_file_check(fn, FS_FILE_CHECK_IS_DIR)) {
+        } else if (!lib_fs_file_check(fn, FS_FILE_CHECK_IS_DIR)) {
            free(fn);
            errno = ENOTDIR;
            return -1;
@@ -1093,25 +1093,25 @@ int fs_mkdir_all(const char* path, int mode) {
 
 /* Human Style                */
 
-int fs_create_dir(const char* path) {
-    return fs_mkdir(path, 0775);
+int lib_fs_create_dir(const char* path) {
+    return lib_fs_mkdir(path, 0775);
 }
 
-int fs_create_dir_all(const char* path) {
-    return fs_mkdir_all(path, 0775);
+int lib_fs_create_dir_all(const char* path) {
+    return lib_fs_mkdir_all(path, 0775);
 }
 
-int fs_remove_file(const char* path) {
-    return fs_remove(path);
+int lib_fs_remove_file(const char* path) {
+    return lib_fs_remove(path);
 }
 
-int fs_remove_dir(const char* path) {
-    return fs_rmdir(path);
+int lib_fs_remove_dir(const char* path) {
+    return lib_fs_rmdir(path);
 }
 
 ////////
 
-fs_stat_t* fs_stat_new() {
+fs_stat_t* lib_fs_stat_new() {
     fs_stat_t* stat = (fs_stat_t*) malloc(sizeof(fs_stat_t));
     //if (!stat) {
     //    return NULL;
@@ -1119,64 +1119,64 @@ fs_stat_t* fs_stat_new() {
     return stat;
 }
 
-fs_file_t* fs_get_file(const char* file_name) {
+fs_file_t* lib_fs_get_file(const char* file_name) {
     if (!file_name) {
         return NULL;
     }
-    char* path = fs_get_real_path(file_name);
+    char* path = lib_fs_get_real_path(file_name);
     if (!path) {
         return NULL;
     }
-    fs_file_t* file = fs_file_new();
+    fs_file_t* file = lib_fs_file_new();
     if (!file) {
         return NULL;
     }
     file->name = path;
 
-    fs_stat_t* stat = fs_stat_new();
+    fs_stat_t* stat = lib_fs_stat_new();
     if (!stat) {
         return file;
     }
     file->stat = stat;
 
     /* Get stat info */
-    fs_stat(path, file->stat);
+    lib_fs_stat(path, file->stat);
 
     /* Get file type by stat mode */
-    file->type = fs_file_get_file_type_by_mode(stat->st_mode);
+    file->type = lib_fs_file_get_file_type_by_mode(stat->st_mode);
 
     return file;
 }
 
-const char* fs_file_get_file_name(fs_file_t* file) {
+const char* lib_fs_file_get_file_name(fs_file_t* file) {
     if (!file) {
         return 0;
     }
     return file->name;
 }
 
-int fs_file_get_file_type(fs_file_t* file) {
+int lib_fs_file_get_file_type(fs_file_t* file) {
     if (!file) {
         return 0;
     }
     return file->type;
 }
 
-uint64_t fs_file_get_file_size(fs_file_t* file) {
+uint64_t lib_fs_file_get_file_size(fs_file_t* file) {
     if (!file || !file->stat) {
         return 0;
     }
     return file->stat->st_size;
 }
 
-int fs_file_get_file_mode(fs_file_t* file) {
+int lib_fs_file_get_file_mode(fs_file_t* file) {
     if (!file || !file->stat) {
         return 0;
     }
     return file->stat->st_mode;
 }
 
-long _fs_file_get_file_time(fs_file_t* file, int index) {
+long _lib_fs_file_get_file_time(fs_file_t* file, int index) {
 
     if (!file || !file->stat) {
         return 0;
@@ -1213,26 +1213,26 @@ long _fs_file_get_file_time(fs_file_t* file, int index) {
 
 }
 
-long fs_file_get_file_atime(fs_file_t* file) {
-    return _fs_file_get_file_time(file, 1);
+long lib_fs_file_get_file_atime(fs_file_t* file) {
+    return _lib_fs_file_get_file_time(file, 1);
 }
 
-long fs_file_get_file_mtime(fs_file_t* file) {
-    return _fs_file_get_file_time(file, 2);
+long lib_fs_file_get_file_mtime(fs_file_t* file) {
+    return _lib_fs_file_get_file_time(file, 2);
 }
 
-long fs_file_get_file_ctime(fs_file_t* file) {
-    return _fs_file_get_file_time(file, 3);
+long lib_fs_file_get_file_ctime(fs_file_t* file) {
+    return _lib_fs_file_get_file_time(file, 3);
 }
 
-int fs_file_is_dir(fs_file_t* file) {
+int lib_fs_file_is_dir(fs_file_t* file) {
     if (!file) {
         return 0;
     }
     return file->type == FS_DIR;
 }
 
-int fs_file_get_file_type_by_mode(int mode) {    
+int lib_fs_file_get_file_type_by_mode(int mode) {    
     #ifdef _WIN32
     /* FS_DIR, FS_REG, FS_LNK only */
     if (S_ISDIR(mode)) {
@@ -1268,7 +1268,7 @@ int fs_file_get_file_type_by_mode(int mode) {
 }
 
 // [fslib]
-fs_file_t* fs_file_new() {
+fs_file_t* lib_fs_file_new() {
   fs_file_t* file = (fs_file_t*) malloc(sizeof(struct fs_file_t));
   if (!file) {
     return NULL;
@@ -1279,7 +1279,7 @@ fs_file_t* fs_file_new() {
 }
 
 // [fslib]
-void fs_file_free(fs_file_t* file) {
+void lib_fs_file_free(fs_file_t* file) {
     if (!file) {
         return;
     }
@@ -1293,21 +1293,21 @@ void fs_file_free(fs_file_t* file) {
 }
 
 // [fslib]
-void fs_files_free(fs_file_t** files) {
+void lib_fs_files_free(fs_file_t** files) {
     if (!files) {
         return;
     }
     fs_file_t* file = NULL;
     fs_file_t** elements = files;
     while ((file = *elements) != NULL) {
-        fs_file_free(file);
+        lib_fs_file_free(file);
         elements++;
     }
     free(files);
 }
 
 // [fslib]
-int fs_files_init(fs_file_t*** files, size_t size) {
+int lib_fs_files_init(fs_file_t*** files, size_t size) {
     // NULL-terminate array: +1
     fs_file_t** list = (struct fs_file_t**) calloc(size + 1, sizeof(struct fs_file_t*)); 
     if (!list) {
@@ -1319,7 +1319,7 @@ int fs_files_init(fs_file_t*** files, size_t size) {
 }
 
 // [fslib]
-int fs_files_reinit(fs_file_t*** files, size_t size) {
+int lib_fs_files_reinit(fs_file_t*** files, size_t size) {
     // NULL-terminate array: +1
     fs_file_t** list = (struct fs_file_t **) realloc( /*(fs_file_t *)*/ *files, (size + 1) * sizeof(struct fs_file_t *));
     list[size] = NULL;
@@ -1330,27 +1330,27 @@ int fs_files_reinit(fs_file_t*** files, size_t size) {
     return 0;
 }
 
-int fs_is_recursive_ignore_file(const char* file_name) {
+int lib_fs_is_recursive_ignore_file(const char* file_name) {
     if (!file_name) {
         return 1;
     }
     return (strcmp(file_name, ".") == 0 || strcmp(file_name, "..") == 0);
 }
 
-int fs_is_classic_ignore_file(const char* file_name) {
+int lib_fs_is_classic_ignore_file(const char* file_name) {
     if (!file_name || file_name[0] == '\0') {
         return 1;
     }
     return file_name[0] == '.';
 }
 
-int fs_is_ignore_file(const char* file_name) {
-    return 0; //return fs_is_recursive_ignore_file(file_name) || fs_is_classic_ignore_file(file_name);
+int lib_fs_is_ignore_file(const char* file_name) {
+    return 0; //return lib_fs_is_recursive_ignore_file(file_name) || lib_fs_is_classic_ignore_file(file_name);
 }
 
-int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pattern_count, fs_file_t*** files, int* file_count, int level, int max_depth, int file_only) {
+int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pattern_count, fs_file_t*** files, int* file_count, int level, int max_depth, int file_only) {
 
-    fs_dir_t* dir = fs_open_dir(dir_name);
+    fs_dir_t* dir = lib_fs_open_dir(dir_name);
     if (!dir) {
         return -1;
     }
@@ -1376,15 +1376,15 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
     bool use_force_pattern = true; // optional
     bool is_force_pattern = use_force_pattern && pattern && pattern_count == 1;
 
-    while ((file = fs_read_dir(dir)) != NULL) {
+    while ((file = lib_fs_read_dir(dir)) != NULL) {
 
         char* file_name = file->name;
-        int file_type = fs_get_dirent_type(file);
-        int is_recursive_ignore = fs_is_recursive_ignore_file(file_name); // ., ..
-        int is_ignore = fs_is_ignore_file(file_name);                     // .git, .svn
+        int file_type = lib_fs_get_dirent_type(file);
+        int is_recursive_ignore = lib_fs_is_recursive_ignore_file(file_name); // ., ..
+        int is_ignore = lib_fs_is_ignore_file(file_name);                     // .git, .svn
         int is_force_ignore = is_recursive_ignore || is_ignore;
-        int is_match = is_ignore ? 0 : (pattern == NULL || fs_match_file_internal(pattern, file_name));
-        int is_dir_ = fs_is_dirent_dir(file);
+        int is_match = is_ignore ? 0 : (pattern == NULL || lib_fs_match_file_internal(pattern, file_name));
+        int is_dir_ = lib_fs_is_dirent_dir(file);
 
         if (!is_match && is_dir_ && is_force_pattern && !is_force_ignore) {
             is_match = 1;
@@ -1416,7 +1416,7 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
                 continue; // notning
             }
 
-            char* full_name = fs_get_normalize_path(dir_name, file_name);
+            char* full_name = lib_fs_get_normalize_path(dir_name, file_name);
 
             //printf("match: full_name    : %s\n", full_name);
 
@@ -1429,22 +1429,22 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
                 if (list[index] == NULL) { // NULL-terminate array: +1
                     const int inc = 10;	/* increase by this much */
                     int size = index + inc;
-                    if (fs_files_reinit(files, size) != 0) {                        
+                    if (lib_fs_files_reinit(files, size) != 0) {                        
                         free(full_name);
-                        fs_files_free(*files);
-                        fs_close_dir(dir);
+                        lib_fs_files_free(*files);
+                        lib_fs_close_dir(dir);
                         return -1;
                     }
                 }
 
-                fs_file_t* file_s = fs_file_new();
+                fs_file_t* file_s = lib_fs_file_new();
                 file_s->name = strdup(full_name);
                 file_s->type = file_type;                
 
                 if (use_stat) {
-                    char* real_path = fs_get_real_path(file_s->name);
-                    fs_stat_t* stat = fs_stat_new();
-                    fs_stat(real_path, stat);
+                    char* real_path = lib_fs_get_real_path(file_s->name);
+                    fs_stat_t* stat = lib_fs_stat_new();
+                    lib_fs_stat(real_path, stat);
                     file_s->stat = stat;
                     free(real_path);
                 }
@@ -1471,7 +1471,7 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
             if (mode == 2) {
                //printf("try   : add_dir\n");
 
-               int result = fs_scandir_internal(full_name, patterns, pattern_count, files, file_count, level + 1, max_depth, file_only);
+               int result = lib_fs_scandir_internal(full_name, patterns, pattern_count, files, file_count, level + 1, max_depth, file_only);
                if (result < 0) {
                  //printf("err  : %d\n", result);
                  // error
@@ -1485,11 +1485,11 @@ int fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pat
         // TODO: stderr: error
     //}
 
-    fs_close_dir(dir);
+    lib_fs_close_dir(dir);
     return 0;
 }
 
-int fs_compare_by_type(int type1, int type2) {
+int lib_fs_compare_by_type(int type1, int type2) {
     if (type1 == FS_DIR && type2 != FS_DIR) {
         return -1;
     }
@@ -1501,7 +1501,7 @@ int fs_compare_by_type(int type1, int type2) {
     return 0;
 }
 
-int fs_compare_by_name(const char* name1, const char* name2) {
+int lib_fs_compare_by_name(const char* name1, const char* name2) {
     if (!name1 && !name2) {
         return 0;
     }
@@ -1514,7 +1514,7 @@ int fs_compare_by_name(const char* name1, const char* name2) {
     return strcmp(name1, name2);
 }
 
-int fs_compare_by_size(uint64_t size1, uint64_t size2) {
+int lib_fs_compare_by_size(uint64_t size1, uint64_t size2) {
     if (size2 == size1) {
         return 0;
     }
@@ -1522,7 +1522,7 @@ int fs_compare_by_size(uint64_t size1, uint64_t size2) {
     //return size1 > size2 ? -1 : 1; // ^   
 }
 
-int fs_compare_by_time(long time1, long time2) {
+int lib_fs_compare_by_time(long time1, long time2) {
     if (time2 == time1) {
         return 0;
     }
@@ -1530,7 +1530,7 @@ int fs_compare_by_time(long time1, long time2) {
     //return time1 > time2 ? -1 : 1; // ^   
 }
 
-int fs_compare(const void* v1, const void* v2, fs_file_sort_t file_sort, bool asc, bool is_dir_first) {
+int lib_fs_compare(const void* v1, const void* v2, fs_file_sort_t file_sort, bool asc, bool is_dir_first) {
 
     if (file_sort < 1 || file_sort > 3) {
         return 0;
@@ -1555,7 +1555,7 @@ int fs_compare(const void* v1, const void* v2, fs_file_sort_t file_sort, bool as
         /* Sort by type before: DIR is priority then other types */
         int type1 = f1->type;
         int type2 = f2->type;
-        cmp = fs_compare_by_type(type1, type2);
+        cmp = lib_fs_compare_by_type(type1, type2);
         if (cmp != 0) {
             return cmp;
         }
@@ -1567,59 +1567,59 @@ int fs_compare(const void* v1, const void* v2, fs_file_sort_t file_sort, bool as
         /* Sort By name */
         char *name1 = f1->name;
         char *name2 = f2->name;
-        cmp = fs_compare_by_name(name1, name2);
+        cmp = lib_fs_compare_by_name(name1, name2);
     } else if (file_sort == FS_FILE_SORT_BY_SIZE) {
 
         /* Sort By size */
-        uint64_t size1 = fs_file_get_file_size(f1);
-        uint64_t size2 = fs_file_get_file_size(f2);
-        cmp = fs_compare_by_size(size1, size2);
+        uint64_t size1 = lib_fs_file_get_file_size(f1);
+        uint64_t size2 = lib_fs_file_get_file_size(f2);
+        cmp = lib_fs_compare_by_size(size1, size2);
     } else if (file_sort == FS_FILE_SORT_BY_TIME) {
 
         /* Sort By time */
-        long time1 = fs_file_get_file_mtime(f1);
-        long time2 = fs_file_get_file_mtime(f2);
-        cmp = fs_compare_by_size(time1, time2);
+        long time1 = lib_fs_file_get_file_mtime(f1);
+        long time2 = lib_fs_file_get_file_mtime(f2);
+        cmp = lib_fs_compare_by_size(time1, time2);
     }
 
     return (asc || cmp == 0) ? cmp : (cmp * -1);
 }
 
-int fs_file_sort_by_alpha(const void* v1, const void* v2) {
-    return fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, true, false);
+int lib_fs_file_sort_by_alpha(const void* v1, const void* v2) {
+    return lib_fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, true, false);
 }
 
-int fs_file_sort_by_name(const void* v1, const void* v2) {
-    return fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, true, true);
+int lib_fs_file_sort_by_name(const void* v1, const void* v2) {
+    return lib_fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, true, true);
 }
 
-int fs_file_sort_by_size(const void* v1, const void* v2) {
-    return fs_compare(v1, v2, FS_FILE_SORT_BY_SIZE, true, false);
+int lib_fs_file_sort_by_size(const void* v1, const void* v2) {
+    return lib_fs_compare(v1, v2, FS_FILE_SORT_BY_SIZE, true, false);
 }
 
-int fs_file_sort_by_time(const void* v1, const void* v2) {
-    return fs_compare(v1, v2, FS_FILE_SORT_BY_TIME, true, false);
+int lib_fs_file_sort_by_time(const void* v1, const void* v2) {
+    return lib_fs_compare(v1, v2, FS_FILE_SORT_BY_TIME, true, false);
 }
 
 ////
 
-int fs_file_sort_by_alpha_desc(const void* v1, const void* v2) {
-    return fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, false, false);
+int lib_fs_file_sort_by_alpha_desc(const void* v1, const void* v2) {
+    return lib_fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, false, false);
 }
 
-int fs_file_sort_by_name_desc(const void* v1, const void* v2) {
-    return fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, false, true);
+int lib_fs_file_sort_by_name_desc(const void* v1, const void* v2) {
+    return lib_fs_compare(v1, v2, FS_FILE_SORT_BY_NAME, false, true);
 }
 
-int fs_file_sort_by_size_desc(const void* v1, const void* v2) {
-    return fs_compare(v1, v2, FS_FILE_SORT_BY_SIZE, false, false);
+int lib_fs_file_sort_by_size_desc(const void* v1, const void* v2) {
+    return lib_fs_compare(v1, v2, FS_FILE_SORT_BY_SIZE, false, false);
 }
 
 int fs_file_sort_by_time_desc(const void* v1, const void* v2) {
-    return fs_compare(v1, v2, FS_FILE_SORT_BY_TIME, false, false);
+    return lib_fs_compare(v1, v2, FS_FILE_SORT_BY_TIME, false, false);
 }
 
-int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, int max_depth, int file_only) {
+int lib_fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, int max_depth, int file_only) {
     if (!dir_name) {
         return -1;
     }
@@ -1635,22 +1635,22 @@ int fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, in
     int file_count = 0;
     int size = 10; // start size
 
-    fs_files_init(files, size);
+    lib_fs_files_init(files, size);
 
-    fs_scandir_internal(dir_name, /*(const char**)*/ patterns, pattern_count, files, &file_count, 0, max_depth, file_only);
+    lib_fs_scandir_internal(dir_name, /*(const char**)*/ patterns, pattern_count, files, &file_count, 0, max_depth, file_only);
 
     lib_strafree(patterns);
 
     if (files && file_count > 0) {
-        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_alpha);
-        qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_name);
-        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_size);
-        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_time);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), lib_fs_file_sort_by_alpha);
+        qsort(*files, file_count, sizeof(struct fs_file_t*), lib_fs_file_sort_by_name);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), lib_fs_file_sort_by_size);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), lib_fs_file_sort_by_time);
 
-        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_alpha_desc);
-        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_name_desc);
-        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_size_desc);
-        //qsort(*files, file_count, sizeof(struct fs_file_t*), fs_file_sort_by_time_desc);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), lib_fs_file_sort_by_alpha_desc);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), lib_fs_file_sort_by_name_desc);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), lib_fs_file_sort_by_size_desc);
+        //qsort(*files, file_count, sizeof(struct fs_file_t*), lib_fs_file_sort_by_time_desc);
 
     }
     

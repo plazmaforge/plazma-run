@@ -11,17 +11,17 @@
 #include "strlib.h"
 #include "fslib.h"
 
-static int fs_match_file_internal(const char* pattern, const char* name, int mode);
+static int lib_fs_match_file_internal(const char* pattern, const char* name, int mode);
 
-static int fs_match_file_internal(const char* pattern, const char* name);
+static int lib_fs_match_file_internal(const char* pattern, const char* name);
 
 // [allocate]
-char* fs_get_normalize_path(const char* dir_name, const char* file_name) {
-    return fs_get_file_path(dir_name, file_name); // nothing to do 
+char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name) {
+    return lib_fs_get_file_path(dir_name, file_name); // nothing to do 
 }
 
 // [allocate]
-char* fs_get_real_path(const char* path) {
+char* lib_fs_get_real_path(const char* path) {
     if (!path) {
         return NULL;
     }
@@ -33,7 +33,7 @@ char* fs_get_real_path(const char* path) {
 }
 
 // [allocate]
-char* fs_get_current_dir() {
+char* lib_fs_get_current_dir() {
   /* Current directory */
   char buf[PATH_MAX];
   //errno = 0;
@@ -45,11 +45,11 @@ char* fs_get_current_dir() {
   return NULL;
 }
 
-const char* fs_get_current_find_path() {
+const char* lib_fs_get_current_find_path() {
     return ".";
 }
 
-int fs_is_current_find_path(const char* path) {
+int lib_fs_is_current_find_path(const char* path) {
     if (!path) {
         return 0;
     }
@@ -58,14 +58,14 @@ int fs_is_current_find_path(const char* path) {
 
 ////
 
-static int _fs_is_dir(struct dirent* file) {
+static int _lib_fs_is_dir(struct dirent* file) {
     if (file == NULL) {
         return false;
     }
     return file->d_type == DT_DIR;
 }
 
-static void _fs_normalize_slash(char* path, size_t len) {
+static void _lib_fs_normalize_slash(char* path, size_t len) {
     lib_replace_len(path, len, '\\', '/');
 }
 
@@ -121,21 +121,21 @@ static void _fs_normalize_slash(char* path, size_t len) {
 
 ////
 
-int fs_is_dirent_dir(fs_dirent_t* dirent) {
+int lib_fs_is_dirent_dir(fs_dirent_t* dirent) {
     if (!dirent) {
         return 0;
     }
     return dirent->fd->d_type == DT_DIR;
 }
 
-int fs_get_dirent_type(fs_dirent_t* dirent) {
+int lib_fs_get_dirent_type(fs_dirent_t* dirent) {
     if (!dirent) {
         return 0;
     }
     return dirent->fd->d_type;
 }
 
-fs_dir_t* fs_open_dir(const char* dir_name) {
+fs_dir_t* lib_fs_open_dir(const char* dir_name) {
     if (!dir_name) {
         return NULL;
     }
@@ -154,7 +154,7 @@ fs_dir_t* fs_open_dir(const char* dir_name) {
     return dir;
 }
 
-fs_dirent_t* fs_read_dir(fs_dir_t* dir) {
+fs_dirent_t* lib_fs_read_dir(fs_dir_t* dir) {
     if (!dir) {
         return NULL;
     }
@@ -171,12 +171,12 @@ fs_dirent_t* fs_read_dir(fs_dir_t* dir) {
         return NULL;
     }
     dir->dirent->fd = fd;
-    dir->dirent->type = fs_get_dirent_type(dir->dirent);
+    dir->dirent->type = lib_fs_get_dirent_type(dir->dirent);
     dir->dirent->name = fd->d_name;
     return dir->dirent;
 }
 
-int fs_close_dir(fs_dir_t* dir) {
+int lib_fs_close_dir(fs_dir_t* dir) {
     if (!dir) {
         return 0;
     }
@@ -188,7 +188,7 @@ int fs_close_dir(fs_dir_t* dir) {
 
 ////
 
-static int fs_match_file_internal(const char* pattern, const char* name, int mode) {
+static int lib_fs_match_file_internal(const char* pattern, const char* name, int mode) {
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
     //return fnmatch(pattern, name, FNM_PERIOD) == 0; // true id '0'
 
@@ -199,8 +199,8 @@ static int fs_match_file_internal(const char* pattern, const char* name, int mod
     //return match(name, pattern); // rotate pattern, name !
 }
 
-static int fs_match_file_internal(const char* pattern, const char* name) {
-    return fs_match_file_internal(pattern, name, FNM_PERIOD);
+static int lib_fs_match_file_internal(const char* pattern, const char* name) {
+    return lib_fs_match_file_internal(pattern, name, FNM_PERIOD);
 }
 
 #endif

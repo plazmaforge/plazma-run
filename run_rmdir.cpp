@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     char* dir_name = argv[1];
-    int retval = fs_rmdir(dir_name);
+    int retval = lib_fs_rmdir(dir_name);
     if (retval != 0) {
         fprintf(stderr, "Can't remove directory: %s\n", dir_name);
     }
