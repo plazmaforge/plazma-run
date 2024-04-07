@@ -9,7 +9,7 @@
 
 #include "socketlib.h"
 
-static void socket_set_socketaddr(struct sockaddr_in *a, const char* host, int port) {
+static void lib_socket_set_socketaddr(struct sockaddr_in *a, const char* host, int port) {
     //a->sin_len = sizeof(struct sockaddr_in); // WIN32 (?)
     a->sin_family = AF_INET;
     a->sin_port = htons(port);
@@ -20,11 +20,11 @@ static void socket_set_socketaddr(struct sockaddr_in *a, const char* host, int p
     a->sin_addr.s_addr = addr.s_addr;
 }
 
-static socket_fd_t socket_create_nonblock(int domain, int type, int protocol) {
+static socket_fd_t lib_socket_create_nonblock(int domain, int type, int protocol) {
     socket_fd_t socket_fd = socket(domain, type & ~LIB_SOCKET_NONBLOCK, protocol);
     if ((type & LIB_SOCKET_NONBLOCK) && socket_fd != LIB_SOCKET_NULL 
-        && 0 != socket_nonblock(socket_fd, 1)) {
-        socket_close(socket_fd);
+        && 0 != lib_socket_nonblock(socket_fd, 1)) {
+        lib_socket_close(socket_fd);
         return LIB_SOCKET_NULL;
     }
     return socket_fd;
@@ -32,7 +32,7 @@ static socket_fd_t socket_create_nonblock(int domain, int type, int protocol) {
 
 #ifdef _WIN32
 
-int socket_init(int flags) {
+int lib_socket_init(int flags) {
     if (flags & LIB_SOCKET_INIT_WSA) {
         WSADATA wsa;
         if (0 != WSAStartup(MAKEWORD(2, 2), &wsa))
@@ -49,39 +49,39 @@ int socket_init(int flags) {
 
 static bool is_socket_init = false;
 
-int socket_init_default() {
+int lib_socket_init_default() {
 	if (is_socket_init) {
 		return 0;
 	}
 	is_socket_init = true;
-	return socket_init(LIB_SOCKET_INIT_WSA);
+	return lib_socket_init(LIB_SOCKET_INIT_WSA);
 }
 
-void socket_close(socket_fd_t socket_fd) {
+void lib_socket_close(socket_fd_t socket_fd) {
     if (socket_fd == LIB_SOCKET_NULL) return;
     closesocket(socket_fd);
 }
 
-int socket_nonblock(socket_fd_t socket_fd, int nonblock) {
+int lib_socket_nonblock(socket_fd_t socket_fd, int nonblock) {
     return ioctlsocket(socket_fd, FIONBIO, (unsigned long*) &nonblock);
 }
 
-socket_fd_t socket_create(int domain, int type, int protocol) {
-    return socket_create_nonblock(domain, type, protocol);
+socket_fd_t lib_socket_create(int domain, int type, int protocol) {
+    return lib_socket_create_nonblock(domain, type, protocol);
 }
 
-ssize_t socket_read(socket_fd_t fd, void* ptr, size_t len) {
+ssize_t lib_socket_read(socket_fd_t fd, void* ptr, size_t len) {
     return recv(fd, (char*) ptr, len, 0);
 }
 
-ssize_t socket_write(socket_fd_t fd, void* ptr, size_t len) {
+ssize_t lib_socket_write(socket_fd_t fd, void* ptr, size_t len) {
     return send(fd, (char*) ptr, len, 0);
 }
-int socket_setopt(socket_fd_t fd, int level, int name, const void* val, int len) {
+int lib_socket_setopt(socket_fd_t fd, int level, int name, const void* val, int len) {
 	return setsockopt(fd, level, name, (char*) val, len);
 }
 
-static int socket_getopt(socket_fd_t fd, int level, int name, void* val, int* len) {
+static int lib_socket_getopt(socket_fd_t fd, int level, int name, void* val, int* len) {
     return getsockopt(fd, level, name, (char*) val, len);
 }
 #else
@@ -99,7 +99,7 @@ static int socket_getopt(socket_fd_t fd, int level, int name, void* val, int* le
 //#include <netdb.h>
 //#include <errno.h>
 
-int socket_init(int flags) {
+int lib_socket_init(int flags) {
     if (flags & LIB_SOCKET_INIT_SIGPIPE) {
         struct sigaction sa = {};
         sa.sa_handler = SIG_IGN;
@@ -108,51 +108,51 @@ int socket_init(int flags) {
     return 0;
 }
 
-void socket_close(socket_fd_t socket_fd) {
+void lib_socket_close(socket_fd_t socket_fd) {
     if (socket_fd == LIB_SOCKET_NULL) return;
     close(socket_fd);
 }
 
-int socket_nonblock(socket_fd_t socket_fd, int nonblock) {
+int lib_socket_nonblock(socket_fd_t socket_fd, int nonblock) {
     return ioctl(socket_fd, FIONBIO, &nonblock);
 }
 
-socket_fd_t socket_create(int domain, int type, int protocol) {
+socket_fd_t lib_socket_create(int domain, int type, int protocol) {
 #if (defined __APPLE__ && defined __MACH__)
-    socket_fd_t socket_fd = socket_create_nonblock(domain, type, protocol);
+    socket_fd_t socket_fd = lib_socket_create_nonblock(domain, type, protocol);
     return socket_fd;
 #else
     return socket(domain, type, protocol);
 #endif
 }
 
-ssize_t socket_read(socket_fd_t fd, void* ptr, size_t len) {
+ssize_t lib_socket_read(socket_fd_t fd, void* ptr, size_t len) {
     return read(fd, ptr, len);
 	//return recv(fd, ptr, len, 0);
 }
 
-ssize_t socket_write(socket_fd_t fd, void* ptr, size_t len) {
+ssize_t lib_socket_write(socket_fd_t fd, void* ptr, size_t len) {
     return write(fd, ptr, len);
 }
 
-int socket_setopt(socket_fd_t fd, int level, int name, const void* val, int len) {
+int lib_socket_setopt(socket_fd_t fd, int level, int name, const void* val, int len) {
 	return setsockopt(fd, level, name, val, len);
 }
 
-static int socket_getopt(socket_fd_t fd, int level, int name, void* val, int* len) {
+static int lib_socket_getopt(socket_fd_t fd, int level, int name, void* val, int* len) {
     return getsockopt(fd, level, name, val, (socklen_t*) len);
 }
 #endif
 
 ////
 
-int socket_connect_fd(socket_fd_t socket_fd, const struct sockaddr* addr, int len) {
+int lib_socket_connect_fd(socket_fd_t socket_fd, const struct sockaddr* addr, int len) {
     if (0 != connect(socket_fd, /*(struct sockaddr*) &addr*/ addr, len))
         return -1;
     return 0;
 }
 
-socket_fd_t socket_connect(const char* host, int port) {
+socket_fd_t lib_socket_connect(const char* host, int port) {
 
 #ifdef _WIN32    
     socket_init_default();
@@ -179,14 +179,14 @@ socket_fd_t socket_connect(const char* host, int port) {
 	//if ((ai_err = getaddrinfo(host, port_s, &hints, &res)) != 0) { fprintf(stderr, "can't resolve %s:%s: %s\n", host, port_s, gai_strerror(ai_err)); return -1; }
 	//if ((fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1) __err_connect("socket");
 
-	if ((fd = socket_create(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == LIB_SOCKET_NULL) __err_connect("socket");
+	if ((fd = lib_socket_create(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == LIB_SOCKET_NULL) __err_connect("socket");
 
 	/* The following two setsockopt() are used by ftplib
 	 * (http://nbpfaus.net/~pfau/ftplib/). I am not sure if they
 	 * necessary. */
 
-	if (socket_setopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1) __err_connect("setsockopt");
-	if (socket_setopt(fd, SOL_SOCKET, SO_LINGER, &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
+	if (lib_socket_setopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1) __err_connect("setsockopt");
+	if (lib_socket_setopt(fd, SOL_SOCKET, SO_LINGER, &lng, sizeof(lng)) == -1) __err_connect("setsockopt");
 
 	//if (connect(fd, res->ai_addr, res->ai_addrlen) != 0) __err_connect("connect");
 	//if (socket_connect_fd(fd, res->ai_addr, res->ai_addrlen) != 0) __err_connect("connect");
@@ -210,7 +210,7 @@ socket_fd_t socket_connect(const char* host, int port) {
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
 
-	if (socket_connect_fd(fd, (struct sockaddr*) &server, sizeof(server)) != 0) __err_connect("connect");
+	if (lib_socket_connect_fd(fd, (struct sockaddr*) &server, sizeof(server)) != 0) __err_connect("connect");
 
 	//freeaddrinfo(res);
 
@@ -219,7 +219,7 @@ socket_fd_t socket_connect(const char* host, int port) {
 
 ////
 
-static int socket_wait(int fd, int is_read) {
+static int lib_socket_wait(int fd, int is_read) {
 	fd_set fds, *fdr = 0, *fdw = 0;
 	struct timeval tv;
 	int ret;
@@ -251,8 +251,8 @@ off_t _net_read(socket_fd_t fd, void *buf, off_t len) {
 	 * one call. They have to be called repeatedly. */
 
 	while (rest) {
-		if (socket_wait(fd, 1) <= 0) break; // socket is not ready for reading
-		curr = socket_read(fd, (char*) buf + l, rest); // TODO (!) void* -> char*
+		if (lib_socket_wait(fd, 1) <= 0) break; // socket is not ready for reading
+		curr = lib_socket_read(fd, (char*) buf + l, rest); // TODO (!) void* -> char*
 
 		/* According to the glibc manual, section 13.2, a zero returned
 		 * value indicates end-of-file (EOF), which should mean that
@@ -651,7 +651,7 @@ int net_http_connect_file(nf_file_t* fp) {
 		return -1;
 	}
 
-	fp->fd = socket_connect(fp->host, fp->port);
+	fp->fd = lib_socket_connect(fp->host, fp->port);
 
 	if (fp->fd == LIB_SOCKET_NULL) {
 		fprintf(stderr, "Cannot open HTTP connection. host: %s port: %i\n", fp->host, fp->port);
@@ -676,7 +676,7 @@ int net_http_connect_file(nf_file_t* fp) {
     len += sprintf(buf + len, "Range: bytes=%lld-\r\n", (long long) fp->offset);
 	len += sprintf(buf + len, "\r\n");
 
-	int ssize = socket_write(fp->fd, buf, len);
+	int ssize = lib_socket_write(fp->fd, buf, len);
 
 	//printf("\n");
 	//printf("write_size: %i\n", ssize);
@@ -691,7 +691,7 @@ int net_http_connect_file(nf_file_t* fp) {
 	}
 
 	len = 0;
-	while (socket_read(fp->fd, buf + len, 1)) { // read HTTP header
+	while (lib_socket_read(fp->fd, buf + len, 1)) { // read HTTP header
 		//printf("%c", buf[len]);
 		if (buf[len] == '\n' && len >= 3)
 			if (strncmp(buf + len - 3, "\r\n\r\n", 4) == 0) break;
@@ -712,7 +712,7 @@ int net_http_connect_file(nf_file_t* fp) {
 	buf[len] = 0;
 	if (len < 14) { // prematured header
 	    //printf("Header\n");
-		socket_close(fp->fd);
+		lib_socket_close(fp->fd);
 		fp->fd = -1;
 		return -1;
 	}
@@ -728,7 +728,7 @@ int net_http_connect_file(nf_file_t* fp) {
 	} else if (ret != 206 && ret != 200) {
 		free(buf);
 		fprintf(stderr, "[http_connect_file] fail to open file (HTTP code: %d).\n", ret);
-		socket_close(fp->fd);
+		lib_socket_close(fp->fd);
 		fp->fd = -1;
 		return -1;
 	}

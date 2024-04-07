@@ -68,19 +68,21 @@ typedef struct nf_file_s {
 
 } nf_file_t;
 
-int socket_init(int flags);
+int lib_socket_init(int flags);
 
-void socket_close(socket_fd_t socket_fd);
+void lib_socket_close(socket_fd_t socket_fd);
 
-int socket_nonblock(socket_fd_t socket_fd, int nonblock);
+int lib_socket_nonblock(socket_fd_t socket_fd, int nonblock);
 
-socket_fd_t socket_create(int domain, int type, int protocol);
+socket_fd_t lib_socket_create(int domain, int type, int protocol);
 
-ssize_t socket_read(socket_fd_t fd, void* ptr, size_t len);
+ssize_t lib_socket_read(socket_fd_t fd, void* ptr, size_t len);
 
-socket_fd_t socket_connect(const char* host, int port);
+socket_fd_t lib_socket_connect(const char* host, int port);
 
-ssize_t socket_write(socket_fd_t fd, void* ptr, size_t len);
+ssize_t lib_socket_write(socket_fd_t fd, void* ptr, size_t len);
+
+////
 
 nf_file_t* net_ftp_parse_url(const char* fn, const char* mode);
 
