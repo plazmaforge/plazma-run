@@ -12,12 +12,12 @@
 
 // https://www.delftstack.com/howto/c/read-binary-file-in-c/
 
-char* read_bytes(const char* file_name) {
+char* lib_io_read_bytes(const char* file_name) {
     size_t size = 0;
-    return read_bytes_size(file_name, size);
+    return lib_io_read_bytes_size(file_name, size);
 }
 
-char* read_bytes_size(const char* file_name, size_t& size) {
+char* lib_io_read_bytes_size(const char* file_name, size_t& size) {
 
   // Read
   FILE* in_file = fopen(file_name, "rb");
@@ -51,7 +51,7 @@ char* read_bytes_size(const char* file_name, size_t& size) {
 
 }
 
-void write_bytes_size(const char* file_name, char* data, size_t& size) {
+void lib_io_write_bytes_size(const char* file_name, char* data, size_t& size) {
 
   // Write
   FILE* output_file = fopen(file_name, "wb+");

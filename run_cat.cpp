@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
         file_size = 0;
 
         file_data = (file_data_t*) malloc(sizeof(file_data_t));
-        file_data->data = read_bytes_size(file_name, file_size);
+        file_data->data = lib_io_read_bytes_size(file_name, file_size);
         file_data->size = file_size;
 
         file_list[i - 1] = file_data;

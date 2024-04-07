@@ -483,7 +483,7 @@ int run_ssl_dump(const char* file_name) {
     }
 
     size_t size = 0;
-    char* buf = read_bytes_size(file_name, size);
+    char* buf = lib_io_read_bytes_size(file_name, size);
     if (size == 0 || !buf) {
         fprintf(stderr, "No input buf\n");
         return 1;

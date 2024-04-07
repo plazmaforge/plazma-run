@@ -24,7 +24,7 @@ int run_hex_byte(const char* file_name) {
     }
 
     size_t size = 0;
-    char* data = read_bytes_size(file_name, size);
+    char* data = lib_io_read_bytes_size(file_name, size);
     if (size == 0 || !data) {
         fprintf(stderr, "No input data\n");
         return 1;

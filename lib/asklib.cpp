@@ -569,7 +569,7 @@ void ask_print_data(const ask_positions_t* positions, const char* data, int data
 void ask_find(const char* file_name, const char* input, int input_size, const ask_config* config) {
 
     size_t file_size = 0;
-    char* data = read_bytes_size(file_name, file_size);
+    char* data = lib_io_read_bytes_size(file_name, file_size);
 
     if (!data) {
         //printf("File '%s' not found\n", fileName);
