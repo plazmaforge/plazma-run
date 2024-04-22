@@ -267,3 +267,11 @@ void lib_replace(char* path, char from, char to) {
     lib_replace_len(path, lib_strlen(path), from, to);
 }
 
+char* lib_strchr_end(char* str, int c) {
+	if (!str) {
+		return NULL;
+	}
+	char* val;
+	for (val = str; *val && *val != c; ++val);
+	return val;
+}

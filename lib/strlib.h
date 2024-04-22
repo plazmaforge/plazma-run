@@ -49,4 +49,6 @@ void lib_replace_len(char* path, size_t len, char from, char to);
 
 void lib_replace(char* path, char from, char to);
 
+char* lib_strchr_end(char* str, int c);
+
 #endif // PLAZMA_LIB_STRLIB_H

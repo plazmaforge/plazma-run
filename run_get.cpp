@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "socketlib.h"
+#include "netlib.h"
 
 void usage() {
     printf("Usage: run-get <url>\n");

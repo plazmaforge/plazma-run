@@ -22,10 +22,6 @@ enum LIB_SOCKET_INIT {
     LIB_SOCKET_INIT_WSAFUNCS = 4, // Windows: get WSA functions.  Use once per module.
 };
 
-#define LIB_NF_TYPE_LOCAL 1
-#define LIB_NF_TYPE_FTP   2
-#define LIB_NF_TYPE_HTTP  3
-
 #ifdef _WIN32
 
 typedef SOCKET socket_fd_t;
@@ -50,24 +46,6 @@ typedef int socket_fd_t;
 
 #endif
 
-typedef struct nf_file_s {
-	int type;
-    socket_fd_t fd;
-	int64_t offset;
-	char *host;
-    int port;
-
-    // HTTP
-    char* path;
-    char* http_host;
-
-    // FTP
-    int is_ready;
-    int64_t seek_offset; // for lazy seek
-    int64_t file_size;
-
-} nf_file_t;
-
 int lib_socket_init(int flags);
 
 void lib_socket_close(socket_fd_t socket_fd);
@@ -84,24 +62,16 @@ ssize_t lib_socket_write(socket_fd_t fd, void* ptr, size_t len);
 
 ////
 
-nf_file_t* net_ftp_parse_url(const char* fn, const char* mode);
+int lib_socket_wait(int fd, int is_read);
 
-int net_ftp_connect_file(nf_file_t* fp);
+////
 
-nf_file_t* net_http_parse_url(const char* fn, const char* mode);
+void print_buf_v1(const char* buf, int len, const char* marker);
 
-int net_http_connect_file(nf_file_t* fp);
+void print_buf_v2(const char* buf, int len, const char* marker);
 
-off_t net_read(nf_file_t* fp, void* buf, off_t len);
+void print_buf(const char* buf, int len, const char* marker);
 
-off_t net_seek(nf_file_t* fp, int64_t off, int whence);
-
-nf_file_t* net_parse_url(const char* url, const char* mode);
-
-int net_connect_file(nf_file_t* fp);
-
-nf_file_t* net_open(const char* url, const char* mode);
-
-char* net_get_file_contents(nf_file_t* fp, int* size);
+void print_test_buf(const char* buf, int len);
 
 #endif // PLAZMA_LIB_SOCKETLIB_H
