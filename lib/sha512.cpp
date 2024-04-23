@@ -37,11 +37,11 @@ static void sha512_put_uint64_be(uint64_t n, unsigned char *b, uint8_t i) {
 #define sha512_put_uint64_be    LIB_PUT_UINT64_BE
 #endif /* LIB_SHA512_SMALLER */
 
-void lib_sha512_init(lib_sha512_context *ctx) {
+void lib_sha512_init(lib_sha512_context_t *ctx) {
     memset(ctx, 0, sizeof(lib_sha512_context));
 }
 
-void lib_sha512_free(lib_sha512_context *ctx) {
+void lib_sha512_free(lib_sha512_context_t *ctx) {
     if (ctx == NULL) {
         return;
     }
@@ -49,14 +49,14 @@ void lib_sha512_free(lib_sha512_context *ctx) {
     lib_platform_zeroize(ctx, sizeof(lib_sha512_context));
 }
 
-void lib_sha512_clone(lib_sha512_context *dst, const lib_sha512_context *src) {
+void lib_sha512_clone(lib_sha512_context_t *dst, const lib_sha512_context_t *src) {
     *dst = *src;
 }
 
 /*
  * SHA-512 context setup
  */
-int lib_sha512_starts(lib_sha512_context *ctx, int is384) {
+int lib_sha512_starts(lib_sha512_context_t *ctx, int is384) {
 #if defined(LIB_SHA384_C) && defined(LIB_SHA512_C)
     if (is384 != 0 && is384 != 1) {
         return LIB_ERR_SHA512_BAD_INPUT_DATA;
@@ -161,7 +161,7 @@ static const uint64_t K[80] =
 #if !defined(LIB_SHA512_PROCESS_ALT) && !defined(LIB_SHA512_USE_A64_CRYPTO_ONLY)
 
 
-int lib_internal_sha512_process_c(lib_sha512_context *ctx, const unsigned char data[SHA512_BLOCK_SIZE]) {
+int lib_internal_sha512_process_c(lib_sha512_context_t *ctx, const unsigned char data[SHA512_BLOCK_SIZE]) {
     int i;
     struct {
         uint64_t temp1, temp2, W[80];
@@ -256,7 +256,7 @@ int lib_internal_sha512_process_c(lib_sha512_context *ctx, const unsigned char d
 
 #if !defined(LIB_SHA512_USE_A64_CRYPTO_ONLY)
 
-static size_t lib_internal_sha512_process_many_c(lib_sha512_context *ctx, const uint8_t *data, size_t len) {
+static size_t lib_internal_sha512_process_many_c(lib_sha512_context_t *ctx, const uint8_t *data, size_t len) {
     size_t processed = 0;
 
     while (len >= SHA512_BLOCK_SIZE) {
@@ -279,7 +279,7 @@ static size_t lib_internal_sha512_process_many_c(lib_sha512_context *ctx, const 
 /*
  * SHA-512 process buffer
  */
-int lib_sha512_update(lib_sha512_context *ctx,
+int lib_sha512_update(lib_sha512_context_t *ctx,
                           const unsigned char *input,
                           size_t ilen)
 {
@@ -333,7 +333,7 @@ int lib_sha512_update(lib_sha512_context *ctx,
 /*
  * SHA-512 final digest
  */
-int lib_sha512_finish(lib_sha512_context *ctx, unsigned char *output) {
+int lib_sha512_finish(lib_sha512_context_t *ctx, unsigned char *output) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned used;
     uint64_t high, low;
@@ -406,7 +406,7 @@ exit:
  */
 int lib_sha512(const unsigned char *input, size_t ilen, unsigned char *output, int is384) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
-    lib_sha512_context ctx;
+    lib_sha512_context_t ctx;
 
 #if defined(LIB_SHA384_C) && defined(LIB_SHA512_C)
     if (is384 != 0 && is384 != 1) {
@@ -527,7 +527,7 @@ static int lib_sha512_common_self_test(int verbose, int is384) {
     int i, buflen, ret = 0;
     unsigned char *buf;
     unsigned char sha512sum[64];
-    lib_sha512_context ctx;
+    lib_sha512_context_t ctx;
 
 #if defined(LIB_SHA384_C) && defined(LIB_SHA512_C)
     sha_test_sum_t *sha_test_sum = (is384) ? sha384_test_sum : sha512_test_sum;

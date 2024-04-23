@@ -13,6 +13,10 @@
 #include "sha256.h"
 #endif
 
+#if defined(LIB_MD_CAN_SHA512)
+#include "sha512.h"
+#endif
+
 #if defined(LIB_MD_C)
 #define MD_INFO(type, out_size, block_size) type, out_size, block_size,
 #else
@@ -38,6 +42,19 @@ static const lib_md_info_t lib_sha224_info = {
  };
 #endif
 
+#if defined(LIB_MD_CAN_SHA384)
+static const lib_md_info_t lib_sha384_info = {
+    MD_INFO(LIB_MD_SHA384, 48, 128)
+};
+#endif
+
+#if defined(LIB_MD_CAN_SHA512)
+static const lib_md_info_t lib_sha512_info = {
+    MD_INFO(LIB_MD_SHA512, 64, 128)
+};
+#endif
+
+
 const lib_md_info_t* lib_md_info_from_type(lib_md_type_t md_type) {
     switch (md_type) {
 
@@ -52,6 +69,14 @@ const lib_md_info_t* lib_md_info_from_type(lib_md_type_t md_type) {
 #if defined(LIB_MD_CAN_SHA256)
         case LIB_MD_SHA256:
             return &lib_sha256_info;
+#endif
+#if defined(LIB_MD_CAN_SHA384)
+        case LIB_MD_SHA384:
+            return &lib_sha384_info;
+#endif
+#if defined(LIB_MD_CAN_SHA512)
+        case LIB_MD_SHA512:
+            return &lib_sha512_info;
 #endif
 
         default:
@@ -96,6 +121,16 @@ void lib_md_free(lib_md_context_t *ctx) {
         case LIB_MD_SHA256:
             lib_sha256_free((lib_sha256_context_t*) ctx->md_ctx);
             break;
+#endif
+#if defined(LIB_SHA384_C)
+            case LIB_MD_SHA384:
+                lib_sha512_free((lib_sha512_context_t*) ctx->md_ctx);
+                break;
+#endif
+#if defined(LIB_SHA512_C)
+            case LIB_MD_SHA512:
+                lib_sha512_free((lib_sha512_context_t*) ctx->md_ctx);
+                break;
 #endif
 
         default:
@@ -165,6 +200,18 @@ int lib_md_setup(lib_md_context_t *ctx, const lib_md_info_t *md_info, int hmac) 
             lib_sha256_init((lib_sha256_context_t*) ctx->md_ctx);
             break;
 #endif
+#if defined(LIB_SHA384_C)
+        case LIB_MD_SHA384:
+            ALLOC(sha512);
+            lib_sha512_init((lib_sha512_context_t*) ctx->md_ctx);
+            break;
+#endif
+#if defined(LIB_SHA512_C)
+        case LIB_MD_SHA512:
+            ALLOC(sha512);
+            lib_sha512_init((lib_sha512_context_t*) ctx->md_ctx);
+            break;
+#endif
 
         default:
             return LIB_ERR_MD_BAD_INPUT_DATA;
@@ -207,6 +254,15 @@ int lib_md_starts(lib_md_context_t *ctx) {
         case LIB_MD_SHA256:
             return lib_sha256_starts((lib_sha256_context_t*) ctx->md_ctx, 0);
 #endif
+#if defined(LIB_SHA384_C)
+        case LIB_MD_SHA384:
+            return lib_sha512_starts((lib_sha512_context_t*) ctx->md_ctx, 1);
+#endif
+#if defined(LIB_SHA512_C)
+        case LIB_MD_SHA512:
+            return lib_sha512_starts((lib_sha512_context_t*) ctx->md_ctx, 0);
+#endif
+
         default:
             return LIB_ERR_MD_BAD_INPUT_DATA;
     }
@@ -232,6 +288,15 @@ int lib_md_update(lib_md_context_t *ctx, const unsigned char *input, size_t ilen
         case LIB_MD_SHA256:
             return lib_sha256_update((lib_sha256_context_t*) ctx->md_ctx, input, ilen);
 #endif
+#if defined(LIB_SHA384_C)
+        case LIB_MD_SHA384:
+            return lib_sha512_update((lib_sha512_context_t*) ctx->md_ctx, input, ilen);
+#endif
+#if defined(LIB_SHA512_C)
+        case LIB_MD_SHA512:
+            return lib_sha512_update((lib_sha512_context_t*) ctx->md_ctx, input, ilen);
+#endif
+
         default:
             return LIB_ERR_MD_BAD_INPUT_DATA;
     }
@@ -256,6 +321,14 @@ int lib_md_finish(lib_md_context_t *ctx, unsigned char *output) {
 #if defined(LIB_SHA256_C)
         case LIB_MD_SHA256:
             return lib_sha256_finish((lib_sha256_context_t*) ctx->md_ctx, output);
+#endif
+#if defined(LIB_SHA384_C)
+        case LIB_MD_SHA384:
+            return lib_sha512_finish((lib_sha512_context_t*) ctx->md_ctx, output);
+#endif
+#if defined(LIB_SHA512_C)
+        case LIB_MD_SHA512:
+            return lib_sha512_finish((lib_sha512_context_t*) ctx->md_ctx, output);
 #endif
 
         default:
@@ -282,6 +355,15 @@ int lib_md(const lib_md_info_t *md_info, const unsigned char *input, size_t ilen
         case LIB_MD_SHA256:
             return lib_sha256(input, ilen, output, 0);
 #endif
+#if defined(LIB_SHA384_C)
+        case LIB_MD_SHA384:
+            return lib_sha512(input, ilen, output, 1);
+#endif
+#if defined(LIB_SHA512_C)
+        case LIB_MD_SHA512:
+            return lib_sha512(input, ilen, output, 0);
+#endif
+
         default:
             return LIB_ERR_MD_BAD_INPUT_DATA;
     }

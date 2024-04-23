@@ -1,9 +1,5 @@
-
-// /**
-//  * \file sha512.h
-//  * \brief This file contains SHA-384 and SHA-512 definitions and functions.
-//  *
-//  */
+#ifndef PLAZMA_SHA512_H
+#define PLAZMA_SHA512_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,7 +11,7 @@
 extern "C" {
 #endif
 
-typedef struct lib_sha512_context {
+typedef struct lib_sha512_context_t {
     uint64_t total[2];          /*!< The number of Bytes processed. */
     uint64_t state[8];          /*!< The intermediate digest state. */
     unsigned char buffer[128];  /*!< The data block being processed. */
@@ -25,19 +21,19 @@ typedef struct lib_sha512_context {
 }
 lib_sha512_context;
 
-void lib_sha512_init(lib_sha512_context *ctx);
+void lib_sha512_init(lib_sha512_context_t *ctx);
 
-void lib_sha512_free(lib_sha512_context *ctx);
+void lib_sha512_free(lib_sha512_context_t *ctx);
 
-void lib_sha512_clone(lib_sha512_context *dst, const lib_sha512_context *src);
+void lib_sha512_clone(lib_sha512_context_t *dst, const lib_sha512_context_t *src);
 
-int lib_sha512_starts(lib_sha512_context *ctx, int is384);
+int lib_sha512_starts(lib_sha512_context_t *ctx, int is384);
 
-int lib_sha512_update(lib_sha512_context *ctx, const unsigned char *input, size_t ilen);
+int lib_sha512_update(lib_sha512_context_t *ctx, const unsigned char *input, size_t ilen);
 
-int lib_sha512_finish(lib_sha512_context *ctx, unsigned char *output);
+int lib_sha512_finish(lib_sha512_context_t *ctx, unsigned char *output);
 
-int lib_internal_sha512_process(lib_sha512_context *ctx, const unsigned char data[128]);
+int lib_internal_sha512_process(lib_sha512_context_t *ctx, const unsigned char data[128]);
 
 int lib_sha512(const unsigned char *input, size_t ilen, unsigned char *output, int is384);
 
@@ -57,3 +53,4 @@ int lib_sha512_self_test(int verbose);
 }
 #endif
 
+#endif /* PLAZMA_SHA512_H */
