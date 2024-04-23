@@ -255,4 +255,41 @@ static inline void lib_put_unaligned_uint64(void *p, uint64_t x) {
         }                                                                             \
     }
 
+////
+
+#define LIB_GET_UINT64_BE(data, offset)                                          \
+    ((LIB_IS_BIG_ENDIAN)                                                         \
+        ? lib_get_unaligned_uint64((data) + (offset))                                \
+        : LIB_BSWAP64(lib_get_unaligned_uint64((data) + (offset)))                   \
+    )
+
+#define LIB_PUT_UINT64_BE(n, data, offset)                                          \
+    {                                                                               \
+        if (LIB_IS_BIG_ENDIAN)                                                      \
+        {                                                                           \
+            lib_put_unaligned_uint64((data) + (offset), (uint64_t) (n));            \
+        }                                                                           \
+        else                                                                        \
+        {                                                                           \
+            lib_put_unaligned_uint64((data) + (offset), LIB_BSWAP64((uint64_t) (n))); \
+        }                                                                           \
+    }
+
+#define LIB_GET_UINT64_LE(data, offset)                                            \
+    ((LIB_IS_BIG_ENDIAN)                                                           \
+        ? LIB_BSWAP64(lib_get_unaligned_uint64((data) + (offset)))                 \
+        : lib_get_unaligned_uint64((data) + (offset))                              \
+    )
+
+#define LIB_PUT_UINT64_LE(n, data, offset)                                        \
+    {                                                                             \
+        if (LIB_IS_BIG_ENDIAN)                                                    \
+        {                                                                         \
+            lib_put_unaligned_uint64((data) + (offset), LIB_BSWAP64((uint64_t) (n))); \
+        }                                                                        \
+        else                                                                     \
+        {                                                                        \
+            lib_put_unaligned_uint64((data) + (offset), (uint64_t) (n));         \
+        }                                                                        \
+    }
 #endif /* PLAZMA_LIB_ALIGNMENT_H */

@@ -34,6 +34,7 @@ rem compile
 %CC% %CFLAGS% lib/md.cpp -o md.o
 %CC% %CFLAGS% lib/md5.cpp -o md5.o
 %CC% %CFLAGS% lib/sha256.cpp -o sha256.o
+%CC% %CFLAGS% lib/sha512.cpp -o sha512.o
 
 %CC% %CFLAGS% run_dump.cpp -o run_dump.o
 %CC% %CFLAGS% run_echo.cpp -o run_echo.o
@@ -54,6 +55,7 @@ rem compile
 %CC% %CFLAGS% run_md5.cpp -o run_md5.o
 %CC% %CFLAGS% run_sha224.cpp -o run_sha224.o
 %CC% %CFLAGS% run_sha256.cpp -o run_sha256.o
+%CC% %CFLAGS% run_sha512.cpp -o run_sha512.o
 
 %CC% %CFLAGS% run_hex_byte.cpp -o run_hex_byte.o
 %CC% %CFLAGS% run_ssl_dump.cpp -o run_ssl_dump.o
@@ -82,6 +84,7 @@ rem link
 %CC% %LDFLAGS% common.o md5.o run_md5.o -o run-md5.exe
 %CC% %LDFLAGS% common.o sha256.o run_sha224.o -o run-sha224.exe
 %CC% %LDFLAGS% common.o sha256.o run_sha256.o -o run-sha256.exe
+%CC% %LDFLAGS% common.o sha512.o run_sha512.o -o run-sha512.exe
 
 %CC% %LDFLAGS% getopt.o iolib.o run_hex_byte.o -o run-hex-byte.exe
 %CC% %LDFLAGS% getopt.o iolib.o run_ssl_dump.o -o run-ssl-dump.exe

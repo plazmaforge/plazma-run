@@ -20,6 +20,16 @@
 #define LIB_CAN_SHA256
 #define LIB_SHA256_C
 
+/* SHA-384 */
+#define LIB_MD_CAN_SHA384
+#define LIB_CAN_SHA384
+#define LIB_SHA384_C
+
+/* SHA-512 */
+#define LIB_MD_CAN_SHA512
+#define LIB_CAN_SHA512
+#define LIB_SHA512_C
+
 #define LIB_ERR_MD_FEATURE_UNAVAILABLE                -0x5080
 #define LIB_ERR_MD_BAD_INPUT_DATA                     -0x5100
 #define LIB_ERR_MD_ALLOC_FAILED                       -0x5180
