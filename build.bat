@@ -55,6 +55,7 @@ rem compile
 %CC% %CFLAGS% run_md5.cpp -o run_md5.o
 %CC% %CFLAGS% run_sha224.cpp -o run_sha224.o
 %CC% %CFLAGS% run_sha256.cpp -o run_sha256.o
+%CC% %CFLAGS% run_sha384.cpp -o run_sha384.o
 %CC% %CFLAGS% run_sha512.cpp -o run_sha512.o
 
 %CC% %CFLAGS% run_hex_byte.cpp -o run_hex_byte.o
@@ -84,6 +85,7 @@ rem link
 %CC% %LDFLAGS% common.o md5.o run_md5.o -o run-md5.exe
 %CC% %LDFLAGS% common.o sha256.o run_sha224.o -o run-sha224.exe
 %CC% %LDFLAGS% common.o sha256.o run_sha256.o -o run-sha256.exe
+%CC% %LDFLAGS% common.o sha512.o run_sha384.o -o run-sha384.exe
 %CC% %LDFLAGS% common.o sha512.o run_sha512.o -o run-sha512.exe
 
 %CC% %LDFLAGS% getopt.o iolib.o run_hex_byte.o -o run-hex-byte.exe
