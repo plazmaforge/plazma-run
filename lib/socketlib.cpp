@@ -32,6 +32,8 @@ static socket_fd_t lib_socket_create_nonblock(int domain, int type, int protocol
 
 #ifdef _WIN32
 
+static bool is_socket_init = false;
+
 int lib_socket_init(int flags) {
     if (flags & LIB_SOCKET_INIT_WSA) {
         WSADATA wsa;
@@ -46,8 +48,6 @@ int lib_socket_init(int flags) {
 
     return 0;
 }
-
-static bool is_socket_init = false;
 
 int lib_socket_init_default() {
 	if (is_socket_init) {
@@ -155,7 +155,7 @@ int lib_socket_connect_fd(socket_fd_t socket_fd, const struct sockaddr* addr, in
 socket_fd_t lib_socket_connect(const char* host, int port) {
 
 #ifdef _WIN32    
-    socket_init_default();
+    lib_socket_init_default();
 #define __err_connect(func) do { fprintf(stderr, "%s: %d\n", func, WSAGetLastError());	return LIB_SOCKET_NULL;} while (0)
 #else
 #define __err_connect(func) do { perror(func); /*freeaddrinfo(res);*/ return LIB_SOCKET_NULL; } while (0)
