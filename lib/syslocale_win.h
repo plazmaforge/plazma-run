@@ -67,7 +67,8 @@ static int getCodepage(LCID lcid) {
 
     if (lcid == 0) {
         codepage = GetACP();
-        _itoa_s(codepage, ret + 2, 14, 10);
+        //_itoa_s(codepage, ret + 2, 14, 10);
+        itoa(codepage, ret + 2, 10);
     } else if (GetLocaleInfo(lcid, LOCALE_IDEFAULTANSICODEPAGE, ret + 2, 14) != 0) {
         codepage = atoi(ret + 2);
     } 
@@ -92,7 +93,8 @@ static char* getEncoding(LCID lcid) {
 
     if (lcid == 0) {
         codepage = GetACP();
-        _itoa_s(codepage, ret + 2, 14, 10);
+        //_itoa_s(codepage, ret + 2, 14, 10);
+        itoa(codepage, ret + 2, 10);
     } else if (GetLocaleInfo(lcid, LOCALE_IDEFAULTANSICODEPAGE, ret + 2, 14) != 0) {
         codepage = atoi(ret + 2);
     }
