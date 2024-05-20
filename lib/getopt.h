@@ -30,9 +30,9 @@ extern char* optinput;
 //extern char* optname;
 extern char *optarg;
 
-extern int optind;
-extern int opterr; 
-extern int optopt;
+extern int optind; // option index
+extern int optopt; // option code
+extern int opterr; // print option error flag (for all options)
 
 int getopt(int argc, char* const argv[], const char* optstr);
 

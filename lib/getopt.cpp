@@ -38,10 +38,11 @@ const option* find_long_option(const option* long_option, int* long_index, const
 }
 
 int check_next_value(int argc, char* const argv[], int optind) {
-    if (optind >= argc) {
+    if (optind + 1 >= argc) {
         return 0;
     }
     char *next = argv[optind + 1];
+    //printf(">> argc: %d, oprind %d, next: '%s'\n", argc, optind, next);
     return next[0] != '-';
 }
 
@@ -59,9 +60,13 @@ int check_multi_short_option(const char* short_option, const char* input, int st
     return 0;
 }
 
-void getopt_init() {
+void getopt_init() {    
     optinput = NULL;
+
     optind = 1;
+    optopt = NULL;
+    optarg = NULL;
+    opterr = 1; // by default: print option error flag = true (for all options)
 
     input = NULL;
     restopt = 0;
@@ -73,15 +78,17 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
         return -1;
     }
 
-    //printf("optind: %d\n",optind);
-    //printf("opterr: %d\n",opterr);
- 
+    //printf(">> optind: %d\n", optind);
+    //printf(">> opterr: %d\n", opterr);
 
     // init
     if (!init) {
         getopt_init();
         init = 1;
     }
+
+    //printf(">> optind: %d\n", optind);
+    //printf(">> opterr: %d\n", opterr);
 
     if (optind >= argc) {
         return -1;
@@ -117,6 +124,7 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
         return -1;
     }
 
+    // Correct print error flag by short option string
     int print_error = opterr;
     if (short_option != NULL) {
         if (short_option[0] == ':') {
@@ -150,7 +158,7 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
 
     int str_len = restopt > 0 ? 1 : input_len - prefix_len;
  
-    //printf(">> optind %d, input %s, name_len %d, print_error %d\n", optind, input, name_len, print_error);
+    //printf(">> optind: %d, input: '%s', input_len %d, str_len %d, print_error %d\n", optind, input, input_len, str_len, print_error);
 
     if (str_len > 1) {
 
@@ -308,7 +316,7 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
 
     if (restopt > 0) {
         optopt = input[restopt];
-        //printf(">> restopt %d, optopt %c\n", restopt, optopt);
+        //printf(">> restopt: %d, optopt: '%c'\n", restopt, optopt);
         if (restopt < input_len) {
             restopt++;
         } else {
@@ -320,6 +328,7 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
     
     // Short option: '-a'
     const char* opt = find_short_option(short_option, ch);
+    //printf(">> short_option: '%s', ch: '%c', opt: '%s'\n", short_option, ch, opt);
 
     if (opt == NULL) {
         if (print_error) {
