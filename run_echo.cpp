@@ -9,14 +9,19 @@
 #include "syslib.h"
 
 void usage() {
-    printf("Usage: run-echo <text>\n");
+    printf("Usage: run-echo [string ...]\n");
 }
 
-void print_input(const char* input) {
-    if (!input) {
-        return;
+void print_args(char* args[], int count, int start, bool trailing) {
+    for (int i = start; i < count; i++) {
+        if (i > start) {
+            printf(" ");
+        }
+        printf("%s", args[i]);
     }
-    printf("%s\n", input);
+    if (trailing) {
+        printf("\n");
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -27,8 +32,9 @@ int main(int argc, char* argv[]) {
 
     init_locale();
 
-    print_input(argv[1]);
+    print_args(argv, argc, 1, true);
 
-    restore_locale(); // Important for WIN32: The locale was changed for the terminal
+    restore_locale();
+    
     return 0;
 }

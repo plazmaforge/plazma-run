@@ -6,22 +6,23 @@
 #include "dumplib.h"
 
 void usage() {
-    printf("Usage: run-dump [-w 16|32] <file>\n");
+    printf("Usage: run-dump [-w 16 | 32] [-a] file\n");
 }
 
 int main(int argc, char* argv[]) {
 
-    if (argc < 2) {
+    int min_arg = 1; // <file>
+    if (argc < min_arg + 1) {
         usage();
         return 0;
     }
 
     int width = DUMP_DEF_COL_COUNT;
-    int show_text = DUMP_DEF_SHOW_TEXT;
+    bool show_text = false; //DUMP_DEF_SHOW_TEXT;
 
     bool error = false;
     int opt;
-    while ((opt = getopt(argc, argv, "w:t")) != -1) {
+    while ((opt = getopt(argc, argv, "w:a")) != -1) {
         switch (opt) {
         case 'w':
             if (optarg) {
@@ -36,16 +37,26 @@ int main(int argc, char* argv[]) {
                 error = true;
             }
             break;
-        case 't':
+        case 'a':
+            /// 'All' - segment, data, text
             show_text = true;
             break;
         case '?':
+            error = true;
+            break;
+        case ':':
             error = true;
             break;
         }
     }
 
     if (error) {
+        usage();
+        return 0;
+    }
+
+    if (argc - optind < min_arg) {
+        printf("%s: Incorrect argument count\n", argv[0]);
         usage();
         return 0;
     }

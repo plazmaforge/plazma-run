@@ -14,14 +14,13 @@
 #include "asklib.h"
 
 void usage() {
-    printf("Usage: run-ask <text> <file> \n");
+    printf("Usage: run-ask [-bil] text file \n");
 }
 
 int main(int argc, char* argv[]) {
 
     int min_arg = 2; // <text> <file>
     if (argc < min_arg + 1) {
-        printf("%s: Incorrect argument count\n", argv[0]);
         usage();
         return 0;
     }
