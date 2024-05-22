@@ -13,7 +13,8 @@
 #include "syslib.h"
 
 void usage() {
-    printf("Usage: run-find <text> <file> \n");
+    printf("Usage: run-find path\n");
+    printf("       run-find pattern\n");
 }
 
 void print_file_path(const char* path) {
@@ -35,7 +36,10 @@ void run_find(const char* dir_name, const char* pattern) {
     fs_file_t* file = NULL;
     int file_count = lib_fs_scandir(dir_name, pattern, &files, FS_SCANDIR_RECURSIVE, true);
 
-    for (int i = 0; i < file_count; i++) {
+    printf("file_count: %d\n", file_count);
+
+    if (file_count > 0) {
+        for (int i = 0; i < file_count; i++) {
             file = files[i];
             if (!file) {
                 // error
@@ -44,20 +48,110 @@ void run_find(const char* dir_name, const char* pattern) {
             print_file(file);
             //free(file);
             //fs_file_free(file);
+        }
     }
 
     lib_fs_files_free(files);
 }
 
+void run_find_by_arg(const char* arg) {
+
+    char* file_name = lib_strdup_uq(arg);
+    char* dir_name = NULL;
+    char* pattern = NULL;
+
+    bool doit = false;
+
+    int wildcard_index = lib_wc_get_wildcard_index(file_name);
+    int path_index = 0;
+
+    //printf(">> file_name: %s\n", file_name);
+    //printf(">> wildcard_index: %d\n", wildcard_index);
+
+    if (wildcard_index >= 0) {
+        
+        //printf(">> mode: wildcard\n");
+
+        // dir1/dir2/file*
+        // dir1/dir2/file?
+
+        // file*
+        // file?
+
+        path_index = lib_wc_get_wildcard_path_index(wildcard_index, file_name);
+        if (path_index >= 0) {
+
+            // dir1/
+            dir_name = lib_strndup(file_name, path_index + 1);
+
+            // dir2/file*
+            // dir2/file?
+
+            file_name = file_name + path_index + 1;
+        } else {
+
+            // .   - Nix
+            // ./* - Win
+            dir_name = lib_strdup(lib_fs_get_current_find_path());
+        }
+
+        pattern = file_name;
+        doit = true;
+
+    } else {
+
+        //printf(">> mode: path\n");
+
+        char* path = lib_fs_get_real_path(file_name);
+        if (path) {
+            print_file_path(path);
+            free(path);
+        } else {
+            dir_name = lib_fs_get_dir_name(file_name);
+            if (!dir_name || strcmp(dir_name, ".") == 0) {
+
+                // Scandir in current directory for one file
+                if (dir_name) {
+                    free(dir_name);
+                }
+                dir_name = lib_strdup(lib_fs_get_current_find_path());
+                pattern = file_name;
+                doit = true;
+
+            } else {
+                free(dir_name);
+                dir_name = NULL;
+            }
+        }
+
+    }
+
+    //printf(">> dir    : %s\n", dir_name);
+    //printf(">> file   : %s\n", file_name);
+    //printf(">> pattern: %s\n", pattern);
+
+    if (doit) {
+        //printf(">> doit\n");
+        run_find(dir_name, pattern);
+    }
+
+    if (file_name && path_index > 0) {
+        file_name = file_name - path_index - 1;
+    }
+
+    free(dir_name);
+    free(file_name);
+
+}
+
 int main(int argc, char* argv[]) {
 
-    /*
     if (argc < 2) {
-        printf("%s: Incorrect argument count\n", argv[0]);
         usage();
         return 0;
     }
 
+    /*
     char* type = NULL;
     char* size = NULL;
 
@@ -101,63 +195,15 @@ int main(int argc, char* argv[]) {
     }
     */
 
-    char* file_name = lib_strdup_uq(argv[1]);
-    char* dir_name = NULL;
-    char* pattern = NULL;
-
-    bool doit = false;
-
     init_locale();
 
-    int wildcard_index = lib_wc_get_wildcard_index(file_name);
-
-    if (wildcard_index >= 0) {
-
-        int path_index = lib_wc_get_wildcard_path_index(wildcard_index, file_name);
-        if (path_index >= 0) {
-            dir_name = lib_strndup(file_name, path_index + 1);
-            file_name = file_name + path_index + 1;
-        } else {
-            dir_name = lib_strdup(lib_fs_get_current_find_path());
-        }
-
-        pattern = file_name;
-        doit = true;
-
-    } else {
-
-        char* path = lib_fs_get_real_path(file_name);
-        if (path) {
-            print_file_path(path);
-            free(path);
-        } else {
-            dir_name = lib_fs_get_dir_name(file_name);
-            if (!dir_name || strcmp(dir_name, ".") == 0) {
-                // Scandir in current directory for one file
-                if (dir_name) {
-                    free(dir_name);
-                }
-                dir_name = lib_strdup(lib_fs_get_current_find_path());
-                pattern = file_name;
-                doit = true;
-
-            } else {
-                free(dir_name);
-            }
-        }
-
+    //printf(">> argc: %d\n",argc);
+    for (int i = 1; i < argc; i++) {
+        //printf(">> arg[%i]: %s\n", i, argv[i]);
+        run_find_by_arg(argv[i]);
     }
 
-    //printf("dir    : %s\n", dir_name);
-    //printf("file   : %s\n", file_name);
-    //printf("pattern: %s\n", pattern);
-
-    if (doit) {
-        //printf("DOIT\n");
-        run_find(dir_name, pattern);
-    }
-
-    restore_locale(); // Important for WIN32: The locale was changed for the terminal
+    restore_locale();
     return 0;
 
 }

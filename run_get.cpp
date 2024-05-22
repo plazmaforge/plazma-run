@@ -5,7 +5,7 @@
 #include "netlib.h"
 
 void usage() {
-    printf("Usage: run-get <url>\n");
+    printf("Usage: run-get url\n");
 }
 
 int run(const char* url) {
