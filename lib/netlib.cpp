@@ -201,15 +201,18 @@ const char* net_get_url_prefix2(const char* url) {
 
 nf_file_t* net_ftp_parse_url(const char* url, const char* mode) {
 	if (!url) {
+		fprintf(stderr, "Cannot parse FTP url. Url is NULL\n");
 		return NULL;
 	}
 	const char* prefix = net_get_ftp_prefix(url);
 
 	if (!prefix) {
+		fprintf(stderr, "Cannot parse FTP url: %s. Incorrect protocol\n", url);
 		return NULL;
 	}
 	int prefix_len = strlen(prefix);
 	if (url[prefix_len] == '\0') {
+		fprintf(stderr, "Cannot parse FTP url: %s. Path is empty\n", url);
 		return NULL;
 	}
 
@@ -240,13 +243,13 @@ nf_file_t* net_http_parse_url(const char* url, const char* mode) {
 	const char* prefix = net_get_http_prefix(url);
 
 	if (!prefix) {
-		fprintf(stderr, "Cannot parse HTTP url: %s\n", url);
+		fprintf(stderr, "Cannot parse HTTP url: %s. Incorrect protocol\n", url);
 		return NULL;
 	}
 
 	int prefix_len = strlen(prefix);
 	if (url[prefix_len] == '\0') {
-		fprintf(stderr, "Cannot parse HTTP url. Url is empty\n");
+		fprintf(stderr, "Cannot parse HTTP url: %s. Path is empty\n", url);
 		return NULL;
 	}
 
@@ -405,6 +408,7 @@ int net_connect_file(nf_file_t* fp) {
 
 nf_file_t* net_parse_url(const char* url, const char* mode) {
 	if (!url) {
+		fprintf(stderr, "Cannot parse url. Url is NULL\n");
 		return NULL;
 	}
 
@@ -416,6 +420,8 @@ nf_file_t* net_parse_url(const char* url, const char* mode) {
 	} else if (net_is_http_url(url)) {
 		// HTTP
 		fp = net_http_parse_url(url, mode);
+	} else {
+		fprintf(stderr, "Cannot parse url: %s. Unsupported protocol\n", url);
 	}
 
 	return fp;

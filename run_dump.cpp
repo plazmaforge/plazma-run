@@ -6,7 +6,7 @@
 #include "dumplib.h"
 
 void usage() {
-    printf("Usage: run-dump [-w 16 | 32] [-a] file\n");
+    fprintf(stderr, "Usage: run-dump [-w 16 | 32] [-a] file\n");
 }
 
 int main(int argc, char* argv[]) {

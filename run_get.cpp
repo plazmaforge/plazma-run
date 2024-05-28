@@ -5,12 +5,13 @@
 #include "netlib.h"
 
 void usage() {
-    printf("Usage: run-get url\n");
+    fprintf(stderr, "Usage: run-get url\n");
 }
 
-int run(const char* url) {
+int run_get(const char* url) {
 
     if (!url) {
+        fprintf(stderr, "Cannot parse url. Url is empty\n");
         return 1;
     }
 
@@ -19,6 +20,7 @@ int run(const char* url) {
 // #endif
 
     // "http://captive.apple.com"
+    //printf(">> url: %s\n", url);
 
     nf_file_t* fp = net_parse_url(url, NULL);
     if (!fp) {
@@ -66,5 +68,5 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     const char* url = argv[1];
-    return run(url);
+    return run_get(url);
 }

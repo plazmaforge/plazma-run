@@ -6,7 +6,7 @@
 #include "fslib.h"
 
 void usage() {
-    printf("Usage: run-mv <src> <dst>\n");
+    fprintf(stderr, "Usage: run-mv source_file target_file\n");
 }
 
 int main(int argc, char* argv[]) {

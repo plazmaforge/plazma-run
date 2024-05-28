@@ -397,10 +397,7 @@ exit:
 /*
  * output = SHA-256( input buffer )
  */
-int lib_sha256(const unsigned char *input,
-                   size_t ilen,
-                   unsigned char *output,
-                   int is224) {
+int lib_sha256(const unsigned char *input, size_t ilen, unsigned char *output, int is224) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
     lib_sha256_context_t ctx;
 

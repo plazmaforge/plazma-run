@@ -5,7 +5,7 @@
 #include "fslib.h"
 
 void usage() {
-    printf("Usage: run-rmdir <dir>\n");
+    fprintf(stderr, "Usage: run-rmdir directory\n");
 }
 
 int main(int argc, char* argv[]) {

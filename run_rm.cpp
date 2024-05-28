@@ -5,7 +5,7 @@
 #include "fslib.h"
 
 void usage() {
-    printf("Usage: run-rm <file>\n");
+    fprintf(stderr, "Usage: run-rm file\n");
 }
 
 int main(int argc, char* argv[]) {

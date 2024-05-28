@@ -13,8 +13,8 @@
 #include "syslib.h"
 
 void usage() {
-    printf("Usage: run-find path\n");
-    printf("       run-find pattern\n");
+    fprintf(stderr, "Usage: run-find path\n");
+    fprintf(stderr, "       run-find pattern\n");
 }
 
 void print_file_path(const char* path) {
@@ -30,7 +30,7 @@ void print_file(fs_file_t* file) {
     free(path);
 }
 
-void run_find(const char* dir_name, const char* pattern) {
+void find_by_pattern(const char* dir_name, const char* pattern) {
 
     fs_file_t** files = NULL;
     fs_file_t* file = NULL;
@@ -54,7 +54,7 @@ void run_find(const char* dir_name, const char* pattern) {
     lib_fs_files_free(files);
 }
 
-void run_find_by_arg(const char* arg) {
+void find_by_arg(const char* arg) {
 
     char* file_name = lib_strdup_uq(arg);
     char* dir_name = NULL;
@@ -132,7 +132,7 @@ void run_find_by_arg(const char* arg) {
 
     if (doit) {
         //printf(">> doit\n");
-        run_find(dir_name, pattern);
+        find_by_pattern(dir_name, pattern);
     }
 
     if (file_name && path_index > 0) {
@@ -200,7 +200,7 @@ int main(int argc, char* argv[]) {
     //printf(">> argc: %d\n",argc);
     for (int i = 1; i < argc; i++) {
         //printf(">> arg[%i]: %s\n", i, argv[i]);
-        run_find_by_arg(argv[i]);
+        find_by_arg(argv[i]);
     }
 
     restore_locale();

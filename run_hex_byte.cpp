@@ -6,7 +6,7 @@
 #include "iolib.h"
 
 void usage() {
-    printf("Usage: run-hex-byte <file>\n");
+    fprintf(stderr, "Usage: run-hex-byte file\n");
 }
 
 int check_byte(char b) {
@@ -27,13 +27,16 @@ int run_hex_byte(const char* file_name) {
     char* data = lib_io_read_bytes_size(file_name, size);
     if (size == 0 || !data) {
         fprintf(stderr, "No input data\n");
+        if (data) {
+            free(data);
+        }        
         return 1;
     }
 
     if (size % 2 > 0) {
-        free(data);
         fprintf(stderr, "Invalid input data: file size [mod] 2 > 0\n");
         //fprintf(stderr, "Invalid input data: file size [mod] 2 > 0. Ignore last byte.\n");
+        free(data);
         return 1;
     }
 
@@ -55,10 +58,10 @@ int run_hex_byte(const char* file_name) {
         j++;
 
         if (!check_byte(b1) || !check_byte(b2)) {
-           free(data);
-           free(out_data);
            fprintf(stderr, "Invalid byte data\n");
            //fprintf(stderr, "Invalid byte data. Ignore following data\n");
+           free(data);
+           free(out_data);
            return 1;
            //break;
         }
@@ -90,6 +93,6 @@ int main(int argc, char* argv[]) {
     setvbuf(stdout, buf, _IOFBF, 65536);
     #endif
 
-    run_hex_byte(file_name);
+    return run_hex_byte(file_name);
 
 }

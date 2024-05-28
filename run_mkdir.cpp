@@ -5,7 +5,7 @@
 #include "fslib.h"
 
 void usage() {
-    printf("Usage: run-mkdir <dir>\n");
+    fprintf(stderr, "Usage: run-mkdir directory\n");
 }
 
 int main(int argc, char* argv[]) {

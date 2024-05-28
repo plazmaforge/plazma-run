@@ -6,7 +6,7 @@
 #include "fslib.h"
 
 void usage() {
-    printf("Usage: run-cp source_file target_file\n");
+    fprintf(stderr, "Usage: run-cp source_file target_file\n");
 }
 
 int main(int argc, char* argv[]) {

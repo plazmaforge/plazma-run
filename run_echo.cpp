@@ -9,7 +9,7 @@
 #include "syslib.h"
 
 void usage() {
-    printf("Usage: run-echo string ...\n");
+    fprintf(stderr, "Usage: run-echo string ...\n");
 }
 
 void print_args(char* args[], int count, int start, bool trailing) {

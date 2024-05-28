@@ -46,7 +46,7 @@ Curve Info          : 03 00 1d        - ("curve x25519")
 */
 
 void usage() {
-    printf("Usage: run-ssl-dump <file>\n");
+    printf("Usage: run-ssl-dump file\n");
 }
 
 void print_buf(const char* buf, size_t cur_pos, size_t data_len) {
@@ -512,6 +512,6 @@ int main(int argc, char* argv[]) {
     setvbuf(stdout, buf, _IOFBF, 65536);
     #endif
 
-    run_ssl_dump(file_name);
+    return run_ssl_dump(file_name);
 }
 

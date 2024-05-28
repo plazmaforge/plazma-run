@@ -13,7 +13,7 @@ struct file_data_t {
 };
 
 void usage() {
-    printf("Usage: run-cat file ...\n");
+    fprintf(stderr, "Usage: run-cat file ...\n");
 }
 
 int main(int argc, char* argv[]) {

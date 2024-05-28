@@ -7,7 +7,7 @@
 #include "fmtlib.h"
 
 void usage() {
-    printf("Usage: run-ls\n");
+    fprintf(stderr, "Usage: run-ls\n");
 }
 
 int main(int argc, char *argv[]) {

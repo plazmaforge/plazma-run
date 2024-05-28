@@ -14,7 +14,7 @@
 #include "asklib.h"
 
 void usage() {
-    printf("Usage: run-ask [-bil] text file \n");
+    fprintf(stderr, "Usage: run-ask [-bil] text file \n");
 }
 
 int main(int argc, char* argv[]) {
