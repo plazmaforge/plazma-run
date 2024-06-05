@@ -126,6 +126,12 @@ typedef struct fs_file_t {
   fs_stat_t* stat;
 } fs_file_t;
 
+
+typedef struct fs_file_data_t {
+    char* data;
+    size_t size;
+} fs_file_data_t;
+
 /* C Style */
 
 /**

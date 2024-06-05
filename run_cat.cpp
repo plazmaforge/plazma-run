@@ -7,11 +7,6 @@
 #include "wstrlib.h"
 #include "syslib.h"
 
-struct file_data_t {
-    char* data;
-    size_t size;
-};
-
 void usage() {
     fprintf(stderr, "Usage: run-cat file ...\n");
 }
@@ -25,41 +20,13 @@ int main(int argc, char* argv[]) {
 
     int file_count = argc - 1;
 
-    file_data_t** file_list = (file_data_t**) malloc(sizeof(file_data_t) * file_count);
-
-    char* file_name = NULL;
-    file_data_t* file_data = NULL;
-    char* allData = NULL;
-    size_t file_size = 0;
-    size_t total_size = 0;
-
+    const char* file_names[file_count];
     for (int i = 1; i < argc; i++) {
-        file_name = argv[i];
-        file_size = 0;
-
-        file_data = (file_data_t*) malloc(sizeof(file_data_t));
-        file_data->data = lib_io_read_bytes_size(file_name, file_size);
-        file_data->size = file_size;
-
-        file_list[i - 1] = file_data;
-        total_size += file_size; 
+        file_names[i - 1] = argv[i];
     }
 
-    // V1
-    char* total_data = (char*) malloc(total_size * sizeof(char));
-    int offset = 0;
-
-    for (int j = 0; j < file_count; j++) {
-
-        file_data = file_list[j];
-        
-        for (int i = 0; i < file_data->size; i++) {
-            total_data[i + offset] = file_data->data[i];
-        }
-
-        offset += file_data->size;
-
-    }
+    size_t size = 0;
+    char* data = lib_io_read_cat_bytes(file_names, file_count, size);
 
     init_locale(); // WIN32 fast output with setvbuf(?)
 
@@ -73,8 +40,8 @@ int main(int argc, char* argv[]) {
     //printf("%ls", char_wchar(total_data));   // IMPORTANT for WIN32 
     //wprintf(L"%ls", char_wchar(total_data)); // IMPORTANT for WIN32
 
-    for (int i = 0; i < total_size; i++) {
-        printf("%c", total_data[i]);
+    for (int i = 0; i < size; i++) {
+        printf("%c", data[i]);
     }
 
     restore_locale(); // Important for WIN32: The locale was changed for the terminal

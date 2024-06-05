@@ -91,3 +91,60 @@ void lib_io_write_bytes_size(const char* file_name, char* data, size_t& size) {
   // exit(EXIT_SUCCESS);
 }
 
+void lib_fs_file_data_free(fs_file_data_t** file_list, int file_count) {
+    if (!file_list || file_count <= 0) {
+        return;
+    }
+    for (int i = 0; i < file_count; i++) {
+        free(file_list[i]);
+    }
+    free(file_list);
+}
+
+char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& size) {
+
+    fs_file_data_t** file_list = (fs_file_data_t**) malloc(sizeof(fs_file_data_t) * file_count);
+
+    fs_file_data_t* file_data = NULL;
+    const char* file_name = NULL;
+    size_t file_size = 0;
+    size_t total_size = 0;
+
+    for (int i = 0; i < file_count; i++) {
+        file_name = file_names[i];
+        file_size = 0;
+
+        file_data = (fs_file_data_t*) malloc(sizeof(fs_file_data_t));
+        file_data->data = lib_io_read_bytes_size(file_name, file_size);
+        file_data->size = file_size;
+
+        file_list[i] = file_data;
+        total_size += file_size;
+
+    }
+
+    // V1
+    char* data = (char*) malloc((total_size + 1) * sizeof(char));
+    int offset = 0;
+
+    for (int j = 0; j < file_count; j++) {
+
+        file_data = file_list[j];
+        
+        for (int i = 0; i < file_data->size; i++) {
+            data[i + offset] = file_data->data[i];
+        }
+
+        offset += file_data->size;
+
+    }
+
+    lib_fs_file_data_free(file_list, file_count);
+
+    data[total_size] = '\0';
+    size = total_size;
+
+    return data;
+
+}
+
