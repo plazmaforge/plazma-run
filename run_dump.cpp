@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (argc - optind < min_arg) {
-        printf("%s: Incorrect argument count\n", argv[0]);
+        fprintf(stderr, "%s: Incorrect argument count\n", argv[0]);
         usage();
         return 0;
     }
@@ -72,5 +72,5 @@ int main(int argc, char* argv[]) {
     config->col_count = width;
     config->show_text = show_text;
 
-    dump_file(file_name, config);
+    dump_file_def(file_name, config);
 }

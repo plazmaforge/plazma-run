@@ -14,8 +14,8 @@ typedef struct {
     bool show_text;
 } dump_config_t;
 
-void dump_file(const char* file_name, dump_config_t* config);
+void dump_file_def(const char* file_name, dump_config_t* config);
 
-void dump_file_size(const char* file_name, size_t& size, dump_config_t* config);
+void dump_file(const char* file_name, size_t& size, dump_config_t* config);
 
 #endif // PLAZMA_LIB_DUMPLIB_H

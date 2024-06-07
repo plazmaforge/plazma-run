@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (argc - optind != min_arg) {
-        printf("%s: Incorrect argument count\n", argv[0]);
+        fprintf(stderr, "%s: Incorrect argument count\n", argv[0]);
         usage();
         return 0;
     }

@@ -82,12 +82,12 @@ void dump_bytes(const char* data, size_t size, dump_config_t* config) {
 
 }
 
-void dump_file(const char* file_name, dump_config_t* config) {
+void dump_file_def(const char* file_name, dump_config_t* config) {
     size_t size = 0;
-    dump_file_size(file_name, size, config);
+    dump_file(file_name, size, config);
 }
 
-void dump_file_size(const char* file_name, size_t& size, dump_config_t* config) {
+void dump_file(const char* file_name, size_t& size, dump_config_t* config) {
 
   char* data = lib_io_read_bytes(file_name, size);
   dump_bytes(data, size, config);
