@@ -89,7 +89,7 @@ void dump_file(const char* file_name, dump_config_t* config) {
 
 void dump_file_size(const char* file_name, size_t& size, dump_config_t* config) {
 
-  char* data = lib_io_read_bytes_size(file_name, size);
+  char* data = lib_io_read_bytes(file_name, size);
   dump_bytes(data, size, config);
 
   free(data);  
