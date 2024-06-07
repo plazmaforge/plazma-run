@@ -22,14 +22,14 @@ char* lib_io_read_bytes(const char* file_name, size_t& size) {
   // Read
   FILE* in_file = fopen(file_name, "rb");
   if (!in_file) {
-    perror("fopen");
+    //perror("fopen");
     return NULL;
     //exit(EXIT_FAILURE);
   }
 
   struct stat sb;
   if (stat(file_name, &sb) == -1) {
-    perror("stat");
+    //perror("stat");
     return NULL;
     //exit(EXIT_FAILURE);
   }
@@ -66,7 +66,7 @@ void lib_io_write_bytes(const char* file_name, char* data, size_t& size) {
   // Write
   FILE* output_file = fopen(file_name, "wb+");
   if (!output_file) {
-    perror("fopen");
+    //perror("fopen");
     return;
     //exit(EXIT_FAILURE);
   }
@@ -124,7 +124,7 @@ char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& siz
         return NULL;
     }
 
-    fs_file_data_t** file_list = (fs_file_data_t**) malloc(sizeof(fs_file_data_t*) * file_count);
+    fs_file_data_t** file_list = (fs_file_data_t**) calloc(file_count, sizeof(fs_file_data_t*));
     if (!file_list) {
         size = 0;
         return NULL;
@@ -147,6 +147,12 @@ char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& siz
         }
 
         file_data->data = lib_io_read_bytes(file_name, file_size);
+        if (!file_data->data) {
+            lib_fs_file_data_list_free(file_list, file_count);
+            size = 0;
+            return NULL;
+        }
+
         file_data->size = file_size;
 
         file_list[i] = file_data;

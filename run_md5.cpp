@@ -1,13 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
+#include "getopt.h"
+#include "iolib.h"
 #include "md5.h"
 
 #define MD_SIZE 16
 
 void usage() {
-    fprintf(stderr, "Usage: run-md5 string\n");
+    fprintf(stderr, "Usage: run-md5 -s string\n");
+    fprintf(stderr, "       run-md5 file ...\n");
 }
 
 void print_str(const char* str) {
@@ -34,7 +38,7 @@ void print_result(const char* str, unsigned char sum[MD_SIZE], int mode, int upp
     printf("\n");
 }
 
-int run_md5(const char* str) {
+int run_md5_by_string(const char* str) {
     if (!str) {
         fprintf(stderr, "Error calculation md5: String is empty\n");
         return 1;
@@ -49,11 +53,87 @@ int run_md5(const char* str) {
     return 0;
 }
 
+int run_md5_by_file(const char* data, size_t size) {
+    if (!data) {
+        fprintf(stderr, "Error calculation md5: Data is empty\n");
+        return 1;
+    }
+    unsigned char sum[MD_SIZE];
+    if (lib_md5((const unsigned char*) data, size, sum) != 0) {
+        fprintf(stderr, "Error calculation md5 for file\n");
+        return 1;
+    }
+    print_result(data, sum, 1, 0);
+    return 0;
+}
+
+int run_md5_by_files(const char* data, size_t size) {
+    if (!data) {
+        fprintf(stderr, "Error calculation md5: Data is empty\n");
+        return 1;
+    }
+    unsigned char sum[MD_SIZE];
+    if (lib_md5((const unsigned char*) data, size, sum) != 0) {
+        fprintf(stderr, "Error calculation md5 for file(s)\n");
+        return 1;
+    }
+    print_result(data, sum, 1, 0);
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         usage();
-        return 0;
+        return 1;
     }
-    char* str = argv[1];
-    return run_md5(str);
+
+    bool error = false;
+    int opt;
+    bool is_str = false;
+    char* str = NULL;
+
+    while ((opt = getopt(argc, argv, "s:")) != -1) {
+        switch (opt) {
+        case 's':
+            is_str = true;
+            str = optarg;
+            break;
+        case '?':
+            error = true;
+            break;
+        }
+    }
+
+    if (error) {
+        usage();
+        return 1;
+    }
+
+    if (is_str) {
+        return run_md5_by_string(str);
+    } else {
+
+        const char* file_name;
+        char* data;
+        size_t size;
+        error = 0;
+
+        for (int i = 1; i < argc; i++) {
+            file_name = argv[i];
+            size = 0;
+            errno = 0;
+            data = lib_io_read_bytes(file_name, size);
+            if (errno != 0) {
+                error = 1;
+                fprintf(stderr, "run-md5: %s: %s\n", file_name, strerror(errno));                
+                continue;
+            }
+            if (run_md5_by_file(data, size) != 0) {
+                error = 1;
+            }
+        }
+
+        return error;
+    }
+
 }

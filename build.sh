@@ -92,7 +92,7 @@ $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_
 
 $CC $LDFLAGS common.o debug.o strlib.o socketlib.o netlib.o run_get.o -o run-get
 
-$CC $LDFLAGS common.o md5.o run_md5.o -o run-md5
+$CC $LDFLAGS getopt.o common.o iolib.o md5.o run_md5.o -o run-md5
 $CC $LDFLAGS common.o sha256.o run_sha224.o -o run-sha224
 $CC $LDFLAGS common.o sha256.o run_sha256.o -o run-sha256
 $CC $LDFLAGS common.o sha512.o run_sha384.o -o run-sha384
