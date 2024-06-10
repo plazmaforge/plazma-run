@@ -14,7 +14,6 @@ const int RUN_MD_BY_STRING = 1;
 const int RUN_MD_BY_FILE   = 2;
 
 typedef struct lib_md_config_t {
-    const char* app_name;
     const char* md_name;
     int md_size;
     int mode;
@@ -23,27 +22,23 @@ typedef struct lib_md_config_t {
 }
 lib_md_config_t;
 
+static char* app_name;
 
-void run_md_usage(lib_md_config_t* config) {    
-    //lib_fs_get_base_name(config->app_name)
-    fprintf(stderr, "Usage: %s [-tu] -s string | file ...\n", config->app_name);
-}
-
-void print_title(lib_md_config_t* config, const char* title) {
+static void print_title(lib_md_config_t* config, const char* title) {
     if (!title) {
         return;
     }
     printf("%s (\"%s\") = ", config->md_name, title);
 }
 
-void print_sum(lib_md_config_t* config, unsigned char sum[]) {
+static void print_sum(lib_md_config_t* config, unsigned char sum[]) {
     const char* fmt = config->is_upper  ? "%02X" : "%02x";
     for (int i = 0; i < config->md_size; i++) {
         printf(fmt, sum[i]);
     }
 }
 
-void print_result(lib_md_config_t* config, const char* title, unsigned char sum[]) {
+static void print_result(lib_md_config_t* config, const char* title, unsigned char sum[]) {
     if (config->is_title) {
         print_title(config, title);
     }
@@ -51,8 +46,32 @@ void print_result(lib_md_config_t* config, const char* title, unsigned char sum[
     printf("\n");
 }
 
-void print_error(lib_md_config_t* config, const char* error) {
+static void print_error(lib_md_config_t* config, const char* error) {
     fprintf(stderr, "Error calculation %s for %s: %s\n", config->md_name, (config->mode == RUN_MD_BY_STRING ? "string" : "file"), error);
+}
+
+static const char* get_base_name(const char* name) {
+    if (!name) {
+        return NULL;
+    }
+
+    const char* base = strrchr(name, '\\');
+    const char* base2 = strrchr(name, '/');
+
+    if (base2 > base) {
+        base = base2;
+    }
+
+    base = base ? (base + 1): name;
+
+    return base;
+}
+
+void run_md_usage(lib_md_config_t* config) {
+
+    const char* base_name = get_base_name(app_name);
+
+    fprintf(stderr, "Usage: %s [-tu] -s string | file ...\n", base_name);
 }
 
 int run_md_by_mode(lib_md_config_t* config, const char* file_name, const char* data, size_t size) {
@@ -183,14 +202,14 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
                     free(data);
                 }
                 error = 1;
-                fprintf(stderr, "%s: %s: %s\n", config->app_name, file_name, strerror(errno));
+                fprintf(stderr, "%s: %s: %s\n", app_name, file_name, strerror(errno));
                 continue;
             }
 
             // NO DATA
             if (!data) {
                 error = 1;
-                fprintf(stderr, "%s: %s: %s\n", config->app_name, file_name, "No data");
+                fprintf(stderr, "%s: %s: %s\n", app_name, file_name, "No data");
                 continue;                    
             }
 
@@ -207,8 +226,9 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
 
 int main(int argc, char* argv[]) {
 
+    app_name = argv[0];
+ 
     lib_md_config_t config;
-    config.app_name = "run-md5";
     config.md_name = MD_NAME;
     config.md_size = MD_SIZE;
 
