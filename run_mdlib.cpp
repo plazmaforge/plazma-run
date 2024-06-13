@@ -72,6 +72,8 @@ int run_md_by_mode(lib_md_config_t* config, const char* file_name, const char* d
 
 int run_md(lib_md_config_t* config, int argc, char* argv[]) {
 
+    app_name = argv[0];
+
     if (argc < 2) {
         run_md_usage(config);
         return 1;
@@ -114,7 +116,7 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
     }
 
     //printf("argc  : %i\n", argc);
-    //printf("optind: %i\n", optind); 
+    //printf("optind: %i\n", optind);
 
     if (config->mode == RUN_MD_BY_STRING) {
         size = strlen(data);
