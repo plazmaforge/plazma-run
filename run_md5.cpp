@@ -13,9 +13,12 @@
 const int RUN_MD_BY_STRING = 1;
 const int RUN_MD_BY_FILE   = 2;
 
+typedef int (*lib_md_func) (const unsigned char *input, size_t ilen, unsigned char output[]);
+
 typedef struct lib_md_config_t {
     const char* md_name;
     int md_size;
+    lib_md_func md_func;
     int mode;
     bool is_title;
     bool is_upper;
@@ -80,55 +83,13 @@ int run_md_by_mode(lib_md_config_t* config, const char* file_name, const char* d
         return 1;
     }
     unsigned char sum[config->md_size];
-    if (lib_md5((const unsigned char*) data, size, sum) != 0) {
+    if (config->md_func((const unsigned char*) data, size, sum) != 0) {
         print_error(config, (config->mode == RUN_MD_BY_STRING ? data : file_name));
         return 1;
     }
     print_result(config, (config->mode == RUN_MD_BY_STRING ? data : file_name), sum);
     return 0;
 }
-
-// int run_md_by_string(lib_md_config_t* config, const char* data, size_t size) {
-//     if (!data) {
-//         fprintf(stderr, "Error calculation %s: String is empty\n", config->md_name);
-//         return 1;
-//     }
-//     unsigned char sum[config->md_size];
-//     if (lib_md5((const unsigned char*) data, size, sum) != 0) {
-//         fprintf(stderr, "Error calculation %s for string: %s\n", config->md_name, data);
-//         return 1;
-//     }
-//     print_result(config, data, sum);
-//     return 0;
-// }
-
-// int run_md_by_file(lib_md_config_t* config, const char* data, size_t size) {
-//     if (!data) {
-//         fprintf(stderr, "Error calculation %s: Data is empty\n", config->md_name);
-//         return 1;
-//     }
-//     unsigned char sum[config->md_size];
-//     if (lib_md5((const unsigned char*) data, size, sum) != 0) {
-//         fprintf(stderr, "Error calculation %s for file\n", config->md_name);
-//         return 1;
-//     }
-//     print_result(config, data, sum);
-//     return 0;
-// }
-
-// int run_md_by_files(lib_md_config_t* config, const char* data, size_t size) {
-//     if (!data) {
-//         fprintf(stderr, "Error calculation %s: Data is empty\n", config->md_name);
-//         return 1;
-//     }
-//     unsigned char sum[config->md_size];
-//     if (lib_md5((const unsigned char*) data, size, sum) != 0) {
-//         fprintf(stderr, "Error calculation %s for file(s)\n", config->md_name);
-//         return 1;
-//     }
-//     print_result(config, data, sum);
-//     return 0;
-// }
 
 int run_md(lib_md_config_t* config, int argc, char* argv[]) {
 
@@ -231,6 +192,7 @@ int main(int argc, char* argv[]) {
     lib_md_config_t config;
     config.md_name = MD_NAME;
     config.md_size = MD_SIZE;
+    config.md_func = lib_md5;
 
     return run_md(&config, argc, argv);
 
