@@ -65,17 +65,17 @@ void lib_locale_os_init() {
     }
    
     #ifdef _WIN32
-    init_locale_win();
+    lib_locale_win_init();
     #else
-    init_locale_nix();
+    lib_locale_nix_init();
     #endif
 }
 
 void lib_locale_os_restore() {
     #ifdef _WIN32
-    restore_locale_win();
+    lib_locale_win_restore();
     #else
-    restore_locale_nix();
+    lib_locale_nix_restore();
     #endif
 }
 

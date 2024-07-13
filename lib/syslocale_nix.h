@@ -10,7 +10,7 @@ locale_t* lib_locale_os_load_locale(int cat) {
 }
 #endif
 
-void init_locale_nix() {
+void lib_locale_nix_init() {
     setlocale(LC_ALL, ""); // set default locale
     //set_default_locale();
 
@@ -33,7 +33,7 @@ void init_locale_nix() {
     }
 }
 
-void restore_locale_nix() {
+void lib_locale_nix_restore() {
     setlocale(LC_ALL, _locale); // restore locale
     if (debug) {
        printf("\n");

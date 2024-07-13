@@ -305,7 +305,7 @@ locale_t* lib_locale_os_load_locale(int cat) {
     return loadLocaleWin(cat);
 }
 
-void init_locale_win() {
+void lib_locale_win_init() {
 
     getConsoleCodepage();
     if (debug) {
@@ -450,7 +450,7 @@ void init_locale_win() {
 
 }
 
-void restore_locale_win() {
+void lib_locale_win_restore() {
     if (_out_cp == 65001) {
         // UTF-8
         return;
