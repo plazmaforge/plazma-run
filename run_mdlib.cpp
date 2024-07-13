@@ -82,7 +82,7 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
     bool error = false;
     int opt;
 
-    config->mode = RUN_MD_BY_FILE;
+    config->mode = RUN_MD_BY_FILE; /* Set mode by file */
     config->is_title = false;
     config->is_upper = false;
 
@@ -92,12 +92,15 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
     while ((opt = getopt(argc, argv, "tus:")) != -1) {
         switch (opt) {
         case 't':
+            /* Set title option */
             config->is_title = true;
             break;
         case 'u':
+            /* Set upper case option */
             config->is_upper = true;
             break;
         case 's':
+            /* Set mode by string */
             config->mode = RUN_MD_BY_STRING;
             data = optarg;
             break;
