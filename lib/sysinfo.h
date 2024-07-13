@@ -152,6 +152,6 @@ const char* get_display_locale_encoding();
 
 ////
 
-void print_sys_info();
+void lib_print_sys_info();
 
 #endif // PLAZMA_LIB_SYSINFO_H

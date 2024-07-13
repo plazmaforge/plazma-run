@@ -6,12 +6,12 @@
 
 #include "syslocale_os.h"
 
-void init_locale() {
-    init_locale_os();
+void lib_locale_init() {
+    lib_locale_os_init();
 }
 
-void restore_locale() {
-    restore_locale_os();
+void lib_locale_restore() {
+    lib_locale_os_restore();
 }
 
 

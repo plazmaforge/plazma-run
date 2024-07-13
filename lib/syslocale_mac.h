@@ -59,7 +59,7 @@ static locale_t* loadLocaleMac() {
   if (!name) {
     // Why? But is real case!
     CFRelease(cflocale);
-    locale_t* locale = locale_new();
+    locale_t* locale = lib_locale_new();
     locale->name = NULL;
     locale->language = NULL;
     locale->script = NULL;
@@ -92,7 +92,7 @@ static locale_t* loadLocaleMac() {
 
   CFRelease(cflocale);
 
-  locale_t* locale = locale_new();
+  locale_t* locale = lib_locale_new();
   locale->language = lib_strdup(language);
   locale->script = lib_strdup(script);
   locale->country = lib_strdup(country);
@@ -110,7 +110,7 @@ static locale_t* loadLocaleMac(int cat) {
     return loadLocaleMac(); // Category independed. Why?
 }
 
-locale_t* load_locale_os(int cat) {
+locale_t* lib_locale_os_load_cat(int cat) {
     return loadLocaleMac(cat);
 }
 

@@ -5,7 +5,7 @@
 #if defined __APPLE__ && defined __MACH__
 #include "syslocale_mac.h"
 #else
-locale_t* load_locale_os(int cat) {
+locale_t* lib_locale_os_load_cat(int cat) {
     return parse_locale(get_locale(cat)); // LC Locale
 }
 #endif
@@ -20,7 +20,7 @@ void init_locale_nix() {
        printf("----------------:\n");
        printf("All LC Locale   : %s\n", get_locale(LC_ALL));
        printf("Std LC Locale   : %s\n", get_locale(LC_CTYPE));
-       _locale_os = load_locale_os();
+       _locale_os = lib_locale_os_load();
        printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
        print_locale(_locale_os);
 

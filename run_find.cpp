@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
     }
     */
 
-    init_locale();
+    lib_locale_init();
 
     //printf(">> argc: %d\n",argc);
     for (int i = 1; i < argc; i++) {
@@ -203,7 +203,7 @@ int main(int argc, char* argv[]) {
         find_by_arg(argv[i]);
     }
 
-    restore_locale();
+    lib_locale_restore();
     return 0;
 
 }

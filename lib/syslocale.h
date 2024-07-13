@@ -48,9 +48,9 @@ int is_empty_locale(const char* locale);
  */
 int equals_locale(const char* locale1, const char* locale2);
 
-locale_t* locale_new();
+locale_t* lib_locale_new();
 
-void locale_free(locale_t* locale);
+void lib_locale_free(locale_t* locale);
 
 /*
  * Parse LC locale

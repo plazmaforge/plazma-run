@@ -30,11 +30,11 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    init_locale();
+    lib_locale_init();
 
     print_args(argv, argc, 1, true);
 
-    restore_locale();
+    lib_locale_restore();
     
     return 0;
 }

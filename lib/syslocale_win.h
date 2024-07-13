@@ -202,7 +202,9 @@ static locale_t* loadLocale(LCID lcid) {
     /* encoding */
     char* encoding = getEncoding(lcid);
 
-    locale_t* locale = (locale_t*) malloc(sizeof(locale_t));
+    //locale_t* locale = (locale_t*) malloc(sizeof(locale_t));
+    locale_t* locale = lib_locale_new();
+
     locale->language = language;
     locale->script = script;
     locale->country = country;
@@ -298,7 +300,7 @@ void setConsoleCodepage(UINT cp) {
     setConsoleCodepage(cp, cp);
 }
 
-locale_t* load_locale_os(int cat) {
+locale_t* lib_locale_os_load_cat(int cat) {
     //return parse_locale(get_locale(cat));
     return loadLocaleWin(cat);
 }

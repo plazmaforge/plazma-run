@@ -1,9 +1,9 @@
 #ifndef PLAZMA_LIB_SYSLIB_OS_H
 #define PLAZMA_LIB_SYSLIB_OS_H
 
-void init_locale();
+void lib_locale_init();
 
-void restore_locale();
+void lib_locale_restore();
 
 #endif // PLAZMA_LIB_SYSLIB_H
 
