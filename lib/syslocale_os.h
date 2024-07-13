@@ -17,12 +17,12 @@ static int check = 0;
 /*
  * Load OS locale by category
  */
-locale_t* lib_locale_os_load_cat(int cat);
+locale_t* lib_locale_os_load_locale(int cat);
 
 /*
  * Load OS locale
  */
-locale_t* lib_locale_os_load();
+locale_t* lib_locale_os_load_current_locale();
 
 /*
  * Initialize OS locale

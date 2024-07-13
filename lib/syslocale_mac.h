@@ -43,11 +43,11 @@ static char* getEncoding(CFStringEncoding encoding) {
 
 static char* getDefaultEncoding() {
     //return  "UTF-8";
-    char* locale = get_locale();
+    char* locale = lib_locale_get_current_locale();
     if (!locale) {
         return NULL;
     }
-    char* encoding = parse_encoding(locale);
+    char* encoding = lib_locale_parse_encoding(locale);
     return encoding;
 }
 
@@ -100,7 +100,7 @@ static locale_t* loadLocaleMac() {
   locale->encoding = lib_strdup(encoding);
 
   //locale->name = encoding ? lib_strnew(name, "." , encoding) : lib_strdup(name);
-  locale->name = get_locale_name(language, country, encoding);
+  locale->name = lib_locale_get_locale_name(language, country, encoding);
 
   return locale;
 
@@ -110,7 +110,7 @@ static locale_t* loadLocaleMac(int cat) {
     return loadLocaleMac(); // Category independed. Why?
 }
 
-locale_t* lib_locale_os_load_cat(int cat) {
+locale_t* lib_locale_os_load_locale(int cat) {
     return loadLocaleMac(cat);
 }
 

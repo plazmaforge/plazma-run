@@ -9,8 +9,8 @@
 #include "syslocale_nix.h"
 #endif
 
-locale_t* lib_locale_os_load() {
-    return lib_locale_os_load_cat(LC_CTYPE);
+locale_t* lib_locale_os_load_current_locale() {
+    return lib_locale_os_load_locale(LC_CTYPE);
 }
 
 void lib_locale_os_init() {
@@ -19,7 +19,7 @@ void lib_locale_os_init() {
     // Bug with empty locale for MacOS
     // const char* name = getLocaleValue(cflocale, kCFLocaleIdentifier);
     // name is NULL. Why?
-    locale_t* locale = lib_locale_os_load(); // TODO: Force load locale (Why?)
+    locale_t* locale = lib_locale_os_load_current_locale(); // TODO: Force load locale (Why?)
     lib_locale_free(locale);     
     #endif
 
@@ -33,16 +33,16 @@ void lib_locale_os_init() {
       printf("\n");
       printf("Current         :\n");
       printf("----------------:\n");
-      printf("All LC Locale   : %s\n", lib_strsaf(get_locale(LC_ALL)));
-      printf("Std LC Locale   : %s\n", lib_strsaf(get_locale(LC_CTYPE)));
+      printf("All LC Locale   : %s\n", lib_strsaf(lib_locale_get_locale(LC_ALL)));
+      printf("Std LC Locale   : %s\n", lib_strsaf(lib_locale_get_locale(LC_CTYPE)));
     }
 
-    _locale = lib_strdup(get_locale(LC_ALL)); // get current locale LC_ALL
+    _locale = lib_strdup(lib_locale_get_locale(LC_ALL)); // get current locale LC_ALL
 
     if (debug) {
-      _locale_os = lib_locale_os_load();
+      _locale_os = lib_locale_os_load_current_locale();
       printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
-      print_locale(_locale_os);
+      lib_locale_print_locale(_locale_os);
       free(_locale_os);
       _locale_os = NULL;
     }
@@ -53,11 +53,11 @@ void lib_locale_os_init() {
       printf("\n");
       printf("Default         :\n");
       printf("----------------:\n");
-      printf("All LC Locale   : %s\n", lib_strsaf(get_locale(LC_ALL)));
-      printf("Std LC Locale   : %s\n", lib_strsaf(get_locale(LC_CTYPE)));
-      _locale_os = lib_locale_os_load();
+      printf("All LC Locale   : %s\n", lib_strsaf(lib_locale_get_locale(LC_ALL)));
+      printf("Std LC Locale   : %s\n", lib_strsaf(lib_locale_get_locale(LC_CTYPE)));
+      _locale_os = lib_locale_os_load_current_locale();
       printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
-      print_locale(_locale_os);
+      lib_locale_print_locale(_locale_os);
       free(_locale_os);
       _locale_os = NULL;
 

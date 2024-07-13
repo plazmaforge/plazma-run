@@ -220,7 +220,7 @@ static locale_t* loadLocale(LCID lcid) {
        }
     }
 
-    locale->name = get_locale_name(language, country, le);
+    locale->name = lib_locale_get_locale_name(language, country, le);
  
     return locale;
 }
@@ -300,8 +300,8 @@ void setConsoleCodepage(UINT cp) {
     setConsoleCodepage(cp, cp);
 }
 
-locale_t* lib_locale_os_load_cat(int cat) {
-    //return parse_locale(get_locale(cat));
+locale_t* lib_locale_os_load_locale(int cat) {
+    //return lib_locale_parse_locale(lib_locale_get_locale(cat));
     return loadLocaleWin(cat);
 }
 
@@ -396,7 +396,7 @@ void init_locale_win() {
            // Fix incorrect locale
            // Slowly output with this fix (!!!)
  
-           char* cur_locale_name = get_locale(LC_ALL);
+           char* cur_locale_name = lib_locale_get_locale(LC_ALL);
            //printf(">> cur_locale_name: %s\n", cur_locale_name);
 
            // If we set incorrect locale then get_locale returns "C" locale
@@ -430,12 +430,12 @@ void init_locale_win() {
     }
 
     if (debug) {
-      //printf("\nSet LC Locale   : %s\n", get_locale(LC_ALL));
+      //printf("\nSet LC Locale   : %s\n", lib_locale_get_locale(LC_ALL));
       printf("\n");
       printf("Change          :\n");
       printf("----------------:\n");
-      printf("All LC Locale   : %s\n", get_locale(LC_ALL));
-      printf("Std LC Locale   : %s\n", get_locale(LC_CTYPE));
+      printf("All LC Locale   : %s\n", lib_locale_get_locale(LC_ALL));
+      printf("Std LC Locale   : %s\n", lib_locale_get_locale(LC_CTYPE));
       if (_locale_os) {
         _locale_os = load_locale_os(_lc_type);
         printf("Std OS LC Type  : %d\n", _lc_type);
