@@ -55,7 +55,7 @@ const char* get_os_arch_data_model(const char* arch_name);
 /**
  * Returns OS Info 
  */
-const os_info_t* get_os_info();
+const os_info_t* lib_os_get_os_info();
 
 
 #endif // PLAZMA_LIB_SYSOS_H

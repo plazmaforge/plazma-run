@@ -14,7 +14,7 @@
 
 static user_info_t* user_info = NULL;
 
-static void init_user_info(user_info_t* user_info) {
+static void lib_user_info_init(user_info_t* user_info) {
     user_info->user_name = NULL;
 	user_info->user_home = NULL;
 	user_info->user_dir = NULL;
@@ -22,7 +22,7 @@ static void init_user_info(user_info_t* user_info) {
 }
 
 /*
-static user_info_t* new_user_info() {
+static user_info_t* lib_user_info_new() {
     user_info_t* user_info = (user_info_t*) malloc(sizeof(user_info_t));
     init_user_info(user_info);
     return user_info;
@@ -30,7 +30,7 @@ static user_info_t* new_user_info() {
 */
 
 /*
-static void free_user_info(user_info_t* user_info) {
+static void lib_user_info_free(user_info_t* user_info) {
     if (!user_info)  {
         return;
     }
@@ -43,14 +43,14 @@ static void free_user_info(user_info_t* user_info) {
 }
 */
 
-const user_info_t* get_user_info() {
+const user_info_t* lib_user_get_user_info() {
     if (user_info) {
         return user_info;
     }
-    //user_info = new_user_info();
+    //user_info = lib_user_info_new();
     static user_info_t user_info_s;
     user_info = &user_info_s;
-    init_user_info(user_info);
+    lib_user_info_init(user_info);
     
     user_info->user_name = getUserName();
     user_info->user_home = getUserHome();

@@ -151,7 +151,7 @@ const sys_info_t* get_sys_info() {
     init_sys_info(sys_info);
 
     // OS Info
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     if (os_info) {
 
         // Version Info
@@ -174,7 +174,7 @@ const sys_info_t* get_sys_info() {
     }
 
     // User Info
-    const user_info_t* user_info = get_user_info();
+    const user_info_t* user_info = lib_user_get_user_info();
     if (user_info) {
         sys_info->user_name = user_info->user_name;
         sys_info->user_home = user_info->user_home;
@@ -264,61 +264,61 @@ const sys_info_t* get_sys_info() {
 // Version Info
 
 const char* get_os_name() {
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_name : NULL;
 }
 
 const char* get_os_version() {
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_version : NULL;
 }
 
 int get_os_major_version() {
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_major_version : 0;
 }
 
 int get_os_minor_version() {
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_minor_version : 0;
 }
 
 int get_os_build_version() {
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_build_version : 0;
 }
 
 // CPU Info
 
 const char* get_os_arch() {
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_arch : NULL;
 }
 
 int get_os_arch_size() {
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     return get_os_arch_size(os_info->os_arch);
 }
 
 const char* get_cpu_isalist() {
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->cpu_isalist : NULL;
 }
 
 int get_cpu_count() {
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->cpu_count : 0;
 }
 
 // FS Info
 
 const char* get_file_separator() {
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->file_separator : NULL;
 }
 
 const char* get_line_separator() {
-    const os_info_t* os_info = get_os_info();
+    const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->line_separator : NULL;
 }
 
@@ -334,17 +334,17 @@ const char* get_encoding() {
 // User Info
 
 const char* get_user_name() {
-    const user_info_t* user_info = get_user_info();
+    const user_info_t* user_info = lib_user_get_user_info();
     return user_info ? user_info->user_name : NULL;
 }
 
 const char* get_user_home() {
-    const user_info_t* user_info = get_user_info();
+    const user_info_t* user_info = lib_user_get_user_info();
     return user_info ? user_info->user_home : NULL;
 }
 
 const char* get_user_dir() {
-    const user_info_t* user_info = get_user_info();
+    const user_info_t* user_info = lib_user_get_user_info();
     return user_info ? user_info->user_dir : NULL;
 }
 
@@ -353,7 +353,7 @@ const char* get_work_dir() {
 }
 
 const char* get_tmp_dir() {
-    const user_info_t* user_info = get_user_info();
+    const user_info_t* user_info = lib_user_get_user_info();
     return user_info ? user_info->tmp_dir : NULL;
 }
 

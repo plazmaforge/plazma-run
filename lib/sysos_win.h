@@ -334,7 +334,7 @@ void loadOsInfo(os_info_t* os_info) {
  
 }
 
-void load_os_info(os_info_t* os_info) {
+void lib_os_info_load(os_info_t* os_info) {
     loadOsInfo(os_info);
 }
 

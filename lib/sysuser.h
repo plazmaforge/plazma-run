@@ -8,6 +8,6 @@ struct user_info_t {
     char* tmp_dir;
 };
 
-const user_info_t* get_user_info();
+const user_info_t* lib_user_get_user_info();
 
 #endif // PLAZMA_LIB_SYSUSER_H

@@ -20,7 +20,7 @@ const char* get_os_arch_data_model(const char* arch_name) {
     return get_cpu_arch_data_model(arch_name);
 }
 
-static void init_os_info(os_info_t* os_info) {
+static void lib_os_info_init(os_info_t* os_info) {
     if (!os_info) {
         return;
     }
@@ -55,7 +55,7 @@ static void init_os_info(os_info_t* os_info) {
 }
 
 /*
-static os_info_t* new_os_info() {
+static os_info_t* lib_os_info_new() {
     os_info_t* os_info = (os_info_t*) malloc(sizeof(os_info_t));
     init_os_info(os_info);
     return os_info;
@@ -63,7 +63,7 @@ static os_info_t* new_os_info() {
 */
 
 /*
-static void free_os_info(os_info_t* os_info) {
+static void lib_os_info_free(os_info_t* os_info) {
     if (!os_info)  {
         return;
     }
@@ -94,15 +94,15 @@ static void free_os_info(os_info_t* os_info) {
 }
 */
 
-const os_info_t* get_os_info() {
+const os_info_t* lib_os_get_os_info() {
     if (os_info) {
         return os_info;
     }
 
     static os_info_t os_info_s;
     os_info = &os_info_s;
-    init_os_info(os_info);
-    load_os_info(os_info);
+    lib_os_info_init(os_info);
+    lib_os_info_load(os_info);
 
     return os_info;
 }

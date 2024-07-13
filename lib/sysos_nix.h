@@ -35,7 +35,7 @@ void load_posix_cpu_info(os_info_t* os_info) {
 #if defined __APPLE__ && defined __MACH__
 #include "sysos_mac.h"
 #else
-void load_os_info(os_info_t* os_info) {
+void lib_os_info_load(os_info_t* os_info) {
 
    struct utsname name;
    uname(&name);

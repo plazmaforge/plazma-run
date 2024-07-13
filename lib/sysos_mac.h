@@ -52,7 +52,7 @@ void load_os_info(os_info_t* os_info) {
 
 void load_os_version_info_objc(os_info_t* os_info); // Implemented in *.mm file
 
-void load_os_info(os_info_t* os_info) {
+void lib_os_info_load(os_info_t* os_info) {
     load_os_version_info_objc(os_info);
     load_os_common_info(os_info);
     load_os_cpu_info(os_info);
