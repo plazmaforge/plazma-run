@@ -96,9 +96,9 @@ $CC $LDFLAGS common.o debug.o strlib.o socketlib.o netlib.o run_get.o -o run-get
 
 $CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o md5.o run_md5.o -o run-md5
 $CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha256.o run_sha224.o -o run-sha224
-$CC $LDFLAGS common.o sha256.o run_sha256.o -o run-sha256
-$CC $LDFLAGS common.o sha512.o run_sha384.o -o run-sha384
-$CC $LDFLAGS common.o sha512.o run_sha512.o -o run-sha512
+$CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha256.o run_sha256.o -o run-sha256
+$CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha512.o run_sha384.o -o run-sha384
+$CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha512.o run_sha512.o -o run-sha512
 
 $CC $LDFLAGS getopt.o iolib.o run_hex_byte.o -o run-hex-byte
 $CC $LDFLAGS getopt.o iolib.o run_ssl_dump.o -o run-ssl-dump
