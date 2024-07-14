@@ -41,7 +41,6 @@ char* getUserName() {
 char* getUserHome() {
   /* User */
   struct passwd *pwent = getpwuid(getuid());
-  //printf("%p\n", pwent->pw_dir);
   if (pwent) {
     return strdup(pwent->pw_dir);
   } 

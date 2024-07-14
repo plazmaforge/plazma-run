@@ -62,96 +62,98 @@ struct sys_info_t {
 
 };
 
-const sys_info_t* get_sys_info();
+const sys_info_t* lib_sys_get_sys_info();
 
 // OS Info
 
-const char* get_os_name();
+const char* lib_sys_get_os_name();
 
-const char* get_os_version();
+const char* lib_sys_get_os_version();
 
-int get_os_major_version();
+int lib_sys_get_os_major_version();
 
-int get_os_minor_version();
+int lib_sys_get_os_minor_version();
 
-int get_os_build_version();
+int lib_sys_get_os_build_version();
 
 // CPU Info
 
-const char* get_os_arch();
+const char* lib_sys_get_os_arch();
 
-int get_os_arch_size();
+int lib_sys_get_os_arch_size();
 
-const char* get_cpu_isalist();
+const char* lib_sys_get_cpu_isalist();
 
-int get_cpu_count();
+const char* lib_sys_get_cpu_endian();
+
+int lib_sys_get_cpu_count();
 
 // FS Info
 
-const char* get_file_separator();
+const char* lib_sys_get_file_separator();
 
-const char* get_line_separator();
+const char* lib_sys_get_line_separator();
 
-const char* get_file_encoding();
+const char* lib_sys_get_file_encoding();
 
-const char* get_encoding();
+const char* lib_sys_get_encoding();
 
 // User Info
 
-const char* get_user_name();
+const char* lib_sys_get_user_name();
 
-const char* get_user_home();
+const char* lib_sys_get_user_home();
 
-const char* get_user_dir();
+const char* lib_sys_get_user_dir();
 
-const char* get_work_dir();
+const char* lib_sys_get_work_dir();
 
-const char* get_tmp_dir();
+const char* lib_sys_get_tmp_dir();
 
 // Locale Info
 
-const char* get_locale_name();
+const char* lib_sys_get_locale_name();
 
-const char* get_locale_language();
+const char* lib_sys_get_locale_language();
 
-const char* get_locale_script();
+const char* lib_sys_get_locale_script();
 
-const char* get_locale_country();
+const char* lib_sys_get_locale_country();
 
-const char* get_locale_variant();
+const char* lib_sys_get_locale_variant();
 
-const char* get_locale_encoding();
+const char* lib_sys_get_locale_encoding();
 
 // Format Locale Info
 
-const char* get_format_locale_name();
+const char* lib_sys_get_format_locale_name();
 
-const char* get_format_locale_language();
+const char* lib_sys_get_format_locale_language();
 
-const char* get_format_locale_script();
+const char* lib_sys_get_format_locale_script();
 
-const char* get_format_locale_country();
+const char* lib_sys_get_format_locale_country();
 
-const char* get_format_locale_variant();
+const char* lib_sys_get_format_locale_variant();
 
-const char* get_format_locale_encoding();
+const char* lib_sys_get_format_locale_encoding();
 
 // Display Locale Info
 
-const char* get_display_locale_name();
+const char* lib_sys_get_display_locale_name();
 
-const char* get_display_locale_language();
+const char* lib_sys_get_display_locale_language();
 
-const char* get_display_locale_script();
+const char* lib_sys_get_display_locale_script();
 
-const char* get_display_locale_country();
+const char* lib_sys_get_display_locale_country();
 
-const char* get_display_locale_variant();
+const char* lib_sys_get_display_locale_variant();
 
-const char* get_display_locale_encoding();
+const char* lib_sys_get_display_locale_encoding();
 
 ////
 
-void lib_print_sys_info();
+void lib_sys_print_sys_info();
 
 #endif // PLAZMA_LIB_SYSINFO_H

@@ -17,7 +17,7 @@ int LC_DISPLAY_TYPE = LC_TIME + 1;
 
 static sys_info_t* sys_info = NULL;
 
-static sys_info_t* init_sys_info(sys_info_t* sys_info) {
+static sys_info_t* lib_sys_sys_info_init(sys_info_t* sys_info) {
     
     // Version Info
     sys_info->os_major_version = 0;
@@ -75,7 +75,7 @@ static sys_info_t* init_sys_info(sys_info_t* sys_info) {
 }
 
 /*
-static void free_sys_info(sys_info_t* sys_info) {
+static void lib_sys_sys_info_free(sys_info_t* sys_info) {
     if (!sys_info)  {
         return;
     }
@@ -133,22 +133,22 @@ static void free_sys_info(sys_info_t* sys_info) {
 */
 
 /*
-static sys_info_t* new_sys_info() {
+static sys_info_t* lib_sys_sys_info_new() {
     sys_info_t* sys_info = (sys_info_t*) malloc(sizeof(sys_info_t));
     init_sys_info(sys_info);
     return sys_info;
 }
 */
 
-const sys_info_t* get_sys_info() {
+const sys_info_t* lib_sys_get_sys_info() {
 
     if (sys_info) {
         return sys_info;
     }
-    //sys_info = new_sys_info();
+    //sys_info = lib_sys_sys_info_new();
     static sys_info_t sys_info_s;
     sys_info = &sys_info_s;
-    init_sys_info(sys_info);
+    lib_sys_sys_info_init(sys_info);
 
     // OS Info
     const os_info_t* os_info = lib_os_get_os_info();
@@ -263,144 +263,148 @@ const sys_info_t* get_sys_info() {
 
 // Version Info
 
-const char* get_os_name() {
+const char* lib_sys_get_os_name() {
     const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_name : NULL;
 }
 
-const char* get_os_version() {
+const char* lib_sys_get_os_version() {
     const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_version : NULL;
 }
 
-int get_os_major_version() {
+int lib_sys_get_os_major_version() {
     const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_major_version : 0;
 }
 
-int get_os_minor_version() {
+int lib_sys_get_os_minor_version() {
     const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_minor_version : 0;
 }
 
-int get_os_build_version() {
+int lib_sys_get_os_build_version() {
     const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_build_version : 0;
 }
 
 // CPU Info
 
-const char* get_os_arch() {
+const char* lib_sys_get_os_arch() {
     const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->os_arch : NULL;
 }
 
-int get_os_arch_size() {
+int lib_sys_get_os_arch_size() {
     const os_info_t* os_info = lib_os_get_os_info();
     return get_os_arch_size(os_info->os_arch);
 }
 
-const char* get_cpu_isalist() {
+const char* lib_sys_get_cpu_isalist() {
     const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->cpu_isalist : NULL;
 }
 
-int get_cpu_count() {
+const char* lib_sys_get_cpu_endian() {
+    return get_cpu_endian(); // lib_cpu
+}
+
+int lib_sys_get_cpu_count() {
     const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->cpu_count : 0;
 }
 
 // FS Info
 
-const char* get_file_separator() {
+const char* lib_sys_get_file_separator() {
     const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->file_separator : NULL;
 }
 
-const char* get_line_separator() {
+const char* lib_sys_get_line_separator() {
     const os_info_t* os_info = lib_os_get_os_info();
     return os_info ? os_info->line_separator : NULL;
 }
 
-const char* get_file_encoding() {
-    return get_encoding();
+const char* lib_sys_get_file_encoding() {
+    return lib_sys_get_encoding();
 }
 
-const char* get_encoding() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_encoding() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->encoding : NULL;
 }
 
 // User Info
 
-const char* get_user_name() {
+const char* lib_sys_get_user_name() {
     const user_info_t* user_info = lib_user_get_user_info();
     return user_info ? user_info->user_name : NULL;
 }
 
-const char* get_user_home() {
+const char* lib_sys_get_user_home() {
     const user_info_t* user_info = lib_user_get_user_info();
     return user_info ? user_info->user_home : NULL;
 }
 
-const char* get_user_dir() {
+const char* lib_sys_get_user_dir() {
     const user_info_t* user_info = lib_user_get_user_info();
     return user_info ? user_info->user_dir : NULL;
 }
 
-const char* get_work_dir() {
-    return get_user_dir();
+const char* lib_sys_get_work_dir() {
+    return lib_sys_get_user_dir();
 }
 
-const char* get_tmp_dir() {
+const char* lib_sys_get_tmp_dir() {
     const user_info_t* user_info = lib_user_get_user_info();
     return user_info ? user_info->tmp_dir : NULL;
 }
 
 // Locale Info
 
-const char* get_locale_name() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_locale_name() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
     return sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_locale : sys_info->display_locale;
 }
 
-const char* get_locale_language() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_locale_language() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
     return sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_language : sys_info->display_language;
 }
 
-const char* get_locale_script() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_locale_script() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
     return sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_script : sys_info->display_script;
 }
 
-const char* get_locale_country() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_locale_country() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
     return sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_country : sys_info->display_country;
 }
 
-const char* get_locale_variant() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_locale_variant() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
     return sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_variant : sys_info->display_variant;
 }
 
-const char* get_locale_encoding() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_locale_encoding() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
@@ -409,73 +413,73 @@ const char* get_locale_encoding() {
 
 // Format Locale Info
 
-const char* get_format_locale_name() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_format_locale_name() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_locale : NULL;
 }
 
-const char* get_format_locale_language() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_format_locale_language() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_language : NULL;
 }
 
-const char* get_format_locale_script() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_format_locale_script() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_script : NULL;
 }
 
-const char* get_format_locale_country() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_format_locale_country() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_country : NULL;
 }
 
-const char* get_format_locale_variant() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_format_locale_variant() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_variant : NULL;
 }
 
-const char* get_format_locale_encoding() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_format_locale_encoding() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_encoding : NULL;
 }
 
 // Display Locale Info
 
-const char* get_display_locale_name() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_display_locale_name() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_locale : NULL;
 }
 
-const char* get_display_locale_language() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_display_locale_language() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_language : NULL;
 }
 
-const char* get_display_locale_script() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_display_locale_script() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_script : NULL;
 }
 
-const char* get_display_locale_country() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_display_locale_country() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_country : NULL;
 }
 
-const char* get_display_locale_variant() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_display_locale_variant() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_variant : NULL;
 }
 
-const char* get_display_locale_encoding() {
-    const sys_info_t* sys_info = get_sys_info();
+const char* lib_sys_get_display_locale_encoding() {
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_encoding : NULL;
 }
 
 ////
 
-void lib_print_sys_info() {
+void lib_sys_print_sys_info() {
 
-    const sys_info_t* sys_info = get_sys_info();
+    const sys_info_t* sys_info = lib_sys_get_sys_info();
     
     //HARD TEST
     //free(sys_info);
@@ -486,6 +490,7 @@ void lib_print_sys_info() {
         return;
     }
       
+    /*
     printf("\n");
     
     // Version Info
@@ -539,58 +544,58 @@ void lib_print_sys_info() {
     printf("display.variant  : %s\n", lib_strsaf(sys_info->display_variant));
     printf("display.encoding : %s\n", lib_strsaf(sys_info->display_encoding));
 
-    /*
+    */
+
     printf("\n");
 
     // Version Info
-    printf("os.name          : %s\n", lib_strsaf(get_os_name()));
-    printf("os.version       : %s\n", lib_strsaf(get_os_version()));
-    printf("os.major         : %d\n", get_os_major_version());
-    printf("os.minor         : %d\n", get_os_minor_version());
-    printf("os.build         : %d\n", get_os_build_version());
+    printf("os.name          : %s\n", lib_strsaf(lib_sys_get_os_name()));
+    printf("os.version       : %s\n", lib_strsaf(lib_sys_get_os_version()));
+    printf("os.major         : %d\n", lib_sys_get_os_major_version());
+    printf("os.minor         : %d\n", lib_sys_get_os_minor_version());
+    printf("os.build         : %d\n", lib_sys_get_os_build_version());
 
     // CPU Info
-    printf("os.arch          : %s\n", lib_strsaf(get_os_arch()));
-    printf("os.arch.size     : %d\n", get_os_arch_size());
-    printf("cpu.isalist      : %s\n", lib_strsaf(get_cpu_isalist()));
-    printf("cpu.endian       : %s\n", lib_strsaf(get_cpu_endian()));
-    printf("cpu.count        : %d\n", get_cpu_count());
+    printf("os.arch          : %s\n", lib_strsaf(lib_sys_get_os_arch()));
+    printf("os.arch.size     : %d\n", lib_sys_get_os_arch_size());
+    printf("cpu.isalist      : %s\n", lib_strsaf(lib_sys_get_cpu_isalist()));
+    printf("cpu.endian       : %s\n", lib_strsaf(lib_sys_get_cpu_endian()));
+    printf("cpu.count        : %d\n", lib_sys_get_cpu_count());
 
     // FS Info
-    printf("file.separator   : %s\n", lib_strsaf(get_file_separator()));
-    //printf("line.separator   : %s\n", lib_strsaf(get_line_separator()));
-    printf("file.encoding    : %s\n", lib_strsaf(get_file_encoding()));
+    printf("file.separator   : %s\n", lib_strsaf(lib_sys_get_file_separator()));
+    //printf("line.separator   : %s\n", lib_strsaf(lib_sys_get_line_separator()));
+    printf("file.encoding    : %s\n", lib_strsaf(lib_sys_get_file_encoding()));
 
     // User Info
     printf("\n");
-    printf("user.name        : %s\n", lib_strsaf(get_user_name()));
-    printf("user.home        : %s\n", lib_strsaf(get_user_home()));
-    printf("user.dir         : %s\n", lib_strsaf(get_user_dir()));
-    printf("tmp.dir          : %s\n", lib_strsaf(get_tmp_dir()));
+    printf("user.name        : %s\n", lib_strsaf(lib_sys_get_user_name()));
+    printf("user.home        : %s\n", lib_strsaf(lib_sys_get_user_home()));
+    printf("user.dir         : %s\n", lib_strsaf(lib_sys_get_user_dir()));
+    printf("tmp.dir          : %s\n", lib_strsaf(lib_sys_get_tmp_dir()));
 
     printf("\n");
-    printf("user.locale      : %s\n", lib_strsaf(get_locale_name())); 
-    printf("user.language    : %s\n", lib_strsaf(get_locale_language()));
-    printf("user.script      : %s\n", lib_strsaf(get_locale_script()));
-    printf("user.country     : %s\n", lib_strsaf(get_locale_country()));
-    printf("user.variant     : %s\n", lib_strsaf(get_locale_variant()));
-    printf("user.encoding    : %s\n", lib_strsaf(get_locale_encoding()));
+    printf("user.locale      : %s\n", lib_strsaf(lib_sys_get_locale_name())); 
+    printf("user.language    : %s\n", lib_strsaf(lib_sys_get_locale_language()));
+    printf("user.script      : %s\n", lib_strsaf(lib_sys_get_locale_script()));
+    printf("user.country     : %s\n", lib_strsaf(lib_sys_get_locale_country()));
+    printf("user.variant     : %s\n", lib_strsaf(lib_sys_get_locale_variant()));
+    printf("user.encoding    : %s\n", lib_strsaf(lib_sys_get_locale_encoding()));
 
     printf("\n");
-    printf("format.locale    : %s\n", lib_strsaf(get_format_locale_name()));
-    printf("format.language  : %s\n", lib_strsaf(get_format_locale_language()));
-    printf("format.script    : %s\n", lib_strsaf(get_format_locale_script()));
-    printf("format.country   : %s\n", lib_strsaf(get_format_locale_country()));
-    printf("format.variant   : %s\n", lib_strsaf(get_format_locale_variant()));
-    printf("format.encoding  : %s\n", lib_strsaf(get_format_locale_encoding()));
+    printf("format.locale    : %s\n", lib_strsaf(lib_sys_get_format_locale_name()));
+    printf("format.language  : %s\n", lib_strsaf(lib_sys_get_format_locale_language()));
+    printf("format.script    : %s\n", lib_strsaf(lib_sys_get_format_locale_script()));
+    printf("format.country   : %s\n", lib_strsaf(lib_sys_get_format_locale_country()));
+    printf("format.variant   : %s\n", lib_strsaf(lib_sys_get_format_locale_variant()));
+    printf("format.encoding  : %s\n", lib_strsaf(lib_sys_get_format_locale_encoding()));
 
     printf("\n");
-    printf("display.locale   : %s\n", lib_strsaf(get_display_locale_name()));
-    printf("display.language : %s\n", lib_strsaf(get_display_locale_language()));
-    printf("display.script   : %s\n", lib_strsaf(get_display_locale_script()));
-    printf("display.country  : %s\n", lib_strsaf(get_display_locale_country()));
-    printf("display.variant  : %s\n", lib_strsaf(get_display_locale_variant()));
-    printf("display.encoding : %s\n", lib_strsaf(get_display_locale_encoding()));
-    */
+    printf("display.locale   : %s\n", lib_strsaf(lib_sys_get_display_locale_name()));
+    printf("display.language : %s\n", lib_strsaf(lib_sys_get_display_locale_language()));
+    printf("display.script   : %s\n", lib_strsaf(lib_sys_get_display_locale_script()));
+    printf("display.country  : %s\n", lib_strsaf(lib_sys_get_display_locale_country()));
+    printf("display.variant  : %s\n", lib_strsaf(lib_sys_get_display_locale_variant()));
+    printf("display.encoding : %s\n", lib_strsaf(lib_sys_get_display_locale_encoding()));
 
 }
