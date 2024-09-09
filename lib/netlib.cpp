@@ -7,7 +7,19 @@
 #include "strlib.h"
 #include "netlib.h"
 
-off_t _lib_net_read(socket_fd_t fd, void *buf, off_t len) {
+////
+
+const char* FTP_PREFIX = "ftp://";
+const char* FTPS_PREFIX = "ftps://";
+const int FTP_PORT = 21;
+
+const char* HTTP_PREFIX = "http://";
+const char* HTTPS_PREFIX = "https://";
+const int HTTP_PORT = 80;
+
+////
+
+off_t _lib_nf_read(socket_fd_t fd, void *buf, off_t len) {
 
 	off_t rest = len, curr, l = 0;
 
@@ -30,7 +42,7 @@ off_t _lib_net_read(socket_fd_t fd, void *buf, off_t len) {
 	return l;
 }
 
-off_t lib_net_read(nf_file_t* fp, void* buf, off_t len) {
+off_t lib_nf_read(lib_nf_file_t* fp, void* buf, off_t len) {
 
 	off_t l = 0;
 	if (fp->fd == -1) {
@@ -39,14 +51,14 @@ off_t lib_net_read(nf_file_t* fp, void* buf, off_t len) {
 
 	// if (fp->type == LIB_NF_TYPE_FTP) {
 	// 	if (fp->is_ready == 0) {
-	// 		if (!fp->no_reconnect) net_ftp_reconnect(fp);
-	// 		net_ftp_connect_file(fp);
+	// 		if (!fp->no_reconnect) lin_nf_ftp_reconnect(fp);
+	// 		lib_nf_ftp_connect_file(fp);
 	// 	}
 	// } 
 	
 	if (fp->type == LIB_NF_TYPE_HTTP) {
 		if (fp->is_ready == 0) {
-			lib_net_http_connect_file(fp);
+			lib_nf_http_connect_file(fp);
 		}
 	}
 
@@ -61,7 +73,7 @@ off_t lib_net_read(nf_file_t* fp, void* buf, off_t len) {
 			l += curr; rest -= curr;
 		}
 	} else {
-		l = _lib_net_read(fp->fd, buf, len);
+		l = _lib_nf_read(fp->fd, buf, len);
 	}
 	fp->offset += l;
 
@@ -69,7 +81,7 @@ off_t lib_net_read(nf_file_t* fp, void* buf, off_t len) {
 }
 
 
-off_t lib_net_seek(nf_file_t* fp, int64_t off, int whence) {
+off_t lib_nf_seek(lib_nf_file_t* fp, int64_t off, int whence) {
 
 	if (whence == SEEK_SET && off == fp->offset) return 0;
 
@@ -107,9 +119,9 @@ off_t lib_net_seek(nf_file_t* fp, int64_t off, int whence) {
 			errno = ESPIPE;
 			return -1;
 		}
-        if (whence==SEEK_CUR)
+        if (whence == SEEK_CUR)
             fp->offset += off;
-        else if (whence==SEEK_SET)
+        else if (whence == SEEK_SET)
             fp->offset = off;
 		fp->is_ready = 0;
 		return off;
@@ -122,29 +134,21 @@ off_t lib_net_seek(nf_file_t* fp, int64_t off, int whence) {
 
 ////
 
-const char* FTP_PREFIX = "ftp://";
-const char* FTPS_PREFIX = "ftps://";
-const int FTP_PORT = 21;
-
-const char* HTTP_PREFIX = "http://";
-const char* HTTPS_PREFIX = "https://";
-const int HTTP_PORT = 80;
-
-bool lib_net_is_ftp_url(const char* url) {
+bool lib_nf_is_ftp_url(const char* url) {
 	if (!url) {
 		return false;
 	}
 	return (strstr(url, FTP_PREFIX) == url || strstr(url, FTPS_PREFIX) == url);
 }
 
-bool lib_net_is_http_url(const char* url) {
+bool lib_nf_is_http_url(const char* url) {
 	if (!url) {
 		return false;
 	}
 	return (strstr(url, HTTP_PREFIX) == url || strstr(url, HTTPS_PREFIX) == url);
 }
 
-const char* lib_net_get_ftp_prefix(const char* url) {
+const char* lib_nf_get_ftp_prefix(const char* url) {
 	if (!url) {
 		return NULL;
 	}
@@ -160,7 +164,7 @@ const char* lib_net_get_ftp_prefix(const char* url) {
 	return NULL;
 }
 
-const char* lib_net_get_http_prefix(const char* url) {
+const char* lib_nf_get_http_prefix(const char* url) {
 	if (!url) {
 		return NULL;
 	}
@@ -176,20 +180,20 @@ const char* lib_net_get_http_prefix(const char* url) {
 	return NULL;
 }
 
-const char* lib_net_get_url_prefix2(const char* url) {
+const char* lib_nf_get_url_prefix2(const char* url) {
 	if (!url) {
 		return NULL;
 	}
 	const char* prefix = NULL;
 
 	// FTP
-	prefix = lib_net_get_ftp_prefix(url);
+	prefix = lib_nf_get_ftp_prefix(url);
 	if (prefix) {
 		return prefix;
 	}
 
 	// HTTP
-	prefix = lib_net_get_http_prefix(url);
+	prefix = lib_nf_get_http_prefix(url);
 	if (prefix) {
 		return prefix;
 	}
@@ -199,12 +203,12 @@ const char* lib_net_get_url_prefix2(const char* url) {
 
 ////
 
-nf_file_t* lib_net_ftp_parse_url(const char* url, const char* mode) {
+lib_nf_file_t* lib_nf_ftp_parse_url(const char* url, const char* mode) {
 	if (!url) {
 		fprintf(stderr, "Cannot parse FTP url. Url is NULL\n");
 		return NULL;
 	}
-	const char* prefix = lib_net_get_ftp_prefix(url);
+	const char* prefix = lib_nf_get_ftp_prefix(url);
 
 	if (!prefix) {
 		fprintf(stderr, "Cannot parse FTP url: %s. Incorrect protocol\n", url);
@@ -216,9 +220,9 @@ nf_file_t* lib_net_ftp_parse_url(const char* url, const char* mode) {
 		return NULL;
 	}
 
-	nf_file_t* fp;
+	lib_nf_file_t* fp;
 
-	fp = (nf_file_t*) calloc(1, sizeof(nf_file_t));
+	fp = (lib_nf_file_t*) calloc(1, sizeof(lib_nf_file_t));
 
 	// TODO
 
@@ -230,17 +234,17 @@ nf_file_t* lib_net_ftp_parse_url(const char* url, const char* mode) {
 	return fp;
 }
 
-int lib_net_ftp_connect_file(nf_file_t* fp) {
+int lib_nf_ftp_connect_file(lib_nf_file_t* fp) {
 	// TODO
 	return -1;
 }
 
-nf_file_t* lib_net_http_parse_url(const char* url, const char* mode) {
+lib_nf_file_t* lib_nf_http_parse_url(const char* url, const char* mode) {
 	if (!url) {
 		fprintf(stderr, "Cannot parse HTTP url. Url is NULL\n");
 		return NULL;
 	}
-	const char* prefix = lib_net_get_http_prefix(url);
+	const char* prefix = lib_nf_get_http_prefix(url);
 
 	if (!prefix) {
 		fprintf(stderr, "Cannot parse HTTP url: %s. Incorrect protocol\n", url);
@@ -253,7 +257,7 @@ nf_file_t* lib_net_http_parse_url(const char* url, const char* mode) {
 		return NULL;
 	}
 
-	nf_file_t* fp;
+	lib_nf_file_t* fp;
 	char* proxy;
 	char *p;
 	char* q;
@@ -263,7 +267,7 @@ nf_file_t* lib_net_http_parse_url(const char* url, const char* mode) {
 	p = lib_strchr_end(((char*) url) + prefix_len, '/');
 	len = p - url - prefix_len;
 
-	fp = (nf_file_t*) calloc(1, sizeof(nf_file_t));
+	fp = (lib_nf_file_t*) calloc(1, sizeof(lib_nf_file_t));
 	fp->http_host = (char*) calloc(len + 1, 1);
 	strncpy(fp->http_host, url + prefix_len, len);
 	fp->http_host[len] = 0;
@@ -280,7 +284,7 @@ nf_file_t* lib_net_http_parse_url(const char* url, const char* mode) {
 		fp->port = *q ? atoi(q) : HTTP_PORT;
 		fp->path = strdup(*p ? p : "/");
 	} else {
-		prefix = lib_net_get_http_prefix(proxy);
+		prefix = lib_nf_get_http_prefix(proxy);
 		fp->host = prefix ? strdup(proxy + strlen(prefix)) : strdup(proxy);
 		q = lib_strchr_end(fp->host, ':');
 		if (*q == ':') *q++ = 0; 
@@ -298,7 +302,7 @@ nf_file_t* lib_net_http_parse_url(const char* url, const char* mode) {
 
 ////
 
-int lib_net_http_connect_file(nf_file_t* fp) {
+int lib_nf_http_connect_file(lib_nf_file_t* fp) {
 	if (!fp) {
 		return -1;
 	}
@@ -375,7 +379,7 @@ int lib_net_http_connect_file(nf_file_t* fp) {
 		off_t rest = fp->offset;
 		while (rest) {
 			off_t l = rest < 0x10000? rest : 0x10000;
-			rest -= _lib_net_read((int) fp->fd, buf, l);
+			rest -= _lib_nf_read((int) fp->fd, buf, l);
 		}
 	} else if (ret != 206 && ret != 200) {
 		free(buf);
@@ -390,36 +394,36 @@ int lib_net_http_connect_file(nf_file_t* fp) {
 	return 0;
 }
 
-int lib_net_connect_file(nf_file_t* fp) {
+int lib_nf_connect_file(lib_nf_file_t* fp) {
 	if (!fp) {
 		return -1;
 	}
 
 	if (fp->type == LIB_NF_TYPE_FTP) {
-		return lib_net_ftp_connect_file(fp);
+		return lib_nf_ftp_connect_file(fp);
 	}
 
 	if (fp->type == LIB_NF_TYPE_HTTP) {
-		return lib_net_http_connect_file(fp);
+		return lib_nf_http_connect_file(fp);
 	}
 
 	return -1;
 }
 
-nf_file_t* lib_net_parse_url(const char* url, const char* mode) {
+lib_nf_file_t* lib_nf_parse_url(const char* url, const char* mode) {
 	if (!url) {
 		fprintf(stderr, "Cannot parse url. Url is NULL\n");
 		return NULL;
 	}
 
-	nf_file_t* fp = NULL;
+	lib_nf_file_t* fp = NULL;
 
-	if (lib_net_is_ftp_url(url)) {
+	if (lib_nf_is_ftp_url(url)) {
 		// FTP
-		fp = lib_net_ftp_parse_url(url, mode);
-	} else if (lib_net_is_http_url(url)) {
+		fp = lib_nf_ftp_parse_url(url, mode);
+	} else if (lib_nf_is_http_url(url)) {
 		// HTTP
-		fp = lib_net_http_parse_url(url, mode);
+		fp = lib_nf_http_parse_url(url, mode);
 	} else {
 		fprintf(stderr, "Cannot parse url: %s. Unsupported protocol\n", url);
 	}
@@ -427,26 +431,26 @@ nf_file_t* lib_net_parse_url(const char* url, const char* mode) {
 	return fp;
 }
 
-nf_file_t* lib_net_open(const char* url, const char* mode) {
+lib_nf_file_t* lib_nf_open(const char* url, const char* mode) {
 	if (!url) {
 		return NULL;
 	}
-	nf_file_t* fp = NULL;
+	lib_nf_file_t* fp = NULL;
 
-	if (lib_net_is_ftp_url(url)) {
+	if (lib_nf_is_ftp_url(url)) {
 		// FTP
-		fp = lib_net_ftp_parse_url(url, mode);
+		fp = lib_nf_ftp_parse_url(url, mode);
 		if (!fp) {
 			return NULL;
 		}
-		lib_net_ftp_connect_file(fp);
-	} else if (lib_net_is_http_url(url)) {
+		lib_nf_ftp_connect_file(fp);
+	} else if (lib_nf_is_http_url(url)) {
 		// HTTP
-		fp = lib_net_http_parse_url(url, mode);
+		fp = lib_nf_http_parse_url(url, mode);
 		if (!fp) {
 			return NULL;
 		}
-		lib_net_http_connect_file(fp);
+		lib_nf_http_connect_file(fp);
 	}
 
 	if (fp && fp->fd == -1) {
@@ -456,7 +460,7 @@ nf_file_t* lib_net_open(const char* url, const char* mode) {
 	return fp;
 }
 
-char* lib_net_get_file_contents(nf_file_t* fp, int* size, int init_size, int buf_size) {
+char* lib_nf_get_file_contents(lib_nf_file_t* fp, int* size, int init_size, int buf_size) {
 	if (!fp) {
 		return NULL;
 	}
@@ -469,7 +473,7 @@ char* lib_net_get_file_contents(nf_file_t* fp, int* size, int init_size, int buf
 	//printf("init size     : %i\n",init_size);
 	//printf("buffer size   : %i\n", buf_size);
 
-    while ((bytes = lib_net_read(fp, &buf[total], buf_size)) != 0) {
+    while ((bytes = lib_nf_read(fp, &buf[total], buf_size)) != 0) {
 		//printf("read size     : %i\n", bytes);
 	    if (total + bytes >= allocated) {
 		    inc_size = bytes < buf_size ? bytes : buf_size;
@@ -494,7 +498,7 @@ char* lib_net_get_file_contents(nf_file_t* fp, int* size, int init_size, int buf
 	return buf;
 }
 
-char* lib_net_get_file_contents(nf_file_t* fp, int* size) {
-	return lib_net_get_file_contents(fp, size, 65536, 4096);
+char* lib_nf_get_file_contents(lib_nf_file_t* fp, int* size) {
+	return lib_nf_get_file_contents(fp, size, 65536, 4096);
 }
 

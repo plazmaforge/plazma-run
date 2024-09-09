@@ -8,7 +8,7 @@
 
 #include "socketlib.h"
 
-typedef struct nf_file_s {
+typedef struct lib_nf_file_s {
 	int type;
     socket_fd_t fd;
 	int64_t offset;
@@ -24,28 +24,28 @@ typedef struct nf_file_s {
     int64_t seek_offset; // for lazy seek
     int64_t file_size;
 
-} nf_file_t;
+} lib_nf_file_t;
 
 
-nf_file_t* lib_net_ftp_parse_url(const char* fn, const char* mode);
+lib_nf_file_t* lib_nf_ftp_parse_url(const char* fn, const char* mode);
 
-int lib_net_ftp_connect_file(nf_file_t* fp);
+int lib_nf_ftp_connect_file(lib_nf_file_t* fp);
 
-nf_file_t* net_http_parse_url(const char* fn, const char* mode);
+lib_nf_file_t* lin_nf_http_parse_url(const char* fn, const char* mode);
 
-int lib_net_http_connect_file(nf_file_t* fp);
+int lib_nf_http_connect_file(lib_nf_file_t* fp);
 
-off_t lib_net_read(nf_file_t* fp, void* buf, off_t len);
+off_t lib_nf_read(lib_nf_file_t* fp, void* buf, off_t len);
 
-off_t lib_net_seek(nf_file_t* fp, int64_t off, int whence);
+off_t lib_nf_seek(lib_nf_file_t* fp, int64_t off, int whence);
 
-nf_file_t* lib_net_parse_url(const char* url, const char* mode);
+lib_nf_file_t* lib_nf_parse_url(const char* url, const char* mode);
 
-int lib_net_connect_file(nf_file_t* fp);
+int lib_nf_connect_file(lib_nf_file_t* fp);
 
-nf_file_t* lib_net_open(const char* url, const char* mode);
+lib_nf_file_t* lib_nf_open(const char* url, const char* mode);
 
-char* lib_net_get_file_contents(nf_file_t* fp, int* size);
+char* lib_nf_get_file_contents(lib_nf_file_t* fp, int* size);
 
 #endif // PLAZMA_LIB_NETLIB_H
 

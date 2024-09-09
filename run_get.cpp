@@ -16,13 +16,13 @@ int run_get(const char* url) {
     }
 
 // #ifdef _WIN32
-// 	net_win32_init();
+// 	nf_win32_init();
 // #endif
 
     // "http://captive.apple.com"
     //printf(">> url: %s\n", url);
 
-    nf_file_t* fp = lib_net_parse_url(url, NULL);
+    lib_nf_file_t* fp = lib_nf_parse_url(url, NULL);
     if (!fp) {
         return 1;
     }
@@ -32,12 +32,12 @@ int run_get(const char* url) {
     printf("* path     : %s\n", fp->path);
     printf("* http_host: %s\n", fp->http_host);
 
-    if (lib_net_connect_file(fp) != 0) {
+    if (lib_nf_connect_file(fp) != 0) {
         return 1;
     }
 
     int size = 0;
-    char* buf = lib_net_get_file_contents(fp, &size);
+    char* buf = lib_nf_get_file_contents(fp, &size);
     printf("%s", buf);
 
     //int len = 0;
@@ -46,18 +46,18 @@ int run_get(const char* url) {
     //printf("len: %i, ready: %i\n", len, fp->is_ready);
     //printf("starting...\n");
 
-    //while ((len = net_read(fp, buf, buf_len)) != 0) {
-       //len = net_read(fp, buf, buf_len);
+    //while ((len = lib_nf_read(fp, buf, buf_len)) != 0) {
+       //len = lib_nf_read(fp, buf, buf_len);
        //printf("len: %i, ready: %i\n", len, fp->is_ready);
        //printf("%s", buf);
     //}
 
-    //len = net_read(fp, buf, 10000);
+    //len = lib_nf_read(fp, buf, 10000);
     // printf("len: %i, ready: %i", len, fp->is_ready);
-	//net_read(fp, buf, 10000);
-	//net_seek(fp, 20000, SEEK_SET);
-	//net_seek(fp, 10000, SEEK_SET);
-	//len = net_read(fp, buf+10000, 10000000) + 10000;
+	//lib_nf_read(fp, buf, 10000);
+	//lib_nf_seek(fp, 20000, SEEK_SET);
+	//lib_nf_seek(fp, 10000, SEEK_SET);
+	//len = lib_nf_read(fp, buf+10000, 10000000) + 10000;
 
     return 0;
 }
