@@ -22,7 +22,7 @@ int run_get(const char* url) {
     // "http://captive.apple.com"
     //printf(">> url: %s\n", url);
 
-    nf_file_t* fp = net_parse_url(url, NULL);
+    nf_file_t* fp = lib_net_parse_url(url, NULL);
     if (!fp) {
         return 1;
     }
@@ -32,12 +32,12 @@ int run_get(const char* url) {
     printf("* path     : %s\n", fp->path);
     printf("* http_host: %s\n", fp->http_host);
 
-    if (net_connect_file(fp) != 0) {
+    if (lib_net_connect_file(fp) != 0) {
         return 1;
     }
 
     int size = 0;
-    char* buf = net_get_file_contents(fp, &size);
+    char* buf = lib_net_get_file_contents(fp, &size);
     printf("%s", buf);
 
     //int len = 0;

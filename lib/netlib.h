@@ -27,25 +27,25 @@ typedef struct nf_file_s {
 } nf_file_t;
 
 
-nf_file_t* net_ftp_parse_url(const char* fn, const char* mode);
+nf_file_t* lib_net_ftp_parse_url(const char* fn, const char* mode);
 
-int net_ftp_connect_file(nf_file_t* fp);
+int lib_net_ftp_connect_file(nf_file_t* fp);
 
 nf_file_t* net_http_parse_url(const char* fn, const char* mode);
 
-int net_http_connect_file(nf_file_t* fp);
+int lib_net_http_connect_file(nf_file_t* fp);
 
-off_t net_read(nf_file_t* fp, void* buf, off_t len);
+off_t lib_net_read(nf_file_t* fp, void* buf, off_t len);
 
-off_t net_seek(nf_file_t* fp, int64_t off, int whence);
+off_t lib_net_seek(nf_file_t* fp, int64_t off, int whence);
 
-nf_file_t* net_parse_url(const char* url, const char* mode);
+nf_file_t* lib_net_parse_url(const char* url, const char* mode);
 
-int net_connect_file(nf_file_t* fp);
+int lib_net_connect_file(nf_file_t* fp);
 
-nf_file_t* net_open(const char* url, const char* mode);
+nf_file_t* lib_net_open(const char* url, const char* mode);
 
-char* net_get_file_contents(nf_file_t* fp, int* size);
+char* lib_net_get_file_contents(nf_file_t* fp, int* size);
 
 #endif // PLAZMA_LIB_NETLIB_H
 
