@@ -376,7 +376,7 @@ void lib_locale_win_init() {
     _locale_os = NULL;
 
     if (need_sync_locale && _new_cp > 0) {
-       _locale_os = load_locale_os(_lc_type);
+       _locale_os = lib_locale_os_load_locale(_lc_type);
 
        // TODO: Windows 7/10
        // Maybe need convert <lg>_<CN> -> <Language>_Country>
@@ -437,11 +437,11 @@ void lib_locale_win_init() {
       printf("All LC Locale   : %s\n", lib_locale_get_locale(LC_ALL));
       printf("Std LC Locale   : %s\n", lib_locale_get_locale(LC_CTYPE));
       if (_locale_os) {
-        _locale_os = load_locale_os(_lc_type);
+        _locale_os = lib_locale_os_load_locale(_lc_type);
         printf("Std OS LC Type  : %d\n", _lc_type);
       }
       printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
-      print_locale(_locale_os);
+      lib_locale_print_locale(_locale_os);
 
     }
 
