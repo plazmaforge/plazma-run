@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "iolib.h"
 #include "socketlib.h"
+#include "iolib.h"
 #include "nflib.h"
 
 void usage() {

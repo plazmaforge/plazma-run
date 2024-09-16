@@ -66,7 +66,7 @@ int lib_socket_nonblock(lib_socket_fd_t socket_fd, int nonblock) {
     return ioctlsocket(socket_fd, FIONBIO, (unsigned long*) &nonblock);
 }
 
-socket_fd_t lib_socket_create(int domain, int type, int protocol) {
+lib_socket_fd_t lib_socket_create(int domain, int type, int protocol) {
     return lib_socket_create_nonblock(domain, type, protocol);
 }
 
@@ -82,7 +82,7 @@ int lib_socket_setopt(lib_socket_fd_t fd, int level, int name, const void* val, 
 	return setsockopt(fd, level, name, (char*) val, len);
 }
 
-static int lib_socket_getopt(socket_fd_t fd, int level, int name, void* val, int* len) {
+static int lib_socket_getopt(lib_socket_fd_t fd, int level, int name, void* val, int* len) {
     return getsockopt(fd, level, name, (char*) val, len);
 }
 #else
