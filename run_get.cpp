@@ -3,7 +3,7 @@
 
 #include "iolib.h"
 #include "socketlib.h"
-#include "netlib.h"
+#include "nflib.h"
 
 void usage() {
     fprintf(stderr, "Usage: run-get url\n");

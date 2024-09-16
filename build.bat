@@ -17,7 +17,7 @@ rem compile
 %CC% %CFLAGS% lib/dumplib.cpp -o dumplib.o
 %CC% %CFLAGS% lib/fmtlib.cpp -o fmtlib.o
 %CC% %CFLAGS% lib/socketlib.cpp -o socketlib.o
-%CC% %CFLAGS% lib/netlib.cpp -o netlib.o
+%CC% %CFLAGS% lib/nflib.cpp -o nflib.o
 %CC% %CFLAGS% lib/asklib.cpp -o asklib.o
 %CC% %CFLAGS% lib/syscpu.cpp -o syscpu.o
 %CC% %CFLAGS% lib/sysos.cpp -o sysos.o

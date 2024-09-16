@@ -5,21 +5,21 @@
 #include <unistd.h>
 
 #include "strlib.h"
-#include "netlib.h"
+#include "nflib.h"
 
 ////
 
-const char* FTP_PREFIX = "ftp://";
-const char* FTPS_PREFIX = "ftps://";
-const int FTP_PORT = 21;
+const char* LIB_FTP_PREFIX = "ftp://";
+const char* LIB_FTPS_PREFIX = "ftps://";
+const int LIB_FTP_PORT = 21;
 
-const char* HTTP_PREFIX = "http://";
-const char* HTTPS_PREFIX = "https://";
-const int HTTP_PORT = 80;
+const char* LIB_HTTP_PREFIX = "http://";
+const char* LIB_HTTPS_PREFIX = "https://";
+const int LIB_HTTP_PORT = 80;
 
 ////
 
-off_t _lib_nf_read(socket_fd_t fd, void *buf, off_t len) {
+off_t _lib_nf_read(lib_socket_fd_t fd, void *buf, off_t len) {
 
 	off_t rest = len, curr, l = 0;
 
@@ -138,14 +138,14 @@ bool lib_nf_is_ftp_url(const char* url) {
 	if (!url) {
 		return false;
 	}
-	return (strstr(url, FTP_PREFIX) == url || strstr(url, FTPS_PREFIX) == url);
+	return (strstr(url, LIB_FTP_PREFIX) == url || strstr(url, LIB_FTPS_PREFIX) == url);
 }
 
 bool lib_nf_is_http_url(const char* url) {
 	if (!url) {
 		return false;
 	}
-	return (strstr(url, HTTP_PREFIX) == url || strstr(url, HTTPS_PREFIX) == url);
+	return (strstr(url, LIB_HTTP_PREFIX) == url || strstr(url, LIB_HTTPS_PREFIX) == url);
 }
 
 const char* lib_nf_get_ftp_prefix(const char* url) {
@@ -154,11 +154,11 @@ const char* lib_nf_get_ftp_prefix(const char* url) {
 	}
 
 	// FTP
-	if (strstr(url, FTP_PREFIX) == url) {
-		return FTP_PREFIX;
+	if (strstr(url, LIB_FTP_PREFIX) == url) {
+		return LIB_FTP_PREFIX;
 	}
-	if (strstr(url, FTPS_PREFIX) == url) {
-		return FTPS_PREFIX;
+	if (strstr(url, LIB_FTPS_PREFIX) == url) {
+		return LIB_FTPS_PREFIX;
 	}
 
 	return NULL;
@@ -170,11 +170,11 @@ const char* lib_nf_get_http_prefix(const char* url) {
 	}
 
 	// HTTP
-	if (strstr(url, HTTP_PREFIX) == url) {
-		return HTTP_PREFIX;
+	if (strstr(url, LIB_HTTP_PREFIX) == url) {
+		return LIB_HTTP_PREFIX;
 	}
-	if (strstr(url, HTTPS_PREFIX) == url) {
-		return HTTPS_PREFIX;
+	if (strstr(url, LIB_HTTPS_PREFIX) == url) {
+		return LIB_HTTPS_PREFIX;
 	}
 
 	return NULL;
@@ -281,14 +281,14 @@ lib_nf_file_t* lib_nf_http_parse_url(const char* url, const char* mode) {
 	// set ->host, ->port and ->path
 	if (!proxy) {
 		fp->host = strdup(fp->http_host); // when there is no proxy, server name is identical to http_host name.
-		fp->port = *q ? atoi(q) : HTTP_PORT;
+		fp->port = *q ? atoi(q) : LIB_HTTP_PORT;
 		fp->path = strdup(*p ? p : "/");
 	} else {
 		prefix = lib_nf_get_http_prefix(proxy);
 		fp->host = prefix ? strdup(proxy + strlen(prefix)) : strdup(proxy);
 		q = lib_strchr_end(fp->host, ':');
 		if (*q == ':') *q++ = 0; 
-		fp->port = *q? atoi(q) : HTTP_PORT;
+		fp->port = *q? atoi(q) : LIB_HTTP_PORT;
 		fp->path = strdup(url);
 	}
 
@@ -342,8 +342,8 @@ int lib_nf_http_connect_file(lib_nf_file_t* fp) {
 		if (separate) {
 			printf("\n");
 		}
-		print_buf(buf, ssize, "> ");
-		//print_test_buf(buf, ssize);
+		lib_socket_print_buf(buf, ssize, "> ");
+		//lib_socket_print_test_buf(buf, ssize);
 	}
 
 	len = 0;
@@ -358,7 +358,7 @@ int lib_nf_http_connect_file(lib_nf_file_t* fp) {
 		if (separate) {
 			printf("\n");
 		}
-		print_buf(buf, len, "< ");
+		lib_socket_print_buf(buf, len, "< ");
 		//print_test_buf(buf, len);
 		if (separate) {
 			printf("\n");

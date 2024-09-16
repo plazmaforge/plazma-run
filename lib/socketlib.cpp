@@ -20,8 +20,8 @@ static void lib_socket_set_socketaddr(struct sockaddr_in *a, const char* host, i
     a->sin_addr.s_addr = addr.s_addr;
 }
 
-static socket_fd_t lib_socket_create_nonblock(int domain, int type, int protocol) {
-    socket_fd_t socket_fd = socket(domain, type & ~LIB_SOCKET_NONBLOCK, protocol);
+static lib_socket_fd_t lib_socket_create_nonblock(int domain, int type, int protocol) {
+    lib_socket_fd_t socket_fd = socket(domain, type & ~LIB_SOCKET_NONBLOCK, protocol);
     if ((type & LIB_SOCKET_NONBLOCK) && socket_fd != LIB_SOCKET_NULL 
         && 0 != lib_socket_nonblock(socket_fd, 1)) {
         lib_socket_close(socket_fd);
@@ -57,12 +57,12 @@ int lib_socket_init_default() {
 	return lib_socket_init(LIB_SOCKET_INIT_WSA);
 }
 
-void lib_socket_close(socket_fd_t socket_fd) {
+void lib_socket_close(lib_socket_fd_t socket_fd) {
     if (socket_fd == LIB_SOCKET_NULL) return;
     closesocket(socket_fd);
 }
 
-int lib_socket_nonblock(socket_fd_t socket_fd, int nonblock) {
+int lib_socket_nonblock(lib_socket_fd_t socket_fd, int nonblock) {
     return ioctlsocket(socket_fd, FIONBIO, (unsigned long*) &nonblock);
 }
 
@@ -70,14 +70,15 @@ socket_fd_t lib_socket_create(int domain, int type, int protocol) {
     return lib_socket_create_nonblock(domain, type, protocol);
 }
 
-ssize_t lib_socket_read(socket_fd_t fd, void* ptr, size_t len) {
+ssize_t lib_socket_read(lib_socket_fd_t fd, void* ptr, size_t len) {
     return recv(fd, (char*) ptr, len, 0);
 }
 
-ssize_t lib_socket_write(socket_fd_t fd, void* ptr, size_t len) {
+ssize_t lib_socket_write(lib_socket_fd_t fd, void* ptr, size_t len) {
     return send(fd, (char*) ptr, len, 0);
 }
-int lib_socket_setopt(socket_fd_t fd, int level, int name, const void* val, int len) {
+
+int lib_socket_setopt(lib_socket_fd_t fd, int level, int name, const void* val, int len) {
 	return setsockopt(fd, level, name, (char*) val, len);
 }
 
@@ -108,51 +109,51 @@ int lib_socket_init(int flags) {
     return 0;
 }
 
-void lib_socket_close(socket_fd_t socket_fd) {
+void lib_socket_close(lib_socket_fd_t socket_fd) {
     if (socket_fd == LIB_SOCKET_NULL) return;
     close(socket_fd);
 }
 
-int lib_socket_nonblock(socket_fd_t socket_fd, int nonblock) {
+int lib_socket_nonblock(lib_socket_fd_t socket_fd, int nonblock) {
     return ioctl(socket_fd, FIONBIO, &nonblock);
 }
 
-socket_fd_t lib_socket_create(int domain, int type, int protocol) {
+lib_socket_fd_t lib_socket_create(int domain, int type, int protocol) {
 #if (defined __APPLE__ && defined __MACH__)
-    socket_fd_t socket_fd = lib_socket_create_nonblock(domain, type, protocol);
+    lib_socket_fd_t socket_fd = lib_socket_create_nonblock(domain, type, protocol);
     return socket_fd;
 #else
     return socket(domain, type, protocol);
 #endif
 }
 
-ssize_t lib_socket_read(socket_fd_t fd, void* ptr, size_t len) {
+ssize_t lib_socket_read(lib_socket_fd_t fd, void* ptr, size_t len) {
     return read(fd, ptr, len);
 	//return recv(fd, ptr, len, 0);
 }
 
-ssize_t lib_socket_write(socket_fd_t fd, void* ptr, size_t len) {
+ssize_t lib_socket_write(lib_socket_fd_t fd, void* ptr, size_t len) {
     return write(fd, ptr, len);
 }
 
-int lib_socket_setopt(socket_fd_t fd, int level, int name, const void* val, int len) {
+int lib_socket_setopt(lib_socket_fd_t fd, int level, int name, const void* val, int len) {
 	return setsockopt(fd, level, name, val, len);
 }
 
-static int lib_socket_getopt(socket_fd_t fd, int level, int name, void* val, int* len) {
+static int lib_socket_getopt(lib_socket_fd_t fd, int level, int name, void* val, int* len) {
     return getsockopt(fd, level, name, val, (socklen_t*) len);
 }
 #endif
 
 ////
 
-int lib_socket_connect_fd(socket_fd_t socket_fd, const struct sockaddr* addr, int len) {
+int lib_socket_connect_fd(lib_socket_fd_t socket_fd, const struct sockaddr* addr, int len) {
     if (0 != connect(socket_fd, /*(struct sockaddr*) &addr*/ addr, len))
         return -1;
     return 0;
 }
 
-socket_fd_t lib_socket_connect(const char* host, int port) {
+lib_socket_fd_t lib_socket_connect(const char* host, int port) {
 
 #ifdef _WIN32    
     lib_socket_init_default();
@@ -161,7 +162,7 @@ socket_fd_t lib_socket_connect(const char* host, int port) {
 #define __err_connect(func) do { perror(func); /*freeaddrinfo(res);*/ return LIB_SOCKET_NULL; } while (0)
 #endif
 
-	socket_fd_t fd;
+	lib_socket_fd_t fd;
 	int on = 1;
 	struct linger lng = { 0, 0 };
 
@@ -246,7 +247,7 @@ int lib_socket_wait(int fd, int is_read) {
 
 ////
 
-void print_buf_v1(const char* buf, int len, const char* marker) {
+void lib_socket_print_buf_v1(const char* buf, int len, const char* marker) {
 	if (!buf || len <= 0) {
 		return;
 	}
@@ -277,7 +278,7 @@ void print_buf_v1(const char* buf, int len, const char* marker) {
 	}
 }
 
-void print_buf_v2(const char* buf, int len, const char* marker) {
+void lib_socket_print_buf_v2(const char* buf, int len, const char* marker) {
 	if (!buf || len <= 0) {
 		return;
 	}
@@ -328,11 +329,11 @@ void print_buf_v2(const char* buf, int len, const char* marker) {
 	}
 }
 
-void print_buf(const char* buf, int len, const char* marker) {
-	print_buf_v1(buf, len, marker);
+void lib_socket_print_buf(const char* buf, int len, const char* marker) {
+	lib_socket_print_buf_v1(buf, len, marker);
 }
 
-void print_test_buf(const char* buf, int len) {
+void lib_socket_print_test_buf(const char* buf, int len) {
 	if (!buf || len <= 0) {
 		return;
 	}

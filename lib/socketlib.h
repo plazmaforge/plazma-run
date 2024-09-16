@@ -24,16 +24,16 @@ enum LIB_SOCKET_INIT {
 
 #ifdef _WIN32
 
-typedef SOCKET socket_fd_t;
-//typedef WSABUF socket_iovec_t;
+typedef SOCKET lib_socket_fd_t;
+//typedef WSABUF lib_socket_iovec_t;
 
 #define LIB_SOCKET_NULL  INVALID_SOCKET
 #define LIB_SOCKET_NONBLOCK  0x0100
 #define LIB_SOCKET_EINPROGRESS  ERROR_IO_PENDING
 #else
 
-typedef int socket_fd_t;
-//typedef struct iovec socket_iovec_t;
+typedef int lib_socket_fd_t;
+//typedef struct iovec lib_socket_iovec_t;
 
 #define LIB_SOCKET_NULL  (-1)
 #define LIB_SOCKET_EINPROGRESS  EINPROGRESS
@@ -48,17 +48,17 @@ typedef int socket_fd_t;
 
 int lib_socket_init(int flags);
 
-void lib_socket_close(socket_fd_t socket_fd);
+void lib_socket_close(lib_socket_fd_t socket_fd);
 
-int lib_socket_nonblock(socket_fd_t socket_fd, int nonblock);
+int lib_socket_nonblock(lib_socket_fd_t socket_fd, int nonblock);
 
-socket_fd_t lib_socket_create(int domain, int type, int protocol);
+lib_socket_fd_t lib_socket_create(int domain, int type, int protocol);
 
-ssize_t lib_socket_read(socket_fd_t fd, void* ptr, size_t len);
+ssize_t lib_socket_read(lib_socket_fd_t fd, void* ptr, size_t len);
 
-socket_fd_t lib_socket_connect(const char* host, int port);
+lib_socket_fd_t lib_socket_connect(const char* host, int port);
 
-ssize_t lib_socket_write(socket_fd_t fd, void* ptr, size_t len);
+ssize_t lib_socket_write(lib_socket_fd_t fd, void* ptr, size_t len);
 
 ////
 
@@ -66,12 +66,12 @@ int lib_socket_wait(int fd, int is_read);
 
 ////
 
-void print_buf_v1(const char* buf, int len, const char* marker);
+void lib_socket_print_buf_v1(const char* buf, int len, const char* marker);
 
-void print_buf_v2(const char* buf, int len, const char* marker);
+void lib_socket_print_buf_v2(const char* buf, int len, const char* marker);
 
-void print_buf(const char* buf, int len, const char* marker);
+void lib_socket_print_buf(const char* buf, int len, const char* marker);
 
-void print_test_buf(const char* buf, int len);
+void lib_socket_print_test_buf(const char* buf, int len);
 
 #endif // PLAZMA_LIB_SOCKETLIB_H
