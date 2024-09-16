@@ -189,3 +189,9 @@ char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& siz
 
 }
 
+void lib_io_buf_init() {
+    #ifdef _WIN32
+    char buf[65536];
+    setvbuf(stdout, buf, _IOFBF, 65536);
+    #endif
+}

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "iolib.h"
 #include "socketlib.h"
 #include "netlib.h"
 
@@ -69,10 +70,7 @@ int main(int argc, char *argv[]) {
     }
     const char* url = argv[1];
 
-    #ifdef _WIN32
-    char buf[65536];
-    setvbuf(stdout, buf, _IOFBF, 65536);
-    #endif
+    lib_io_buf_init();
 
     return run_get(url);
 }
