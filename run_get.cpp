@@ -68,5 +68,11 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     const char* url = argv[1];
+
+    #ifdef _WIN32
+    char buf[65536];
+    setvbuf(stdout, buf, _IOFBF, 65536);
+    #endif
+
     return run_get(url);
 }
