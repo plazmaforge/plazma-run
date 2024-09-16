@@ -10,7 +10,7 @@
 
 typedef struct lib_nf_file_s {
 	int type;
-    socket_fd_t fd;
+    lib_socket_fd_t fd;
 	int64_t offset;
 	char *host;
     int port;

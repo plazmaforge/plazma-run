@@ -17,7 +17,7 @@ rem compile
 %CC% %CFLAGS% lib/dumplib.cpp -o dumplib.o
 %CC% %CFLAGS% lib/fmtlib.cpp -o fmtlib.o
 %CC% %CFLAGS% lib/socketlib.cpp -o socketlib.o
-%CC% %CFLAGS% lib/netlib.cpp -o netlib.o
+%CC% %CFLAGS% lib/nflib.cpp -o nflib.o
 %CC% %CFLAGS% lib/asklib.cpp -o asklib.o
 %CC% %CFLAGS% lib/syscpu.cpp -o syscpu.o
 %CC% %CFLAGS% lib/sysos.cpp -o sysos.o
@@ -82,7 +82,7 @@ rem link
 %CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_rm.o -o run-rm.exe
 %CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_cp.o -o run-cp.exe
 
-%CC% %LDFLAGS% common.o debug.o strlib.o socketlib.o netlib.o run_get.o -o run-get.exe %LIBS%
+%CC% %LDFLAGS% common.o debug.o strlib.o socketlib.o nflib.o run_get.o -o run-get.exe %LIBS%
 
 %CC% %LDFLAGS% getopt.o common.o iolib.o run_mdlib.o md5.o run_md5.o -o run-md5.exe
 %CC% %LDFLAGS% getopt.o common.o iolib.o run_mdlib.o sha256.o run_sha224.o -o run-sha224.exe
