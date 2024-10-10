@@ -121,21 +121,21 @@ static void _lib_fs_normalize_slash(char* path, size_t len) {
 
 ////
 
-int lib_fs_is_dirent_dir(fs_dirent_t* dirent) {
+int lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent) {
     if (!dirent) {
         return 0;
     }
     return dirent->fd->d_type == DT_DIR;
 }
 
-int lib_fs_get_dirent_type(fs_dirent_t* dirent) {
+int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent) {
     if (!dirent) {
         return 0;
     }
     return dirent->fd->d_type;
 }
 
-fs_dir_t* lib_fs_open_dir(const char* dir_name) {
+lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {
     if (!dir_name) {
         return NULL;
     }
@@ -144,7 +144,7 @@ fs_dir_t* lib_fs_open_dir(const char* dir_name) {
         fprintf(stderr, "Directory not found: %s\n", dir_name);
         return NULL;
     }
-    fs_dir_t* dir = (fs_dir_t*) malloc(sizeof(fs_dir_t));
+    lib_fs_dir_t* dir = (lib_fs_dir_t*) malloc(sizeof(lib_fs_dir_t));
     if (!dir) {
         closedir(_dir);
         return NULL;
@@ -154,7 +154,7 @@ fs_dir_t* lib_fs_open_dir(const char* dir_name) {
     return dir;
 }
 
-fs_dirent_t* lib_fs_read_dir(fs_dir_t* dir) {
+lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir) {
     if (!dir) {
         return NULL;
     }
@@ -163,7 +163,7 @@ fs_dirent_t* lib_fs_read_dir(fs_dir_t* dir) {
         return NULL;
     }
     if (!dir->dirent) {
-        dir->dirent = (fs_dirent_t*) malloc(sizeof(fs_dirent_t));
+        dir->dirent = (lib_fs_dirent_t*) malloc(sizeof(lib_fs_dirent_t));
         dir->dirent->type = 0;
         dir->dirent->name = NULL;
     }
@@ -176,7 +176,7 @@ fs_dirent_t* lib_fs_read_dir(fs_dir_t* dir) {
     return dir->dirent;
 }
 
-int lib_fs_close_dir(fs_dir_t* dir) {
+int lib_fs_close_dir(lib_fs_dir_t* dir) {
     if (!dir) {
         return 0;
     }

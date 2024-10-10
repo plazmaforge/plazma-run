@@ -18,119 +18,119 @@
 #define FILE_ATTRIBUTE_DEVICE 64
 #endif
 
-#define FS_DIR_SEPARATOR '\\'
-#define FS_DIR_SEPARATOR_STR "\\"
-#define FS_IS_DIR_SEPARATOR(c) ((c) == FS_DIR_SEPARATOR || (c) == '/')
+#define LIB_FS_DIR_SEPARATOR '\\'
+#define LIB_FS_DIR_SEPARATOR_STR "\\"
+#define LIB_FS_IS_DIR_SEPARATOR(c) ((c) == FS_DIR_SEPARATOR || (c) == '/')
 
 #else
 
 #include <dirent.h>
 
-#define FS_DIR_SEPARATOR '/'
-#define FS_DIR_SEPARATOR_STR "/"
-#define FS_IS_DIR_SEPARATOR(c) ((c) == FS_DIR_SEPARATOR)
+#define LIB_FS_DIR_SEPARATOR '/'
+#define LIB_FS_DIR_SEPARATOR_STR "/"
+#define LIB_FS_IS_DIR_SEPARATOR(c) ((c) == LIB_FS_DIR_SEPARATOR)
 
 #endif
 
 /*
  * File types
  */
-#define FS_UNKNOWN       0
-#define FS_FIFO          1
-#define FS_CHR           2
-#define FS_DIR           4
-#define FS_BLK           6
-#define FS_REG           8
-#define FS_LNK          10
-#define FS_SOCK         12
-#define FS_WHT          14
+#define LIB_FS_UNKNOWN       0
+#define LIB_FS_FIFO          1
+#define LIB_FS_CHR           2
+#define LIB_FS_DIR           4
+#define LIB_FS_BLK           6
+#define LIB_FS_REG           8
+#define LIB_FS_LNK          10
+#define LIB_FS_SOCK         12
+#define LIB_FS_WHT          14
 
 typedef enum {
-  FS_FILE_CHECK_IS_REGULAR    = 1 << 0,
-  FS_FILE_CHECK_IS_SYMLINK    = 1 << 1,
-  FS_FILE_CHECK_IS_DIR        = 1 << 2,
-  FS_FILE_CHECK_IS_EXECUTABLE = 1 << 3,
-  FS_FILE_CHECK_EXISTS        = 1 << 4
-} fs_file_check_t;
+  LIB_FS_FILE_CHECK_IS_REGULAR    = 1 << 0,
+  LIB_FS_FILE_CHECK_IS_SYMLINK    = 1 << 1,
+  LIB_FS_FILE_CHECK_IS_DIR        = 1 << 2,
+  LIB_FS_FILE_CHECK_IS_EXECUTABLE = 1 << 3,
+  LIB_FS_FILE_CHECK_EXISTS        = 1 << 4
+} lib_fs_file_check_t;
 
-const int FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
-const int FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
+const int LIB_FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
+const int LIB_FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
 
 typedef enum {
-  FS_FILE_SORT_NONE           = 0,
-  FS_FILE_SORT_BY_NAME        = 1,
-  FS_FILE_SORT_BY_SIZE        = 2,
-  FS_FILE_SORT_BY_TIME        = 3,
-} fs_file_sort_t;
+  LIB_FS_FILE_SORT_NONE           = 0,
+  LIB_FS_FILE_SORT_BY_NAME        = 1,
+  LIB_FS_FILE_SORT_BY_SIZE        = 2,
+  LIB_FS_FILE_SORT_BY_TIME        = 3,
+} lib_fs_file_sort_t;
 
 #if (defined(__MINGW64_VERSION_MAJOR) || defined(_MSC_VER)) && !defined(_WIN64)
-typedef struct _stat32 fs_stat_t;
+typedef struct _stat32 lib_fs_stat_t;
 #elif defined(__MINGW64_VERSION_MAJOR) && defined(_WIN64)
-typedef struct _stat64 fs_stat_t;
+typedef struct _stat64 lib_fs_stat_t;
 #else
-typedef struct stat fs_stat_t;
+typedef struct stat lib_fs_stat_t;
 #endif
 
 #ifdef _WIN32
 
 /* File descriptor    */
-typedef HANDLE fs_fd_t;
+typedef HANDLE lib_fs_fd_t;
 
 /* Directory pointer  */
-//typedef HANDLE fs_dir_t;
+//typedef HANDLE lib_fs_dir_t;
 
 /* File Info          */
-typedef BY_HANDLE_FILE_INFORMATION fs_file_info_t;
+typedef BY_HANDLE_FILE_INFORMATION lib_fs_file_info_t;
 
 /* Directory entry    */
-typedef struct fs_dirent_t {
+typedef struct lib_fs_dirent_t {
     int type; // OS Indepentent
     char* name;
     WIN32_FIND_DATAW fd;
-} fs_dirent_t;
+} lib_fs_dirent_t;
 
-typedef struct fs_dir_t {
+typedef struct lib_fs_dir_t {
     void* ptr;
-    fs_dirent_t* dirent;
-} fs_dir_t;
+    lib_fs_dirent_t* dirent;
+} lib_fs_dir_t;
 
 #else
 
 /* File descriptor    */
-typedef int fs_fd_t;     
+typedef int lib_fs_fd_t;     
 
 /* Directory pointer  */
-//typedef DIR fs_dir_t;
+//typedef DIR lib_fs_dir_t;
 
 /* File Info          */
-//#define fs_file_info_t struct stat;
-typedef struct stat fs_file_info_t;
+//#define lib_fs_file_info_t struct stat;
+typedef struct stat lib_fs_file_info_t;
 
 /* Directory entry    */
-typedef struct fs_dirent_t {
+typedef struct lib_fs_dirent_t {
     int type; // OS Indepentent
     char* name;
     struct dirent* fd;
-} fs_dirent_t;
+} lib_fs_dirent_t;
 
-typedef struct fs_dir_t {
+typedef struct lib_fs_dir_t {
     DIR* ptr;
-    fs_dirent_t* dirent;
-} fs_dir_t;
+    lib_fs_dirent_t* dirent;
+} lib_fs_dir_t;
 
 #endif
 
-typedef struct fs_file_t {
+typedef struct lib_fs_file_t {
   int type;
   char* name;
-  fs_stat_t* stat;
-} fs_file_t;
+  lib_fs_stat_t* stat;
+} lib_fs_file_t;
 
 
-typedef struct fs_file_data_t {
+typedef struct lib_fs_file_data_t {
     char* data;
     size_t size;
-} fs_file_data_t;
+} lib_fs_file_data_t;
 
 /* C Style */
 
@@ -210,7 +210,7 @@ int lib_fs_is_dir(const char* file_name);
 
 int lib_fs_is_executable(const char* file_name);
 
-int lib_fs_file_check(const char* file_name, fs_file_check_t check);
+int lib_fs_file_check(const char* file_name, lib_fs_file_check_t check);
 
 /**
  * Return base file name
@@ -227,7 +227,7 @@ char* lib_fs_get_base_name(const char* file_name);
 char* lib_fs_get_dir_name (const char* file_name);
 
 /**
- * Return base file name (alias fs_get_base_name)
+ * Return base file name (alias lib_fs_get_base_name)
  * 
  * [allocate]
  */
@@ -282,57 +282,57 @@ int lib_fs_remove_dir(const char* path);
 
 ////
 
-int lib_fs_stat(const char* path, fs_stat_t* buf);
+int lib_fs_stat(const char* path, lib_fs_stat_t* buf);
 
 ////
 
-fs_file_t* lib_fs_get_file(const char* file_name);
+lib_fs_file_t* lib_fs_get_file(const char* file_name);
 
-const char* lib_fs_file_get_file_name(fs_file_t* file);
+const char* lib_fs_file_get_file_name(lib_fs_file_t* file);
 
-int lib_fs_file_get_file_type(fs_file_t* file);
+int lib_fs_file_get_file_type(lib_fs_file_t* file);
 
-uint64_t lib_fs_file_get_file_size(fs_file_t* file);
+uint64_t lib_fs_file_get_file_size(lib_fs_file_t* file);
 
-int lib_fs_file_get_file_mode(fs_file_t* file);
+int lib_fs_file_get_file_mode(lib_fs_file_t* file);
 
-long lib_fs_file_get_file_atime(fs_file_t* file);
+long lib_fs_file_get_file_atime(lib_fs_file_t* file);
 
-long lib_fs_file_get_file_mtime(fs_file_t* file);
+long lib_fs_file_get_file_mtime(lib_fs_file_t* file);
 
-long lib_fs_file_get_file_ctime(fs_file_t* file);
+long lib_fs_file_get_file_ctime(lib_fs_file_t* file);
 
-int lib_fs_file_is_dir(fs_file_t* file);
+int lib_fs_file_is_dir(lib_fs_file_t* file);
 
 int lib_fs_file_get_file_type_by_mode(int mode);
 
 ////
 
-fs_file_t* lib_fs_file_new();
+lib_fs_file_t* lib_fs_file_new();
 
-void lib_fs_file_free(fs_file_t* file);
+void lib_fs_file_free(lib_fs_file_t* file);
 
-void lib_fs_files_free(fs_file_t** files);
+void lib_fs_files_free(lib_fs_file_t** files);
 
-int lib_fs_files_init(fs_file_t*** files, size_t size);
+int lib_fs_files_init(lib_fs_file_t*** files, size_t size);
 
-int lib_fs_files_reinit(fs_file_t*** files, size_t size);
-
-////
-
-int lib_fs_is_dirent_dir(fs_dirent_t* dirent);
-
-int lib_fs_get_dirent_type(fs_dirent_t* dirent);
-
-fs_dir_t* lib_fs_open_dir(const char* dir_name);
-
-fs_dirent_t* lib_fs_read_dir(fs_dir_t* dir);
-
-int lib_fs_close_dir(fs_dir_t* dir);
+int lib_fs_files_reinit(lib_fs_file_t*** files, size_t size);
 
 ////
 
-int lib_fs_scandir(const char* dir_name, const char* pattern, fs_file_t*** files, int max_depth, int file_only);
+int lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent);
+
+int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent);
+
+lib_fs_dir_t* lib_fs_open_dir(const char* dir_name);
+
+lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir);
+
+int lib_fs_close_dir(lib_fs_dir_t* dir);
+
+////
+
+int lib_fs_scandir(const char* dir_name, const char* pattern, lib_fs_file_t*** files, int max_depth, int file_only);
 
 
 /* C++ Style - Migration Task */

@@ -291,14 +291,14 @@ static wchar_t* getCurrentDirW() {
 
 ////
 
-int lib_fs_is_dirent_dir(fs_dirent_t* dirent) {
+int lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent) {
     if (!dirent) {
         return 0;
     }
     return dirent->fd.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE);
 }
 
-int lib_fs_get_dirent_type(fs_dirent_t* dirent) {
+int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent) {
     if (!dirent) {
         return 0;
     }
@@ -311,7 +311,7 @@ int lib_fs_get_dirent_type(fs_dirent_t* dirent) {
     return FS_REG;
 }
 
-fs_dir_t* lib_fs_open_dir(const char* dir_name) {
+lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {
     if (!dir_name) {
         return NULL;
     }
@@ -329,7 +329,7 @@ fs_dir_t* lib_fs_open_dir(const char* dir_name) {
         return NULL;
     }
 
-    fs_dir_t* dir = (fs_dir_t*) malloc(sizeof(fs_dir_t));
+    lib_fs_dir_t* dir = (lib_fs_dir_t*) malloc(sizeof(lib_fs_dir_t));
     if (!dir) {
         free(path);
         free(wpath);
@@ -342,14 +342,14 @@ fs_dir_t* lib_fs_open_dir(const char* dir_name) {
     return dir;
 }
 
-fs_dirent_t* lib_fs_read_dir(fs_dir_t* dir) {
+lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir) {
 
     if (!dir) {
         return NULL;
     }
 
     if (!dir->dirent) {
-        dir->dirent = (fs_dirent_t*) malloc(sizeof(fs_dirent_t));
+        dir->dirent = (lib_fs_dirent_t*) malloc(sizeof(lib_fs_dirent_t));
     } else {
        if (dir->dirent->name) {
            free(dir->dirent->name);                            // [free]
@@ -374,7 +374,7 @@ fs_dirent_t* lib_fs_read_dir(fs_dir_t* dir) {
     return dir->dirent;
 }
 
-int lib_fs_close_dir(fs_dir_t* dir) {
+int lib_fs_close_dir(lib_fs_dir_t* dir) {
     if (!dir) {
         return 0;
     }

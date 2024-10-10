@@ -98,9 +98,9 @@ int main(int argc, char* argv[]) {
         //printf("file : %s\n", file_name);
 
         char* pattern = file_name;         
-        fs_file_t** files = NULL;
-        fs_file_t* file = NULL;
-        int file_count = lib_fs_scandir(dir_name, pattern, &files, FS_SCANDIR_RECURSIVE, true);
+        lib_fs_file_t** files = NULL;
+        lib_fs_file_t* file = NULL;
+        int file_count = lib_fs_scandir(dir_name, pattern, &files, LIB_FS_SCANDIR_RECURSIVE, true);
 
         for (int i = 0; i < file_count; i++) {
             file = files[i];

@@ -32,9 +32,9 @@ int main(int argc, char *argv[]) {
     //printf("Current Dir: %s\n", dir_name);
 
     char* pattern = NULL;
-    fs_file_t** files = NULL;
-    fs_file_t* file = NULL;
-    int file_count = lib_fs_scandir(dir_name, pattern, &files, FS_SCANDIR_FLAT, false);
+    lib_fs_file_t** files = NULL;
+    lib_fs_file_t* file = NULL;
+    int file_count = lib_fs_scandir(dir_name, pattern, &files, LIB_FS_SCANDIR_FLAT, false);
 
     if (file_count <= 0) {
         lib_fs_files_free(files);

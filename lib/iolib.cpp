@@ -12,6 +12,8 @@
 
 // https://www.delftstack.com/howto/c/read-binary-file-in-c/
 
+#define LIB_IO_BUF_SIZE 65536
+
 char* lib_io_read_bytes(const char* file_name, size_t& size) {
 
   if (!file_name) {
@@ -101,7 +103,7 @@ void lib_io_write_bytes(const char* file_name, char* data, size_t& size) {
   // exit(EXIT_SUCCESS);
 }
 
-void lib_fs_file_data_free(fs_file_data_t* file_data) {
+void lib_fs_file_data_free(lib_fs_file_data_t* file_data) {
     if (!file_data) {
         return;
     }
@@ -109,7 +111,7 @@ void lib_fs_file_data_free(fs_file_data_t* file_data) {
     free(file_data);
 }
 
-void lib_fs_file_data_list_free(fs_file_data_t** file_list, int file_count) {
+void lib_fs_file_data_list_free(lib_fs_file_data_t** file_list, int file_count) {
     if (!file_list || file_count <= 0) {
         return;
     }
@@ -124,13 +126,13 @@ char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& siz
         return NULL;
     }
 
-    fs_file_data_t** file_list = (fs_file_data_t**) calloc(file_count, sizeof(fs_file_data_t*));
+    lib_fs_file_data_t** file_list = (lib_fs_file_data_t**) calloc(file_count, sizeof(lib_fs_file_data_t*));
     if (!file_list) {
         size = 0;
         return NULL;
     }
 
-    fs_file_data_t* file_data = NULL;
+    lib_fs_file_data_t* file_data = NULL;
     const char* file_name = NULL;
     size_t file_size = 0;
     size_t total_size = 0;
@@ -139,7 +141,7 @@ char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& siz
         file_name = file_names[i];
         file_size = 0;
 
-        file_data = (fs_file_data_t*) malloc(sizeof(fs_file_data_t));
+        file_data = (lib_fs_file_data_t*) malloc(sizeof(lib_fs_file_data_t));
         if (!file_data) {
             lib_fs_file_data_list_free(file_list, file_count);
             size = 0;
@@ -191,7 +193,7 @@ char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& siz
 
 void lib_io_buf_init() {
     #ifdef _WIN32
-    char buf[65536];
-    setvbuf(stdout, buf, _IOFBF, 65536);
+    char buf[LIB_IO_BUF_SIZE];
+    setvbuf(stdout, buf, _IOFBF, LIB_IO_BUF_SIZE);
     #endif
 }
