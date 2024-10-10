@@ -157,7 +157,7 @@ int lib_fs_is_unc_path(const char* path) {
       first [2] chars: '\\'  
       and check next non-dir separator char 
     */
-    return LIB_(FS_IS_DIR_SEPARATOR(path[0]) &&
+    return (LIB_FS_IS_DIR_SEPARATOR(path[0]) &&
         LIB_FS_IS_DIR_SEPARATOR(path[1]) &&
         path[2] &&
         !LIB_FS_IS_DIR_SEPARATOR(path[2]));
@@ -387,7 +387,7 @@ const char* lib_fs_skip_root(const char* path) {
     /* Skip \\server\share or //server/share */
     if (lib_fs_is_unc_path(path)) {
 
-        const char* p = strchr(path + 2, FS_DIR_SEPARATOR);
+        const char* p = strchr(path + 2, LIB_FS_DIR_SEPARATOR);
         const char* q = strchr(path + 2, '/');
 
         if (p == NULL || (q != NULL && q < p))

@@ -303,12 +303,12 @@ int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent) {
         return 0;
     }
     if (dirent->fd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
-        return FS_LNK;
+        return LIB_FS_LNK;
     }
     if (dirent->fd.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) {
-        return FS_DIR;
+        return LIB_FS_DIR;
     }
-    return FS_REG;
+    return LIB_FS_REG;
 }
 
 lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {

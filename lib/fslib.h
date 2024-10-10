@@ -20,7 +20,7 @@
 
 #define LIB_FS_DIR_SEPARATOR '\\'
 #define LIB_FS_DIR_SEPARATOR_STR "\\"
-#define LIB_FS_IS_DIR_SEPARATOR(c) ((c) == FS_DIR_SEPARATOR || (c) == '/')
+#define LIB_FS_IS_DIR_SEPARATOR(c) ((c) == LIB_FS_DIR_SEPARATOR || (c) == '/')
 
 #else
 
