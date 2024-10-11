@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 
     lib_locale_init();
 
-    ask_config* config = ask_config_new();
+    lib_ask_config* config = lib_ask_config_new();
     config->binary_mode = binary_mode;
     config->find_first_only = find_first_only;
     config->ignore_case = ignore_case;
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
 
         for (int i = 0; i < file_count; i++) {
             file = files[i];
-            ask_find(files[i]->name, input, input_size, config);
+            lib_ask_find(files[i]->name, input, input_size, config);
 
             //free(file);
             //fs_file_free(file);
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    ask_find(file_name, input, input_size, config);
+    lib_ask_find(file_name, input, input_size, config);
 
     free(config);
     lib_locale_restore(); // Important for WIN32: The locale was changed for the terminal
