@@ -18,6 +18,8 @@
 #include "wclib.h"
 #include "fslib.h"
 
+#define LIB_FS_BUF_SIZE 4096 // For file copy
+
 /* C Style */
 
 // [allocate]
@@ -575,10 +577,10 @@ int lib_fs_move(const char* old_path, const char* new_path) {
 }
 
 int lib_fs_copy(const char* src_file_name, const char* dst_file_name) {
-    return lib_fs_copy_opt(src_file_name, dst_file_name, 4096);
+    return lib_fs_copy_opts(src_file_name, dst_file_name, LIB_FS_BUF_SIZE);
 }
 
-int lib_fs_copy_opt(const char* src_file_name, const char* dst_file_name, int buf_size) {
+int lib_fs_copy_opts(const char* src_file_name, const char* dst_file_name, int buf_size) {
 
     FILE* src_file = fopen(src_file_name, "rb");
     if (!src_file) {

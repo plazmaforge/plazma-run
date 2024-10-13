@@ -266,7 +266,7 @@ int lib_fs_remove(const char* path);
 
 int lib_fs_copy(const char* src_file_name, const char* dst_file_name);
 
-int lib_fs_copy_opt(const char* src_file_name, const char* dst_file_name, int buf_size);
+int lib_fs_copy_opts(const char* src_file_name, const char* dst_file_name, int buf_size);
 
 int lib_fs_rmdir(const char* path);
 
