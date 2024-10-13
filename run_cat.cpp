@@ -37,8 +37,8 @@ int main(int argc, char* argv[]) {
 
     // incorrect last chars: non printable char
     //printf("%s", total_data);
-    //printf("%ls", char_wchar(total_data));   // IMPORTANT for WIN32 
-    //wprintf(L"%ls", char_wchar(total_data)); // IMPORTANT for WIN32
+    //printf("%ls", lib_char_wchar(total_data));   // IMPORTANT for WIN32 
+    //wprintf(L"%ls", lib_char_wchar(total_data)); // IMPORTANT for WIN32
 
     for (int i = 0; i < size; i++) {
         printf("%c", data[i]);

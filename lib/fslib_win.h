@@ -55,7 +55,7 @@ char* lib_fs_get_real_path(const char* path) {
     if (!path) {
         return NULL;
     }
-    wchar_t* wpath = char_wchar(path);
+    wchar_t* wpath = lib_mbs_to_wcs(path);
     if (!wpath) {
         return NULL;
     }
@@ -64,7 +64,7 @@ char* lib_fs_get_real_path(const char* path) {
     if (!wreal_path) {
         return NULL;
     }
-    char* real_path = wchar_char(wreal_path);
+    char* real_path = lib_wchar_char(wreal_path);
     free(wreal_path);
 
     return real_path;
@@ -76,7 +76,7 @@ char* lib_fs_get_current_dir() {
     if (!wcurrent_dir) {
         return NULL;
     }
-    char* current_dir = wchar_char(wcurrent_dir);
+    char* current_dir = lib_wchar_char(wcurrent_dir);
     free(wcurrent_dir);
     return current_dir;
 }
@@ -99,7 +99,7 @@ static int _lib_fs_is_dir(WIN32_FIND_DATAW file) {
 }
 
 static void _lib_fs_normalize_slash(char* path, size_t len) {
-    lib_replace_len(path, len, '/', '\\');
+    lib_replace_n(path, len, '/', '\\');
 }
 
 // Convert directory name to WIN32 find path: add '\*'
@@ -232,7 +232,7 @@ static wchar_t* getCurrentDirW() {
 // void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
 
 //     char* path = fs_get_find_path(dirName); // convert 'dirName' to WIN32 find path: add '\*'
-//     wchar_t* wpath = char_wchar(path);
+//     wchar_t* wpath = lib_mbs_to_wcs(path);
 //     //printf("path    : '%s'\n", path);
 
 //     WIN32_FIND_DATAW file;
@@ -245,7 +245,7 @@ static wchar_t* getCurrentDirW() {
 //     while (FindNextFileW(dir, &file) != 0) {
 
 //         wchar_t* wfileName = file.cFileName;
-//         char* fileName = wchar_char(wfileName); // [allocate]
+//         char* fileName = lib_wchar_char(wfileName); // [allocate]
 
 //         //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
 //         if (pattern == NULL || fs_match_file_internal(level_pattern, fileName)) {
@@ -317,7 +317,7 @@ lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {
     }
 
     char* path = lib_fs_get_find_path(dir_name); // convert 'dir_name' to WIN32 find path: add '\*'
-    wchar_t* wpath = char_wchar(path);
+    wchar_t* wpath = lib_mbs_to_wcs(path);
 
     //printf("path    : '%s'\n", path);
 
@@ -369,7 +369,7 @@ lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir) {
 
     //dir->dirent->fd = fd;
     dir->dirent->type = lib_fs_get_dirent_type(dir->dirent);
-    dir->dirent->name = wchar_char(dir->dirent->fd.cFileName); // [allocate]
+    dir->dirent->name = lib_wchar_char(dir->dirent->fd.cFileName); // [allocate]
 
     return dir->dirent;
 }
@@ -389,8 +389,8 @@ static int lib_fs_match_file_internal(const char* pattern, const char* name, int
     // PathMatchSpecA
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
 
-    //wchar_t* wpattern = char_wchar(pattern, strlen(pattern));
-    //wchar_t* wname = char_wchar(name, strlen(name));
+    //wchar_t* wpattern = lib_mbs_to_wcs(pattern, strlen(pattern));
+    //wchar_t* wname = lib_mbs_to_wcs(name, strlen(name));
 
     //return PathMatchSpecW(wname, wpattern);
     //return PathMatchSpecA(name, pattern);

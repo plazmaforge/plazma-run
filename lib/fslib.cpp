@@ -423,7 +423,7 @@ const char* lib_fs_skip_root(const char* path) {
 
 int lib_fs_access(const char* path, int mode) {
 #ifdef _WIN32
-    wchar_t* wpath = char_wchar(path);
+    wchar_t* wpath = lib_mbs_to_wcs(path);
     int retval;
     int save_errno;
 
@@ -448,7 +448,7 @@ int lib_fs_access(const char* path, int mode) {
 
 int lib_fs_chmod(const char* path, int mode) {
 #ifdef _WIN32
-    wchar_t* wpath = char_wchar(path);
+    wchar_t* wpath = lib_mbs_to_wcs(path);
     int retval;
     int save_errno;
 
@@ -469,7 +469,7 @@ int lib_fs_chmod(const char* path, int mode) {
 
 int lib_fs_mkdir(const char* path, int mode) {
 #ifdef _WIN32
-    wchar_t* wpath = char_wchar(path);
+    wchar_t* wpath = lib_mbs_to_wcs(path);
     int retval;
     int save_errno;
 
@@ -490,7 +490,7 @@ int lib_fs_mkdir(const char* path, int mode) {
 
 int lib_fs_chdir(const char* path) {
 #ifdef _WIN32
-    wchar_t* wpath = char_wchar(path);
+    wchar_t* wpath = lib_mbs_to_wcs(path);
     int retval;
     int save_errno;
 
@@ -516,13 +516,13 @@ int lib_fs_rename(const char* old_path, const char* new_path) {
     int retval;
     int save_errno = 0;
 
-    wold_path = char_wchar(old_path);
+    wold_path = lib_mbs_to_wcs(old_path);
     if (!wold_path) {
         errno = EINVAL;
         return -1;
     }
 
-    wnew_path = char_wchar(new_path);
+    wnew_path = lib_mbs_to_wcs(new_path);
     if (!wnew_path) {
         free(wold_path);
         errno = EINVAL;
@@ -609,7 +609,7 @@ int lib_fs_copy_opt(const char* src_file_name, const char* dst_file_name, int bu
 
 int lib_fs_remove(const char* path) {
 #ifdef _WIN32
-    wchar_t* wpath = char_wchar(path);
+    wchar_t* wpath = lib_mbs_to_wcs(path);
     int retval;
     int save_errno;
 
@@ -634,7 +634,7 @@ int lib_fs_remove(const char* path) {
 
 int lib_fs_rmdir(const char* path) {
 #ifdef _WIN32
-    wchar_t* wpath = char_wchar(path);
+    wchar_t* wpath = lib_mbs_to_wcs(path);
     int retval;
     int save_errno;
 
@@ -714,7 +714,7 @@ int lib_fs_file_check(const char* file_name, lib_fs_file_check_t check) {
     DWORD attributes;
     wchar_t *wfile_name;
 
-    wfile_name = char_wchar(file_name);
+    wfile_name = lib_mbs_to_wcs(file_name);
     if (!wfile_name)
         return 0;
 
@@ -996,7 +996,7 @@ int _lib_fs_wstat(const wchar_t* wfile_name, lib_fs_stat_t* buf) {
 }
 
 int _lib_fs_stat(const char* file_name, lib_fs_stat_t* buf) {
-    wchar_t *wfile_name = char_wchar(file_name);
+    wchar_t *wfile_name = lib_mbs_to_wcs(file_name);
     if (!wfile_name) {
         errno = EINVAL;
         return -1;

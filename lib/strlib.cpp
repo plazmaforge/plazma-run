@@ -11,6 +11,9 @@ const char* lib_strsaf(const char* str) {
     return str ? str : "";
 }
 
+/**
+ * [allocate]
+ */
 char* lib_strnew(size_t size) {
   //if (size < 0) {
   //  return NULL;
@@ -22,14 +25,12 @@ char* lib_strnew(size_t size) {
   for (int i = 0; i <= size; i++) {
     dst[i] = '\0';
   }    
-  //dst[size] = '\0';
   return dst;
 }
 
-// char* lib_strnews(const char* str) {
-//   return lib_strdup(str);
-// }
-
+/**
+ * [allocate]
+ */
 char* lib_strapp(const char* str1, const char* str2) {
   if (!str1) {
     return NULL;
@@ -45,6 +46,9 @@ char* lib_strapp(const char* str1, const char* str2) {
   return dst;  
 }
 
+/**
+ * [allocate]
+ */
 char* lib_strappv(const char* str1, const char* str2, const char* str3) {
   if (!str1) {
     return NULL;
@@ -62,27 +66,6 @@ char* lib_strappv(const char* str1, const char* str2, const char* str3) {
   }
   return dst;
 }
-
-// char* lib_strnew(const char* str1, const char* str2, const char* str3, const char* str4) {
-//   if (!str1) {
-//     return NULL;
-//   }
-//   char* dst = lib_strnew(lib_strlen(str1) + lib_strlen(str2) + lib_strlen(str3) + lib_strlen(str4));
-//   if (!dst) {
-//     return NULL;
-//   }
-//   lib_strcpy(dst, str1);
-//   if (str2) {
-//     lib_strcat(dst, str2);
-//   }
-//   if (str3) {
-//     lib_strcat(dst, str3);
-//   }
-//   if (str4) {
-//     lib_strcat(dst, str4);
-//   }
-//   return dst;
-// }
 
 char* lib_strcat(char* str1, const char* str2) {
   if (!str1) {
@@ -126,6 +109,9 @@ size_t lib_strlen(const char* src) {
   return strlen(src);
 }
 
+/**
+ * [allocate]
+ */
 char* lib_strdup(const char* src) {
   if (!src) {
     return NULL;
@@ -140,6 +126,9 @@ char* lib_strdup(const char* src) {
   return dst;
 }
 
+/**
+ * [allocate]
+ */
 char* lib_strndup(const char* src, size_t size) {
   if (!src || size < 0) {
     return NULL;
@@ -153,6 +142,53 @@ char* lib_strndup(const char* src, size_t size) {
   memcpy(dst, src, len);
   //dst[len] = '\0';
   return dst;
+}
+
+/**
+ * [allocate]
+ */
+char* lib_strdup_qt_opt(const char* src, char quote) {
+  if (!src) {
+    return NULL;
+  }
+  size_t len = strlen(src);
+  char* dst = NULL;
+  if (!lib_is_strn_qt(src, len)) {
+    dst = lib_strdup(src);
+  } else {
+    dst = lib_strnew(len + 2); // +2 start/end quotes
+    if (!dst) {
+      return NULL;
+    }
+    dst[0] = quote;       // start
+    memcpy(++dst, src, len);
+    len += 2;
+    dst[len - 1] = quote; // end
+    //dst[len] = '\0';
+  }
+  return dst;
+}
+
+/**
+ * [allocate]
+ */
+char* lib_strdup_qt(const char* src) {
+    return lib_strdup_qt_opt(src, '\'');
+}
+
+/**
+ * [allocate]
+ */
+char* lib_strdup_uq(const char* src) {
+  if (!src) {
+    return NULL;
+  }
+  size_t len = strlen(src);
+  if (lib_is_strn_qt(src, len)) {  
+     return lib_strndup(src + 1, len - 2);
+  } else {
+     return lib_strdup(src);
+  }
 }
 
 int lib_is_strn_qt_opt(const char* src, size_t size, char quote) {
@@ -183,44 +219,6 @@ int lib_is_str_qt(const char* src) {
   return lib_is_strn_qt(src, strlen(src));
 }
 
-char* lib_strdup_qt_opt(const char* src, char quote) {
-  if (!src) {
-    return NULL;
-  }
-  size_t len = strlen(src);
-  char* dst = NULL;
-  if (!lib_is_strn_qt(src, len)) {
-    dst = lib_strdup(src);
-  } else {
-    dst = lib_strnew(len + 2); // +2 start/end quotes
-    if (!dst) {
-      return NULL;
-    }
-    dst[0] = quote;       // start
-    memcpy(++dst, src, len);
-    len += 2;
-    dst[len - 1] = quote; // end
-    //dst[len] = '\0';
-  }
-  return dst;
-}
-
-char* lib_strdup_qt(const char* src) {
-    return lib_strdup_qt_opt(src, '\'');
-}
-
-char* lib_strdup_uq(const char* src) {
-  if (!src) {
-    return NULL;
-  }
-  size_t len = strlen(src);
-  if (lib_is_strn_qt(src, len)) {  
-     return lib_strndup(src + 1, len - 2);
-  } else {
-     return lib_strdup(src);
-  }
-}
-
 int lib_stralen(/*const*/ char** array) {
     if (!array) {
         return 0;
@@ -249,7 +247,7 @@ void lib_strafree(char** array) {
     free(array);
 }
 
-void lib_replace_len(char* path, size_t len, char from, char to) {
+void lib_replace_n(char* path, size_t len, char from, char to) {
     if (!path) {
         return;
     }
@@ -264,7 +262,7 @@ void lib_replace(char* path, char from, char to) {
     if (!path) {
         return;
     }
-    lib_replace_len(path, lib_strlen(path), from, to);
+    lib_replace_n(path, lib_strlen(path), from, to);
 }
 
 char* lib_strchr_end(char* str, int c) {

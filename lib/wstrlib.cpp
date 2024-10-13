@@ -8,6 +8,9 @@
 #include "strlib.h"
 #include "wstrlib.h"
 
+/**
+ * [allocate]
+ */
 wchar_t* lib_wstrnew(size_t size) {
   if (size < 0) {
     return NULL;
@@ -19,12 +22,11 @@ wchar_t* lib_wstrnew(size_t size) {
   for (int i = 0; i <= size; i++) {
     dst[i] = '\0';
   }    
-  //dst[size] = '\0';
   return dst;
 }
 
 #ifdef _WIN32
-wchar_t* char_wchar_win(UINT cp, const char* str, int len) {
+static wchar_t* lib_mbs_to_wcs_win(UINT cp, const char* str, int len) {
     if (!str) {
         return NULL;
     }
@@ -35,7 +37,7 @@ wchar_t* char_wchar_win(UINT cp, const char* str, int len) {
     return wstr;
 }
 
-char* wchar_char_win(UINT cp, const wchar_t* wstr, int wlen) {
+static char* lib_wcs_to_mbs_win(UINT cp, const wchar_t* wstr, int wlen) {
     if (!wstr) {
         return NULL;
     }
@@ -46,7 +48,10 @@ char* wchar_char_win(UINT cp, const wchar_t* wstr, int wlen) {
     return str;
 }
 #else
-wchar_t* char_wchar_nix(const char* str, int len) {
+static wchar_t* lib_mbs_to_wcs_nix(const char* str, int len) {
+    if (!str) {
+        return NULL;
+    }
     // Locale dependency! - setlocale(LC_ALL, "");
     int wlen = mbstowcs((wchar_t*) 0, str, len);
     wchar_t* wstr = lib_wstrnew(len);
@@ -55,7 +60,7 @@ wchar_t* char_wchar_nix(const char* str, int len) {
     return wstr;
 }
 
-char* wchar_char_nix(const wchar_t* wstr, int wlen) {
+static char* lib_wcs_to_mbs_nix(const wchar_t* wstr, int wlen) {
     if (!wstr) {
         return NULL;
     }
@@ -68,80 +73,108 @@ char* wchar_char_nix(const wchar_t* wstr, int wlen) {
 }
 #endif
 
-wchar_t* achar_wchar(const char* str, int len) {
+////
+
+/**
+ * [allocate]
+ */
+wchar_t* lib_acs_to_wcs_n(const char* str, int len) {
     if (!str) {
         return NULL;
     }
     #ifdef _WIN32
-    return char_wchar_win(CP_ACP, str, len);
+    return lib_mbs_to_wcs_win(CP_ACP, str, len);
     #else    
     // Locale dependency! - setlocale(LC_ALL, "");    
-    return char_wchar_nix(str, len);
+    return lib_mbs_to_wcs_nix(str, len);
     #endif
 }
 
-wchar_t* achar_wchar(const char* str) {
+/**
+ * [allocate]
+ */
+wchar_t* lib_acs_to_wcs(const char* str) {
     if (!str) {
         return NULL;
     }
-    return achar_wchar(str, strlen(str));
+    return lib_acs_to_wcs_n(str, strlen(str));
 }
 
-char* wchar_achar(const wchar_t* wstr, int wlen) {
+/**
+ * [allocate]
+ */
+char* lib_wcs_to_acs_n(const wchar_t* wstr, int wlen) {
     if (!wstr) {
         return NULL;
     }
     #ifdef _WIN32
-    return wchar_char_win(CP_ACP, wstr, wlen);
+    return lib_wcs_to_mbs_win(CP_ACP, wstr, wlen);
     #else    
     // Locale dependency! - setlocale(LC_ALL, "");
-    return wchar_char_nix(wstr, wlen);
+    return lib_wcs_to_mbs_nix(wstr, wlen);
     #endif
 }
 
-char* wchar_achar(const wchar_t* wstr) {
+/**
+ * [allocate]
+ */
+char* lib_wcs_to_acs(const wchar_t* wstr) {
     if (!wstr) {
         return NULL;
     }
-    return wchar_achar(wstr, wcslen(wstr)); 
+    return lib_wcs_to_acs_n(wstr, wcslen(wstr)); 
 }
 
 ////
 
-wchar_t* char_wchar(const char* str, int len) {
+/**
+ * [allocate]
+ */
+wchar_t* lib_mbs_to_wcs_n(const char* str, int len) {
     if (!str) {
         return NULL;
     }
     #ifdef _WIN32
-    return char_wchar_win(CP_UTF8, str, len);
+    return lib_mbs_to_wcs_win(CP_UTF8, str, len);
     #else
     // Locale dependency! - setlocale(LC_ALL, "");
-    return char_wchar_nix(str, len);
+    return lib_mbs_to_wcs_nix(str, len);
     #endif
 }
 
-wchar_t* char_wchar(const char* str) {
+/**
+ * [allocate]
+ */
+wchar_t* lib_mbs_to_wcs(const char* str) {
     if (!str) {
         return NULL;
     }
-    return char_wchar(str, strlen(str));
+    return lib_mbs_to_wcs_n(str, strlen(str));
 }
 
-char* wchar_char(const wchar_t* wstr, int wlen) {
+////
+
+/**
+ * [allocate]
+ */
+char* lib_wcs_to_mbs_n(const wchar_t* wstr, int wlen) {
     if (!wstr) {
         return NULL;
     }
     #ifdef _WIN32
-    return wchar_char_win(CP_UTF8, wstr, wlen);
+    return lib_wcs_to_mbs_win(CP_UTF8, wstr, wlen);
     #else
     // Locale dependency! - setlocale(LC_ALL, "");    
-    return wchar_char_nix(wstr, wlen);
+    return lib_wcs_to_mbs_nix(wstr, wlen);
     #endif
 }
 
-char* wchar_char(const wchar_t* wstr) {
+/**
+ * [allocate]
+ */
+char* lib_wcs_to_mbs(const wchar_t* wstr) {
     if (!wstr) {
         return NULL;
     }
-    return wchar_char(wstr, wcslen(wstr)); 
+    return lib_wcs_to_mbs_n(wstr, wcslen(wstr)); 
 }

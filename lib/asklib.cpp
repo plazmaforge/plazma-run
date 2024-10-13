@@ -452,7 +452,7 @@ void lib_ask_print_text(const lib_ask_positions_t* positions, const char* data, 
         width = row_width + col_width + 5;
 
         sprintf(format, "[_%id: _%id] ", row_width, col_width);
-        lib_replace_len(format, sizeof(format) / sizeof(char), '_', '%');
+        lib_replace_n(format, sizeof(format) / sizeof(char), '_', '%');
     }
 
     while (curr) {
@@ -533,7 +533,7 @@ void lib_ask_print_binary(const lib_ask_positions_t* positions, const char* data
         lib_ask_calc_width_index(positions, index_width);
         width = index_width + 3;
         sprintf(format, "[_%id] ", index_width);
-        lib_replace_len(format, sizeof(format) / sizeof(char), '_', '%');
+        lib_replace_n(format, sizeof(format) / sizeof(char), '_', '%');
     }
 
     while (curr) {

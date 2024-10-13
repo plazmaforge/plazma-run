@@ -18,8 +18,8 @@ void print_test(const char* input) {
         return;
     }
     const char* str = input;
-    const wchar_t* wstr = achar_wchar(str); // WIN32 (ANSII): achar_wchar + wchar_achar - correct only!
-    const char* str2 = wchar_achar(wstr);
+    const wchar_t* wstr = lib_acs_to_wcs(str); // WIN32 (ANSII): acs_to_wcs() + wcs_to_acs(): correct only!
+    const char* str2 = lib_wcs_to_acs(wstr);
 
     wprintf(L"\n");
     printf("MB-c-STR: %s\n", str);

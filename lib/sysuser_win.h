@@ -125,7 +125,7 @@ char* getUserName() {
     if (wusername == NULL) {
         return NULL;
     }
-    char* username = wchar_char(wusername);
+    char* username = lib_wcs_to_mbs(wusername);
     if (username == NULL) {
         return NULL;
     }
@@ -138,7 +138,7 @@ char* getUserHome() {
     if (wuserhome == NULL) {
         return NULL;
     }
-    char* userhome = wchar_char(wuserhome);
+    char* userhome = lib_wcs_to_mbs(wuserhome);
     if (userhome == NULL) {
         return NULL;
     }
@@ -151,7 +151,7 @@ char* getUserDir() {
     if (wuserdir == NULL) {
         return NULL;
     }
-    char* userdir = wchar_char(wuserdir);
+    char* userdir = lib_wcs_to_mbs(wuserdir);
     if (userdir == NULL) {
         return NULL;
     }
@@ -164,7 +164,7 @@ char* getTmpDir() {
     if (wtmpdir == NULL) {
         return NULL;
     }
-    char* tmpdir = wchar_char(wtmpdir);
+    char* tmpdir = lib_wcs_to_mbs(wtmpdir);
     if (tmpdir == NULL) {
         return NULL;
     }

@@ -1,43 +1,57 @@
 #include <wchar.h>
 
 /**
- * Converts ANSII Chars to Wide Chars with a lenght
+ * Creates new string with a lenght  
+ * [allocate]
  */
-wchar_t* achar_wchar(const char* str, int len);
+wchar_t* lib_wstrnew(size_t size);
+
+/**
+ * Converts ANSII Chars to Wide Chars with a lenght
+ * [allocate]
+ */
+wchar_t* lib_acs_to_wcs_n(const char* str, int len);
 
 /**
  * Converts ANSII Chars to Wide Chars 
+ * [allocate]
  */
-wchar_t* achar_wchar(const char* str);
+wchar_t* lib_acs_to_wcs(const char* str);
 
 /**
  * Converts Wide Chars to ANSII Chars with a lenght
+ * [allocate]
  */
-char* wchar_achar(const wchar_t* wstr, int wlen);
+char* lib_wcs_to_acs_n(const wchar_t* wstr, int wlen);
 
 /**
  * Converts Wide Chars to ANSII Chars
+ * [allocate]
  */
-char* wchar_achar(const wchar_t* wstr);
+char* lib_wcs_to_acs(const wchar_t* wstr);
 
 ////
 
 /**
  * Converts Multi byte Chars to Wide Chars with a lenght
+ * [allocate]
  */
-wchar_t* char_wchar(const char* str, int len);
+wchar_t* lib_mbs_to_wcs_n(const char* str, int len);
 
 /**
  * Converts Multi byte Chars to Wide Chars
+ * [allocate]
  */
-wchar_t* char_wchar(const char* str);
+wchar_t* lib_mbs_to_wcs(const char* str);
 
 /**
  * Converts Wide Chars to Multi byte Chars with a lenght
+ * [allocate]
  */
-char* wchar_char(const wchar_t* wstr, int wlen);
+char* lib_wcs_to_mbs_n(const wchar_t* wstr, int wlen);
 
 /**
  * Converts Wide Chars to Multi byte Chars
+ * [allocate]
  */
-char* wchar_char(const wchar_t* wstr);
+char* lib_wcs_to_mbs(const wchar_t* wstr);

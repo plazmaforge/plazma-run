@@ -18,8 +18,8 @@ void print_test(const char* input) {
         return;
     }
     const char* str = input;
-    const wchar_t* wstr = achar_wchar(str); // WIN32 (ANSII): achar_wchar + wchar_achar - correct only!
-    const char* str2 = wchar_achar(wstr);
+    const wchar_t* wstr = lib_acs_to_wcs(str); // WIN32 (ANSII): acs_to_wcs() + wcs_to_acs(): correct only!
+    const char* str2 = lib_wcs_to_acs(wstr);
 
     wprintf(L"\n");
     printf("MB-c-STR: %s\n", str);
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     //}
     
     const char* str = "\xe4\xbd\xa0\xe5\xa5\xbd";
-    wchar_t* wstr = char_wchar(str);
+    wchar_t* wstr = lib_mbs_to_wcs(str);
 
     printf("MB-c-STR: %s\n", str);
     //wprintf(L"MB-w string: %s\n", str);
@@ -67,8 +67,8 @@ int main(int argc, char* argv[]) {
         
     for (int i = 0; i < argc; i++) {
         char* str = argv[i];
-        wchar_t* wstr = achar_wchar(str); // WIN32 (ANSII): achar_wchar + wchar_achar - correct only!
-        char* str2 = wchar_achar(wstr);
+        wchar_t* wstr = lib_acs_to_wcs(str); // WIN32 (ANSII): acs_to_wcs() + wcs_to_acs(): correct only!
+        char* str2 = lib_wcs_to_acs(wstr);
 
         wprintf(L"\n");
 
