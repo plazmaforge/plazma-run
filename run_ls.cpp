@@ -4,6 +4,7 @@
 
 #include "getopt.h"
 #include "fslib.h"
+#include "iodef.h"
 #include "fmtlib.h"
 
 void usage() {
@@ -42,10 +43,12 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    #ifdef _WIN32
-    char _buf[65536];
-    setvbuf(stdout, _buf, _IOFBF, 65536);
-    #endif
+    lib_io_buf_init();
+
+    // #ifdef _WIN32
+    // char _buf[65536];
+    // setvbuf(stdout, _buf, _IOFBF, 65536);
+    // #endif
 
 
     /*

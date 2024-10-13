@@ -29,11 +29,12 @@ int main(int argc, char* argv[]) {
     char* data = lib_io_read_cat_bytes(file_names, file_count, size);
 
     lib_locale_init(); // WIN32 fast output with setvbuf(?)
+    lib_io_buf_init();
 
-    #ifdef _WIN32
-    char buf[65536];
-    setvbuf(stdout, buf, _IOFBF, 65536);
-    #endif
+    // #ifdef _WIN32
+    // char buf[65536];
+    // setvbuf(stdout, buf, _IOFBF, 65536);
+    // #endif
 
     // incorrect last chars: non printable char
     //printf("%s", total_data);

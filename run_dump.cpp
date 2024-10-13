@@ -4,6 +4,7 @@
 
 #include "getopt.h"
 #include "dumplib.h"
+#include "iodef.h"
 
 void usage() {
     fprintf(stderr, "Usage: run-dump [-w 16 | 32] [-a] file\n");
@@ -63,10 +64,12 @@ int main(int argc, char* argv[]) {
 
     char* file_name = argv[optind];
 
-    #ifdef _WIN32
-    char buf[65536];
-    setvbuf(stdout, buf, _IOFBF, 65536);
-    #endif
+    lib_io_buf_init();
+
+    // #ifdef _WIN32
+    // char buf[65536];
+    // setvbuf(stdout, buf, _IOFBF, 65536);
+    // #endif
 
     dump_config_t* config = (dump_config_t*) malloc(sizeof(dump_config_t));
     config->col_count = width;

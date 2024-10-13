@@ -12,7 +12,6 @@
 
 // https://www.delftstack.com/howto/c/read-binary-file-in-c/
 
-#define LIB_IO_BUF_SIZE 65536
 
 char* lib_io_read_bytes(const char* file_name, size_t& size) {
 
@@ -189,11 +188,4 @@ char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& siz
 
     return data;
 
-}
-
-void lib_io_buf_init() {
-    #ifdef _WIN32
-    char buf[LIB_IO_BUF_SIZE];
-    setvbuf(stdout, buf, _IOFBF, LIB_IO_BUF_SIZE);
-    #endif
 }

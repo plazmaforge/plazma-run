@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "socketlib.h"
-#include "iolib.h"
+#include "iodef.h"
 #include "nflib.h"
 
 void usage() {

@@ -19,6 +19,7 @@ $CC $CFLAGS lib/wstrlib.cpp -o wstrlib.o
 $CC $CFLAGS lib/pathlib.cpp -o pathlib.o
 $CC $CFLAGS lib/wclib.cpp -o wclib.o
 $CC $CFLAGS lib/fslib.cpp -o fslib.o
+$CC $CFLAGS lib/iodef.cpp -o iodef.o
 $CC $CFLAGS lib/iolib.cpp -o iolib.o
 $CC $CFLAGS lib/dumplib.cpp -o dumplib.o
 $CC $CFLAGS lib/fmtlib.cpp -o fmtlib.o
@@ -79,20 +80,20 @@ $CC $CFLAGS test_locale.cpp -o test_locale.o
 
 # link
 ###########
-$CC $LDFLAGS getopt.o iolib.o dumplib.o run_dump.o -o run-dump
+$CC $LDFLAGS getopt.o iodef.o iolib.o dumplib.o run_dump.o -o run-dump
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_echo.o -o run-echo
-$CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_cat.o -o run-cat
+$CC $LDFLAGS iodef.o iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_cat.o -o run-cat
 $CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o syscpu.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_sysinfo.o -o run-sysinfo
 $CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_find.o -o run-find
 $CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_ask.o -o run-ask
-$CC $LDFLAGS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o fmtlib.o run_ls.o -o run-ls
+$CC $LDFLAGS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iodef.o fmtlib.o run_ls.o -o run-ls
 $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_mkdir.o -o run-mkdir
 $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_rmdir.o -o run-rmdir
 $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_mv.o -o run-mv
 $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_rm.o -o run-rm
 $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_cp.o -o run-cp
 
-$CC $LDFLAGS common.o debug.o iolib.o strlib.o socketlib.o nflib.o run_get.o -o run-get
+$CC $LDFLAGS common.o debug.o iodef.o strlib.o socketlib.o nflib.o run_get.o -o run-get
 
 $CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o md5.o run_md5.o -o run-md5
 $CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha256.o run_sha224.o -o run-sha224
@@ -100,8 +101,8 @@ $CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha256.o run_sha256.o -o run-
 $CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha512.o run_sha384.o -o run-sha384
 $CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha512.o run_sha512.o -o run-sha512
 
-$CC $LDFLAGS getopt.o iolib.o run_hex_byte.o -o run-hex-byte
-$CC $LDFLAGS getopt.o iolib.o run_ssl_dump.o -o run-ssl-dump
+$CC $LDFLAGS getopt.o iodef.o iolib.o run_hex_byte.o -o run-hex-byte
+$CC $LDFLAGS getopt.o iodef.o iolib.o run_ssl_dump.o -o run-ssl-dump
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo

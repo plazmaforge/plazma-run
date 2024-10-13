@@ -506,11 +506,13 @@ int main(int argc, char* argv[]) {
     }
 
     const char* file_name = argv[1];
+
+    lib_io_buf_init();
     
-    #ifdef _WIN32
-    char buf[65536];
-    setvbuf(stdout, buf, _IOFBF, 65536);
-    #endif
+    // #ifdef _WIN32
+    // char buf[65536];
+    // setvbuf(stdout, buf, _IOFBF, 65536);
+    // #endif
 
     return run_ssl_dump(file_name);
 }
