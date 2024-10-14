@@ -71,6 +71,17 @@ int main(int argc, char *argv[]) {
     int BUF_LEN = DATE_LEN + 1 + (use_time ? (TIME_LEN + 1) : 0);
     char buf[BUF_LEN];
 
+    int pos = 0;
+    int stat_pos = -1;
+    int total = 0;
+
+    size_t buf_size = lib_io_stdout_get_buf_size();
+    buf_size = lib_io_get_buf_page(buf_size);
+
+    //printf("buf size: %lu\n", buf_size);
+    //fflush(stdout);
+    //int max = 0;
+
     for (int i = 0; i < file_count; i++) {
         file = files[i];
 
@@ -78,39 +89,97 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
+        pos = 0;
         char* path = file->name;
         char* name = lib_fs_get_base_name(path);
+        int name_len = strlen(name);
+
+        if (buf_size > 0 && i > 0) {
+            int try_pos = (stat_pos > 0 ? stat_pos : 0) + name_len;
+            if (total + try_pos > buf_size) {
+                fflush(stdout);
+                total = 0;
+                //pos = printf("%s\n", "FLUSH!!");
+            }
+        }
 
         /* Print Marker  */
         if (lib_fs_file_is_dir(file)) {
-            printf("[D]");
+            pos += printf("[D]");
         } else {
-            printf("   ");
+            pos += printf("   ");
         }
+        pos++;
         
         /* Print Size    */
         if (use_size & use_size_first) {
             uint64_t size = lib_fs_file_get_file_size(file);
-            format_file_size(size);
+            pos += format_file_size(size);
+            pos++;
         }
 
         /* Print DateTime */
         if (use_date) {
             time_t time = lib_fs_file_get_file_mtime(file);
-            format_file_date_time(time, buf, BUF_LEN, use_time);
+            pos += format_file_date_time(time, buf, BUF_LEN, use_time);
+            pos++;
         }
 
         /* Print Size    */
         if (use_size & !use_size_first) {
             uint64_t size = lib_fs_file_get_file_size(file);
-            format_file_size(size);
+            pos += format_file_size(size);
+            pos++;
+        }
+
+        if (stat_pos < 0) {
+            stat_pos = pos;
+            if (stat_pos < 0) {
+                stat_pos = 0;
+            }
         }
 
         /* Print Name   */
-        printf("%s\n", name);
+        pos += printf("%s\n", name);
+        total += pos;
+        //if (pos > max) {
+        //    max = pos;
+        //}
 
         free(name);
     }
+
+    //printf("\n\nmax: %i\n", max);
+
+    ////
+
+    /*
+    fflush(stdout);
+    int num = 0;
+    int maxcur = 0;
+    for (int i = 0; i < 10000; i++) {
+        int cur = 0;
+        int tot = 0;
+        if (num > buf_size) {
+            num = 0;
+            fflush(stdout);
+            cur = printf("%s\n", "FLUSH!");
+        }
+        cur += printf("\n\nnum: %i\n", num);
+        cur += printf("%i: Test Line\n", i + 1);
+        cur += printf("cur: %i\n", cur);
+        tot = num + cur;
+        cur += printf("tot: %i\n", tot);
+        num += cur;
+        if (cur > maxcur) {
+            maxcur = cur;
+        }        
+    }
+    fflush(stdout);
+    printf("\n\nmax: %i\n", maxcur);
+    */
+
+    ////
 
     lib_fs_files_free(files);                        
     free(dir_name);

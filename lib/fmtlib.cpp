@@ -20,7 +20,10 @@ int get_size_format_index(uint64_t size, int min_index) {
     return  -1;
 }
 
-void format_file_date_time(time_t time, char* buf, int buf_len, bool use_time) {
+int format_file_date_time(time_t time, char* buf, int buf_len, bool use_time) {
+    if (!buf) {
+        return 0;
+    }
     struct tm *timev = localtime(&time);
     memset(buf, 0, buf_len);
 
@@ -29,18 +32,18 @@ void format_file_date_time(time_t time, char* buf, int buf_len, bool use_time) {
     } else {
         strftime(buf, buf_len, "%Y-%m-%d", timev);
     }
-    printf("%s ", buf);
+    return printf("%s ", buf);
 }
 
-void format_file_size(uint64_t size) {
+int format_file_size(uint64_t size) {
     int format_index = get_size_format_index(size, 1);
     const size_format_t *format = format_index >= 0 ? &(SIZE_FORMATS[format_index]) : NULL;
 
     if (format) {
         double value = (double)size / (double)format->factor;
         const char *unit = format->unit;
-        printf("%12.1f %s ", value, unit);
+        return printf("%12.1f %s ", value, unit);
     } else {
-        printf("%12llu    ", size);
+        return printf("%12llu    ", size);
     }
 }

@@ -30,8 +30,8 @@ const int SIZE_FORMAT_COUNT = sizeof(SIZE_FORMATS) / sizeof(size_format_t);
 
 int get_size_format_index(uint64_t size, int min_index);
 
-void format_file_date_time(time_t time, char* buf, int buf_len, bool use_time);
+int format_file_date_time(time_t time, char* buf, int buf_len, bool use_time);
 
-void format_file_size(uint64_t size);
+int format_file_size(uint64_t size);
 
 #endif // PLAZMA_LIB_FMTLIB_H
