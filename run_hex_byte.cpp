@@ -90,11 +90,6 @@ int main(int argc, char* argv[]) {
     
     lib_io_buf_init();
 
-    // #ifdef _WIN32
-    // char buf[65536];
-    // setvbuf(stdout, buf, _IOFBF, 65536);
-    // #endif
-
     return run_hex_byte(file_name);
 
 }

@@ -202,11 +202,6 @@ int lib_fs_is_executable(const char* file_name) {
 
 char* lib_fs_get_base_name(const char* file_name) {
 
-    ssize_t base;
-    ssize_t last_nonslash;
-    size_t len;
-    char* retval;
-
     if (!file_name) {
         return NULL;
     }
@@ -215,6 +210,11 @@ char* lib_fs_get_base_name(const char* file_name) {
         // return lib_strdup (".");                  // TODO: (?)
         return NULL;
     }
+
+    ssize_t base;
+    ssize_t last_nonslash;
+    size_t len;
+    char* retval;
 
     last_nonslash = strlen(file_name) - 1;
 
@@ -250,6 +250,7 @@ char* lib_fs_get_base_name(const char* file_name) {
     return retval;
 }
 
+// [allocate]
 char* lib_fs_get_dir_name(const char* file_name) {
 
     char* base;
@@ -337,6 +338,7 @@ char* lib_fs_get_dir_name(const char* file_name) {
     return base;
 }
 
+// [allocate]
 char* lib_fs_get_file_name(const char* file_name) {
     return lib_fs_get_base_name(file_name);
 }
@@ -348,6 +350,7 @@ const char* lib_fs_find_file_ext(const char* file_name) {
     return strrchr(file_name, '.');
 }
 
+// [allocate]
 char* lib_fs_get_file_ext(const char* file_name) {
     if (!file_name) {
         return NULL;

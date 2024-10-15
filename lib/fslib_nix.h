@@ -135,6 +135,7 @@ int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent) {
     return dirent->fd->d_type;
 }
 
+// [allocate]
 lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {
     if (!dir_name) {
         return NULL;
@@ -154,6 +155,7 @@ lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {
     return dir;
 }
 
+// [allocate]
 lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir) {
     if (!dir) {
         return NULL;
@@ -181,6 +183,7 @@ int lib_fs_close_dir(lib_fs_dir_t* dir) {
         return 0;
     }
     int result = closedir(dir->ptr);
+    // free(dir->dirent) // ???
     dir->dirent = NULL;
     free(dir);
     return result;

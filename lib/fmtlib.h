@@ -5,33 +5,33 @@
 #include <stdint.h>
 #include <time.h>
 
-#define KILOBYTE_FACTOR ((uint64_t) 1024)
-#define MEGABYTE_FACTOR (KILOBYTE_FACTOR * KILOBYTE_FACTOR)
-#define GIGABYTE_FACTOR (MEGABYTE_FACTOR * KILOBYTE_FACTOR)
-#define TERABYTE_FACTOR (GIGABYTE_FACTOR * KILOBYTE_FACTOR)
-#define PETABYTE_FACTOR (TERABYTE_FACTOR * KILOBYTE_FACTOR)
-#define EXABYTE_FACTOR  (PETABYTE_FACTOR * KILOBYTE_FACTOR)
+#define LIB_FMT_KILOBYTE_FACTOR ((uint64_t) 1024)
+#define LIB_FMT_MEGABYTE_FACTOR (LIB_FMT_KILOBYTE_FACTOR * LIB_FMT_KILOBYTE_FACTOR)
+#define LIB_FMT_GIGABYTE_FACTOR (LIB_FMT_MEGABYTE_FACTOR * LIB_FMT_KILOBYTE_FACTOR)
+#define LIB_FMT_TERABYTE_FACTOR (LIB_FMT_GIGABYTE_FACTOR * LIB_FMT_KILOBYTE_FACTOR)
+#define LIB_FMT_PETABYTE_FACTOR (LIB_FMT_TERABYTE_FACTOR * LIB_FMT_KILOBYTE_FACTOR)
+#define LIB_FMT_EXABYTE_FACTOR  (LIB_FMT_PETABYTE_FACTOR * LIB_FMT_KILOBYTE_FACTOR)
 
 typedef struct {
     uint64_t factor;
     const char* unit;    
-} size_format_t;
+} lib_fmt_size_format_t;
 
-const size_format_t SIZE_FORMATS[6] = {
-    {KILOBYTE_FACTOR, "Kb"},
-    {MEGABYTE_FACTOR, "Mb"},
-    {GIGABYTE_FACTOR, "Gb"},
-    {TERABYTE_FACTOR, "Tb"},
-    {PETABYTE_FACTOR, "Pb"},
-    {EXABYTE_FACTOR, "Eb"}
+const lib_fmt_size_format_t LIB_FMT_SIZE_FORMATS[] = {
+    {LIB_FMT_KILOBYTE_FACTOR, "Kb"},
+    {LIB_FMT_MEGABYTE_FACTOR, "Mb"},
+    {LIB_FMT_GIGABYTE_FACTOR, "Gb"},
+    {LIB_FMT_TERABYTE_FACTOR, "Tb"},
+    {LIB_FMT_PETABYTE_FACTOR, "Pb"},
+    {LIB_FMT_EXABYTE_FACTOR, "Eb"}
     };
 
-const int SIZE_FORMAT_COUNT = sizeof(SIZE_FORMATS) / sizeof(size_format_t);
+const int LIB_FMT_SIZE_FORMAT_COUNT = sizeof(LIB_FMT_SIZE_FORMATS) / sizeof(lib_fmt_size_format_t);
 
-int get_size_format_index(uint64_t size, int min_index);
+int lib_fmt_get_size_format_index(uint64_t size, int min_index);
 
-int format_file_date_time(time_t time, char* buf, int buf_len, bool use_time);
+int lib_fmt_print_file_date_time(time_t time, char* buf, int buf_len, bool use_time);
 
-int format_file_size(uint64_t size);
+int lib_fmt_print_file_size(uint64_t size);
 
 #endif // PLAZMA_LIB_FMTLIB_H

@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    int width = DUMP_DEF_COL_COUNT;
+    int width = LIB_DUMP_DEF_COL_COUNT;
     bool show_text = false; //DUMP_DEF_SHOW_TEXT;
 
     bool error = false;
@@ -66,14 +66,9 @@ int main(int argc, char* argv[]) {
 
     lib_io_buf_init();
 
-    // #ifdef _WIN32
-    // char buf[65536];
-    // setvbuf(stdout, buf, _IOFBF, 65536);
-    // #endif
-
-    dump_config_t* config = (dump_config_t*) malloc(sizeof(dump_config_t));
+    lib_dump_config_t* config = (lib_dump_config_t*) malloc(sizeof(lib_dump_config_t));
     config->col_count = width;
     config->show_text = show_text;
 
-    dump_file_def(file_name, config);
+    lib_dump_file_def(file_name, config);
 }

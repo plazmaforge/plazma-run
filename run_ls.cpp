@@ -45,22 +45,6 @@ int main(int argc, char *argv[]) {
 
     lib_io_buf_init();
 
-    // #ifdef _WIN32
-    // char _buf[65536];
-    // setvbuf(stdout, _buf, _IOFBF, 65536);
-    // #endif
-
-
-    /*
-    printf("SIZE_FORMAT_COUNT: %d\n" , SIZE_FORMAT_COUNT);
-    printf("KILOBYTE_FACTOR  : %llu\n" , KILOBYTE_FACTOR);
-    printf("MEGABYTE_FACTOR  : %llu\n" , MEGABYTE_FACTOR);
-    printf("GIGABYTE_FACTOR  : %llu\n" , GIGABYTE_FACTOR);
-    printf("TERABYTE_FACTOR  : %llu\n" , TERABYTE_FACTOR);
-    printf("PETABYTE_FACTOR  : %llu\n" , PETABYTE_FACTOR);
-    printf("EXABYTE_FACTOR   : %llu\n" , EXABYTE_FACTOR);
-    */
-
     bool use_date = true;
     bool use_time = true;
     bool use_size = true;
@@ -114,21 +98,21 @@ int main(int argc, char *argv[]) {
         /* Print Size    */
         if (use_size & use_size_first) {
             uint64_t size = lib_fs_file_get_file_size(file);
-            pos += format_file_size(size);
+            pos += lib_fmt_print_file_size(size);
             pos++;
         }
 
         /* Print DateTime */
         if (use_date) {
             time_t time = lib_fs_file_get_file_mtime(file);
-            pos += format_file_date_time(time, buf, BUF_LEN, use_time);
+            pos += lib_fmt_print_file_date_time(time, buf, BUF_LEN, use_time);
             pos++;
         }
 
         /* Print Size    */
         if (use_size & !use_size_first) {
             uint64_t size = lib_fs_file_get_file_size(file);
-            pos += format_file_size(size);
+            pos += lib_fmt_print_file_size(size);
             pos++;
         }
 

@@ -324,6 +324,7 @@ int lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent);
 
 int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent);
 
+// [allocate]
 lib_fs_dir_t* lib_fs_open_dir(const char* dir_name);
 
 lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir);

@@ -31,11 +31,6 @@ int main(int argc, char* argv[]) {
     lib_locale_init(); // WIN32 fast output with setvbuf(?)
     lib_io_buf_init();
 
-    // #ifdef _WIN32
-    // char buf[65536];
-    // setvbuf(stdout, buf, _IOFBF, 65536);
-    // #endif
-
     // incorrect last chars: non printable char
     //printf("%s", total_data);
     //printf("%ls", lib_char_wchar(total_data));   // IMPORTANT for WIN32 

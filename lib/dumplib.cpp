@@ -4,14 +4,14 @@
 #include "iolib.h"
 #include "dumplib.h"
 
-void dump_bytes(const char* data, size_t size, dump_config_t* config) {
+void lib_dump_bytes(const char* data, size_t size, lib_dump_config_t* config) {
     if (data == NULL || size == 0) {
         return;
     }
 
-    int col_count = config ? config->col_count : DUMP_DEF_COL_COUNT;
-    if (col_count < DUMP_MIN_COL_COUNT || col_count > DUMP_MAX_COL_COUNT) {
-      col_count = DUMP_DEF_COL_COUNT;
+    int col_count = config ? config->col_count : LIB_DUMP_DEF_COL_COUNT;
+    if (col_count < LIB_DUMP_MIN_COL_COUNT || col_count > LIB_DUMP_MAX_COL_COUNT) {
+      col_count = LIB_DUMP_DEF_COL_COUNT;
     }
 
     int row_count = size / col_count;
@@ -19,7 +19,7 @@ void dump_bytes(const char* data, size_t size, dump_config_t* config) {
         row_count++;
     }
 
-    bool show_text = config ? config->show_text : DUMP_DEF_SHOW_TEXT;
+    bool show_text = config ? config->show_text : LIB_DUMP_DEF_SHOW_TEXT;
 
     //printf("size: %lu\n", size);
     //printf("cols: %d\n", col_count);
@@ -82,15 +82,15 @@ void dump_bytes(const char* data, size_t size, dump_config_t* config) {
 
 }
 
-void dump_file_def(const char* file_name, dump_config_t* config) {
+void lib_dump_file_def(const char* file_name, lib_dump_config_t* config) {
     size_t size = 0;
-    dump_file(file_name, size, config);
+    lib_dump_file(file_name, size, config);
 }
 
-void dump_file(const char* file_name, size_t& size, dump_config_t* config) {
+void lib_dump_file(const char* file_name, size_t& size, lib_dump_config_t* config) {
 
   char* data = lib_io_read_bytes(file_name, size);
-  dump_bytes(data, size, config);
+  lib_dump_bytes(data, size, config);
 
   free(data);  
 }

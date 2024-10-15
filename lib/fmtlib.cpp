@@ -3,16 +3,16 @@
 
 #include "fmtlib.h"
 
-int get_size_format_index(uint64_t size, int min_index) {
-    if (size <= KILOBYTE_FACTOR) {
+int lib_fmt_get_size_format_index(uint64_t size, int min_index) {
+    if (size <= LIB_FMT_KILOBYTE_FACTOR) {
         return -1;
     }
     if (min_index < 0) {
         min_index = 0;
     }
-    size_format_t size_format;
-    for (int i = SIZE_FORMAT_COUNT - 1; i >= min_index; i--) {
-        size_format = SIZE_FORMATS[i];
+    lib_fmt_size_format_t size_format;
+    for (int i = LIB_FMT_SIZE_FORMAT_COUNT - 1; i >= min_index; i--) {
+        size_format = LIB_FMT_SIZE_FORMATS[i];
         if (size > size_format.factor) {
             return i;
         }
@@ -20,7 +20,7 @@ int get_size_format_index(uint64_t size, int min_index) {
     return  -1;
 }
 
-int format_file_date_time(time_t time, char* buf, int buf_len, bool use_time) {
+int lib_fmt_print_file_date_time(time_t time, char* buf, int buf_len, bool use_time) {
     if (!buf) {
         return 0;
     }
@@ -35,13 +35,13 @@ int format_file_date_time(time_t time, char* buf, int buf_len, bool use_time) {
     return printf("%s ", buf);
 }
 
-int format_file_size(uint64_t size) {
-    int format_index = get_size_format_index(size, 1);
-    const size_format_t *format = format_index >= 0 ? &(SIZE_FORMATS[format_index]) : NULL;
+int lib_fmt_print_file_size(uint64_t size) {
+    int index = lib_fmt_get_size_format_index(size, 1);
+    const lib_fmt_size_format_t* format = index >= 0 ? &(LIB_FMT_SIZE_FORMATS[index]) : NULL;
 
     if (format) {
-        double value = (double)size / (double)format->factor;
-        const char *unit = format->unit;
+        double value = (double) size / (double) format->factor;
+        const char* unit = format->unit;
         return printf("%12.1f %s ", value, unit);
     } else {
         return printf("%12llu    ", size);
