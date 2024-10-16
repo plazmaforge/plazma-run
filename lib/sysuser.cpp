@@ -12,9 +12,9 @@
 
 #include "sysuser.h"
 
-static user_info_t* user_info = NULL;
+static lib_user_info_t* user_info = NULL;
 
-static void lib_user_info_init(user_info_t* user_info) {
+static void lib_sys_user_info_init(lib_user_info_t* user_info) {
     user_info->user_name = NULL;
 	user_info->user_home = NULL;
 	user_info->user_dir = NULL;
@@ -22,15 +22,15 @@ static void lib_user_info_init(user_info_t* user_info) {
 }
 
 /*
-static user_info_t* lib_user_info_new() {
-    user_info_t* user_info = (user_info_t*) malloc(sizeof(user_info_t));
+static lib_user_info_t* lib_sys_user_info_new() {
+    lib_user_info_t* user_info = (lib_user_info_t*) malloc(sizeof(lib_user_info_t));
     init_user_info(user_info);
     return user_info;
 }
 */
 
 /*
-static void lib_user_info_free(user_info_t* user_info) {
+static void lib_sys_user_info_free(lib_user_info_t* user_info) {
     if (!user_info)  {
         return;
     }
@@ -43,14 +43,14 @@ static void lib_user_info_free(user_info_t* user_info) {
 }
 */
 
-const user_info_t* lib_user_get_user_info() {
+const lib_user_info_t* lib_sys_get_user_info() {
     if (user_info) {
         return user_info;
     }
     //user_info = lib_user_info_new();
-    static user_info_t user_info_s;
+    static lib_user_info_t user_info_s;
     user_info = &user_info_s;
-    lib_user_info_init(user_info);
+    lib_sys_user_info_init(user_info);
     
     user_info->user_name = getUserName();
     user_info->user_home = getUserHome();

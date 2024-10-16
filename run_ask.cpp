@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    lib_locale_init();
+    lib_sys_locale_init();
 
     lib_ask_config* config = lib_ask_config_new();
     config->binary_mode = binary_mode;
@@ -114,14 +114,14 @@ int main(int argc, char* argv[]) {
                 
         free(dir_name);
         free(config);
-        lib_locale_restore(); // Important for WIN32: The locale was changed for the terminal
+        lib_sys_locale_restore(); // Important for WIN32: The locale was changed for the terminal
         return 0;
     }
 
     lib_ask_find(file_name, input, input_size, config);
 
     free(config);
-    lib_locale_restore(); // Important for WIN32: The locale was changed for the terminal
+    lib_sys_locale_restore(); // Important for WIN32: The locale was changed for the terminal
     return 0;
 
 }

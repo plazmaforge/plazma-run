@@ -102,7 +102,7 @@ arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
 
 const char* get_cpu_arch_name_by_si_2(SYSTEM_INFO& info) {
     arch_t arch = get_cpu_arch_type_by_si(info);
-    return get_arch_name(arch);
+    return lib_sys_get_arch_name(arch);
 }
 
 const char* get_cpu_arch_name_by_si(SYSTEM_INFO& info) {
@@ -142,7 +142,7 @@ void load_system_info(SYSTEM_INFO& info) {
 
 ////
 
-arch_t get_cpu_arch_type() {
+arch_t lib_sys_get_cpu_arch_type() {
     SYSTEM_INFO info;
     load_system_info(info);
     return get_cpu_arch_type_by_si(info);

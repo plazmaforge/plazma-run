@@ -43,11 +43,11 @@ static char* getEncoding(CFStringEncoding encoding) {
 
 static char* getDefaultEncoding() {
     //return  "UTF-8";
-    char* locale = lib_locale_get_current_locale();
+    char* locale = lib_sys_get_current_locale();
     if (!locale) {
         return NULL;
     }
-    char* encoding = lib_locale_parse_encoding(locale);
+    char* encoding = lib_sys_parse_encoding(locale);
     return encoding;
 }
 
@@ -59,7 +59,7 @@ static lib_locale_t* loadLocaleMac() {
   if (!name) {
     // Why? But is real case!
     CFRelease(cflocale);
-    lib_locale_t* locale = lib_locale_new();
+    lib_locale_t* locale = lib_sys_locale_new();
     locale->name = NULL;
     locale->language = NULL;
     locale->script = NULL;
@@ -92,7 +92,7 @@ static lib_locale_t* loadLocaleMac() {
 
   CFRelease(cflocale);
 
-  lib_locale_t* locale = lib_locale_new();
+  lib_locale_t* locale = lib_sys_locale_new();
   locale->language = lib_strdup(language);
   locale->script = lib_strdup(script);
   locale->country = lib_strdup(country);
@@ -100,7 +100,7 @@ static lib_locale_t* loadLocaleMac() {
   locale->encoding = lib_strdup(encoding);
 
   //locale->name = encoding ? lib_strnew(name, "." , encoding) : lib_strdup(name);
-  locale->name = lib_locale_get_locale_name(language, country, encoding);
+  locale->name = lib_sys_get_locale_name(language, country, encoding);
 
   return locale;
 
@@ -110,7 +110,7 @@ static lib_locale_t* loadLocaleMac(int cat) {
     return loadLocaleMac(); // Category independed. Why?
 }
 
-lib_locale_t* lib_locale_os_load_locale(int cat) {
+lib_locale_t* lib_sys_load_locale_os(int cat) {
     return loadLocaleMac(cat);
 }
 

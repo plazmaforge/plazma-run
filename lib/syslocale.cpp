@@ -7,23 +7,23 @@
 #include "syslocale.h"
 #include "strlib.h"
 
-char* lib_locale_set_default_locale() {
+char* lib_sys_set_default_locale() {
   return setlocale(LC_ALL, "");
 }
 
-char* lib_locale_get_locale(int cat) {
+char* lib_sys_get_locale(int cat) {
   return setlocale(cat, NULL);
 }
 
-char* lib_locale_get_current_locale() {
-  return lib_locale_get_locale(LC_CTYPE);
+char* lib_sys_get_current_locale() {
+  return lib_sys_get_locale(LC_CTYPE);
 }
 
-int lib_locale_is_empty(const char* locale) {
+int lib_sys_is_empty_locale(const char* locale) {
   return locale == NULL || (strcmp(locale, "C") == 0);
 }
 
-int lib_locale_equals(const char* locale1, const char* locale2) {
+int lib_sys_equals_locale(const char* locale1, const char* locale2) {
   if (locale1 == NULL && locale2 == NULL) {
     return 1;
   }
@@ -33,7 +33,7 @@ int lib_locale_equals(const char* locale1, const char* locale2) {
   return strcmp(locale1, locale2) == 0;
 }
 
-/*static*/ lib_locale_t* lib_locale_new() {
+/*static*/ lib_locale_t* lib_sys_locale_new() {
    lib_locale_t* locale = (lib_locale_t*) malloc(sizeof(lib_locale_t));
    locale->name = NULL;
    locale->language = NULL;
@@ -44,7 +44,7 @@ int lib_locale_equals(const char* locale1, const char* locale2) {
    return locale;
 }
 
-/*static*/ void lib_locale_free(lib_locale_t* locale) {
+/*static*/ void lib_sys_locale_free(lib_locale_t* locale) {
     if (!locale) {
         return;
     }
@@ -59,11 +59,11 @@ int lib_locale_equals(const char* locale1, const char* locale2) {
     free(locale);
 }
 
-char* lib_locale_parse_encoding(const char* locale) {
+char* lib_sys_parse_encoding(const char* locale) {
   if (!locale) {
     return NULL;
   }
-  lib_locale_t* locale_s = lib_locale_parse_locale(locale);
+  lib_locale_t* locale_s = lib_sys_parse_locale(locale);
   if (!locale_s) {
     return NULL;
   }
@@ -71,17 +71,17 @@ char* lib_locale_parse_encoding(const char* locale) {
   if (locale_s->encoding) {
     encoding = strdup(locale_s->encoding);
   }
-  lib_locale_free(locale_s);
+  lib_sys_locale_free(locale_s);
   return encoding;
 }
 
-lib_locale_t* lib_locale_parse_locale(const char* locale) {
+lib_locale_t* lib_sys_parse_locale(const char* locale) {
   if (!locale) {
     return NULL;
   }
 
   if (strcmp(locale, "C") == 0) {
-    lib_locale_t* locale_s = lib_locale_new();
+    lib_locale_t* locale_s = lib_sys_locale_new();
     locale_s->name = strdup(locale);
     return locale_s;
   }
@@ -122,7 +122,7 @@ lib_locale_t* lib_locale_parse_locale(const char* locale) {
     
   }
   
-  lib_locale_t* locale_s = lib_locale_new();
+  lib_locale_t* locale_s = lib_sys_locale_new();
   locale_s->name = strdup(locale);
   locale_s->language = language;
   locale_s->script = NULL;
@@ -135,7 +135,7 @@ lib_locale_t* lib_locale_parse_locale(const char* locale) {
 }
 
 // [allocate]
-char* lib_locale_get_locale_name(const char* language, const char* country, const char* encoding) {
+char* lib_sys_get_locale_name(const char* language, const char* country, const char* encoding) {
   if (!language && !country && !encoding) {
      return NULL;
   }
@@ -190,15 +190,15 @@ char* lib_locale_get_locale_name(const char* language, const char* country, cons
   return name;  
 }
 
-lib_locale_t* lib_locale_load_locale(int cat) {
-  char* name = lib_locale_get_locale(cat); 
+lib_locale_t* lib_sys_load_locale(int cat) {
+  char* name = lib_sys_get_locale(cat); 
   if (!name) {
     return NULL;
   }
-  return lib_locale_parse_locale(name);
+  return lib_sys_parse_locale(name);
 }
 
-void lib_locale_print_locale(lib_locale_t* locale) {
+void lib_sys_print_locale(lib_locale_t* locale) {
     if (!locale) {
         printf("Locale: NULL\n");
         return;

@@ -17,23 +17,23 @@ static int check = 0;
 /*
  * Load OS locale by category
  */
-lib_locale_t* lib_locale_os_load_locale(int cat);
+lib_locale_t* lib_sys_load_locale_os(int cat);
 
 /*
  * Load OS locale
  */
-lib_locale_t* lib_locale_os_load_current_locale();
+lib_locale_t* lib_sys_load_current_locale_os();
 
 /*
  * Initialize OS locale
  */
 
-void lib_locale_os_init();
+void lib_sys_locale_os_init();
 
 /*
  * Restore OS locale
  */
-void lib_locale_os_restore();
+void lib_sys_locale_os_restore();
 
 
 #endif // PLAZMA_LIB_SYSLOCALE_OS_H

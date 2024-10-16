@@ -1,7 +1,7 @@
 #ifndef PLAZMA_LIB_SYSINFO_OS_H
 #define PLAZMA_LIB_SYSINFO_OS_H
 
-struct sys_info_t {
+struct lib_sys_info_t {
 
     // OS Info
     const char* os_name;
@@ -62,7 +62,7 @@ struct sys_info_t {
 
 };
 
-const sys_info_t* lib_sys_get_sys_info();
+const lib_sys_info_t* lib_sys_get_sys_info();
 
 // OS Info
 
@@ -84,7 +84,7 @@ int lib_sys_get_os_arch_size();
 
 const char* lib_sys_get_cpu_isalist();
 
-const char* lib_sys_get_cpu_endian();
+//const char* lib_sys_get_cpu_endian();
 
 int lib_sys_get_cpu_count();
 

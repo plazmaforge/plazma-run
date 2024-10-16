@@ -15,9 +15,9 @@ int LC_DISPLAY_TYPE = LC_MESSAGES;
 int LC_DISPLAY_TYPE = LC_TIME + 1;
 #endif
 
-static sys_info_t* sys_info = NULL;
+static lib_sys_info_t* sys_info = NULL;
 
-static sys_info_t* lib_sys_sys_info_init(sys_info_t* sys_info) {
+static lib_sys_info_t* lib_sys_info_init(lib_sys_info_t* sys_info) {
     
     // Version Info
     sys_info->os_major_version = 0;
@@ -75,7 +75,7 @@ static sys_info_t* lib_sys_sys_info_init(sys_info_t* sys_info) {
 }
 
 /*
-static void lib_sys_sys_info_free(sys_info_t* sys_info) {
+static void lib_sys_info_free(lib_sys_info_t* sys_info) {
     if (!sys_info)  {
         return;
     }
@@ -133,25 +133,25 @@ static void lib_sys_sys_info_free(sys_info_t* sys_info) {
 */
 
 /*
-static sys_info_t* lib_sys_sys_info_new() {
-    sys_info_t* sys_info = (sys_info_t*) malloc(sizeof(sys_info_t));
+static lib_sys_info_t* lib_sys_info_new() {
+    lib_sys_info_t* sys_info = (lib_sys_info_t*) malloc(sizeof(lib_sys_info_t));
     init_sys_info(sys_info);
     return sys_info;
 }
 */
 
-const sys_info_t* lib_sys_get_sys_info() {
+const lib_sys_info_t* lib_sys_get_sys_info() {
 
     if (sys_info) {
         return sys_info;
     }
     //sys_info = lib_sys_sys_info_new();
-    static sys_info_t sys_info_s;
+    static lib_sys_info_t sys_info_s;
     sys_info = &sys_info_s;
-    lib_sys_sys_info_init(sys_info);
+    lib_sys_info_init(sys_info);
 
     // OS Info
-    const os_info_t* os_info = lib_os_get_os_info();
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
     if (os_info) {
 
         // Version Info
@@ -174,7 +174,7 @@ const sys_info_t* lib_sys_get_sys_info() {
     }
 
     // User Info
-    const user_info_t* user_info = lib_user_get_user_info();
+    const lib_user_info_t* user_info = lib_sys_get_user_info();
     if (user_info) {
         sys_info->user_name = user_info->user_name;
         sys_info->user_home = user_info->user_home;
@@ -185,7 +185,7 @@ const sys_info_t* lib_sys_get_sys_info() {
     sys_info->locale_type = 0;
   
     // Format Locale Info  
-    lib_locale_t* format_locale = lib_locale_os_load_locale(LC_FORMAT_TYPE);
+    lib_locale_t* format_locale = lib_sys_load_locale_os(LC_FORMAT_TYPE);
     if (format_locale) {
         sys_info->locale_type = LC_FORMAT_TYPE;
         sys_info->format_locale = lib_strdup(format_locale->name);
@@ -197,7 +197,7 @@ const sys_info_t* lib_sys_get_sys_info() {
     }
 
     // Display Locale Info
-    lib_locale_t* display_locale = lib_locale_os_load_locale(LC_DISPLAY_TYPE);
+    lib_locale_t* display_locale = lib_sys_load_locale_os(LC_DISPLAY_TYPE);
     if (display_locale) {
         sys_info->locale_type = LC_DISPLAY_TYPE;
         sys_info->display_locale = lib_strdup(display_locale->name);
@@ -221,8 +221,8 @@ const sys_info_t* lib_sys_get_sys_info() {
         sys_info->encoding = "UTF-8"; // TODO: ISO
     }
 
-    lib_locale_free(format_locale);
-    lib_locale_free(display_locale);
+    lib_sys_locale_free(format_locale);
+    lib_sys_locale_free(display_locale);
 
     /*
     if (isatty(STDOUT_FILENO) == 1) {
@@ -264,65 +264,65 @@ const sys_info_t* lib_sys_get_sys_info() {
 // Version Info
 
 const char* lib_sys_get_os_name() {
-    const os_info_t* os_info = lib_os_get_os_info();
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
     return os_info ? os_info->os_name : NULL;
 }
 
 const char* lib_sys_get_os_version() {
-    const os_info_t* os_info = lib_os_get_os_info();
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
     return os_info ? os_info->os_version : NULL;
 }
 
 int lib_sys_get_os_major_version() {
-    const os_info_t* os_info = lib_os_get_os_info();
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
     return os_info ? os_info->os_major_version : 0;
 }
 
 int lib_sys_get_os_minor_version() {
-    const os_info_t* os_info = lib_os_get_os_info();
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
     return os_info ? os_info->os_minor_version : 0;
 }
 
 int lib_sys_get_os_build_version() {
-    const os_info_t* os_info = lib_os_get_os_info();
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
     return os_info ? os_info->os_build_version : 0;
 }
 
 // CPU Info
 
 const char* lib_sys_get_os_arch() {
-    const os_info_t* os_info = lib_os_get_os_info();
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
     return os_info ? os_info->os_arch : NULL;
 }
 
 int lib_sys_get_os_arch_size() {
-    const os_info_t* os_info = lib_os_get_os_info();
-    return get_os_arch_size(os_info->os_arch);
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
+    return lib_sys_get_os_arch_size(os_info->os_arch);
 }
 
 const char* lib_sys_get_cpu_isalist() {
-    const os_info_t* os_info = lib_os_get_os_info();
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
     return os_info ? os_info->cpu_isalist : NULL;
 }
 
-const char* lib_sys_get_cpu_endian() {
-    return get_cpu_endian(); // lib_cpu
-}
+// const char* lib_sys_get_cpu_endian() {
+//     return get_cpu_endian(); // lib_cpu
+// }
 
 int lib_sys_get_cpu_count() {
-    const os_info_t* os_info = lib_os_get_os_info();
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
     return os_info ? os_info->cpu_count : 0;
 }
 
 // FS Info
 
 const char* lib_sys_get_file_separator() {
-    const os_info_t* os_info = lib_os_get_os_info();
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
     return os_info ? os_info->file_separator : NULL;
 }
 
 const char* lib_sys_get_line_separator() {
-    const os_info_t* os_info = lib_os_get_os_info();
+    const lib_os_info_t* os_info = lib_sys_get_os_info();
     return os_info ? os_info->line_separator : NULL;
 }
 
@@ -331,24 +331,24 @@ const char* lib_sys_get_file_encoding() {
 }
 
 const char* lib_sys_get_encoding() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->encoding : NULL;
 }
 
 // User Info
 
 const char* lib_sys_get_user_name() {
-    const user_info_t* user_info = lib_user_get_user_info();
+    const lib_user_info_t* user_info = lib_sys_get_user_info();
     return user_info ? user_info->user_name : NULL;
 }
 
 const char* lib_sys_get_user_home() {
-    const user_info_t* user_info = lib_user_get_user_info();
+    const lib_user_info_t* user_info = lib_sys_get_user_info();
     return user_info ? user_info->user_home : NULL;
 }
 
 const char* lib_sys_get_user_dir() {
-    const user_info_t* user_info = lib_user_get_user_info();
+    const lib_user_info_t* user_info = lib_sys_get_user_info();
     return user_info ? user_info->user_dir : NULL;
 }
 
@@ -357,14 +357,14 @@ const char* lib_sys_get_work_dir() {
 }
 
 const char* lib_sys_get_tmp_dir() {
-    const user_info_t* user_info = lib_user_get_user_info();
+    const lib_user_info_t* user_info = lib_sys_get_user_info();
     return user_info ? user_info->tmp_dir : NULL;
 }
 
 // Locale Info
 
 const char* lib_sys_get_locale_name() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
@@ -372,7 +372,7 @@ const char* lib_sys_get_locale_name() {
 }
 
 const char* lib_sys_get_locale_language() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
@@ -380,7 +380,7 @@ const char* lib_sys_get_locale_language() {
 }
 
 const char* lib_sys_get_locale_script() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
@@ -388,7 +388,7 @@ const char* lib_sys_get_locale_script() {
 }
 
 const char* lib_sys_get_locale_country() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
@@ -396,7 +396,7 @@ const char* lib_sys_get_locale_country() {
 }
 
 const char* lib_sys_get_locale_variant() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
@@ -404,7 +404,7 @@ const char* lib_sys_get_locale_variant() {
 }
 
 const char* lib_sys_get_locale_encoding() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     if (!sys_info) {
         return NULL;
     }
@@ -414,64 +414,64 @@ const char* lib_sys_get_locale_encoding() {
 // Format Locale Info
 
 const char* lib_sys_get_format_locale_name() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_locale : NULL;
 }
 
 const char* lib_sys_get_format_locale_language() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_language : NULL;
 }
 
 const char* lib_sys_get_format_locale_script() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_script : NULL;
 }
 
 const char* lib_sys_get_format_locale_country() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_country : NULL;
 }
 
 const char* lib_sys_get_format_locale_variant() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_variant : NULL;
 }
 
 const char* lib_sys_get_format_locale_encoding() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->format_encoding : NULL;
 }
 
 // Display Locale Info
 
 const char* lib_sys_get_display_locale_name() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_locale : NULL;
 }
 
 const char* lib_sys_get_display_locale_language() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_language : NULL;
 }
 
 const char* lib_sys_get_display_locale_script() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_script : NULL;
 }
 
 const char* lib_sys_get_display_locale_country() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_country : NULL;
 }
 
 const char* lib_sys_get_display_locale_variant() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_variant : NULL;
 }
 
 const char* lib_sys_get_display_locale_encoding() {
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     return sys_info ? sys_info->display_encoding : NULL;
 }
 
@@ -479,7 +479,7 @@ const char* lib_sys_get_display_locale_encoding() {
 
 void lib_sys_print_sys_info() {
 
-    const sys_info_t* sys_info = lib_sys_get_sys_info();
+    const lib_sys_info_t* sys_info = lib_sys_get_sys_info();
     
     //HARD TEST
     //free(sys_info);

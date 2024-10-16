@@ -5,8 +5,8 @@
 #if defined __APPLE__ && defined __MACH__
 #include "syslocale_mac.h"
 #else
-lib_locale_t* lib_locale_os_load_locale(int cat) {
-    return lib_locale_parse_locale(lib_locale_get_locale(cat)); // LC Locale
+lib_locale_t* lib_sys_load_locale_os(int cat) {
+    return lib_sys_parse_locale(lib_sys_get_locale(cat)); // LC Locale
 }
 #endif
 
@@ -18,11 +18,11 @@ void lib_locale_nix_init() {
        printf("\n");
        printf("Change          :\n");
        printf("----------------:\n");
-       printf("All LC Locale   : %s\n", lib_locale_get_locale(LC_ALL));
-       printf("Std LC Locale   : %s\n", lib_locale_get_locale(LC_CTYPE));
-       _locale_os = lib_locale_os_load_current_locale();
+       printf("All LC Locale   : %s\n", lib_sys_get_locale(LC_ALL));
+       printf("Std LC Locale   : %s\n", lib_sys_get_locale(LC_CTYPE));
+       _locale_os = lib_sys_load_current_locale_os();
        printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
-       lib_locale_print_locale(_locale_os);
+       lib_sys_print_locale(_locale_os);
 
        // We can't use 'setlocale(LC_CTYPE, _locale_os->name)'
        // because this combination 'lang_COUNTRY.encoding' is not found
@@ -39,7 +39,7 @@ void lib_locale_nix_restore() {
        printf("\n");
        printf("Restore         :\n");
        printf("----------------:\n");
-       printf("All LC Locale   : %s\n", lib_locale_get_locale(LC_ALL));
+       printf("All LC Locale   : %s\n", lib_sys_get_locale(LC_ALL));
     }
     free(_locale);
     _locale = NULL;

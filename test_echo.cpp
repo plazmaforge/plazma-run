@@ -40,10 +40,10 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    lib_locale_init();
+    lib_sys_locale_init();
 
     print_test(argv[1]);
 
-    lib_locale_restore(); // Important for WIN32: The locale was changed for the terminal
+    lib_sys_locale_restore(); // Important for WIN32: The locale was changed for the terminal
     return 0;
 }

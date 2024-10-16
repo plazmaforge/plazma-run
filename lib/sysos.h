@@ -7,11 +7,11 @@
   * OS definition.
   * 
   * Structures: 
-  * - os_info_t
+  * - lib_os_info_t
   *
   */
 
-struct os_info_t {
+struct lib_os_info_t {
 
     // OS Version Info
     char* os_name;
@@ -45,17 +45,17 @@ struct os_info_t {
 /**
  * Returns OS Arch Size by OS Arch Name
  */
-int get_os_arch_size(const char* arch_name);
+int lib_sys_get_os_arch_size(const char* arch_name);
 
 /**
  * Returns OS Arch Data Model by OS Arch 
  */
-const char* get_os_arch_data_model(const char* arch_name);
+const char* lib_sys_get_os_arch_data_model(const char* arch_name);
 
 /**
  * Returns OS Info 
  */
-const os_info_t* lib_os_get_os_info();
+const lib_os_info_t* lib_sys_get_os_info();
 
 
 #endif // PLAZMA_LIB_SYSOS_H

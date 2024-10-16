@@ -17,7 +17,7 @@
 
 #include "syscpu.h"
 
-arch_t get_cpu_arch_type() {
+arch_t lib_sys_get_cpu_arch_type() {
     /*struct*/ utsname name;
     uname(&name);
     return get_cpu_arch_type_by_machine(name.machine);

@@ -202,7 +202,7 @@ static lib_locale_t* loadLocale(LCID lcid) {
     /* encoding */
     char* encoding = getEncoding(lcid);
 
-    lib_locale_t* locale = lib_locale_new();
+    lib_locale_t* locale = lib_sys_locale_new();
 
     locale->language = language;
     locale->script = script;
@@ -219,7 +219,7 @@ static lib_locale_t* loadLocale(LCID lcid) {
        }
     }
 
-    locale->name = lib_locale_get_locale_name(language, country, le);
+    locale->name = lib_sys_get_locale_name(language, country, le);
  
     return locale;
 }
@@ -299,8 +299,8 @@ void setConsoleCodepage(UINT cp) {
     setConsoleCodepage(cp, cp);
 }
 
-lib_locale_t* lib_locale_os_load_locale(int cat) {
-    //return lib_locale_parse_locale(lib_locale_get_locale(cat));
+lib_locale_t* lib_sys_load_locale_os(int cat) {
+    //return lib_sys_parse_locale(lib_sys_get_locale(cat));
     return loadLocaleWin(cat);
 }
 
@@ -375,7 +375,7 @@ void lib_locale_win_init() {
     _locale_os = NULL;
 
     if (need_sync_locale && _new_cp > 0) {
-       _locale_os = lib_locale_os_load_locale(_lc_type);
+       _locale_os = lib_sys_load_locale_os(_lc_type);
 
        // TODO: Windows 7/10
        // Maybe need convert <lg>_<CN> -> <Language>_Country>
@@ -395,7 +395,7 @@ void lib_locale_win_init() {
            // Fix incorrect locale
            // Slowly output with this fix (!!!)
  
-           char* cur_locale_name = lib_locale_get_locale(LC_ALL);
+           char* cur_locale_name = lib_sys_get_locale(LC_ALL);
            //printf(">> cur_locale_name: %s\n", cur_locale_name);
 
            // If we set incorrect locale then get_locale returns "C" locale
@@ -429,18 +429,18 @@ void lib_locale_win_init() {
     }
 
     if (debug) {
-      //printf("\nSet LC Locale   : %s\n", lib_locale_get_locale(LC_ALL));
+      //printf("\nSet LC Locale   : %s\n", lib_sys_get_locale(LC_ALL));
       printf("\n");
       printf("Change          :\n");
       printf("----------------:\n");
-      printf("All LC Locale   : %s\n", lib_locale_get_locale(LC_ALL));
-      printf("Std LC Locale   : %s\n", lib_locale_get_locale(LC_CTYPE));
+      printf("All LC Locale   : %s\n", lib_sys_get_locale(LC_ALL));
+      printf("Std LC Locale   : %s\n", lib_sys_get_locale(LC_CTYPE));
       if (_locale_os) {
-        _locale_os = lib_locale_os_load_locale(_lc_type);
+        _locale_os = lib_sys_load_locale_os(_lc_type);
         printf("Std OS LC Type  : %d\n", _lc_type);
       }
       printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
-      lib_locale_print_locale(_locale_os);
+      lib_sys_print_locale(_locale_os);
 
     }
 

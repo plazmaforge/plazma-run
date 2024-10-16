@@ -16,11 +16,11 @@ void usage() {
 
 int main(int argc, char* argv[]) {
 
-    lib_locale_os_init();
+    lib_sys_locale_os_init();
 
     lib_sys_print_sys_info();
 
-    lib_locale_os_restore();
+    lib_sys_locale_os_restore();
 
     return 0;
 }

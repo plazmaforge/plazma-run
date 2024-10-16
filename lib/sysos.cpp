@@ -10,17 +10,17 @@
 #include "sysos_nix.h"
 #endif
 
-static os_info_t* os_info = NULL;
+static lib_os_info_t* os_info = NULL;
 
-int get_os_arch_size(const char* arch_name) {
-    return get_cpu_arch_size(arch_name);
+int lib_sys_get_os_arch_size(const char* arch_name) {
+    return lib_sys_get_cpu_arch_size(arch_name);
 }
 
-const char* get_os_arch_data_model(const char* arch_name) {
-    return get_cpu_arch_data_model(arch_name);
+const char* lib_sys_get_os_arch_data_model(const char* arch_name) {
+    return lib_sys_get_cpu_arch_data_model(arch_name);
 }
 
-static void lib_os_info_init(os_info_t* os_info) {
+static void lib_sys_os_info_init(lib_os_info_t* os_info) {
     if (!os_info) {
         return;
     }
@@ -55,15 +55,15 @@ static void lib_os_info_init(os_info_t* os_info) {
 }
 
 /*
-static os_info_t* lib_os_info_new() {
-    os_info_t* os_info = (os_info_t*) malloc(sizeof(os_info_t));
+static lib_os_info_t* lib_sys_os_info_new() {
+    lib_os_info_t* os_info = (lib_os_info_t*) malloc(sizeof(lib_os_info_t));
     init_os_info(os_info);
     return os_info;
 }
 */
 
 /*
-static void lib_os_info_free(os_info_t* os_info) {
+static void lib_sys_os_info_free(lib_os_info_t* os_info) {
     if (!os_info)  {
         return;
     }
@@ -94,15 +94,15 @@ static void lib_os_info_free(os_info_t* os_info) {
 }
 */
 
-const os_info_t* lib_os_get_os_info() {
+const lib_os_info_t* lib_sys_get_os_info() {
     if (os_info) {
         return os_info;
     }
 
-    static os_info_t os_info_s;
+    static lib_os_info_t os_info_s;
     os_info = &os_info_s;
-    lib_os_info_init(os_info);
-    lib_os_info_load(os_info);
+    lib_sys_os_info_init(os_info);
+    lib_sys_os_info_load(os_info);
 
     return os_info;
 }

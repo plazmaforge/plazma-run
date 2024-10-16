@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     size_t size = 0;
     char* data = lib_io_read_cat_bytes(file_names, file_count, size);
 
-    lib_locale_init(); // WIN32 fast output with setvbuf(?)
+    lib_sys_locale_init(); // WIN32 fast output with setvbuf(?)
     lib_io_buf_init();
 
     // incorrect last chars: non printable char
@@ -40,5 +40,5 @@ int main(int argc, char* argv[]) {
         printf("%c", data[i]);
     }
 
-    lib_locale_restore(); // Important for WIN32: The locale was changed for the terminal
+    lib_sys_locale_restore(); // Important for WIN32: The locale was changed for the terminal
 }

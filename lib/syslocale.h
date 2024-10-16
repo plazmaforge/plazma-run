@@ -5,7 +5,7 @@
  * LC locale definition.
  * 
  * Structures: 
- * - locale_t
+ * - lib_locale_t
  *
  */
 
@@ -26,57 +26,57 @@ struct lib_locale_t {
 /*
  * Sets default LC locale
  */
-char* lib_locale_set_default_locale();
+char* lib_sys_set_default_locale();
 
 /*
  * Gets LC locale by category (LC_CTYPE, LC_MESSAGES ...)
  */
-char* lib_locale_get_locale(int cat);
+char* lib_sys_get_locale(int cat);
 
 /*
  * Gets current LC locale by LC_CTYPE category
  */
-char* lib_locale_get_current_locale();
+char* lib_sys_get_current_locale();
 
 /*
  * Returns true if LC locale is empty
  */
-int lib_locale_is_empty(const char* locale);
+int lib_sys_is_empty_locale(const char* locale);
 
 /*
  * Returns true if LC locales are equal
  */
-int lib_locale_equals(const char* locale1, const char* locale2);
+int lib_sys_equals_locale(const char* locale1, const char* locale2);
 
-lib_locale_t* lib_locale_new();
+lib_locale_t* lib_sys_locale_new();
 
-void lib_locale_free(lib_locale_t* locale);
+void lib_sys_locale_free(lib_locale_t* locale);
 
 /*
  * Parse LC locale
  */
-lib_locale_t* lib_locale_parse_locale(const char* locale);
+lib_locale_t* lib_sys_parse_locale(const char* locale);
 
 /*
  * Parse LC locale and return encoding
  * [allocate]
  */
-char* lib_locale_parse_encoding(const char* locale);
+char* lib_sys_parse_encoding(const char* locale);
 
 /*
  * Load LC locale
  */
-lib_locale_t* lib_locale_load_locale(int cat);
+lib_locale_t* lib_sys_load_locale(int cat);
 
 /*
  * Returns a locale name by language, country, encoding in format: <language>_<COUNTRY>.<encoding>
  * [allocate]
  */
-char* lib_locale_get_locale_name(const char* language, const char* country, const char* encoding);
+char* lib_sys_get_locale_name(const char* language, const char* country, const char* encoding);
 
 /*
  * Print a locale
  */
-void lib_locale_print_locale(lib_locale_t* locale);
+void lib_sys_print_locale(lib_locale_t* locale);
 
 #endif // PLAZMA_LIB_SYSLOCALE_H

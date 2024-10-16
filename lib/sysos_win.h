@@ -196,7 +196,7 @@ char* getOsVersion(VersionInfo ver) {
 }
 
 
-void loadOsInfo(os_info_t* os_info) {
+void loadOsInfo(lib_os_info_t* os_info) {
 
   int majorVersion = 0;
   int minorVersion = 0;
@@ -313,14 +313,14 @@ void loadOsInfo(os_info_t* os_info) {
 
   // CPU Info
   //os_info->os_arch = _strdup(getOsArch(si));
-  //os_info->os_arch_size = get_os_arch_size(os_info->os_arch);
+  //os_info->os_arch_size = lib_sys_get_os_arch_size(os_info->os_arch);
   //os_info->os_arch_data = _strdup(getOsArchData(si));
-  //os_info->cpu_endian = _strdup(get_cpu_endian());
+  //os_info->cpu_endian = _strdup(lib_sys_get_cpu_endian());
   //os_info->cpu_isalist = getCpuIsalist(si);
 
   os_info->os_arch = _strdup(get_cpu_arch_name_by_si(si));
-  os_info->os_arch_size = get_os_arch_size(os_info->os_arch);
-  os_info->cpu_endian = _strdup(get_cpu_endian());
+  os_info->os_arch_size = lib_sys_get_os_arch_size(os_info->os_arch);
+  os_info->cpu_endian = _strdup(lib_sys_get_cpu_endian());
   os_info->cpu_isalist = get_cpu_isalist_by_si(si);
 
   // C CPU Issue: os.cpu_count() WIN: GetLogicalProcessorInformationEx
@@ -334,7 +334,7 @@ void loadOsInfo(os_info_t* os_info) {
  
 }
 
-void lib_os_info_load(os_info_t* os_info) {
+void lib_sys_os_info_load(lib_os_info_t* os_info) {
     loadOsInfo(os_info);
 }
 
