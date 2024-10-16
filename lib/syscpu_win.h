@@ -62,7 +62,7 @@ const char* get_cpu_isalist_by_si(SYSTEM_INFO& info) {
     return get_cpu_arch_name_by_si(info);
 }
 
-arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
+lib_arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
 
     switch (info.wProcessorArchitecture) {
     case PROCESSOR_ARCHITECTURE_IA64:
@@ -101,7 +101,7 @@ arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
 }
 
 const char* get_cpu_arch_name_by_si_2(SYSTEM_INFO& info) {
-    arch_t arch = get_cpu_arch_type_by_si(info);
+    lib_arch_t arch = get_cpu_arch_type_by_si(info);
     return lib_sys_get_arch_name(arch);
 }
 
@@ -142,7 +142,7 @@ void load_system_info(SYSTEM_INFO& info) {
 
 ////
 
-arch_t lib_cpu_get_cpu_arch_type() {
+lib_arch_t lib_cpu_get_cpu_arch_type() {
     SYSTEM_INFO info;
     load_system_info(info);
     return get_cpu_arch_type_by_si(info);
