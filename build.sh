@@ -21,7 +21,7 @@ $CC $CFLAGS lib/wclib.cpp -o wclib.o
 $CC $CFLAGS lib/fslib.cpp -o fslib.o
 $CC $CFLAGS lib/iodef.cpp -o iodef.o
 $CC $CFLAGS lib/iolib.cpp -o iolib.o
-$CC $CFLAGS lib/dumplib.cpp -o dumplib.o
+$CC $CFLAGS lib/dmplib.cpp -o dmplib.o
 $CC $CFLAGS lib/fmtlib.cpp -o fmtlib.o
 $CC $CFLAGS lib/socketlib.cpp -o socketlib.o
 $CC $CFLAGS lib/nflib.cpp -o nflib.o
@@ -80,7 +80,7 @@ $CC $CFLAGS test_locale.cpp -o test_locale.o
 
 # link
 ###########
-$CC $LDFLAGS getopt.o iodef.o iolib.o dumplib.o run_dump.o -o run-dump
+$CC $LDFLAGS getopt.o iodef.o iolib.o dmplib.o run_dump.o -o run-dump
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_echo.o -o run-echo
 $CC $LDFLAGS iodef.o iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_cat.o -o run-cat
 $CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o syscpu.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_sysinfo.o -o run-sysinfo

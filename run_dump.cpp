@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "getopt.h"
-#include "dumplib.h"
+#include "dmplib.h"
 #include "iodef.h"
 
 void usage() {
@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    int width = LIB_DUMP_DEF_COL_COUNT;
+    int width = LIB_DMP_DEF_COL_COUNT;
     bool show_text = false; //DUMP_DEF_SHOW_TEXT;
 
     bool error = false;
@@ -66,9 +66,11 @@ int main(int argc, char* argv[]) {
 
     lib_io_buf_init();
 
-    lib_dump_config_t* config = (lib_dump_config_t*) malloc(sizeof(lib_dump_config_t));
+    lib_dmp_config_t* config = lib_dmp_file_new();
     config->col_count = width;
     config->show_text = show_text;
 
-    lib_dump_file_def(file_name, config);
+    lib_dmp_dump_file_def(file_name, config);
+
+    lib_dmp_file_free(config);
 }
