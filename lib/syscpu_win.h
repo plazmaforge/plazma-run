@@ -17,7 +17,7 @@ static int has_mmx() {
 }
 
 // legacy
-static const char* get_cpu_arch_name_by_si_1(SYSTEM_INFO& info) {
+static const char* lib_cpu_get_cpu_arch_name_by_si_1(SYSTEM_INFO& info) {
    switch (info.wProcessorArchitecture) {
     #ifdef PROCESSOR_ARCHITECTURE_IA64
     case PROCESSOR_ARCHITECTURE_IA64: return "x86_64";
@@ -38,7 +38,7 @@ static const char* get_cpu_arch_name_by_si_1(SYSTEM_INFO& info) {
 }
 
 // legacy (?)
-const char* get_cpu_isalist_by_si(SYSTEM_INFO& info) {
+const char* lib_cpu_get_cpu_isalist_by_si(SYSTEM_INFO& info) {
    switch (info.wProcessorArchitecture) {
     #ifdef PROCESSOR_ARCHITECTURE_IA64
     case PROCESSOR_ARCHITECTURE_IA64: return "ia64";
@@ -59,10 +59,10 @@ const char* get_cpu_isalist_by_si(SYSTEM_INFO& info) {
         }
     }
     //return ""; 
-    return get_cpu_arch_name_by_si(info);
+    return lib_cpu_get_cpu_arch_name_by_si(info);
 }
 
-lib_arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
+lib_arch_t lib_cpu_get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
 
     switch (info.wProcessorArchitecture) {
     case PROCESSOR_ARCHITECTURE_IA64:
@@ -100,16 +100,16 @@ lib_arch_t get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
     }
 }
 
-const char* get_cpu_arch_name_by_si_2(SYSTEM_INFO& info) {
-    lib_arch_t arch = get_cpu_arch_type_by_si(info);
-    return lib_sys_get_arch_name(arch);
+const char* lib_cpu_get_cpu_arch_name_by_si_2(SYSTEM_INFO& info) {
+    lib_arch_t arch = lib_cpu_get_cpu_arch_type_by_si(info);
+    return lib_cpu_get_arch_name(arch);
 }
 
-const char* get_cpu_arch_name_by_si(SYSTEM_INFO& info) {
-    return get_cpu_arch_name_by_si_2(info);
+const char* lib_cpu_get_cpu_arch_name_by_si(SYSTEM_INFO& info) {
+    return lib_cpu_get_cpu_arch_name_by_si_2(info);
 }
 
-int get_cpu_count_by_si(SYSTEM_INFO& info) {
+int lib_cpu_get_cpu_count_by_si(SYSTEM_INFO& info) {
    int count = info.dwNumberOfProcessors;
 
    DWORD_PTR process_cpus;
@@ -145,19 +145,19 @@ void load_system_info(SYSTEM_INFO& info) {
 lib_arch_t lib_cpu_get_cpu_arch_type() {
     SYSTEM_INFO info;
     load_system_info(info);
-    return get_cpu_arch_type_by_si(info);
+    return lib_cpu_get_cpu_arch_type_by_si(info);
 }
 
 const char* lib_cpu_get_cpu_issalist() {
     SYSTEM_INFO info;
     load_system_info(info);
-    return get_cpu_isalist_by_si(info);
+    return lib_cpu_get_cpu_isalist_by_si(info);
 }
 
 int lib_cpu_get_cpu_count() {
     SYSTEM_INFO info;
     load_system_info(info);
-    return get_cpu_count_by_si(info);
+    return lib_cpu_get_cpu_count_by_si(info);
 }
 
 #endif
