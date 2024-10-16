@@ -127,7 +127,7 @@ static char* getEncoding(LCID lcid) {
     return ret;
 }
 
-static locale_t* loadLocale(LCID lcid) {
+static lib_locale_t* loadLocale(LCID lcid) {
 
     /* script */
     char tmp[SNAMESIZE];
@@ -202,8 +202,7 @@ static locale_t* loadLocale(LCID lcid) {
     /* encoding */
     char* encoding = getEncoding(lcid);
 
-    //locale_t* locale = (locale_t*) malloc(sizeof(locale_t));
-    locale_t* locale = lib_locale_new();
+    lib_locale_t* locale = lib_locale_new();
 
     locale->language = language;
     locale->script = script;
@@ -225,7 +224,7 @@ static locale_t* loadLocale(LCID lcid) {
     return locale;
 }
 
-static locale_t* loadLocaleWin(int cat) {
+static lib_locale_t* loadLocaleWin(int cat) {
 
    if (cat == LC_CTYPE) {
       return loadLocale(GetUserDefaultLCID()); // LC_CTYPE
@@ -277,8 +276,8 @@ static void loadLocaleAllWin(SysInfo& sysInfo) {
       userDefaultUILCID = userDefaultLCID;
     }
 
-    locale_t* formatLocale = loadLocale(userDefaultLCID);    // LC_CTYPE
-    locale_t* displayLocale = loadLocale(userDefaultUILCID); // LC_MESSAGES = LC_TIME + 1
+    lib_locale_t* formatLocale = loadLocale(userDefaultLCID);    // LC_CTYPE
+    lib_locale_t* displayLocale = loadLocale(userDefaultUILCID); // LC_MESSAGES = LC_TIME + 1
 
     initLocale(sysInfo, LC_CTYPE, formatLocale);
     initLocale(sysInfo, LC_TIME + 1, displayLocale);
@@ -300,7 +299,7 @@ void setConsoleCodepage(UINT cp) {
     setConsoleCodepage(cp, cp);
 }
 
-locale_t* lib_locale_os_load_locale(int cat) {
+lib_locale_t* lib_locale_os_load_locale(int cat) {
     //return lib_locale_parse_locale(lib_locale_get_locale(cat));
     return loadLocaleWin(cat);
 }

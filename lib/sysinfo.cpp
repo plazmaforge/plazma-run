@@ -185,7 +185,7 @@ const sys_info_t* lib_sys_get_sys_info() {
     sys_info->locale_type = 0;
   
     // Format Locale Info  
-    locale_t* format_locale = lib_locale_os_load_locale(LC_FORMAT_TYPE);
+    lib_locale_t* format_locale = lib_locale_os_load_locale(LC_FORMAT_TYPE);
     if (format_locale) {
         sys_info->locale_type = LC_FORMAT_TYPE;
         sys_info->format_locale = lib_strdup(format_locale->name);
@@ -197,7 +197,7 @@ const sys_info_t* lib_sys_get_sys_info() {
     }
 
     // Display Locale Info
-    locale_t* display_locale = lib_locale_os_load_locale(LC_DISPLAY_TYPE);
+    lib_locale_t* display_locale = lib_locale_os_load_locale(LC_DISPLAY_TYPE);
     if (display_locale) {
         sys_info->locale_type = LC_DISPLAY_TYPE;
         sys_info->display_locale = lib_strdup(display_locale->name);

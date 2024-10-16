@@ -51,7 +51,7 @@ static char* getDefaultEncoding() {
     return encoding;
 }
 
-static locale_t* loadLocaleMac() {
+static lib_locale_t* loadLocaleMac() {
 
   CFLocaleRef cflocale = CFLocaleCopyCurrent();
   const char* name = getLocaleValue(cflocale, kCFLocaleIdentifier);
@@ -59,7 +59,7 @@ static locale_t* loadLocaleMac() {
   if (!name) {
     // Why? But is real case!
     CFRelease(cflocale);
-    locale_t* locale = lib_locale_new();
+    lib_locale_t* locale = lib_locale_new();
     locale->name = NULL;
     locale->language = NULL;
     locale->script = NULL;
@@ -92,7 +92,7 @@ static locale_t* loadLocaleMac() {
 
   CFRelease(cflocale);
 
-  locale_t* locale = lib_locale_new();
+  lib_locale_t* locale = lib_locale_new();
   locale->language = lib_strdup(language);
   locale->script = lib_strdup(script);
   locale->country = lib_strdup(country);
@@ -106,11 +106,11 @@ static locale_t* loadLocaleMac() {
 
 }
 
-static locale_t* loadLocaleMac(int cat) {
+static lib_locale_t* loadLocaleMac(int cat) {
     return loadLocaleMac(); // Category independed. Why?
 }
 
-locale_t* lib_locale_os_load_locale(int cat) {
+lib_locale_t* lib_locale_os_load_locale(int cat) {
     return loadLocaleMac(cat);
 }
 

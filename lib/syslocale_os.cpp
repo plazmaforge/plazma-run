@@ -9,7 +9,7 @@
 #include "syslocale_nix.h"
 #endif
 
-locale_t* lib_locale_os_load_current_locale() {
+lib_locale_t* lib_locale_os_load_current_locale() {
     return lib_locale_os_load_locale(LC_CTYPE);
 }
 
@@ -19,7 +19,7 @@ void lib_locale_os_init() {
     // Bug with empty locale for MacOS
     // const char* name = getLocaleValue(cflocale, kCFLocaleIdentifier);
     // name is NULL. Why?
-    locale_t* locale = lib_locale_os_load_current_locale(); // TODO: Force load locale (Why?)
+    lib_locale_t* locale = lib_locale_os_load_current_locale(); // TODO: Force load locale (Why?)
     lib_locale_free(locale);     
     #endif
 

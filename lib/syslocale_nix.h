@@ -5,7 +5,7 @@
 #if defined __APPLE__ && defined __MACH__
 #include "syslocale_mac.h"
 #else
-locale_t* lib_locale_os_load_locale(int cat) {
+lib_locale_t* lib_locale_os_load_locale(int cat) {
     return lib_locale_parse_locale(lib_locale_get_locale(cat)); // LC Locale
 }
 #endif

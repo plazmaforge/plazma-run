@@ -4,7 +4,7 @@
 #include "syslocale.h"
 
 static char* _locale;
-static locale_t* _locale_os;
+static lib_locale_t* _locale_os;
 
 static int debug = 0;
 static int check = 0;
@@ -17,12 +17,12 @@ static int check = 0;
 /*
  * Load OS locale by category
  */
-locale_t* lib_locale_os_load_locale(int cat);
+lib_locale_t* lib_locale_os_load_locale(int cat);
 
 /*
  * Load OS locale
  */
-locale_t* lib_locale_os_load_current_locale();
+lib_locale_t* lib_locale_os_load_current_locale();
 
 /*
  * Initialize OS locale
