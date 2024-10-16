@@ -69,7 +69,7 @@ const char* lib_cpu_get_cpu_arch_name() {
 
 ////
 
-const char* get_cpu_issalist_by_machine(const char* machine) {
+const char* lib_cpu_get_cpu_issalist_by_machine(const char* machine) {
     if (!machine) {
         return "";
     }
@@ -81,7 +81,7 @@ const char* get_cpu_issalist_by_machine(const char* machine) {
     return machine;         /* WHAT? */
 }
 
-lib_arch_t get_cpu_arch_type_by_machine(const char* machine) {
+lib_arch_t lib_cpu_get_cpu_arch_type_by_machine(const char* machine) {
     if (!machine) {
         return LIB_ARCH_NONE;
     }
@@ -105,12 +105,12 @@ lib_arch_t get_cpu_arch_type_by_machine(const char* machine) {
     return lib_cpu_find_arch_by_name(machine);        
 }
 
-const char* get_cpu_arch_name_by_machine(const char* machine) {
+const char* lib_cpu_get_cpu_arch_name_by_machine(const char* machine) {
     if (!machine) {
         return NULL;
     }
     // Try find an arch type by machine
-    lib_arch_t arch = get_cpu_arch_type_by_machine(machine);
+    lib_arch_t arch = lib_cpu_get_cpu_arch_type_by_machine(machine);
 
     // If the arch type is not found return original machine name
     return arch == LIB_ARCH_NONE ? machine : lib_cpu_get_arch_name(arch);

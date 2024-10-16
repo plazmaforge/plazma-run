@@ -12,10 +12,10 @@
 void lib_sys_load_posix_common_info_opts(lib_os_info_t* os_info, /*struct*/ utsname* name) {
 
    // CPU Info
-   os_info->os_arch = strdup(get_cpu_arch_name_by_machine(name->machine));
-   os_info->os_arch_size = lib_sys_get_os_arch_size(os_info->os_arch);
+   os_info->os_arch = strdup(lib_cpu_get_cpu_arch_name_by_machine(name->machine));
+   os_info->os_arch_size = lib_cpu_get_cpu_arch_size(os_info->os_arch);
    os_info->cpu_endian = strdup(lib_cpu_get_cpu_endian());
-   os_info->cpu_isalist = strdup(get_cpu_issalist_by_machine(name->machine));
+   os_info->cpu_isalist = strdup(lib_cpu_get_cpu_issalist_by_machine(name->machine));
 
    // FS Info
    os_info->file_separator = strdup("/");

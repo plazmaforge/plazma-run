@@ -185,11 +185,11 @@ int lib_cpu_get_cpu_count();
 
 ////
 
-const char* get_cpu_issalist_by_machine(const char* machine);
+const char* lib_cpu_get_cpu_issalist_by_machine(const char* machine);
 
-lib_arch_t get_cpu_arch_type_by_machine(const char* machine);
+lib_arch_t lib_cpu_get_cpu_arch_type_by_machine(const char* machine);
 
-const char* get_cpu_arch_name_by_machine(const char* machine);
+const char* lib_cpu_get_cpu_arch_name_by_machine(const char* machine);
 
 /**
  * Returns CPU Arch Size by CPU Arch 

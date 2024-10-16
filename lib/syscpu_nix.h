@@ -20,7 +20,7 @@
 lib_arch_t lib_cpu_get_cpu_arch_type() {
     /*struct*/ utsname name;
     uname(&name);
-    return get_cpu_arch_type_by_machine(name.machine);
+    return lib_cpu_get_cpu_arch_type_by_machine(name.machine);
 }
 
 const char* lib_cpu_get_cpu_issalist() {
@@ -32,7 +32,7 @@ const char* lib_cpu_get_cpu_issalist() {
    #else
    /*struct*/ utsname name;
    uname(&name);
-   return get_cpu_issalist_by_machine(name.machine);
+   return lib_cpu_get_cpu_issalist_by_machine(name.machine);
    #endif    
 }
 
