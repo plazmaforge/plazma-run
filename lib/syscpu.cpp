@@ -7,27 +7,29 @@
 #include "syscpu_nix.h"
 #endif
 
-const char* lib_sys_get_arch_name(arch_t arch) {
+const char* lib_cpu_get_arch_name(arch_t arch) {
     if (arch >= ARCH_LAST)
         arch = ARCH_NONE;
 
     return arch_data[arch].name;
 }
 
-int lib_sys_get_arch_size(arch_t arch) {
+int lib_cpu_get_arch_size(arch_t arch) {
     if (arch >= ARCH_LAST)
         arch = ARCH_NONE;
     return arch_data[arch].size;
 }
 
-arch_endian_t lib_sys_get_arch_endian(arch_t arch) {
+arch_endian_t lib_cpu_get_arch_endian(arch_t arch) {
     if (arch >= ARCH_LAST)
         arch = ARCH_NONE;
 
     return arch_data[arch].endian;
 }
 
-static arch_t lib_sys_find_arch_by_name(const char *arch_name) {
+//// CPU Only
+
+static arch_t lib_cpu_find_arch_by_name(const char *arch_name) {
     if (!arch_name) {
         return ARCH_NONE; // none
     }
@@ -40,29 +42,29 @@ static arch_t lib_sys_find_arch_by_name(const char *arch_name) {
     return ARCH_NONE; // none
 }
 
-static arch_data_t lib_sys_find_arch_data_by_name(const char *arch_name) {
+static arch_data_t lib_cpu_find_arch_data_by_name(const char *arch_name) {
     if (!arch_name) {
         return arch_data[0]; // none
     }
-    arch_t arch = lib_sys_find_arch_by_name(arch_name);
+    arch_t arch = lib_cpu_find_arch_by_name(arch_name);
     return arch_data[arch];
 }
 
-////
+//// CPU Only
 
-int lib_sys_is_cpu_big_endian() {
+int lib_cpu_is_cpu_big_endian() {
     /* Endianness of platform */
     unsigned int endianTest = 0xff000000;
     return ((char*) (&endianTest))[0] != 0;
 }
 
-const char* lib_sys_get_cpu_endian() {
-    return lib_sys_is_cpu_big_endian() ? "BE" : "LE";
+const char* lib_cpu_get_cpu_endian() {
+    return lib_cpu_is_cpu_big_endian() ? "BE" : "LE";
 }
 
-const char* lib_sys_get_cpu_arch_name() {
-    arch_t arch = lib_sys_get_cpu_arch_type(); // OS Depending
-    return lib_sys_get_arch_name(arch);
+const char* lib_cpu_get_cpu_arch_name() {
+    arch_t arch = lib_cpu_get_cpu_arch_type(); // OS Depending
+    return lib_cpu_get_arch_name(arch);
 }
 
 ////
@@ -100,7 +102,7 @@ arch_t get_cpu_arch_type_by_machine(const char* machine) {
     }
 
     /* Otherwise assume the canonical name          */
-    return lib_sys_find_arch_by_name(machine);        
+    return lib_cpu_find_arch_by_name(machine);        
 }
 
 const char* get_cpu_arch_name_by_machine(const char* machine) {
@@ -111,22 +113,22 @@ const char* get_cpu_arch_name_by_machine(const char* machine) {
     arch_t arch = get_cpu_arch_type_by_machine(machine);
 
     // If the arch type is not found return original machine name
-    return arch == ARCH_NONE ? machine : lib_sys_get_arch_name(arch);
+    return arch == ARCH_NONE ? machine : lib_cpu_get_arch_name(arch);
 }
 
-int lib_sys_get_cpu_arch_size(const char* arch_name) {
+int lib_cpu_get_cpu_arch_size(const char* arch_name) {
     if (!arch_name) {
         return 0;
     }
-    arch_data_t data = lib_sys_find_arch_data_by_name(arch_name);
+    arch_data_t data = lib_cpu_find_arch_data_by_name(arch_name);
     return data.size;
 }
 
-const char* lib_sys_get_cpu_arch_data_model(const char* arch_name) {
+const char* lib_cpu_get_cpu_arch_data_model(const char* arch_name) {
     if (!arch_name) {
         return NULL;
     }
-    int arch_size = lib_sys_get_cpu_arch_size(arch_name);
+    int arch_size = lib_cpu_get_cpu_arch_size(arch_name);
 
     if (arch_size == 16) {
         return "16"; // WHAT?

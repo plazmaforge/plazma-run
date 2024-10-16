@@ -84,7 +84,7 @@ int lib_sys_get_os_arch_size();
 
 const char* lib_sys_get_cpu_isalist();
 
-//const char* lib_sys_get_cpu_endian();
+const char* lib_sys_get_cpu_endian();
 
 int lib_sys_get_cpu_count();
 

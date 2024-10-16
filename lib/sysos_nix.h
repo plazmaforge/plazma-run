@@ -14,7 +14,7 @@ void lib_sys_load_posix_common_info_opts(lib_os_info_t* os_info, /*struct*/ utsn
    // CPU Info
    os_info->os_arch = strdup(get_cpu_arch_name_by_machine(name->machine));
    os_info->os_arch_size = lib_sys_get_os_arch_size(os_info->os_arch);
-   os_info->cpu_endian = strdup(lib_sys_get_cpu_endian());
+   os_info->cpu_endian = strdup(lib_cpu_get_cpu_endian());
    os_info->cpu_isalist = strdup(get_cpu_issalist_by_machine(name->machine));
 
    // FS Info
@@ -29,7 +29,7 @@ void lib_sys_load_posix_common_info(lib_os_info_t* os_info) {
 }
 
 void lib_sys_load_posix_cpu_info(lib_os_info_t* os_info) {
-    os_info->cpu_count = _get_cpu_count();
+    os_info->cpu_count = lib_cpu_get_cpu_count();
 }
 
 #if defined __APPLE__ && defined __MACH__

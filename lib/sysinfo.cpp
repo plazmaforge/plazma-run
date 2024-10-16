@@ -305,9 +305,9 @@ const char* lib_sys_get_cpu_isalist() {
     return os_info ? os_info->cpu_isalist : NULL;
 }
 
-// const char* lib_sys_get_cpu_endian() {
-//     return get_cpu_endian(); // lib_cpu
-// }
+const char* lib_sys_get_cpu_endian() {
+    return lib_cpu_get_cpu_endian();
+}
 
 int lib_sys_get_cpu_count() {
     const lib_os_info_t* os_info = lib_sys_get_os_info();

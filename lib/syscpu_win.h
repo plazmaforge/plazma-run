@@ -142,19 +142,19 @@ void load_system_info(SYSTEM_INFO& info) {
 
 ////
 
-arch_t lib_sys_get_cpu_arch_type() {
+arch_t lib_cpu_get_cpu_arch_type() {
     SYSTEM_INFO info;
     load_system_info(info);
     return get_cpu_arch_type_by_si(info);
 }
 
-const char* get_cpu_issalist() {
+const char* lib_cpu_get_cpu_issalist() {
     SYSTEM_INFO info;
     load_system_info(info);
     return get_cpu_isalist_by_si(info);
 }
 
-int _get_cpu_count() {
+int lib_cpu_get_cpu_count() {
     SYSTEM_INFO info;
     load_system_info(info);
     return get_cpu_count_by_si(info);

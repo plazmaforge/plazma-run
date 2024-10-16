@@ -148,40 +148,40 @@ static const struct arch_data_t {
     { "xtensaeb",     32, ARCH_BIG_ENDIAN },
 };
 
-const char* lib_sys_get_arch_name(arch_t arch);
+const char* lib_cpu_get_arch_name(arch_t arch);
 
-int lib_sys_get_arch_size(arch_t arch);
+int lib_cpu_get_arch_size(arch_t arch);
 
-arch_endian_t lib_sys_get_arch_endian(arch_t arch);
+arch_endian_t lib_cpu_get_arch_endian(arch_t arch);
 
 ////
 
 /**
  * Returns true if CPU is big endian 
  */
-int lib_sys_is_cpu_big_endian();
+int lib_cpu_is_cpu_big_endian();
 
 /**
  * Returns CPU endian: big/little
  */
-const char* lib_sys_get_cpu_endian();
+const char* lib_cpu_get_cpu_endian();
 
-const char* lib_sys_get_cpu_issalist();
+const char* lib_cpu_get_cpu_issalist();
 
 /**
  * Returns CPU Arch Type
  */
-arch_t lib_sys_get_cpu_arch_type();
+arch_t lib_cpu_get_cpu_arch_type();
 
 /**
  * Returns CPU Arch Name
  */
-const char* lib_sys_get_cpu_arch_name();
+const char* lib_cpu_get_cpu_arch_name();
 
 /**
  * Returns CPU count
  */
-int _get_cpu_count();
+int lib_cpu_get_cpu_count();
 
 ////
 
@@ -194,12 +194,12 @@ const char* get_cpu_arch_name_by_machine(const char* machine);
 /**
  * Returns CPU Arch Size by CPU Arch 
  */
-int lib_sys_get_cpu_arch_size(const char* arch_name);
+int lib_cpu_get_cpu_arch_size(const char* arch_name);
 
 /**
  * Returns CPU Arch Data Model by CPU Arch 
  */
-const char* lib_sys_get_cpu_arch_data_model(const char* arch_name);
+const char* lib_cpu_get_cpu_arch_data_model(const char* arch_name);
 
 #if defined _WIN32
 

@@ -17,13 +17,13 @@
 
 #include "syscpu.h"
 
-arch_t lib_sys_get_cpu_arch_type() {
+arch_t lib_cpu_get_cpu_arch_type() {
     /*struct*/ utsname name;
     uname(&name);
     return get_cpu_arch_type_by_machine(name.machine);
 }
 
-const char* get_cpu_issalist() {
+const char* lib_cpu_get_cpu_issalist() {
    #ifdef SI_ISALIST
    /* supported instruction sets */
    char list[258];
@@ -36,7 +36,7 @@ const char* get_cpu_issalist() {
    #endif    
 }
 
-int _get_cpu_count() {
+int lib_cpu_get_cpu_count() {
 
     #if defined __APPLE__ && defined __MACH__
     int nm[2];
