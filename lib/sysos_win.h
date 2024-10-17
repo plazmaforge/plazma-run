@@ -318,7 +318,7 @@ void loadOsInfo(lib_os_info_t* os_info) {
   //os_info->cpu_endian = _strdup(lib_cpu_get_cpu_endian());
   //os_info->cpu_isalist = getCpuIsalist(si);
 
-  os_info->os_arch = _strdup(get_cpu_arch_name_by_si(si));
+  os_info->os_arch = _strdup(lib_cpu_get_cpu_arch_name_by_si(si));
   os_info->os_arch_size = lib_cpu_get_cpu_arch_size(os_info->os_arch);
   os_info->cpu_endian = _strdup(lib_cpu_get_cpu_endian());
   os_info->cpu_isalist = lib_cpu_get_cpu_isalist_by_si(si);

@@ -66,37 +66,37 @@ lib_arch_t lib_cpu_get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
 
     switch (info.wProcessorArchitecture) {
     case PROCESSOR_ARCHITECTURE_IA64:
-        return ARCH_ITANIUM;
+        return LIB_ARCH_ITANIUM;
     case PROCESSOR_ARCHITECTURE_AMD64:
-        return ARCH_X86_64;
+        return LIB_ARCH_X86_64;
     case PROCESSOR_ARCHITECTURE_INTEL:
         switch (info.wProcessorLevel) {
          case 6: 
          case 5: 
          case 4:
-         case 3: return ARCH_I686;
-         default: return ARCH_X86_64;
+         case 3: return LIB_ARCH_I686;
+         default: return LIB_ARCH_X86_64;
         }
 
     
     case PROCESSOR_ARCHITECTURE_IA32_ON_WIN64:
-        return ARCH_I686;
+        return LIB_ARCH_I686;
     case PROCESSOR_ARCHITECTURE_MIPS:
-        return ARCH_MIPS;
+        return LIB_ARCH_MIPS;
     case PROCESSOR_ARCHITECTURE_ALPHA:
-        return ARCH_ALPHA;
+        return LIB_ARCH_ALPHA;
     case PROCESSOR_ARCHITECTURE_PPC:
-        return ARCH_PPC;
+        return LIB_ARCH_PPC;
     case PROCESSOR_ARCHITECTURE_SHX:
-        return ARCH_SH4;
+        return LIB_ARCH_SH4;
     case PROCESSOR_ARCHITECTURE_ARM:
-        return ARCH_ARMV7L;
+        return LIB_ARCH_ARMV7L;
     case PROCESSOR_ARCHITECTURE_ARM64:
-        return ARCH_AARCH64;
+        return LIB_ARCH_AARCH64;
     
 
     default:
-        return ARCH_NONE;
+        return LIB_ARCH_NONE;
     }
 }
 
