@@ -1,5 +1,5 @@
 #include <stdlib.h>
-//#include <stdio.h>
+#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -79,7 +79,6 @@ char* __lib_straddv__(const char* str, ...) {
   while((arg = va_arg(args, char *)) != NULL) {
     i++;
     len += strlen(arg);
-    //printf("%i: %s\n", i, arg);
   }
   va_end(args);
 
@@ -98,6 +97,53 @@ char* __lib_straddv__(const char* str, ...) {
 
   va_start(args, str);
   while((arg = va_arg(args, char *)) != NULL) {
+    lib_strcat(tmp, arg);
+  }
+  va_end(args);
+
+  return tmp;
+}
+
+char* __lib_straddn__(int n, const char* str, ...) {
+  if (n <= 0) {
+    return NULL;
+  }
+
+  va_list args;
+  va_start(args, str);
+  char* arg;
+  size_t len = 0;
+  size_t i = 0;
+  int null_count = 0;
+  for (i = 0; i < n; i++) {
+    arg = va_arg(args, char*);
+    if (!arg) {
+      null_count++;
+      continue;
+    }
+    len += strlen(arg);
+  }
+  va_end(args);
+
+  if (i == null_count) {
+    return NULL;
+  }
+
+  if (len == 0) {
+    return lib_strdup("");
+  }
+
+  char* tmp = lib_strnew(len);
+  if (!tmp) {
+    return NULL;
+  }
+
+  va_start(args, str);
+  for (i = 0; i < n; i++) {
+    arg = va_arg(args, char*);
+    if (!arg) {
+      continue;
+    }
     lib_strcat(tmp, arg);
   }
   va_end(args);
