@@ -3,8 +3,14 @@
 
 #include <string.h>
 
+/**
+ * Return true if a str is empty 
+ */
 int lib_stremp(const char* str);
 
+/**
+ * Return safe implemantation of a str 
+ */
 const char* lib_strsaf(const char* str);
 
 /**
@@ -15,12 +21,18 @@ char* lib_strnew(size_t size);
 /**
  * [allocate]
  */
-char* lib_strapp(const char* str1, const char* str2);
+char* lib_stradd(const char* str1, const char* str2);
 
 /**
  * [allocate]
  */
-char* lib_strappv(const char* str1, const char* str2, const char* str3);
+char* lib_straddv_(const char* str1, const char* str2, const char* str3);
+
+char* __lib_straddv__(const char * str1, ...);
+
+#define lib_straddv(...) __lib_straddv__(NULL, __VA_ARGS__, NULL)
+
+//char* lib_straddv(const char* str, ...);
 
 char* lib_strcat(char* str1, const char* str2);
 

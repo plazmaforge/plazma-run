@@ -4,7 +4,7 @@
 #include <string.h>
 
 // #include "getopt.h"
-// #include "strlib.h"
+#include "strlib.h"
 #include "wstrlib.h"
 #include "syslib.h"
 //#include "sysinfo.h"
@@ -20,6 +20,9 @@ void print_test(const char* input) {
     const char* str = input;
     const wchar_t* wstr = lib_acs_to_wcs(str); // WIN32 (ANSII): acs_to_wcs() + wcs_to_acs(): correct only!
     const char* str2 = lib_wcs_to_acs(wstr);
+
+    char* tmp = lib_straddv("abc", "-def", "-xyz", NULL, "-qwe");
+    printf("straddv : %s\n", tmp);
 
     wprintf(L"\n");
     printf("MB-c-STR: %s\n", str);

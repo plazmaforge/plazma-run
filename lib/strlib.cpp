@@ -1,4 +1,6 @@
 #include <stdlib.h>
+//#include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 
 #include "strlib.h"
@@ -31,7 +33,7 @@ char* lib_strnew(size_t size) {
 /**
  * [allocate]
  */
-char* lib_strapp(const char* str1, const char* str2) {
+char* lib_stradd(const char* str1, const char* str2) {
   if (!str1) {
     return NULL;
   }
@@ -43,13 +45,13 @@ char* lib_strapp(const char* str1, const char* str2) {
   if (str2) {
     lib_strcat(dst, str2);
   }
-  return dst;  
+  return dst;
 }
 
 /**
  * [allocate]
  */
-char* lib_strappv(const char* str1, const char* str2, const char* str3) {
+char* lib_straddv_(const char* str1, const char* str2, const char* str3) {
   if (!str1) {
     return NULL;
   }
@@ -65,6 +67,42 @@ char* lib_strappv(const char* str1, const char* str2, const char* str3) {
     lib_strcat(dst, str3);
   }
   return dst;
+}
+
+char* __lib_straddv__(const char* str, ...) {
+
+  va_list args;
+  va_start(args, str);
+  char* arg;
+  size_t len = 0;
+  int i = 0;
+  while((arg = va_arg(args, char *)) != NULL) {
+    i++;
+    len += strlen(arg);
+    //printf("%i: %s\n", i, arg);
+  }
+  va_end(args);
+
+  if (i == 0) {
+    return NULL;
+  }
+
+  if (len == 0) {
+    return lib_strdup("");
+  }
+
+  char* tmp = lib_strnew(len);
+  if (!tmp) {
+    return NULL;
+  }
+
+  va_start(args, str);
+  while((arg = va_arg(args, char *)) != NULL) {
+    lib_strcat(tmp, arg);
+  }
+  va_end(args);
+
+  return tmp;
 }
 
 char* lib_strcat(char* str1, const char* str2) {

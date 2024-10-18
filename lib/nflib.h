@@ -31,7 +31,7 @@ lib_nf_file_t* lib_nf_ftp_parse_url(const char* fn, const char* mode);
 
 int lib_nf_ftp_connect_file(lib_nf_file_t* fp);
 
-lib_nf_file_t* lin_nf_http_parse_url(const char* fn, const char* mode);
+lib_nf_file_t* lib_nf_http_parse_url(const char* fn, const char* mode);
 
 int lib_nf_http_connect_file(lib_nf_file_t* fp);
 
