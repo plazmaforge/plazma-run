@@ -28,6 +28,15 @@ void print_str(const char* str, int i) {
 void print_test(const char* input) {
     if (input) {
         print_str(input, 0);
+
+        char* input_u = strdup(input);
+        lib_utf8_to_upper(input_u);
+        print_str(input_u, 0);
+
+        char* input_l = strdup(input);
+        lib_utf8_to_lower(input_l);
+        print_str(input_l, 0);
+
     }
 
     //const char* str = input;
@@ -42,6 +51,12 @@ void print_test(const char* input) {
 
     const char* str3 = "1\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82";
     print_str(str3, 3);
+
+    char* str4 = strdup(str2);
+
+    lib_utf8_to_upper(str4);
+    print_str(str4, 4);
+    free(str4);
 
 }
 

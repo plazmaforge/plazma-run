@@ -34,4 +34,8 @@ int lib_utf8_decode(const char* str, int* codepoint);
 
 int lib_utf8_get_codepoint_len(const char* str);
 
+int lib_utf8_to_lower(const char* str);
+
+int lib_utf8_to_upper(const char* str);
+
 #endif // PLAZMA_LIB_UTF8LIB_H
