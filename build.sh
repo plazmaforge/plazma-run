@@ -34,6 +34,7 @@ $CC $CFLAGS lib/syslocale_os.cpp -o syslocale_os.o
 $CC $CFLAGS lib/sysinfo.cpp -o sysinfo.o
 $CC $CFLAGS lib/syslib.cpp -o syslib.o
 $CC $CFLAGS lib/getopt.cpp -o getopt.o
+$CC $CFLAGS lib/utf8lib.cpp -o utf8lib.o
 
 $CC $CFLAGS lib/common.cpp -o common.o
 $CC $CFLAGS lib/debug.cpp -o debug.o
@@ -77,6 +78,7 @@ $CC $CFLAGS run_ssl_dump.cpp -o run_ssl_dump.o
 $CC $CFLAGS test_getopt.cpp -o test_getopt.o
 $CC $CFLAGS test_echo.cpp -o test_echo.o
 $CC $CFLAGS test_locale.cpp -o test_locale.o
+$CC $CFLAGS test_utf8.cpp -o test_utf8.o
 
 # link
 ###########
@@ -107,4 +109,5 @@ $CC $LDFLAGS getopt.o iodef.o iolib.o run_ssl_dump.o -o run-ssl-dump
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_locale.o -o test-locale
+$CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o utf8lib.o test_utf8.o -o test-utf8
 
