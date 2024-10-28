@@ -1,6 +1,12 @@
 #ifndef PLAZMA_LIB_UTF8LIB_H
 #define PLAZMA_LIB_UTF8LIB_H
 
+#define LIB_BOM_UTF8     1
+#define LIB_BOM_UTF16_BE 2
+#define LIB_BOM_UTF16_LE 3
+#define LIB_BOM_UTF32_BE 4
+#define LIB_BOM_UTF32_LE 5
+
 /*
  * Return lenght of utf8 char by first byte or error (-1)
  */
@@ -42,10 +48,60 @@ int lib_utf8_decode(const char* ch, int* cp);
 
 //// str
 
+int lib_utf8_get_str_len(const char* str);
+
+int lib_utf8_get_str_len_n(const char* str, int len);
+
 int lib_utf8_get_codepoint_count(const char* str);
+
+int lib_utf8_get_codepoint_count_n(const char* str, int len);
 
 int lib_utf8_to_lower(const char* str);
 
 int lib_utf8_to_upper(const char* str);
+
+////
+
+/**
+ * Return true if string is UTF-8 valid
+ */
+bool lib_utf8_is_utf8_valid(const char* str);
+
+/**
+ * Return true if string is UTF-8 valid
+ */
+bool lib_utf8_is_utf8_valid_n(const char* str, int len);
+
+/**
+ * Return true if string is utf (UTF-8, UTF-16, UTF-32) valid
+ */
+bool lib_utf8_is_utf_valid_n(const char* str, int len);
+
+/**
+ * Return true if string is ASCII
+ */
+bool lib_utf8_is_ascii(const char* str);
+
+/**
+ * Return true if string is ASCII
+ */
+bool lib_utf8_is_ascii_n(const char* str, int len);
+
+/**
+ * Return true if string is UTF8
+ */
+bool lib_utf8_is_utf8(const char* str);
+
+/**
+ * Return true if string is UTF8
+ */
+bool lib_utf8_is_utf8_n(const char* str, int len);
+
+/*
+ * Return byte order mark (BOM) by string
+ */
+int lib_utf8_get_bom_n(const char* str, int len);
+
+const char* lib_utf8_to_bom_str(int bom);
 
 #endif // PLAZMA_LIB_UTF8LIB_H

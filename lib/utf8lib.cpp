@@ -170,27 +170,37 @@ int lib_utf8_decode(const char* ch, int* cp) {
 
 //// str
 
-int lib_utf8_get_codepoint_count(const char* str) {
+int lib_utf8_get_str_len(const char* str) {
+    return lib_utf8_get_codepoint_count(str);
+}
 
+int lib_utf8_get_str_len_n(const char* str, int len) {
+    return lib_utf8_get_codepoint_count_n(str, len);
+}
+
+////
+
+int lib_utf8_get_codepoint_count(const char* str) {
     if (!str) {
         return 0;
     }
+    return lib_utf8_get_codepoint_count_n(str, strlen(str));
+}
 
-    int str_len = strlen(str);
-    if (str_len == 0) {
+int lib_utf8_get_codepoint_count_n(const char* str, int len) {
+    if (!str || len <= 0) {
         return 0;
     }
 
     int i = 0;
-    while (i < str_len) {
+    while (i < len) {
         char c = str[i];
-        int len = lib_utf8_get_char_len(c);
-        if (len <= 0) {
+        int char_len = lib_utf8_get_char_len(c);
+        if (char_len <= 0) {
             return -1;
         }
-        i += len;
+        i += char_len;
     }
-
     return i;
 }
 
@@ -461,3 +471,181 @@ int lib_utf8_to_upper(const char* str) {
     //printf("to_upper\n");
     return _lib_utf8_to_case(2, str);
 }
+
+////
+
+bool lib_utf8_is_utf8_valid(const char* str) {
+    if (!str) {
+        return true;
+    }
+    return lib_utf8_is_utf8_valid_n(str, strlen(str));
+}
+
+bool lib_utf8_is_utf8_valid_n(const char* str, int len) {
+    if (!str) {
+        return true;
+    }
+    int count = lib_utf8_get_codepoint_count_n(str, len);
+    return count >= 0;
+}
+
+bool lib_utf8_is_utf_valid_n(const char* str, int len) {
+    if (!str) {
+        return true;
+    }
+    int bom = lib_utf8_get_bom_n(str, len);
+    if (bom > 0) {
+        return (bom == LIB_BOM_UTF8 
+        || bom == LIB_BOM_UTF16_BE
+        || bom == LIB_BOM_UTF16_LE
+        || bom == LIB_BOM_UTF32_BE
+        || bom == LIB_BOM_UTF16_LE
+        );
+    }
+    return lib_utf8_is_utf8_valid(str);   
+
+    int count = lib_utf8_get_codepoint_count(str);
+    return count >= 0;
+}
+
+bool lib_utf8_is_ascii_char(char c) {
+    unsigned char u = (unsigned char) c;
+    return (u <= 127);
+}
+
+bool lib_utf8_is_ascii(const char* str) {
+    if (!str) {
+        return true;
+    }
+    return lib_utf8_is_ascii_n(str, strlen(str));
+}
+
+bool lib_utf8_is_ascii_n(const char* str, int len) {
+    if (!str || len <= 0) {
+        return true;
+    }
+    int bom = lib_utf8_get_bom_n(str, len);
+    if (bom > 0) {
+        return false;
+    }
+    unsigned char u;
+    for (int i = 0; i < len; i++) {
+        if (!lib_utf8_is_ascii_char(str[i])) {
+            return false;
+        }
+    }
+    return true;   
+}
+
+bool lib_utf8_is_utf8(const char* str) {
+    if (!str) {
+        return true;
+    }
+    return lib_utf8_is_utf8_n(str, strlen(str));
+}
+
+bool lib_utf8_is_utf8_n(const char* str, int len) {
+    if (!str || len <= 0) {
+        return true;
+    }
+    int bom = lib_utf8_get_bom_n(str, len);
+    if (bom > 0) {
+        return (bom == LIB_BOM_UTF8);
+    }
+    return lib_utf8_is_utf8_valid(str);   
+}
+
+// BOM
+// https://en.wikipedia.org/wiki/Byte_order_mark
+
+int lib_utf8_get_bom_n(const char* str, int len) {
+    if (!str || len < 2) {
+        return 0;
+    }
+
+    unsigned char u1;
+    unsigned char u2;
+    unsigned char u3;
+    unsigned char u4;
+
+    // UTF-16
+    if (len >= 2) {
+        u1 = (unsigned char) str[0];
+        u2 = (unsigned char) str[1];
+
+        // UTF-16 (BE): FE FF
+        if (u1 == 0xFE && u2 == 0xFF) {
+            return LIB_BOM_UTF16_BE;
+        }
+
+        // UTF-16 (LE): FF FE
+        if (u1 == 0xFF && u2 == 0xFE) {
+            return LIB_BOM_UTF16_LE;
+        }
+    }
+
+    // UTF-8
+    if (len >= 3) {
+        u1 = (unsigned char) str[0];
+        u2 = (unsigned char) str[1];
+        u3 = (unsigned char) str[2];
+
+        // UTF-8: EF BB BF
+        if (u1 == 0xEF && u2 == 0xBB && u3 == 0xBF) {
+            return LIB_BOM_UTF8;
+        }
+    }
+
+    // UTF-32
+    if (len >= 4) {
+        u1 = (unsigned char) str[0];
+        u2 = (unsigned char) str[1];
+        u3 = (unsigned char) str[2];
+        u4 = (unsigned char) str[3];
+
+        // UTF-32 (BE): 00 00 FE FF
+        if (u1 == 0x00 && u2 == 0x00 && u3 == 0xFE && u4 == 0xFF) {
+            return LIB_BOM_UTF32_BE;
+        }
+
+        // UTF-32 (LE): FF FE 00 00
+        if (u1 == 0xFF && u2 == 0xFE && u3 == 0x00 && u4 == 0x00) {
+            return LIB_BOM_UTF32_LE;
+        }
+    }
+
+    // TODO: Implement following BOMs
+    //
+    // UTF-7      : 2B 2F 76
+    // UTF-1      : F7 64 4C
+    // UTF-EBCDIC : DD 73 66 73
+    // SCSU       : 0E FE FF
+    // BOCU-1     : FB EE 28
+    // GB18030    : 84 31 95 33
+
+    return 0;
+}
+
+const char* lib_utf8_to_bom_str(int bom) {
+    switch (bom) {
+
+    // UTF-8
+    case LIB_BOM_UTF8:
+        return "UTF-8";
+
+    // UTF-16
+    case LIB_BOM_UTF16_BE:
+        return "UTF-16BE";
+    case LIB_BOM_UTF16_LE:
+        return "UTF-16LE";
+
+    // UTF-32
+    case LIB_BOM_UTF32_BE:
+        return "UTF-32BE";
+    case LIB_BOM_UTF32_LE:
+        return "UTF-32LE";
+    }
+
+    return "";
+}
+
