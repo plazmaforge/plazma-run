@@ -15,7 +15,7 @@ void usage() {
 
 void print_str(const char* str, int i) {
     int len = strlen(str);
-    int cpl = lib_utf8_get_codepoint_len(str);
+    int cpl = lib_utf8_get_codepoint_count(str);
 
     //printf("%s", str);
 
