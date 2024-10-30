@@ -475,7 +475,7 @@ int read_record_header(const char* buf, size_t buf_len, size_t& cur_pos) {
     return -1;
 }
 
-int run_ssl_dump(const char* file_name) {
+int run_ssldump(const char* file_name) {
 
     if (!file_name) {
         fprintf(stderr, "File name is empty\n");
@@ -514,6 +514,6 @@ int main(int argc, char* argv[]) {
     // setvbuf(stdout, buf, _IOFBF, 65536);
     // #endif
 
-    return run_ssl_dump(file_name);
+    return run_ssldump(file_name);
 }
 
