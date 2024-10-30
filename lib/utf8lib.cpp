@@ -594,6 +594,29 @@ int lib_utf8_get_bom_n(const char* str, int len) {
         if (u1 == 0xEF && u2 == 0xBB && u3 == 0xBF) {
             return LIB_BOM_UTF8;
         }
+
+        // UTF-7: 2B 2F 76
+        if (u1 == 0x2B && u2 == 0x2F && u3 == 0x76) {
+
+            // TODO: u4 (?): 38, 39, 2B, 2F
+            return LIB_BOM_UTF7;
+        }
+
+        // UTF-1: F7 64 4C
+        if (u1 == 0xF7 && u2 == 0x64 && u3 == 0x4C) {
+            return LIB_BOM_UTF1;
+        }
+
+        // SCSU: 0E FE FF
+        if (u1 == 0x0E && u2 == 0xFE && u3 == 0xFF) {
+            return LIB_BOM_SCSU;
+        }
+
+        // BOCU-1: FB EE 28
+        if (u1 == 0xFB && u2 == 0xEE && u3 == 0x28) {
+            return LIB_BOM_BOCU1;
+        }
+
     }
 
     // UTF-32
@@ -612,16 +635,18 @@ int lib_utf8_get_bom_n(const char* str, int len) {
         if (u1 == 0xFF && u2 == 0xFE && u3 == 0x00 && u4 == 0x00) {
             return LIB_BOM_UTF32_LE;
         }
-    }
 
-    // TODO: Implement following BOMs
-    //
-    // UTF-7      : 2B 2F 76
-    // UTF-1      : F7 64 4C
-    // UTF-EBCDIC : DD 73 66 73
-    // SCSU       : 0E FE FF
-    // BOCU-1     : FB EE 28
-    // GB18030    : 84 31 95 33
+        // UTF-EBCDIC: DD 73 66 73
+        if (u1 == 0xDD && u2 == 0x73 && u3 == 0x66 && u4 == 0x73) {
+            return LIB_BOM_UTF_EBCDIC;
+        }
+
+        // GB18030: 84 31 95 33
+        if (u1 == 0x84 && u2 == 0x31 && u3 == 0x95 && u4 == 0x33) {
+            return LIB_BOM_GB_18030;
+        }
+
+    }
 
     return 0;
 }
@@ -644,6 +669,23 @@ const char* lib_utf8_to_bom_str(int bom) {
         return "UTF-32BE";
     case LIB_BOM_UTF32_LE:
         return "UTF-32LE";
+
+    // UTF-7, UTF-1, UTF-EBCDIC
+    case LIB_BOM_UTF7:
+        return "UTF-7";
+    case LIB_BOM_UTF1:
+        return "UTF-1";
+    case LIB_BOM_UTF_EBCDIC:
+        return "UTF-EBCDIC";
+
+    // SCSU, BOCU-1, GB18030
+    case LIB_BOM_SCSU:
+        return "SCSU";
+    case LIB_BOM_BOCU1:
+        return "BOCU-1";
+    case LIB_BOM_GB_18030:
+        return "GB-18030";
+
     }
 
     return "";

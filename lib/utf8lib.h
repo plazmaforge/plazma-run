@@ -1,11 +1,22 @@
 #ifndef PLAZMA_LIB_UTF8LIB_H
 #define PLAZMA_LIB_UTF8LIB_H
 
-#define LIB_BOM_UTF8     1
-#define LIB_BOM_UTF16_BE 2
-#define LIB_BOM_UTF16_LE 3
-#define LIB_BOM_UTF32_BE 4
-#define LIB_BOM_UTF32_LE 5
+#define LIB_BOM_UNKNOWN    -1
+#define LIB_BOM_NONE       0
+
+#define LIB_BOM_UTF8       1
+#define LIB_BOM_UTF16_BE   2
+#define LIB_BOM_UTF16_LE   3
+#define LIB_BOM_UTF32_BE   4
+#define LIB_BOM_UTF32_LE   5
+
+#define LIB_BOM_UTF7       6
+#define LIB_BOM_UTF1       7
+#define LIB_BOM_UTF_EBCDIC 8
+
+#define LIB_BOM_SCSU       9
+#define LIB_BOM_BOCU1      10
+#define LIB_BOM_GB_18030   11
 
 /*
  * Return lenght of utf8 char by first byte or error (-1)
