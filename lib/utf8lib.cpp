@@ -560,7 +560,7 @@ bool lib_utf8_is_utf8_n(const char* str, int len) {
 
 int lib_utf8_get_bom_n(const char* str, int len) {
     if (!str || len < 2) {
-        return 0;
+        return LIB_BOM_NONE;
     }
 
     unsigned char u1;
@@ -598,7 +598,9 @@ int lib_utf8_get_bom_n(const char* str, int len) {
         // UTF-7: 2B 2F 76
         if (u1 == 0x2B && u2 == 0x2F && u3 == 0x76) {
 
-            // TODO: u4 (?): 38, 39, 2B, 2F
+            // TODO: if (u4 !=  38, 39, 2B, 2F)
+            // return LIB_BOM_UNKNOWN
+
             return LIB_BOM_UTF7;
         }
 
@@ -648,7 +650,7 @@ int lib_utf8_get_bom_n(const char* str, int len) {
 
     }
 
-    return 0;
+    return LIB_BOM_NONE;
 }
 
 const char* lib_utf8_to_bom_str(int bom) {
