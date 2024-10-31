@@ -14,6 +14,16 @@ int ENCMAP_CSV   = 1;
 int ENCMAP_TSV   = 2;
 int ENCMAP_ARRAY = 3;
 
+typedef struct map_record_t {
+    char icode[16];   /* international char code */
+    char ucode[16];   /* unicode char code       */
+    char name[255];   /* char name               */
+    char prev_name[255];
+    int number;
+    int mode;
+    bool use_comments;
+} map_record_t;
+
 bool is_ignore_line(char* str) {
     if (*str == '\0') {
         // Empty string
@@ -36,7 +46,7 @@ bool is_ignore_line(char* str) {
     return false;
 }
 
-int run_line(int mode, int number, char* line) {
+int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
     if (!line) {
         return 1;
     }
@@ -48,16 +58,13 @@ int run_line(int mode, int number, char* line) {
     char* str = line;
     char* val = str;
 
-    char cp1[16];
-    char cp2[16];
-    char name[255];
-
-    cp1[0]  = '\0';
-    cp2[0]  = '\0';
-    name[0] = '\0';
+    record->icode[0]  = '\0';
+    record->ucode[0]  = '\0';
+    //record->name[0]   = '\0';
 
     int col = 0;
     int len = 0;
+    bool blank = false;
 
     for(;;) {
 
@@ -73,21 +80,29 @@ int run_line(int mode, int number, char* line) {
 
         col++;
         if (col == 1) {
-            strncpy(cp1, val, len);
-            cp1[len + 1] = '\0';
+            if (strlen(val) == 0) {
+                blank = true;
+            }
+            strncpy(record->icode, val, len);
+            record->icode[len] = '\0';
         } else if (col == 2) {
-            strncpy(cp2, val, len);
-            cp2[len + 1] = '\0';
+            strncpy(record->ucode, val, len);
+            record->ucode[len] = '\0';
         } else if (col == 3) {
+            record->prev_name[0] = '\0';
             if (len > 0) {
+
+                // move name to prev_name (!)
+                strcpy(record->prev_name, record->name);
 
                 // skip '#'
                 // shift first char: val + 1
                 len--; 
 
-                strncpy(name, val + 1, len);
-                name[len + 1] = '\0';
+                strncpy(record->name, val + 1, len);
+                //record->name[len] = '\0';
             }
+            record->name[len] = '\0';
             break;
         } else {
             break;
@@ -112,21 +127,33 @@ int run_line(int mode, int number, char* line) {
 
     }
 
-    //printf("%s", line);
-    //printf("[%s]-[%s]-[%s]\n", cp1, cp2, name);
+    if (col < 3) {
+        // move name to prev_name (!)
+        strcpy(record->prev_name, record->name);
+        record->name[0] = '\0';
+    }
 
-    if (mode == ENCMAP_SPC) {
-        printf("[%s]-[%s]-[%s]\n", cp1, cp2, name); // SPC
-    } else if (mode == ENCMAP_CSV) {
-        printf("%s,%s,\"%s\"\n", cp1, cp2, name);   // CSV
-    } else if (mode == ENCMAP_TSV) {
-        printf("%s\t%s\t\"%s\"\n", cp1, cp2, name); // TSV
-    } else if (mode == ENCMAP_ARRAY) {
-        if (number > 1) {
+    //printf("%s", line);
+
+    if (record->mode == ENCMAP_SPC) {
+        printf("[%s]-[%s]-[%s]\n", record->icode, record->ucode, record->name); // SPC
+    } else if (record->mode == ENCMAP_CSV) {
+        printf("%s,%s,\"%s\"\n", record->icode, record->ucode, record->name);   // CSV
+    } else if (record->mode == ENCMAP_TSV) {
+        printf("%s\t%s\t\"%s\"\n", record->icode, record->ucode, record->name); // TSV
+    } else if (record->mode == ENCMAP_ARRAY) {
+
+        if (record->number > 1) {
             //printf("%s%i\n", ",", number);
-            printf("%s\n", ",");
+            
+            if (record->use_comments) {
+                printf("%s /* %s */ \n", ",", record->prev_name);
+            } else {
+                printf("%s\n", ",");
+            }
         }
-        printf("    {%s, %s}", cp1, cp2);       // ARRAY
+
+        printf("    {%s, %s}", record->icode, record->ucode);                  // ARRAY
     }
 
     return 0;
@@ -148,7 +175,10 @@ int run_encmap(int mode, const char* file_name) {
 
     // Buffer to store each line of the file.
     char line[256];
-    int number = 0;
+    //int number = 0;
+    map_record_t record;
+    record.mode = mode;
+    record.number = 0;
 
     if (mode == ENCMAP_ARRAY) {
         printf("%s\n", "static const int ENCODING_MAP[][2] = {");
@@ -160,12 +190,19 @@ int run_encmap(int mode, const char* file_name) {
         if (is_ignore_line(line)) {
             continue;
         }
-        number++;
+        //number++;
+        record.number++;
 
-        run_line(mode, number, line);
+        run_line(&record /*mode, number*/, line);
     }
 
+
     if (mode == ENCMAP_ARRAY) {
+
+        if (record.number > 0 && record.use_comments) {
+            printf("  /* %s */ \n", record.name);
+        }
+
         printf("\n%s\n", "};");
     }
 
@@ -183,6 +220,7 @@ int main(int argc, char* argv[]) {
     }
 
     int mode = ENCMAP_TSV;
+    bool use_comments = false;
 
     bool error = false;
     int opt;
@@ -198,6 +236,7 @@ int main(int argc, char* argv[]) {
                     mode = ENCMAP_TSV;
                 } else if (strcmp(optarg, "array") == 0) {
                     mode = ENCMAP_ARRAY;
+                    use_comments = true;
                 } else {
                     error = true;
                 }
@@ -232,3 +271,5 @@ int main(int argc, char* argv[]) {
     return run_encmap(mode, file_name);
 
 }
+
+//#CYRILLIC SMALL LETTER YERU 
