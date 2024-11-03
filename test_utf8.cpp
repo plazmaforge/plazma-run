@@ -85,6 +85,47 @@ int main(int argc, char* argv[]) {
 
     print_test(input);
 
+    int val = 0;
+
+    //for (int i = 0; i < 1000000000; i++) {
+    //for (int i = 0; i < 10000000; i++) {    
+        for (int u = 0x00; u <= 0xFF; u++) {
+            
+            char c = (char) u;
+            int i1 = 0;
+            int i2 = 0;
+            int i3 = 0;
+
+            //printf("u = %i, c = %c\n", u, c);
+            i1 = lib_utf8_get_byte_sequence_len_array(c);
+            i2 = lib_utf8_get_byte_sequence_len_strong(c);
+            i3 = lib_utf8_get_byte_sequence_len_range(c);
+            if (i1 != i2 || i1 != i3 || i2 != i3) {
+                printf("u = %i, len1 = %i, len2 = %i, len3 = %i\n", u, i1, i2, i3);
+            }
+            val += i1;
+
+            //val += lib_utf8_get_byte_sequence_len_array(c);
+            //val += lib_utf8_get_byte_sequence_len_strong(c);
+            //val += lib_utf8_get_byte_sequence_len_range(c);
+            //val += c;
+        }
+    //}
+
+    // array: val = -1734967296
+    //        val = -1734967296
+    //        val = -1734967296
+    //        val = -1734967296
+
+    // strong val = -1744967296
+    //        val = -1744967296
+
+    //        val = -1264967296
+    //        val = -1264967296
+
+    printf("val = %i\n", val);
+
+
     lib_sys_locale_restore(); // Important for WIN32: The locale was changed for the terminal
     return 0;
 }

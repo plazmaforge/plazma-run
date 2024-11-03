@@ -19,9 +19,23 @@
 #define LIB_BOM_GB_18030   11
 
 /*
- * Return lenght of utf8 char by first byte or error (-1)
+ * Return lenght of utf8 char by codepoint or error (0)
  */
-int lib_utf8_get_char_len(char c);
+int lib_utf8_get_codepoint_sequence_len(int cp);
+
+// by array (strong)
+int lib_utf8_get_byte_sequence_len_array(char first);
+
+// by range (strong)
+int lib_utf8_get_byte_sequence_len_strong(char first);
+
+// by range
+int lib_utf8_get_byte_sequence_len_range(char first);
+
+/*
+ * Return lenght of utf8 char by first byte or error (0)
+ */
+int lib_utf8_get_byte_sequence_len(char first);
 
 /*
  * Return codepoint by char and sequence lenght

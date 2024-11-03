@@ -7,31 +7,130 @@
 // https://tools.ietf.org/html/rfc3629
 
 static const int LIB_UTF8_SEQUENCE_LEN[256] = {
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 0: 0x00-0x0F */
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 1: 0x10-0x1F */
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 2: 0x20-0x2F */
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 3: 0x30-0x3F */
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 4: 0x40-0x4F */
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 5: 0x50-0x5F */
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 6: 0x60-0x6F */
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 7: 0x70-0x7F */
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, /* 8: 0x80-0x8F */
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, /* 9: 0x90-0x9F */
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, /* A: 0xA0-0xAF */
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, /* B: 0xB0-0xBF */
-    0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2, /* C: 0xC0-0xCF */
-    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, /* D: 0xD0-0xDF */
-    3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3, /* E: 0xE0-0xEF */
-    4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0, /* F: 0xF0-0xFF */
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 0: 1: 0x00 - 0x0F */ /* 0x00 - 0x7F */
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 1: 1: 0x10 - 0x1F */
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 2: 1: 0x20 - 0x2F */
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 3: 1: 0x30 - 0x3F */
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 4: 1: 0x40 - 0x4F */
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 5: 1: 0x50 - 0x5F */
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 6: 1: 0x60 - 0x6F */
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 7: 1: 0x70 - 0x7F */ /* ----------- */
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, /* 8: 1: 0x80 - 0x8F */
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, /* 9: 1: 0x90 - 0x9F */
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, /* A: 1: 0xA0 - 0xAF */
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, /* B: 1: 0xB0 - 0xBF */
+    0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2, /* C: 2: 0xC0 - 0xCF */ /* 0xC2 - 0xDF */
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, /* D: 2: 0xD0 - 0xDF */ /* ----------- */
+    3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3, /* E: 3: 0xE0 - 0xEF */ /* 0xE0 - 0xEF */
+    4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0, /* F: 4: 0xF0 - 0xFF */ /* 0xF0 - 0xF4 */
 };
 
-int lib_utf8_get_char_len(char c) {
-    unsigned char u = (unsigned char) c;
+/* Surrogate pair zone. */
+
+#define LIB_UTF_SUR_HIGH_START  0xD800
+#define LIB_UTF_SUR_HIGH_END    0xDBFF
+#define LIB_UTF_SUR_LOW_START   0xDC00
+#define LIB_UTF_SUR_LOW_END     0xDFFF
+
+bool lib_utf_is_codepoint_surrogate(int cp) {
+    return cp >= LIB_UTF_SUR_HIGH_START && cp <= LIB_UTF_SUR_LOW_END;
+}
+
+////
+
+int lib_utf8_get_codepoint_sequence_len(int cp) {
+    if (cp < 0) {
+        return 0; /* error */
+    }
+
+    if (cp <= 0x7F) {
+        // < 0x80
+        // 0000 .. 007F
+        // 0 .. 127
+        // 0000 0000 .. 0111 1111
+        // 1-byte ASCII
+        return 1;
+    } else if (cp <= 0x07FF) {
+        // < 0x0800
+        // 0080 .. 07FF
+        // 128 .. 2 047
+        // 0000 1000 0000 .. 0111 1111 1111
+        // 2-byte unicode
+        return 2;
+    } else if (cp <= 0xFFFF) {
+        // < 0x10000
+        // 0800 .. FFFF
+        // 2 048 .. 65 535
+        // 1000 0000 0000 .. 1111 1111 1111 1111
+        // 3-byte unicode
+        return 3;
+    } else if (cp <= 0x10FFFF) {
+        // < 0x110000
+        // 10000 .. 10FFFF
+        // 65 536 .. 1 114 111
+        // 1 0000 0000 0000 0000 .. 1 0000 1111 1111 1111 1111
+        // 4-byte unicode
+        return 4;
+    }
+    
+    /* error */
+    return 0;
+}
+
+// by array (strong)
+//  1 000 000:  1.497s
+// 10 000 000: 14.500s
+int lib_utf8_get_byte_sequence_len_array(char first) {
+    unsigned char u = (unsigned char) first;
     return LIB_UTF8_SEQUENCE_LEN[u];
 }
 
-int lib_utf8_get_char_len2(char c) {
-    unsigned char u = (unsigned char) c;
+// by range (strong)
+//  1 000 000:  1.043s
+// 10 000 000: 10.000s
+int lib_utf8_get_byte_sequence_len_strong(char first) {
+    unsigned char u = (unsigned char) first;
+    if (u <= 0x7F) {
+        // 0x00 .. 0x7F
+        return 1;
+    } else if (u >= 0xC2 && u <= 0xDF) {
+        // 0xC2 .. 0xDF
+        return 2;
+    } else if (u >= 0xE0 && u <= 0xEF) {
+        // 0xE0 .. 0xEF
+        return 3;
+    } else if (u >= 0xF0 && u <= 0xF4) {
+        // 0xF0 .. 0xF4
+        return 4;
+    }
+    return 0;
+}
+
+// by range
+//  1 000 000: 0.980s
+// 10 000 000: 9.500s
+int lib_utf8_get_byte_sequence_len_range(char first) {
+    unsigned char u = (unsigned char) first;
+    if (u <= 0x7F) {
+        // 0x00 .. 0x7F
+        return 1;
+    } else if (u >= 0xC0 && u <= 0xDF) {
+        // 0xC0 .. 0xDF
+        // 0xC0 .. 0xC1 - no checking
+        return 2;
+    } else if (u >= 0xE0 && u <= 0xEF) {
+        // 0xE0 .. 0xEF
+        return 3;
+    } else if (u >= 0xF0 && u <= 0xFF) {
+        // 0xF0 .. 0xFF
+        // 0xF5 .. 0xFF - no checking
+        return 4;
+    }
+    return 0;
+}
+
+int lib_utf8_get_byte_sequence_len_alt(char first) {
+    unsigned char u = (unsigned char) first;
     if (0xF0 == (0xF8 & u)) {
         return 4;
     } else if (0xE0 == (0xF0 & u)) {
@@ -40,6 +139,12 @@ int lib_utf8_get_char_len2(char c) {
         return 2;
     }
     return 1; // TODO
+}
+
+////
+
+int lib_utf8_get_byte_sequence_len(char first) {
+    return lib_utf8_get_byte_sequence_len_array(first);
 }
 
 int lib_utf8_get_codepoint_by_len(const char* ch, int len) {
@@ -79,25 +184,31 @@ int lib_utf8_to_utf8(char* ch, int cp) {
         return 0;
     }
 
-    if (cp <= 0x7F) {
+    int len = lib_utf8_get_codepoint_sequence_len(cp);
+
+    //if (cp <= 0x7F) {
+    if (len == 1) {
         // 1-byte ASCII
         ch[0] = (char) cp;
         ch[1] = '\0';
         return 1;
-    } else if (cp <= 0x07FF) {
+    //} else if (cp <= 0x07FF) {
+    } else if (len == 2) {
         // 2-byte unicode
         ch[0] = (char) (((cp >> 6) & 0x1F) | 0xC0);
         ch[1] = (char) (((cp >> 0) & 0x3F) | 0x80);
         ch[2] = '\0';
         return 2;
-    } else if (cp <= 0xFFFF) {
+    //} else if (cp <= 0xFFFF) {
+    } else if (len == 3) {
         // 3-byte unicode
         ch[0] = (char) (((cp >> 12) & 0x0F) | 0xE0); /* 0x0F */
         ch[1] = (char) (((cp >> 6) & 0x3F) | 0x80);
         ch[2] = (char) (((cp >> 0) & 0x3F) | 0x80);
         ch[3] = '\0';
         return 3;
-    } else if (cp <= 0x10FFFF) {
+    //} else if (cp <= 0x10FFFF) {
+    } else if (len == 4) {
         // 4-byte unicode
         ch[0] = (char) (((cp >> 18) & 0x07) | 0xF0); /* 0x07 */
         ch[1] = (char) (((cp >> 12) & 0x3F) | 0x80);
@@ -107,7 +218,7 @@ int lib_utf8_to_utf8(char* ch, int cp) {
         return 4;
     }
     
-    // error - use replacement character
+    /* error - use replacement character: 0xFFFD */
     ch[0] = (char) 0xEF;
     ch[1] = (char) 0xBF;
     ch[2] = (char) 0xBD;
@@ -122,7 +233,7 @@ int lib_utf8_to_codepoint(const char* ch, int* cp) {
     }
 
     // Get sequence len of char by first byte 
-    int len = lib_utf8_get_char_len(ch[0]);
+    int len = lib_utf8_get_byte_sequence_len(ch[0]);
     if (len <= 0) {
         return -1;
     }
@@ -145,7 +256,7 @@ const char* lib_utf8_to_codepoint_next(const char* str, int* cp, int* len) {
     if (!str) {
         return NULL; //s;
     }
-    int char_len = lib_utf8_get_char_len(str[0]);
+    int char_len = lib_utf8_get_byte_sequence_len(str[0]);
     if (char_len <= 0) {
         return NULL; //s;
     }
@@ -195,7 +306,7 @@ int lib_utf8_get_codepoint_count_n(const char* str, int len) {
     int i = 0;
     while (i < len) {
         char c = str[i];
-        int char_len = lib_utf8_get_char_len(c);
+        int char_len = lib_utf8_get_byte_sequence_len(c);
         if (char_len <= 0) {
             return -1;
         }
