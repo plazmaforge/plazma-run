@@ -2,7 +2,22 @@
 #include <stdint.h>
 //#include <stdio.h>
 
+#include "bomlib.h"
+#include "unilib.h"
 #include "utf8lib.h"
+
+/*
+
+https://datatracker.ietf.org/doc/html/rfc3629
+
+Char. number range     |        UTF-8 octet sequence
+      (hexadecimal)    |              (binary)
+   --------------------+---------------------------------------------
+   0000 0000-0000 007F | 0xxxxxxx
+   0000 0080-0000 07FF | 110xxxxx 10xxxxxx
+   0000 0800-0000 FFFF | 1110xxxx 10xxxxxx 10xxxxxx
+   0001 0000-0010 FFFF | 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+*/
 
 // https://tools.ietf.org/html/rfc3629
 
@@ -317,184 +332,21 @@ int lib_utf8_get_codepoint_count_n(const char* str, int len) {
 
 ////
 
-int lib_utf8_to_lower_codepoint(int cp) {
-    if (((0x0041 <= cp) && (0x005a >= cp)) ||
-        ((0x00c0 <= cp) && (0x00d6 >= cp)) ||
-        ((0x00d8 <= cp) && (0x00de >= cp)) ||
-        ((0x0391 <= cp) && (0x03a1 >= cp)) ||
-        ((0x03a3 <= cp) && (0x03ab >= cp)) ||
+// int lib_utf8_to_lower_codepoint(int cp) {
+//     return lib_uni_to_lower_codepoint(cp);
+// }
 
-        ((0x0410 <= cp) && (0x042f >= cp)))
-        {
-        cp += 32;
-    } else if ((0x0400 <= cp) && (0x040f >= cp)) {
-        cp += 80;         
-    } else if (((0x0100 <= cp) && (0x012f >= cp)) ||
-               ((0x0132 <= cp) && (0x0137 >= cp)) ||
-               ((0x014a <= cp) && (0x0177 >= cp)) ||
-               ((0x0182 <= cp) && (0x0185 >= cp)) ||
-               ((0x01a0 <= cp) && (0x01a5 >= cp)) ||
-               ((0x01de <= cp) && (0x01ef >= cp)) ||
-               ((0x01f8 <= cp) && (0x021f >= cp)) ||
-               ((0x0222 <= cp) && (0x0233 >= cp)) ||
-               ((0x0246 <= cp) && (0x024f >= cp)) ||
-               ((0x03d8 <= cp) && (0x03ef >= cp)) ||
-               
-               ((0x0460 <= cp) && (0x0481 >= cp)) ||
-               ((0x048a <= cp) && (0x04ff >= cp))
-               ) {
-        cp |= 0x1;
-    } else if (((0x0139 <= cp) && (0x0148 >= cp)) ||
-               ((0x0179 <= cp) && (0x017e >= cp)) ||
-               ((0x01af <= cp) && (0x01b0 >= cp)) ||
-               ((0x01b3 <= cp) && (0x01b6 >= cp)) ||
-               ((0x01cd <= cp) && (0x01dc >= cp))) {
-        cp += 1;
-        cp &= ~0x1;
-    } else {
-        switch (cp) {
-            default: break;
-            case 0x0178: cp = 0x00ff; break;
-            case 0x0243: cp = 0x0180; break;
-            case 0x018e: cp = 0x01dd; break;
-            case 0x023d: cp = 0x019a; break;
-            case 0x0220: cp = 0x019e; break;
-            case 0x01b7: cp = 0x0292; break;
-            case 0x01c4: cp = 0x01c6; break;
-            case 0x01c7: cp = 0x01c9; break;
-            case 0x01ca: cp = 0x01cc; break;
-            case 0x01f1: cp = 0x01f3; break;
-            case 0x01f7: cp = 0x01bf; break;
-            case 0x0187: cp = 0x0188; break;
-            case 0x018b: cp = 0x018c; break;
-            case 0x0191: cp = 0x0192; break;
-            case 0x0198: cp = 0x0199; break;
-            case 0x01a7: cp = 0x01a8; break;
-            case 0x01ac: cp = 0x01ad; break;
-            case 0x01af: cp = 0x01b0; break;
-            case 0x01b8: cp = 0x01b9; break;
-            case 0x01bc: cp = 0x01bd; break;
-            case 0x01f4: cp = 0x01f5; break;
-            case 0x023b: cp = 0x023c; break;
-            case 0x0241: cp = 0x0242; break;
-            case 0x03fd: cp = 0x037b; break;
-            case 0x03fe: cp = 0x037c; break;
-            case 0x03ff: cp = 0x037d; break;
-            case 0x037f: cp = 0x03f3; break;
-            case 0x0386: cp = 0x03ac; break;
-            case 0x0388: cp = 0x03ad; break;
-            case 0x0389: cp = 0x03ae; break;
-            case 0x038a: cp = 0x03af; break;
-            case 0x038c: cp = 0x03cc; break;
-            case 0x038e: cp = 0x03cd; break;
-            case 0x038f: cp = 0x03ce; break;
-            case 0x0370: cp = 0x0371; break;
-            case 0x0372: cp = 0x0373; break;
-            case 0x0376: cp = 0x0377; break;
-            case 0x03f4: cp = 0x03d1; break;
-            case 0x03cf: cp = 0x03d7; break;
-            case 0x03f9: cp = 0x03f2; break;
-            case 0x03f7: cp = 0x03f8; break;
-            case 0x03fa: cp = 0x03fb; break;
-        };
-    }
+// int lib_utf8_to_upper_codepoint(int cp) {
+//     return lib_uni_to_upper_codepoint(cp);    
+// }
 
-    return cp;
-}
-
-int lib_utf8_to_upper_codepoint(int cp) {
-    if (((0x0061 <= cp) && (0x007a >= cp)) ||
-        ((0x00e0 <= cp) && (0x00f6 >= cp)) ||
-        ((0x00f8 <= cp) && (0x00fe >= cp)) ||
-        ((0x03b1 <= cp) && (0x03c1 >= cp)) ||
-        ((0x03c3 <= cp) && (0x03cb >= cp)) ||
-
-        ((0x0430 <= cp) && (0x044f >= cp))
-        ) {
-        cp -= 32;
-
-    } else if ((0x0450 <= cp) && (0x045f >= cp)) {
-        cp -= 80;        
-    } else if (((0x0100 <= cp) && (0x012f >= cp)) ||
-               ((0x0132 <= cp) && (0x0137 >= cp)) ||
-               ((0x014a <= cp) && (0x0177 >= cp)) ||
-               ((0x0182 <= cp) && (0x0185 >= cp)) ||
-               ((0x01a0 <= cp) && (0x01a5 >= cp)) ||
-               ((0x01de <= cp) && (0x01ef >= cp)) ||
-               ((0x01f8 <= cp) && (0x021f >= cp)) ||
-               ((0x0222 <= cp) && (0x0233 >= cp)) ||
-               ((0x0246 <= cp) && (0x024f >= cp)) ||
-               ((0x03d8 <= cp) && (0x03ef >= cp)) ||
-
-               ((0x0460 <= cp) && (0x0481 >= cp)) ||
-               ((0x048a <= cp) && (0x04ff >= cp))
-               ) {
-        cp &= ~0x1;
-    } else if (((0x0139 <= cp) && (0x0148 >= cp)) ||
-               ((0x0179 <= cp) && (0x017e >= cp)) ||
-               ((0x01af <= cp) && (0x01b0 >= cp)) ||
-               ((0x01b3 <= cp) && (0x01b6 >= cp)) ||
-               ((0x01cd <= cp) && (0x01dc >= cp))) {
-        cp -= 1;
-        cp |= 0x1;
-    } else {
-        switch (cp) {
-            default: break;
-            case 0x00ff: cp = 0x0178; break;
-            case 0x0180: cp = 0x0243; break;
-            case 0x01dd: cp = 0x018e; break;
-            case 0x019a: cp = 0x023d; break;
-            case 0x019e: cp = 0x0220; break;
-            case 0x0292: cp = 0x01b7; break;
-            case 0x01c6: cp = 0x01c4; break;
-            case 0x01c9: cp = 0x01c7; break;
-            case 0x01cc: cp = 0x01ca; break;
-            case 0x01f3: cp = 0x01f1; break;
-            case 0x01bf: cp = 0x01f7; break;
-            case 0x0188: cp = 0x0187; break;
-            case 0x018c: cp = 0x018b; break;
-            case 0x0192: cp = 0x0191; break;
-            case 0x0199: cp = 0x0198; break;
-            case 0x01a8: cp = 0x01a7; break;
-            case 0x01ad: cp = 0x01ac; break;
-            case 0x01b0: cp = 0x01af; break;
-            case 0x01b9: cp = 0x01b8; break;
-            case 0x01bd: cp = 0x01bc; break;
-            case 0x01f5: cp = 0x01f4; break;
-            case 0x023c: cp = 0x023b; break;
-            case 0x0242: cp = 0x0241; break;
-            case 0x037b: cp = 0x03fd; break;
-            case 0x037c: cp = 0x03fe; break;
-            case 0x037d: cp = 0x03ff; break;
-            case 0x03f3: cp = 0x037f; break;
-            case 0x03ac: cp = 0x0386; break;
-            case 0x03ad: cp = 0x0388; break;
-            case 0x03ae: cp = 0x0389; break;
-            case 0x03af: cp = 0x038a; break;
-            case 0x03cc: cp = 0x038c; break;
-            case 0x03cd: cp = 0x038e; break;
-            case 0x03ce: cp = 0x038f; break;
-            case 0x0371: cp = 0x0370; break;
-            case 0x0373: cp = 0x0372; break;
-            case 0x0377: cp = 0x0376; break;
-            case 0x03d1: cp = 0x03f4; break;
-            case 0x03d7: cp = 0x03cf; break;
-            case 0x03f2: cp = 0x03f9; break;
-            case 0x03f8: cp = 0x03f7; break;
-            case 0x03fb: cp = 0x03fa; break;
-        };
-    }
-
-    return cp;
-}
-
-static int _lib_utf8_to_case_codepoint(int mode, int cp) {
-    if (mode == 1) {
-        return lib_utf8_to_lower_codepoint(cp);
-    } else {
-        return lib_utf8_to_upper_codepoint(cp);
-    }
-}
+// static int _lib_utf8_to_case_codepoint(int mode, int cp) {
+//     if (mode == 1) {
+//         return lib_uni_to_lower_codepoint(cp);
+//     } else {
+//         return lib_uni_to_upper_codepoint(cp);
+//     }
+// }
 
 static int _lib_utf8_to_case(int mode, const char* str) {
     if (!str) {
@@ -528,7 +380,7 @@ static int _lib_utf8_to_case(int mode, const char* str) {
         if (cp1 < 0 || len1 <= 0) {
             return -1;
         }
-        cp2 = _lib_utf8_to_case_codepoint(mode, cp1);
+        cp2 = lib_uni_to_case_codepoint(mode, cp1);
         //printf("to_case: cp2  = %i, 0x%.4X\n", cp2, cp2);
 
         if (cp2 < 0) {
@@ -604,7 +456,7 @@ bool lib_utf8_is_utf_valid_n(const char* str, int len) {
     if (!str) {
         return true;
     }
-    int bom = lib_utf8_get_bom_n(str, len);
+    int bom = lib_bom_get_bom_n(str, len);
     if (bom > 0) {
         return (bom == LIB_BOM_UTF8 
         || bom == LIB_BOM_UTF16_BE
@@ -635,7 +487,7 @@ bool lib_utf8_is_ascii_n(const char* str, int len) {
     if (!str || len <= 0) {
         return true;
     }
-    int bom = lib_utf8_get_bom_n(str, len);
+    int bom = lib_bom_get_bom_n(str, len);
     if (bom > 0) {
         return false;
     }
@@ -659,148 +511,20 @@ bool lib_utf8_is_utf8_n(const char* str, int len) {
     if (!str || len <= 0) {
         return true;
     }
-    int bom = lib_utf8_get_bom_n(str, len);
+    int bom = lib_bom_get_bom_n(str, len);
     if (bom > 0) {
         return (bom == LIB_BOM_UTF8);
     }
     return lib_utf8_is_utf8_valid(str);   
 }
 
-// BOM
-// https://en.wikipedia.org/wiki/Byte_order_mark
-
+/*
+ * Return byte order mark (BOM) by string
+ */
 int lib_utf8_get_bom_n(const char* str, int len) {
-    if (!str || len < 2) {
-        return LIB_BOM_NONE;
-    }
-
-    unsigned char u1;
-    unsigned char u2;
-    unsigned char u3;
-    unsigned char u4;
-
-    // UTF-16
-    if (len >= 2) {
-        u1 = (unsigned char) str[0];
-        u2 = (unsigned char) str[1];
-
-        // UTF-16 (BE): FE FF
-        if (u1 == 0xFE && u2 == 0xFF) {
-            return LIB_BOM_UTF16_BE;
-        }
-
-        // UTF-16 (LE): FF FE
-        if (u1 == 0xFF && u2 == 0xFE) {
-            return LIB_BOM_UTF16_LE;
-        }
-    }
-
-    // UTF-8
-    if (len >= 3) {
-        u1 = (unsigned char) str[0];
-        u2 = (unsigned char) str[1];
-        u3 = (unsigned char) str[2];
-
-        // UTF-8: EF BB BF
-        if (u1 == 0xEF && u2 == 0xBB && u3 == 0xBF) {
-            return LIB_BOM_UTF8;
-        }
-
-        // UTF-7: 2B 2F 76
-        if (u1 == 0x2B && u2 == 0x2F && u3 == 0x76) {
-
-            // TODO: if (u4 !=  38, 39, 2B, 2F)
-            // return LIB_BOM_UNKNOWN
-
-            return LIB_BOM_UTF7;
-        }
-
-        // UTF-1: F7 64 4C
-        if (u1 == 0xF7 && u2 == 0x64 && u3 == 0x4C) {
-            return LIB_BOM_UTF1;
-        }
-
-        // SCSU: 0E FE FF
-        if (u1 == 0x0E && u2 == 0xFE && u3 == 0xFF) {
-            return LIB_BOM_SCSU;
-        }
-
-        // BOCU-1: FB EE 28
-        if (u1 == 0xFB && u2 == 0xEE && u3 == 0x28) {
-            return LIB_BOM_BOCU1;
-        }
-
-    }
-
-    // UTF-32
-    if (len >= 4) {
-        u1 = (unsigned char) str[0];
-        u2 = (unsigned char) str[1];
-        u3 = (unsigned char) str[2];
-        u4 = (unsigned char) str[3];
-
-        // UTF-32 (BE): 00 00 FE FF
-        if (u1 == 0x00 && u2 == 0x00 && u3 == 0xFE && u4 == 0xFF) {
-            return LIB_BOM_UTF32_BE;
-        }
-
-        // UTF-32 (LE): FF FE 00 00
-        if (u1 == 0xFF && u2 == 0xFE && u3 == 0x00 && u4 == 0x00) {
-            return LIB_BOM_UTF32_LE;
-        }
-
-        // UTF-EBCDIC: DD 73 66 73
-        if (u1 == 0xDD && u2 == 0x73 && u3 == 0x66 && u4 == 0x73) {
-            return LIB_BOM_UTF_EBCDIC;
-        }
-
-        // GB18030: 84 31 95 33
-        if (u1 == 0x84 && u2 == 0x31 && u3 == 0x95 && u4 == 0x33) {
-            return LIB_BOM_GB_18030;
-        }
-
-    }
-
-    return LIB_BOM_NONE;
+    return lib_bom_get_bom_n(str, len);
 }
 
 const char* lib_utf8_to_bom_str(int bom) {
-    switch (bom) {
-
-    // UTF-8
-    case LIB_BOM_UTF8:
-        return "UTF-8";
-
-    // UTF-16
-    case LIB_BOM_UTF16_BE:
-        return "UTF-16BE";
-    case LIB_BOM_UTF16_LE:
-        return "UTF-16LE";
-
-    // UTF-32
-    case LIB_BOM_UTF32_BE:
-        return "UTF-32BE";
-    case LIB_BOM_UTF32_LE:
-        return "UTF-32LE";
-
-    // UTF-7, UTF-1, UTF-EBCDIC
-    case LIB_BOM_UTF7:
-        return "UTF-7";
-    case LIB_BOM_UTF1:
-        return "UTF-1";
-    case LIB_BOM_UTF_EBCDIC:
-        return "UTF-EBCDIC";
-
-    // SCSU, BOCU-1, GB18030
-    case LIB_BOM_SCSU:
-        return "SCSU";
-    case LIB_BOM_BOCU1:
-        return "BOCU-1";
-    case LIB_BOM_GB_18030:
-        return "GB-18030";
-
-    }
-
-    return "";
+    return lib_bom_to_bom_str(bom);
 }
-
