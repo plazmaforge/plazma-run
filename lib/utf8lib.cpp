@@ -3,6 +3,8 @@
 //#include <stdio.h>
 
 #include "bomlib.h"
+//#include "enclib.h"
+
 #include "unilib.h"
 #include "utf8lib.h"
 
