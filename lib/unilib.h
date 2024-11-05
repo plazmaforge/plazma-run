@@ -9,6 +9,12 @@ int lib_uni_to_upper_codepoint(int cp);
 
 ////
 
+/*
+ * Convert a codepoint to lower/upper case
+ * depends on mode: 
+ *  1 - lower
+ *  2 - upper
+ */
 int lib_uni_to_case_codepoint(int mode, int cp) {
     if (mode == 1) {
         return lib_uni_to_lower_codepoint(cp);
@@ -17,6 +23,9 @@ int lib_uni_to_case_codepoint(int mode, int cp) {
     }
 }
 
+/*
+ * Convert a codepoint to lower case
+ */
 int lib_uni_to_lower_codepoint(int cp) {
     if (((0x0041 <= cp) && (0x005a >= cp)) ||
         ((0x00c0 <= cp) && (0x00d6 >= cp)) ||
@@ -24,8 +33,7 @@ int lib_uni_to_lower_codepoint(int cp) {
         ((0x0391 <= cp) && (0x03a1 >= cp)) ||
         ((0x03a3 <= cp) && (0x03ab >= cp)) ||
 
-        ((0x0410 <= cp) && (0x042f >= cp)))
-        {
+        ((0x0410 <= cp) && (0x042f >= cp))) {
         cp += 32;
     } else if ((0x0400 <= cp) && (0x040f >= cp)) {
         cp += 80;         
@@ -98,10 +106,12 @@ int lib_uni_to_lower_codepoint(int cp) {
             case 0x03fa: cp = 0x03fb; break;
         };
     }
-
     return cp;
 }
 
+/*
+ Convert the codepoint to upper case
+*/
 int lib_uni_to_upper_codepoint(int cp) {
     if (((0x0061 <= cp) && (0x007a >= cp)) ||
         ((0x00e0 <= cp) && (0x00f6 >= cp)) ||
@@ -109,10 +119,8 @@ int lib_uni_to_upper_codepoint(int cp) {
         ((0x03b1 <= cp) && (0x03c1 >= cp)) ||
         ((0x03c3 <= cp) && (0x03cb >= cp)) ||
 
-        ((0x0430 <= cp) && (0x044f >= cp))
-        ) {
+        ((0x0430 <= cp) && (0x044f >= cp))) {
         cp -= 32;
-
     } else if ((0x0450 <= cp) && (0x045f >= cp)) {
         cp -= 80;        
     } else if (((0x0100 <= cp) && (0x012f >= cp)) ||
@@ -184,7 +192,6 @@ int lib_uni_to_upper_codepoint(int cp) {
             case 0x03fb: cp = 0x03fa; break;
         };
     }
-
     return cp;
 }
 

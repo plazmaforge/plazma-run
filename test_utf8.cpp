@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "getopt.h"
 //#include "strlib.h"
@@ -20,7 +21,7 @@ const char* to_bool_str(bool x) {
 
 void print_str(const char* str, int i) {
     int len = strlen(str);
-    int cpl = lib_utf8_get_str_len(str);
+    int cpl = lib_utf8_strlen(str);
     bool is_asc = lib_utf8_is_ascii(str);
     bool is_utf8 = lib_utf8_is_utf8(str); 
     int bom = lib_utf8_get_bom_n(str, len);
@@ -54,21 +55,44 @@ void print_test(const char* input) {
     //const wchar_t* wstr = lib_acs_to_wcs(str); // WIN32 (ANSII): acs_to_wcs() + wcs_to_acs(): correct only!
     //const char* str2 = lib_wcs_to_acs(wstr);
 
+
+    // ANSI
     const char* str1 = "hello";
     print_str(str1, 1);
 
-    const char* str2 = "\xD0\xBF\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82";
+    // UTF-8
+    //const char* str2 = "\xD0\xBF\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82";
+    const char* str2 = "\xD0\x9F\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82";
     print_str(str2, 2);
 
+    // ANSI + UTF-8
     const char* str3 = "1\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82";
     print_str(str3, 3);
 
     char* str4 = strdup(str2);
 
+    // UPPER CASE: UTF-8
     lib_utf8_to_upper(str4);
     print_str(str4, 4);
+
+
+    // PRINT UTF-8 CHARTS
+    char buf[] = "\0\0\0\0\0\0";
+    int count = lib_utf8_strlen(str4);
+
+    printf("\n");
+    for (int i = 0; i < count; i++) {
+        lib_utf8_get_char_n(str4, strlen(str4), buf, i);
+        printf("%d: %s \n", i, buf);
+    }
+    
+    // LOWER CASE: UTF-8
+    lib_utf8_to_lower(str4);
+    print_str(str4, 4);
+
     free(str4);
 
+    // UTF-8 with BOM: [EF BB BF]
     const char* str5 = "\xEF\xBB\xBF\xD0\xBF\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82";
     print_str(str5, 5);
 
@@ -101,9 +125,9 @@ int main(int argc, char* argv[]) {
             i1 = lib_utf8_get_byte_sequence_len_array(c);
             i2 = lib_utf8_get_byte_sequence_len_strong(c);
             i3 = lib_utf8_get_byte_sequence_len_range(c);
-            if (i1 != i2 || i1 != i3 || i2 != i3) {
-                printf("u = %i, len1 = %i, len2 = %i, len3 = %i\n", u, i1, i2, i3);
-            }
+            //if (i1 != i2 || i1 != i3 || i2 != i3) {
+            //    printf("u = %i, len1 = %i, len2 = %i, len3 = %i\n", u, i1, i2, i3);
+            //}
             val += i1;
 
             //val += lib_utf8_get_byte_sequence_len_array(c);
@@ -127,7 +151,7 @@ int main(int argc, char* argv[]) {
     printf("val = %i\n", val);
 
     printf("\n");
-    lib_enc_print_encodings();
+    //lib_enc_print_encodings();
 
 
     lib_sys_locale_restore(); // Important for WIN32: The locale was changed for the terminal

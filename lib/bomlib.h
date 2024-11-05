@@ -19,10 +19,14 @@
 #define LIB_BOM_GB_18030   11
 
 /*
- * Return byte order mark (BOM) by string
+ * Return byte order mark (BOM) of a string.
  */
-int lib_bom_get_bom_n(const char* str, int len);
+int lib_bom_get_bom_n(const char* str, int num);
 
+/*
+ * Convert BOM type to a string representation.
+ * First numbers only.
+ */
 const char* lib_bom_to_bom_str(int bom);
 
 ////
@@ -30,8 +34,8 @@ const char* lib_bom_to_bom_str(int bom);
 // BOM
 // https://en.wikipedia.org/wiki/Byte_order_mark
 
-int lib_bom_get_bom_n(const char* str, int len) {
-    if (!str || len < 2) {
+int lib_bom_get_bom_n(const char* str, int num) {
+    if (!str || num < 2) {
         return LIB_BOM_NONE;
     }
 
@@ -41,7 +45,7 @@ int lib_bom_get_bom_n(const char* str, int len) {
     unsigned char u4;
 
     // UTF-16
-    if (len >= 2) {
+    if (num >= 2) {
         u1 = (unsigned char) str[0];
         u2 = (unsigned char) str[1];
 
@@ -57,7 +61,7 @@ int lib_bom_get_bom_n(const char* str, int len) {
     }
 
     // UTF-8
-    if (len >= 3) {
+    if (num >= 3) {
         u1 = (unsigned char) str[0];
         u2 = (unsigned char) str[1];
         u3 = (unsigned char) str[2];
@@ -94,7 +98,7 @@ int lib_bom_get_bom_n(const char* str, int len) {
     }
 
     // UTF-32
-    if (len >= 4) {
+    if (num >= 4) {
         u1 = (unsigned char) str[0];
         u2 = (unsigned char) str[1];
         u3 = (unsigned char) str[2];

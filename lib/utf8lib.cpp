@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdint.h>
-//#include <stdio.h>
+#include <stdio.h>
 
 #include "bomlib.h"
 //#include "enclib.h"
@@ -298,15 +298,109 @@ int lib_utf8_decode(const char* ch, int* cp) {
 
 //// str
 
-int lib_utf8_get_str_len(const char* str) {
+int lib_utf8_strlen(const char* str) {
     return lib_utf8_get_codepoint_count(str);
 }
 
-int lib_utf8_get_str_len_n(const char* str, int len) {
-    return lib_utf8_get_codepoint_count_n(str, len);
+int lib_utf8_strlen_n(const char* str, int num) {
+    return lib_utf8_get_codepoint_count_n(str, num);
 }
 
 ////
+
+/*
+ * Copy UTF-8 char from src to dst
+ */
+void lib_utf8_chrcpy(char* dst, char* src, int len) {
+    memcpy(dst, src, len);
+    // strcpy?
+    //for (int k = 0; k < len; k++) {
+    //    *dst = *src;
+    //    dst++;
+    //    src++;
+    //}
+}
+
+/**
+ * Find UTF-8 char by the index.
+ * First numbers only.
+ * Store this char to the buffer.
+ * The buffer must be array with size: 4 + 1
+ * Return codepoint of this char or error (-1).
+ */
+int lib_utf8_get_char(const char* str, int num, char* buf, int index) {
+    if (!str) {
+        // error
+        return -1;
+    }
+    return lib_utf8_get_char_n(str, strlen(str), buf, index);
+}
+
+/**
+ * Find UTF-8 char by the index.
+ * Store this char to the buffer.
+ * The buffer must be array with size: 4 + 1
+ * Return codepoint of this char or error (-1).
+ */
+int lib_utf8_get_char_n(const char* str, int num, char* buf, int index) {
+    if (!str || !buf || num <= 0 || index < 0 || index >= num) {
+        // error: invalid arguments
+        return -1;
+    }
+    char* s = (char*) str;
+
+    int i = 0;          // index og byte
+    int k = 0;          // index of UTF-8 char
+    int codepoint = -1; // codepoint of UTF-8 char
+
+    //printf(">> input index: %d\n", index);
+    buf[0] = '\0';
+
+    while (i < num) {
+
+        //printf("   byte index: %d\n", i);
+        //printf("   char index: %d\n", k);
+
+        char c = *s;
+
+        // Get lenght of UTF-8 char
+        int len = lib_utf8_get_byte_sequence_len(c);
+        if (len <= 0) {
+            // error: invalid sequence lenght
+            return -1;
+        }
+
+        if (k == index) {
+
+            // Get codepoint by UTF-8 char
+            codepoint = lib_utf8_get_codepoint_by_len(s, len);
+            if (codepoint < 0) {
+                // error: invalid codepoint
+                return -1;
+            }
+
+            // Copy current UTF-8 char to the buffer
+            lib_utf8_chrcpy(buf, s, len);
+            buf[len] = '\0';
+
+            return codepoint;
+        }
+        
+        i += len;
+        s += len;
+        k++;
+    }
+
+    //printf(">> return\n");
+    //printf("   byte index: %d\n", i);
+    //printf("   char index: %d\n", k);
+
+    // error: invalid index of byte (range)
+    // maybe sequence lenght of UTF-8 char is incorrect
+    return -1;
+}
+
+///
 
 int lib_utf8_get_codepoint_count(const char* str) {
     if (!str) {
@@ -315,52 +409,47 @@ int lib_utf8_get_codepoint_count(const char* str) {
     return lib_utf8_get_codepoint_count_n(str, strlen(str));
 }
 
-int lib_utf8_get_codepoint_count_n(const char* str, int len) {
-    if (!str || len <= 0) {
+int lib_utf8_get_codepoint_count_n(const char* str, int num) {
+    if (!str || num <= 0) {
         return 0;
     }
 
     int i = 0;
-    while (i < len) {
+    int count = 0;
+    while (i < num) {
         char c = str[i];
         int char_len = lib_utf8_get_byte_sequence_len(c);
         if (char_len <= 0) {
             return -1;
         }
         i += char_len;
+        count++;
     }
-    return i;
+    return count;
 }
 
 ////
 
-// int lib_utf8_to_lower_codepoint(int cp) {
-//     return lib_uni_to_lower_codepoint(cp);
-// }
-
-// int lib_utf8_to_upper_codepoint(int cp) {
-//     return lib_uni_to_upper_codepoint(cp);    
-// }
-
-// static int _lib_utf8_to_case_codepoint(int mode, int cp) {
-//     if (mode == 1) {
-//         return lib_uni_to_lower_codepoint(cp);
-//     } else {
-//         return lib_uni_to_upper_codepoint(cp);
-//     }
-// }
-
+/*
+ * Convert all chars of a string to lower/upper case
+ * depends on mode: 
+ *  1 - lower
+ *  2 - upper
+*/
 static int _lib_utf8_to_case(int mode, const char* str) {
     if (!str) {
         return 0;
     }
+
     char* s = (char*) str;
-    char buf[] = "\0\0\0\0\0";
-    int cp1 = -1;
-    int cp2 = -1;
-    int len1 = -1;
-    int len2 = -1;
+
+    char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
+    int cp1;                   // old codepoint
+    int cp2;                   // new codepoint
+    int len1;                  // lenght of old char
+    int len2;                  // lenght of new char
     int i = 0;
+
     for (;;) {
 
         //printf("\n");
@@ -376,31 +465,55 @@ static int _lib_utf8_to_case(int mode, const char* str) {
         len1 = -1;
         len2 = -1;
 
+        // Convert the char to the codepoint 
+        // end return sequence lenght of the char
         len1 = lib_utf8_to_codepoint(s, &cp1);
+
         //printf("to_case: len1 = %i\n", len1);
         //printf("to_case: cp1  = %i, 0x%.4X\n", cp1, cp1);
+
+        // If the codepoint or the lenght are not correct 
+        // then return error (-1)
         if (cp1 < 0 || len1 <= 0) {
             return -1;
         }
+
+        // Convert old codepoint to new codepoint
+        // lower/upper case depends on the mode
         cp2 = lib_uni_to_case_codepoint(mode, cp1);
+
         //printf("to_case: cp2  = %i, 0x%.4X\n", cp2, cp2);
 
+        // If new codepoint is not correct
+        // then return error (-1)
         if (cp2 < 0) {
             return -1;
         }
 
+        // If old codepoint == new codepoint
+        // then shift a position and skip
         if (cp1 == cp2) {
             s += len1;
             i += len1;
             continue;
         }
 
+        // Convert new codepoint to new char 
+        // (max size = 4)
         len2 = lib_utf8_to_utf8(buf, cp2);
+
         //printf("to_case: len2 = %i\n", len2);
 
+        // If new lenght is not correct
+        // then return error (-1)
         if (len2 <= 0) {
             return -1;
         }
+
+        // If new lenght != old lenght
+        // then return error (-1)
+        // We don't implement this case
+        // But it is real problem
         if (len1 != len2) {
             return -1;
         }
@@ -408,15 +521,9 @@ static int _lib_utf8_to_case(int mode, const char* str) {
         //printf("to_case: s    = %s\n", s);
         //printf("to_case: buf  = %s\n", buf);
 
-        for (int k = 0; k < len1; k++) {
-            //str[i + k] = buf[k];
-            //s[k] = buf[k];
-
-            *s = buf[k];
-            s += 1;
-        }
-
-        //s += len1;
+        // Copy new UTF-8 char to 
+        // old UTF-8 char from the buffer
+        lib_utf8_chrcpy(s, buf, len1);
         i += len1;
 
     }
@@ -446,19 +553,19 @@ bool lib_utf8_is_utf8_valid(const char* str) {
     return lib_utf8_is_utf8_valid_n(str, strlen(str));
 }
 
-bool lib_utf8_is_utf8_valid_n(const char* str, int len) {
+bool lib_utf8_is_utf8_valid_n(const char* str, int num) {
     if (!str) {
         return true;
     }
-    int count = lib_utf8_get_codepoint_count_n(str, len);
+    int count = lib_utf8_get_codepoint_count_n(str, num);
     return count >= 0;
 }
 
-bool lib_utf8_is_utf_valid_n(const char* str, int len) {
+bool lib_utf8_is_utf_valid_n(const char* str, int num) {
     if (!str) {
         return true;
     }
-    int bom = lib_bom_get_bom_n(str, len);
+    int bom = lib_bom_get_bom_n(str, num);
     if (bom > 0) {
         return (bom == LIB_BOM_UTF8 
         || bom == LIB_BOM_UTF16_BE
@@ -485,16 +592,16 @@ bool lib_utf8_is_ascii(const char* str) {
     return lib_utf8_is_ascii_n(str, strlen(str));
 }
 
-bool lib_utf8_is_ascii_n(const char* str, int len) {
-    if (!str || len <= 0) {
+bool lib_utf8_is_ascii_n(const char* str, int num) {
+    if (!str || num <= 0) {
         return true;
     }
-    int bom = lib_bom_get_bom_n(str, len);
+    int bom = lib_bom_get_bom_n(str, num);
     if (bom > 0) {
         return false;
     }
     unsigned char u;
-    for (int i = 0; i < len; i++) {
+    for (int i = 0; i < num; i++) {
         if (!lib_utf8_is_ascii_char(str[i])) {
             return false;
         }
@@ -509,11 +616,11 @@ bool lib_utf8_is_utf8(const char* str) {
     return lib_utf8_is_utf8_n(str, strlen(str));
 }
 
-bool lib_utf8_is_utf8_n(const char* str, int len) {
-    if (!str || len <= 0) {
+bool lib_utf8_is_utf8_n(const char* str, int num) {
+    if (!str || num <= 0) {
         return true;
     }
-    int bom = lib_bom_get_bom_n(str, len);
+    int bom = lib_bom_get_bom_n(str, num);
     if (bom > 0) {
         return (bom == LIB_BOM_UTF8);
     }
@@ -521,10 +628,10 @@ bool lib_utf8_is_utf8_n(const char* str, int len) {
 }
 
 /*
- * Return byte order mark (BOM) by string
+ * Return byte order mark (BOM) of a string.
  */
-int lib_utf8_get_bom_n(const char* str, int len) {
-    return lib_bom_get_bom_n(str, len);
+int lib_utf8_get_bom_n(const char* str, int num) {
+    return lib_bom_get_bom_n(str, num);
 }
 
 const char* lib_utf8_to_bom_str(int bom) {
