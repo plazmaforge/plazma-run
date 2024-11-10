@@ -76,16 +76,41 @@ void print_test(const char* input) {
     print_str(str4, 4);
 
 
-    // PRINT UTF-8 CHARTS
+    // PRINT UTF-8 CHARTS: by index
     char buf[] = "\0\0\0\0\0\0";
-    int count = lib_utf8_strlen(str4);
+    int byte_count = strlen(str4);
+    int char_count = lib_utf8_strlen(str4);
 
     printf("\n");
-    for (int i = 0; i < count; i++) {
-        lib_utf8_get_char_n(str4, strlen(str4), buf, i);
+    for (int i = 0; i < char_count; i++) {
+        lib_utf8_get_char_n(str4, byte_count, buf, i);
         printf("%d: %s \n", i, buf);
     }
-    
+
+    // PRINT UTF-8 CHARTS: by shift
+    const char* s = str4;
+    int i = 0;
+    int cp = -1;
+    int len = -1;
+    printf("\n");
+    while (s && s[0] != '\0') {
+        printf("%d: %s \n", i, s);
+        s = lib_utf8_next(s, &cp, &len);
+        i++;
+    }
+
+    // PRINT UTF-8 CHARTS: by step    
+    s = str4;
+    i = 0;
+    cp = -1;
+    len = -1;
+    buf[0] = '\0';
+    printf("\n");
+    while ( (s = lib_utf8_get_char_next(s, buf)) ) {
+        printf("%d: %s \n", i, buf);
+        i++;
+    }
+
     // LOWER CASE: UTF-8
     lib_utf8_to_lower(str4);
     print_str(str4, 4);

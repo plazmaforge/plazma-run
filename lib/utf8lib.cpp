@@ -49,6 +49,13 @@ static const int LIB_UTF8_SEQUENCE_LEN[256] = {
 #define LIB_UTF_SUR_LOW_START   0xDC00
 #define LIB_UTF_SUR_LOW_END     0xDFFF
 
+////
+
+static int _lib_utf8_to_case_char(int mode, const char* str, char* buf,
+    int* cp1, int* len1, int* cp2, int* len2);
+
+////
+
 bool lib_utf_is_codepoint_surrogate(int cp) {
     return cp >= LIB_UTF_SUR_HIGH_START && cp <= LIB_UTF_SUR_LOW_END;
 }
@@ -243,49 +250,100 @@ int lib_utf8_to_utf8(char* ch, int cp) {
     return -1;
 }
 
+int lib_utf8_get_char_len(const char* str) {
+    if (!str || str[0] == '\0') {
+        return 0;
+    }
+    return lib_utf8_get_byte_sequence_len(str[0]);
+}
+
+/**
+ * Get UTF-8 char info:
+ * - codepoint
+ * - lenght of UTF-8 char
+ * 
+ * Return:
+ *   0: success
+ *  -1: error
+ */
+int lib_utf8_get_char_info(const char* str, int* cp, int* len) {
+
+    *cp = -1;
+    *len = -1;
+
+    if (!str) {
+        return 0;
+    }
+
+    // Get sequence len of char by first byte 
+    *len = lib_utf8_get_byte_sequence_len(str[0]);
+    if (*len <= 0) {
+        return -1;
+    }
+
+    // Get codepoint by char with len
+    *cp = lib_utf8_get_codepoint_by_len(str, *len);
+    if (*cp < 0)  {
+        return -1;
+    }
+
+    return 0;
+}
+
 int lib_utf8_to_codepoint(const char* ch, int* cp) {
+
+    *cp = -1;
 
     if (!ch) {
         return 0;
     }
 
-    // Get sequence len of char by first byte 
-    int len = lib_utf8_get_byte_sequence_len(ch[0]);
-    if (len <= 0) {
+    int len = -1;
+    int err = lib_utf8_get_char_info(ch, cp, &len);
+    if (err != 0) {
         return -1;
     }
-
-    // Get codepoint by char with len
-    *cp = lib_utf8_get_codepoint_by_len(ch, len);
-    if (*cp < 0)  {
-        return -1;
-    }
-
     return len;
 }
 
-const char* lib_utf8_to_codepoint_next(const char* str, int* cp, int* len) {
+const char* lib_utf8_iterate(const char* str, char* buf, int* cp, int* len) {
 
-    //const char* s = (const char*) str;
     *cp = -1;
     *len = -1;
 
-    if (!str) {
-        return NULL; //s;
-    }
-    int char_len = lib_utf8_get_byte_sequence_len(str[0]);
-    if (char_len <= 0) {
-        return NULL; //s;
+    if (buf) {
+        // reset buf always
+        buf[0] = '\0';
     }
 
-    *cp = lib_utf8_get_codepoint_by_len(str, char_len);
-    if (*cp < 0)  {
-        return NULL; //s;
+    if (!str) {
+        // error
+        return NULL;
+    }
+
+    if (str[0] == '\0') {
+        *len = 0;
+        return NULL;
+    }
+
+    int err = lib_utf8_get_char_info(str, cp, len);
+    if (err != 0 || *cp < 0 || *len <= 0) {
+        return NULL;
     }
 
     const char* s = (const char*) str;
-    s += char_len;
+    s += *len;
+
+    // copy UTF-8 char from string to the buffer
+    if (buf) {
+        lib_utf8_chrcpy(buf, str, *len);
+    }    
+
     return s;
+}
+
+const char* lib_utf8_next(const char* str, int* cp, int* len) {
+    return lib_utf8_iterate(str, NULL, cp, len);
 }
 
 int lib_utf8_encode(char* ch, int cp) {
@@ -311,33 +369,41 @@ int lib_utf8_strlen_n(const char* str, int num) {
 /*
  * Copy UTF-8 char from src to dst
  */
-void lib_utf8_chrcpy(char* dst, char* src, int len) {
+void lib_utf8_chrcpy(char* dst, const char* src, int len) {
     memcpy(dst, src, len);
 }
 
 /**
  * Find UTF-8 char by the index.
  * Store this char to the buffer.
- * The buffer must be array with size: 4 + 1
+ * The buffer must be array with min size: 4 + 1
  * Return codepoint of this char or error (-1).
  */
 int lib_utf8_get_char(const char* str, char* buf, int index) {
-    if (!str) {
-        // error
-        return -1;
-    }
-    return lib_utf8_get_char_n(str, strlen(str), buf, index);
+    // if (!str || !buf) {
+    //     if (buf) {
+    //         // reset buf
+    //         buf[0] = '\0';
+    //     }
+    //     // error
+    //     return -1;
+    // }
+    return lib_utf8_get_char_n(str, (str ? strlen(str) : 0), buf, index);
 }
 
 /**
  * Find UTF-8 char by the index.
  * First numbers only. 
  * Store this char to the buffer.
- * The buffer must be array with size: 4 + 1
+ * The buffer must be array with min size: 4 + 1
  * Return codepoint of this char or error (-1).
  */
 int lib_utf8_get_char_n(const char* str, int num, char* buf, int index) {
     if (!str || !buf || num <= 0 || index < 0 || index >= num) {
+        if (buf) {
+            // reset buf
+            buf[0] = '\0';
+        }
         // error: invalid arguments
         return -1;
     }
@@ -394,6 +460,18 @@ int lib_utf8_get_char_n(const char* str, int num, char* buf, int index) {
     return -1;
 }
 
+/**
+ * Get current UTF-8 char from a string and move to next UTF-8 char.
+ * Store this char to the buffer
+ * The buffer must be array with min size: 4 + 1
+ * Return pointer of next char or NULL if it is end of the string
+ */
+const char* lib_utf8_get_char_next(const char* str, char* buf) {
+    int cp = -1;
+    int len = -1;
+    return lib_utf8_iterate(str, buf, &cp, &len);
+}
+
 ///
 
 int lib_utf8_get_codepoint_count(const char* str) {
@@ -412,11 +490,11 @@ int lib_utf8_get_codepoint_count_n(const char* str, int num) {
     int count = 0;
     while (i < num) {
         char c = str[i];
-        int char_len = lib_utf8_get_byte_sequence_len(c);
-        if (char_len <= 0) {
+        int len = lib_utf8_get_byte_sequence_len(c);
+        if (len <= 0) {
             return -1;
         }
-        i += char_len;
+        i += len;
         count++;
     }
     return count;
@@ -430,7 +508,7 @@ int lib_utf8_get_codepoint_count_n(const char* str, int num) {
  *  1 - lower
  *  2 - upper
  * 
- * Return count of converted chars or error (-1).
+ * Return count of converted bytes or error (-1).
 */
 int lib_utf8_to_case(int mode, const char* str) {
     if (!str) {
@@ -456,6 +534,23 @@ int lib_utf8_to_case(int mode, const char* str) {
             return i;
         }
 
+        // ===================================================================== //
+        int cc = _lib_utf8_to_case_char(mode, s, buf, &cp1, &len1, &cp2, &len2);
+        if (cc < 0) {
+            // error
+            return -1;
+        }
+
+        // If old codepoint == new codepoint
+        // then shift a position and skip
+        if (cp1 == cp2) {
+            s += len1;
+            i += len1;
+            continue;
+        }
+        // ===================================================================== //
+
+        /*
         cp1 = -1;
         cp2 = -1;
         len1 = -1;
@@ -505,6 +600,7 @@ int lib_utf8_to_case(int mode, const char* str) {
         if (len2 <= 0) {
             return -1;
         }
+        */
 
         // If new lenght != old lenght
         // then return error (-1)
@@ -528,11 +624,80 @@ int lib_utf8_to_case(int mode, const char* str) {
 
 }
 
+int lib_utf8_to_case_codepoint(int mode, int cp) {
+    return lib_uni_to_case_codepoint(mode, cp);
+}
+
 ////
 
 int lib_utf8_to_lower(const char* str) {
     //printf("to_lower\n");
     return lib_utf8_to_case(LIB_UNI_CASE_LOWER, str);
+}
+
+int lib_utf8_to_lower_char(const char* str, char* buf) {
+    return lib_utf8_to_case_char(LIB_UNI_CASE_LOWER, str, buf);
+}
+
+int lib_utf8_to_case_char(int mode, const char* str, char* buf) {
+    int cp1  = -1;
+    int len1 = -1;
+
+    int cp2  = -1;
+    int len2 = -1;
+
+    return _lib_utf8_to_case_char(mode, str, buf, &cp1, &len1, &cp2, &len2);
+}
+
+int _lib_utf8_to_case_char(int mode, const char* str, char* buf,
+    int* cp1, int* len1, int* cp2, int* len2) {
+
+    *cp1  = -1;
+    *len1 = -1;
+
+    *cp2  = -1;
+    *len2 = -1;
+
+    buf[0] = '\0';
+
+    int err = lib_utf8_get_char_info(str, cp1, len1);
+    if (err != 0) {
+        return err;
+    }
+
+    // Convert old codepoint to new codepoint
+    // lower/upper case depends on the mode
+    *cp2 = lib_uni_to_case_codepoint(mode, *cp1);
+
+    // If new codepoint is not correct
+    // then return error (-1)
+    if (*cp2 < 0) {
+        return -1;
+    }
+
+    // If old codepoint == new codepoint
+    // then shift a position and skip
+    if (*cp1 == *cp2) {
+        *len2 = *len1;
+        return 0;
+        //s += len1;
+        //i += len1;
+        //continue;
+    }
+
+    // Convert new codepoint to new char 
+    // (min size = 4)
+    *len2 = lib_utf8_to_utf8(buf, *cp2);
+
+    //printf("to_case: len2 = %i\n", len2);
+
+    // If new lenght is not correct
+    // then return error (-1)
+    if (*len2 <= 0) {
+        return -1;
+    }
+
+    return *len1; // count of converted bytes
 }
 
 /*
@@ -543,9 +708,15 @@ int lib_utf8_to_lower_codepoint(int cp) {
     return lib_uni_to_lower_codepoint(cp);
 }
 
+////
+
 int lib_utf8_to_upper(const char* str) {
     //printf("to_upper\n");
     return lib_utf8_to_case(LIB_UNI_CASE_UPPER, str);
+}
+
+int lib_utf8_to_upper_char(const char* str, char* buf) {
+    return lib_utf8_to_case_char(LIB_UNI_CASE_UPPER, str, buf);
 }
 
 /*
