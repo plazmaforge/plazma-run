@@ -313,22 +313,15 @@ int lib_utf8_strlen_n(const char* str, int num) {
  */
 void lib_utf8_chrcpy(char* dst, char* src, int len) {
     memcpy(dst, src, len);
-    // strcpy?
-    //for (int k = 0; k < len; k++) {
-    //    *dst = *src;
-    //    dst++;
-    //    src++;
-    //}
 }
 
 /**
  * Find UTF-8 char by the index.
- * First numbers only.
  * Store this char to the buffer.
  * The buffer must be array with size: 4 + 1
  * Return codepoint of this char or error (-1).
  */
-int lib_utf8_get_char(const char* str, int num, char* buf, int index) {
+int lib_utf8_get_char(const char* str, char* buf, int index) {
     if (!str) {
         // error
         return -1;
@@ -338,6 +331,7 @@ int lib_utf8_get_char(const char* str, int num, char* buf, int index) {
 
 /**
  * Find UTF-8 char by the index.
+ * First numbers only. 
  * Store this char to the buffer.
  * The buffer must be array with size: 4 + 1
  * Return codepoint of this char or error (-1).
@@ -435,8 +429,10 @@ int lib_utf8_get_codepoint_count_n(const char* str, int num) {
  * depends on mode: 
  *  1 - lower
  *  2 - upper
+ * 
+ * Return count of converted chars or error (-1).
 */
-static int _lib_utf8_to_case(int mode, const char* str) {
+int lib_utf8_to_case(int mode, const char* str) {
     if (!str) {
         return 0;
     }
@@ -536,12 +532,28 @@ static int _lib_utf8_to_case(int mode, const char* str) {
 
 int lib_utf8_to_lower(const char* str) {
     //printf("to_lower\n");
-    return _lib_utf8_to_case(1, str);
+    return lib_utf8_to_case(LIB_UNI_CASE_LOWER, str);
+}
+
+/*
+ * Convert a codepoint to lower case.
+ * Return new codepoint.
+ */
+int lib_utf8_to_lower_codepoint(int cp) {
+    return lib_uni_to_lower_codepoint(cp);
 }
 
 int lib_utf8_to_upper(const char* str) {
     //printf("to_upper\n");
-    return _lib_utf8_to_case(2, str);
+    return lib_utf8_to_case(LIB_UNI_CASE_UPPER, str);
+}
+
+/*
+ * Convert a codepoint to upper case
+ * Return new codepoint.
+ */
+int lib_utf8_to_upper_codepoint(int cp) {
+    return lib_uni_to_upper_codepoint(cp);
 }
 
 ////

@@ -49,7 +49,7 @@ int lib_utf8_to_codepoint(const char* ch, int* cp);
 int lib_utf8_encode(char* ch, int cp);
 
 /*
- * Dencode UTF-8 char to codepoint.
+ * Decode UTF-8 char to codepoint.
  * Return lenght of UTF-8 char or error (-1).
  */
 int lib_utf8_decode(const char* ch, int* cp);
@@ -78,7 +78,7 @@ void lib_utf8_chrcpy(char* dst, char* src, int len);
  * The buffer must be array with size: 4 + 1
  * Return codepoint of this char or error (-1).
  */
-int lib_utf8_get_char(const char* str, int num, char* buf, int index);
+int lib_utf8_get_char(const char* str, char* buf, int index);
 
 /**
  * Find UTF-8 char by the index.
@@ -101,14 +101,38 @@ int lib_utf8_get_codepoint_count(const char* str);
 int lib_utf8_get_codepoint_count_n(const char* str, int num);
 
 /*
+ * Convert all chars of a string to lower/upper case
+ * depends on mode: 
+ *  1 - lower
+ *  2 - upper
+ * 
+ * Return count of converted chars or error (-1).
+*/
+int lib_utf8_to_case(int mode, const char* str);
+
+/*
  * Convert all chars of a string to lower case.
+ * Return count of converted chars or error (-1).
  */
 int lib_utf8_to_lower(const char* str);
 
 /*
+ * Convert a codepoint to lower case.
+ * Return new codepoint.
+ */
+int lib_utf8_to_lower_codepoint(int cp);
+
+/*
  * Convert all chars of a string to upper case.
+ * Return count of converted chars or error (-1).
  */
 int lib_utf8_to_upper(const char* str);
+
+/*
+ * Convert the codepoint to upper case.
+ * Return new codepoint.
+ */
+int lib_utf8_to_upper_codepoint(int cp);
 
 ////
 

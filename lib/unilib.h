@@ -1,31 +1,47 @@
+/**
+ * Unicode Library
+ */
+
 #ifndef PLAZMA_LIB_UNILIB_H
 #define PLAZMA_LIB_UNILIB_H
 
-int lib_uni_to_case_codepoint(int mode, int cp);
+#define LIB_UNI_CASE_LOWER 1
+#define LIB_UNI_CASE_UPPER 2
+#define LIB_UNI_CASE_TITLE 3
 
-int lib_uni_to_lower_codepoint(int cp);
-
-int lib_uni_to_upper_codepoint(int cp);
-
-////
-
-/*
+/**
  * Convert a codepoint to lower/upper case
  * depends on mode: 
  *  1 - lower
  *  2 - upper
+ * 
+ * Return new codepoint.
  */
+int lib_uni_to_case_codepoint(int mode, int cp);
+
+/**
+ * Convert a codepoint to lower case.
+ * Return new codepoint.
+ */
+int lib_uni_to_lower_codepoint(int cp);
+
+/**
+ * Convert a codepoint to upper case
+ * Return new codepoint.
+ */
+int lib_uni_to_upper_codepoint(int cp);
+
+////
+
 int lib_uni_to_case_codepoint(int mode, int cp) {
-    if (mode == 1) {
+    if (mode == LIB_UNI_CASE_LOWER) {
         return lib_uni_to_lower_codepoint(cp);
-    } else {
+    } else if (mode == LIB_UNI_CASE_UPPER) {
         return lib_uni_to_upper_codepoint(cp);
     }
+    return cp; // No convertiong
 }
 
-/*
- * Convert a codepoint to lower case
- */
 int lib_uni_to_lower_codepoint(int cp) {
     if (((0x0041 <= cp) && (0x005a >= cp)) ||
         ((0x00c0 <= cp) && (0x00d6 >= cp)) ||
@@ -109,9 +125,6 @@ int lib_uni_to_lower_codepoint(int cp) {
     return cp;
 }
 
-/*
- Convert the codepoint to upper case
-*/
 int lib_uni_to_upper_codepoint(int cp) {
     if (((0x0061 <= cp) && (0x007a >= cp)) ||
         ((0x00e0 <= cp) && (0x00f6 >= cp)) ||
