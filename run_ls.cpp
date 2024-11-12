@@ -62,7 +62,7 @@ char* _itoa(int val) {
 
 #ifdef _WIN32
 
-static char* lib_wcs_to_mbs(UINT cp, const wchar_t* wstr, int wlen) {
+static char* _lib_wcs_to_mbs_win(UINT cp, const wchar_t* wstr, int wlen) {
     if (!wstr) {
         return NULL;
     }
@@ -71,6 +71,31 @@ static char* lib_wcs_to_mbs(UINT cp, const wchar_t* wstr, int wlen) {
     WideCharToMultiByte(cp, 0, wstr, -1, str, len, NULL, NULL);
     str[len] = '\0';
     return str;
+}
+
+/**
+ * [allocate]
+ */
+char* _lib_wcs_to_mbs_n(const wchar_t* wstr, int wlen) {
+    if (!wstr) {
+        return NULL;
+    }
+    //#ifdef _WIN32
+    return _lib_wcs_to_mbs_win(CP_UTF8, wstr, wlen);
+    //#else
+    // Locale dependency! - setlocale(LC_ALL, "");    
+    //return lib_wcs_to_mbs_nix(wstr, wlen);
+    //#endif
+}
+
+/**
+ * [allocate]
+ */
+char* _lib_wcs_to_mbs(const wchar_t* wstr) {
+    if (!wstr) {
+        return NULL;
+    }
+    return _lib_wcs_to_mbs_n(wstr, wcslen(wstr)); 
 }
 
 wchar_t* getUserNameW() {
@@ -102,20 +127,47 @@ char* getUserName() {
     if (wusername == NULL) {
         return NULL;
     }
-    char* username = lib_wcs_to_mbs(wusername);
+    char* username = _lib_wcs_to_mbs(wusername);
     if (username == NULL) {
         return NULL;
     }
     free(wusername);
     return username;
 }
+
+#else
+
+char* _get_user_name_by_id(uid_t uid) {
+    //#ifdef _WIN32
+    //if (username) {
+    //    return username;
+    //}
+    //username = getUserName();
+    //return username;
+    //#else
+    struct passwd* pws;
+    pws = getpwuid(uid);
+    return pws->pw_name;
+    //#endif
+}
+
+char* _get_group_name_by_id(gid_t gid) {
+    //#ifdef _WIN32
+    //return NULL;
+    //#else
+    struct group* g = getgrgid(gid);
+    return g ? g->gr_name : NULL;
+    //#endif
+}
+
 #endif
 
 ////
 
 static char* username = NULL;
 
-char* _get_user_name_by_id(uid_t uid) {
+
+char* _get_user_name(lib_fs_file_t* file) {
     #ifdef _WIN32
     if (username) {
         return username;
@@ -123,33 +175,23 @@ char* _get_user_name_by_id(uid_t uid) {
     username = getUserName();
     return username;
     #else
-    struct passwd* pws;
-    pws = getpwuid(uid);
-    return pws->pw_name;
-    #endif
-}
-
-char* _get_user_name(lib_fs_file_t* file) {
     if (!file || !file->stat) {
         return NULL;
     }
     return _get_user_name_by_id(file->stat->st_uid);
-}
-
-char* _get_group_name_by_id(gid_t gid) {
-    #ifdef _WIN32
-    return NULL;
-    #else
-    struct group* g = getgrgid(gid);
-    return g ? g->gr_name : NULL;
     #endif
 }
 
 char* _get_group_name(lib_fs_file_t* file) {
+    #ifdef _WIN32
+    return NULL;
+    #else
     if (!file || !file->stat) {
         return NULL;
     }
     return _get_group_name_by_id(file->stat->st_gid);
+    #endif
+
 }
 
 char* _get_group_id_str(lib_fs_file_t* file) {
