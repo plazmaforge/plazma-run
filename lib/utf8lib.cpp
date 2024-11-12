@@ -3,8 +3,6 @@
 #include <stdio.h>
 
 #include "bomlib.h"
-//#include "enclib.h"
-
 #include "unilib.h"
 #include "utf8lib.h"
 
@@ -43,11 +41,35 @@ static const int LIB_UTF8_SEQUENCE_LEN[256] = {
 };
 
 /* Surrogate pair zone. */
+#define LIB_UNI_SUR_HIGH_START  0xD800
+#define LIB_UNI_SUR_HIGH_END    0xDBFF
+#define LIB_UNI_SUR_LOW_START   0xDC00
+#define LIB_UNI_SUR_LOW_END     0xDFFF
 
-#define LIB_UTF_SUR_HIGH_START  0xD800
-#define LIB_UTF_SUR_HIGH_END    0xDBFF
-#define LIB_UTF_SUR_LOW_START   0xDC00
-#define LIB_UTF_SUR_LOW_END     0xDFFF
+/* Start of the "not character" range. */
+#define LIB_UNI_NOT_CHAR_MIN    0xFDD0
+
+/* End of the "not character" range.  */
+#define LIB_UNI_NOT_CHAR_MAX    0xFDEF
+
+/* Error codes                        */
+#define LIB_UNI_SUR_PAIR       -2
+#define LIB_UNI_TOO_BIG        -7
+#define LIB_UNI_NOT_CHAR       -8
+
+#define LIB_UTF8_BAD_BYTE      -1
+
+/* The maximum possible value of a Unicode code point. See
+   http://www.cl.cam.ac.uk/~mgk25/unicode.html#ucs. */
+
+#define LI__UNI_MAX            0x10ffff
+#define LIB_UNI_MAX            0x10FFFF
+
+/* The maximum possible value which will fit into four bytes of
+   UTF-8. This is larger than UNICODE_MAXIMUM. */
+
+#define LI__UTF8_4             0x1fffff
+#define LIB_UTF8_4             0x1FFFFF
 
 //// static
 
@@ -65,10 +87,45 @@ static void _reset_val(int* val);
 
 static void _reset_buf(char* buf);
 
-//// utf
+//// uni: check
 
-bool lib_utf_is_codepoint_surrogate(int cp) {
-    return cp >= LIB_UTF_SUR_HIGH_START && cp <= LIB_UTF_SUR_LOW_END;
+int lib_uni_check_ffff(int c) {
+    if ((c & 0xFFFF) >= 0xFFFE) {
+        return LIB_UNI_NOT_CHAR;
+    }
+    return 0;
+}
+
+int lib_uni_check_not_char(int c) {
+    if (c >= LIB_UNI_NOT_CHAR_MIN && c <= LIB_UNI_NOT_CHAR_MAX) {
+	  return LIB_UNI_NOT_CHAR;
+    }
+    return 0;
+}
+
+int lib_uni_check_surrogate(int c) {
+    if (c >= LIB_UNI_SUR_HIGH_START && c <= LIB_UNI_SUR_LOW_END) {
+        return LIB_UNI_SUR_PAIR;
+    }
+    return 0;
+}
+
+//// uni: is
+
+bool lib_uni_is_not_char(int c) {
+    return lib_uni_check_not_char(c) != 0;
+}
+
+bool lib_uni_is_char(int c) {
+    return lib_uni_check_not_char(c) == 0;
+}
+
+bool lib_uni_is_surrogate(int c) {
+    return lib_uni_check_surrogate(c) != 0;
+}
+
+int lib_uni_is_not_ffff(int c) {
+    return lib_uni_check_ffff(c) == 0;
 }
 
 //// utf8
@@ -665,19 +722,113 @@ const char* lib_utf8_to_bom_str(int bom) {
  */
 int _lib_utf8_to_codepoint(const char* str, int len) {
 
+    // Get first byte
+    unsigned char c = (unsigned char) str[0];
+
     if (len == 1) {
+
         /* 1 byte utf8 codepoint */
-        return str[0];
+        //return str[0];
+        return c;
     } else if (len == 2) {
+
         /* 2 byte utf8 codepoint */
-        return ((0x1F & str[0]) << 6) | (0x3F & str[1]);
+        unsigned char d = (unsigned char) str[1];
+
+        if (d < 0x80 || d > 0xBF) {
+            return LIB_UTF8_BAD_BYTE;
+	    }
+        if (c <= 0xC1) {
+            return LIB_UTF8_BAD_BYTE;
+	    }
+        //return ((0x1F & str[0]) << 6) | (0x3F & str[1]);
+        return ((0x1F & c) << 6) | (0x3F & d);
     } else if (len == 3) {
+
         /* 3 byte utf8 codepoint */
-        return ((0x0F & str[0]) << 12) | ((0x3F & str[1]) << 6) | (0x3F & str[2]);
+        unsigned char d = (unsigned char) str[1];
+        unsigned char e = (unsigned char) str[2];
+
+        if (d < 0x80 || d > 0xBF || e < 0x80 || e > 0xBF) {
+            return LIB_UTF8_BAD_BYTE;
+	    }
+	    if (c == 0xE0 && d < 0xA0) { 
+            /* We don't need to check the value of str[2], because
+            the if statement above this one already guarantees that
+            it is 10xxxxxx. 
+            */
+           return LIB_UTF8_BAD_BYTE;
+	    }
+
+        //return ((0x0F & str[0]) << 12) | ((0x3F & str[1]) << 6) | (0x3F & str[2]);
+        int r = ((0x0F & c) << 12) | ((0x3F & d) << 6) | (0x3F & e);
+
+        // Check: surrogate
+        int err = lib_uni_check_surrogate(r);
+        if (err != 0) {
+            return err;
+        }
+
+        // Check: FFFF
+        err = lib_uni_check_ffff(r);
+        if (err != 0) {
+            return err;
+        }
+
+        // Check: not char
+        err = lib_uni_check_not_char(r);
+        if (err != 0) {
+            return err;
+        }
+
+        return r;
+
     } else if (len == 4) {
+
         /* 4 byte utf8 codepoint */
-        return ((0x07 & str[0]) << 18) | ((0x3F & str[1]) << 12) |
-                     ((0x3F & str[2]) << 6) | (0x3F & str[3]);
+        unsigned char d = (unsigned char) str[1];
+        unsigned char e = (unsigned char) str[2];
+        unsigned char f = (unsigned char) str[3];
+
+        if (/* c must be 11110xxx. */
+            c >= 0xF8 ||
+            /* d, e, f must be 10xxxxxx. */
+            d < 0x80 || d >= 0xC0 ||
+            e < 0x80 || e >= 0xC0 ||
+            f < 0x80 || f >= 0xC0) {
+                return LIB_UTF8_BAD_BYTE;
+	    }
+
+        if (c == 0xF0 && d < 0x90) { 
+            /* We don't need to check the values of e and f, because
+             the if statement above this one already guarantees that
+             e and f are 10xxxxxx. */
+            return LIB_UTF8_BAD_BYTE;
+	    }
+
+        //return ((0x07 & str[0]) << 18) | ((0x3F & str[1]) << 12) |
+        //             ((0x3F & str[2]) << 6) | (0x3F & str[3]);
+
+        int r = ((0x07 & c) << 18) | ((0x3F & d) << 12) | ((0x3F & e) << 6) | (0x3F & f);
+
+        if (r > LIB_UNI_MAX) {
+            return LIB_UNI_TOO_BIG;
+	    }
+
+        /* Non-characters U+nFFFE..U+nFFFF on plane 1-16 */
+
+        int err = lib_uni_check_ffff(c);
+        if (err != 0) {
+            return err;
+        }
+
+        /* 
+        We don't need to check for surrogate pairs here, since the
+        minimum value of UCS2 if there are four bytes of UTF-8 is 0x10000. 
+        */
+
+        return r;
+
     }
 
     // error: invalid lenght
@@ -710,6 +861,19 @@ int _lib_utf8_to_char(char* buf, int cp, int len) {
         buf[1] = (char) (((cp >> 6) & 0x3F) | 0x80);
         buf[2] = (char) (((cp >> 0) & 0x3F) | 0x80);
         buf[3] = '\0';
+
+        // Check: surrogate
+        int err =  lib_uni_check_surrogate(cp);
+        if (err != 0) {
+            return err;
+        }
+
+        // Check: not char
+        err =  lib_uni_check_not_char(cp);
+        if (err != 0) {
+            return err;
+        }
+
         return 3;
     //} else if (cp <= 0x10FFFF) {
     } else if (len == 4) {
@@ -802,3 +966,9 @@ void _reset_buf(char* buf) {
         buf[0] = '\0';
     }    
 }
+
+////
+
+/*
+https://github.com/benkasminbullock/unicode-c/blob/master/unicode.c
+*/
