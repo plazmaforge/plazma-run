@@ -65,6 +65,30 @@ int lib_utf8_decode(const char* str, int* cp);
 
 //// str
 
+char* lib_utf8_strcat(char* dst, const char* src);
+
+char* lib_utf8_strncat(char* dst, const char* src, size_t num);
+
+int lib_utf8_strcmp(const char* str1, const char* str2);
+
+int lib_utf8_strncmp(const char* str1, const char* str2, size_t num);
+
+char* lib_utf8_strcpy(char* dst, const char* src);
+
+char* lib_utf8_strncpy(char* dst, const char* src, size_t num);
+
+char* lib_utf8_strchr(const char* str, int ch);
+
+char* lib_utf8_strrchr(const char* str, int ch);
+
+const char* lib_utf8_strstr(const char* str1, const char* str2);
+
+// char* lib_utf8_strtok(char* str, const int* delims)
+
+char* lib_utf8_strtok(char* str, const char* delims);
+
+////
+
 /*
  * Return lenght of UTF-8 string.
  */
@@ -116,6 +140,21 @@ int lib_utf8_get_codepoint_count(const char* str);
  * First numbers only.
  */
 int lib_utf8_get_codepoint_count_n(const char* str, int num);
+
+
+int lib_utf8_get_first_byte_count_n(const char* str, int num, int char_num);
+
+int lib_utf8_get_first_byte_count(const char* str, int char_num);
+
+/**
+ * Return count of bytes
+ */
+int lib_utf8_get_byte_count(const char* str);
+
+/**
+ * Return count of UTF-8 chars
+ */
+int lib_utf8_get_char_count(const char* str);
 
 /*
  * Convert all chars of a string to lower/upper case
