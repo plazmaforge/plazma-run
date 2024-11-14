@@ -316,6 +316,143 @@ int lib_utf8_to_codepoint(const char* str, int* cp) {
     return len;
 }
 
+const char* lib_utf8_strlast(const char* str) {
+    if (!str) {
+        return NULL;
+    }
+    size_t len = strlen(str);
+    if (len == 0) {
+        return NULL;
+    }
+    const char* s = (const char*) str;
+    s += len;
+    s = lib_utf8_strprev(s);
+    return s;
+
+/*
+    s = str4;
+    s += strlen(str4);
+    s = lib_utf8_strprev(s);
+
+*/
+
+}
+
+const char* lib_utf8_strnext(const char* str) {
+    if (!str || str[0] == '\0') {
+        return NULL;
+    }
+
+    // Get sequence len of char by first byte 
+    int len = lib_utf8_get_byte_sequence_len(str[0]);
+    if (len <= 0) {
+        // error
+        return NULL;
+    }
+
+    // Convert UTF-8 char to codepoint
+    //int cp = _lib_utf8_to_codepoint(str, len);
+    //if (cp < 0)  {
+    //    // error
+    //    return NULL;
+    //}
+
+    const char* s = (const char*) str;
+    s += len;
+
+    return s;
+}
+
+bool _stremp(const char* str) {
+    return (!str || str[0] == '\0');
+}
+
+const char* lib_utf8_strprev(const char* str) {
+    //printf(">> strprev: start\n");
+    if (!str) {
+        return NULL;
+    }
+    char* s = (char*) str;
+
+    s--;
+    //printf(">> strprev: shift-1: %s\n", s);
+    if (_stremp(s)) {
+        //printf(">> strprev: error-1\n");
+        return NULL;
+    }
+    //printf(">> strprev: uuuu\n");
+
+    unsigned char u = s[0];
+    if (u <= 0x7F) {
+        // < 0x80
+        // 1-byte ASCII
+        //printf(">> strprev: return: byte-1\n");
+        return s;
+    } else if (u < 0xC0) {
+        // 10xxxxxx
+        // 2,3,4 - byte unicode
+        s--;
+        //printf(">> strprev: shift-2: %s\n", s);
+        if (_stremp(s)) {
+            //printf(">> strprev: error-2\n");
+            return NULL;
+        }
+
+        u = s[0];
+        if (u >= 0x80 && u < 0xC0) {
+            // 10xxxxxx
+            s--;
+            //printf(">> strprev: shift-3: %s\n", s);
+            if (_stremp(s)) {
+                //printf(">> strprev: error-3\n");
+                return NULL;
+            }
+
+            u = s[0];
+            if (u >= 0xE0 && u < 0xF0) {
+                // 1110xxxx
+                // 3 - byte unicode
+                //printf(">> strprev: return: byte-3\n");
+                return s;
+            }
+
+            if (u >= 0x80 && u < 0xC0) {
+                // 10xxxxxx
+                s--;
+                //printf(">> strprev: shift-4: %s\n", s);
+                if (_stremp(s)) {
+                    //printf(">> strprev: error-4\n");
+                    return NULL;
+                }
+
+                u = s[0];
+                if (u >= 0xF0 && u < 0xF8) {
+                    // 11110xxx
+                    // 4 - byte unicode
+                    //printf(">> strprev: return: byte-4\n");
+                    return s;
+                }
+
+            }
+
+        } else if (u >= 0xC0 && u < 0xE0) {
+            // 110xxxxx
+            // 2 - byte unicode
+            //printf(">> strprev: return: byte-2\n");
+            return s;
+        }
+
+    } else {
+        // error
+        return NULL;
+    }
+    
+    /* error */
+    return 0;
+
+
+}
+
 const char* lib_utf8_iterate(const char* str, char* buf, int* cp, int* len) {
 
     _reset_var(cp, len);
@@ -1131,5 +1268,11 @@ void _reset_buf(char* buf) {
 ////
 
 /*
+
 https://github.com/benkasminbullock/unicode-c/blob/master/unicode.c
+
+https://dev.to/rdentato/utf-8-strings-in-c-1-3-42a4
+
+https://doc.cat-v.org/bell_labs/utf-8_history
+
 */

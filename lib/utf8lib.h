@@ -63,7 +63,7 @@ int lib_utf8_encode(char* buf, int cp);
  */
 int lib_utf8_decode(const char* str, int* cp);
 
-//// str
+//// str: std
 
 char* lib_utf8_strcat(char* dst, const char* src);
 
@@ -87,7 +87,15 @@ const char* lib_utf8_strstr(const char* str1, const char* str2);
 
 char* lib_utf8_strtok(char* str, const char* delims);
 
-////
+//// str: alt
+
+const char* lib_utf8_strlast(const char* str);
+
+const char* lib_utf8_strnext(const char* str);
+
+const char* lib_utf8_strprev(const char* str);
+
+//// str: std
 
 /*
  * Return lenght of UTF-8 string.

@@ -82,6 +82,8 @@ void print_test(const char* input) {
     int char_count = lib_utf8_strlen(str4);
 
     printf("\n");
+    printf("_get_char()\n");
+    printf("--------------------\n");
     for (int i = 0; i < char_count; i++) {
         lib_utf8_get_char_n(str4, byte_count, buf, i);
         printf("%d: %s \n", i, buf);
@@ -93,10 +95,53 @@ void print_test(const char* input) {
     int cp = -1;
     int len = -1;
     printf("\n");
+    printf("_next()\n");
+    printf("--------------------\n");
     while (s && s[0] != '\0') {
         printf("%d: %s \n", i, s);
         s = lib_utf8_next(s, &cp, &len);
         i++;
+    }
+
+    s = str4;
+    i = 0;
+    printf("\n");
+    printf("_strnext()\n");
+    printf("--------------------\n");
+    while (s && s[0] != '\0') {
+        printf("%d: %s \n", i, s);
+        s = lib_utf8_strnext(s);
+        i++;
+    }
+
+    s = str4;
+    s += strlen(str4);
+    int count = lib_utf8_strlen(str4);
+    i = count - 1;
+    printf("\n");
+    printf("_strprev(): zero\n");
+    printf("--------------------\n");
+    while (s && i >= 0) {
+        //printf(">>%d: %s \n", i, s);
+        s = lib_utf8_strprev(s);
+        printf("%d: %s \n", i, s);
+        i--;
+    }
+
+    s = str4;
+    //s += strlen(str4);
+    //s = lib_utf8_strprev(s);
+    s = lib_utf8_strlast(s);
+    count = lib_utf8_strlen(str4);
+    i = count - 1;
+    printf("\n");
+    printf("_strprev(): last\n");
+    printf("--------------------\n");
+    while (s && i >= 0) {
+        printf("%d: %s \n", i, s);
+        s = lib_utf8_strprev(s);
+        //printf("%d: %s \n", i, s);
+        i--;
     }
 
     // PRINT UTF-8 CHARTS: by step    
@@ -106,6 +151,8 @@ void print_test(const char* input) {
     len = -1;
     buf[0] = '\0';
     printf("\n");
+    printf("_get_char_next()\n");
+    printf("--------------------\n");
     while ( (s = lib_utf8_get_char_next(s, buf)) ) {
         printf("%d: %s \n", i, buf);
         i++;
