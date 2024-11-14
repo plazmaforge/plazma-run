@@ -316,6 +316,149 @@ int lib_utf8_to_codepoint(const char* str, int* cp) {
     return len;
 }
 
+//// str: alt
+
+bool lib_utf8_stremp(const char* str) {
+    return (!str || str[0] == '\0');
+}
+
+// equals by byte
+bool lib_utf8_streq(const char* str1, const char* str2) {
+    if (!str1 || !str2) {
+        return false;
+    }
+    size_t len1 = strlen(str1);
+    size_t len2 = strlen(str2);
+    if (len1 != len2) {
+        return false;
+    }
+    char* s1 = (char*) str1;
+    char* s2 = (char*) str2;
+
+    size_t i = 0;
+    while (i < len1) {
+        if (*s1 != *s2) {
+            return false;
+        }
+        s1++;
+        s2++;
+        i++;
+    }
+    return true;
+}
+
+// equals by codepoint
+bool lib_utf8_strceq(const char* str1, const char* str2) {
+    if (!str1 || !str2) {
+        return false;
+    }
+    size_t len1 = strlen(str1);
+    size_t len2 = strlen(str2);
+    if (len1 != len2) {
+        return false;
+    }
+    char* s1 = (char*) str1;
+    char* s2 = (char*) str2;
+
+    int cp1;
+    int l1;
+    int cp2;
+    int l2;
+
+    size_t i = 0;
+    while (i < len1) {
+
+        l1 = lib_utf8_to_codepoint(s1, &cp1);
+        if (l1 <= 0 || cp1 < 0) {
+            // error
+            return false;
+        }
+
+        l2 = lib_utf8_to_codepoint(s2, &cp2);
+        if (l2 <= 0 || cp2 < 0) {
+            // error
+            return false;
+        }
+
+        if (l1 != l2 || cp1 != cp2) {
+            return false;
+        }
+
+        s1 += l1;
+        s2 += l1;
+        i += l1;
+    }
+    return true;
+}
+
+// equals by ignorte case codepoint
+// what about unicode compare?
+bool lib_utf8_strieq(const char* str1, const char* str2) {
+    if (!str1 || !str2) {
+        return false;
+    }
+    size_t len1 = strlen(str1);
+    size_t len2 = strlen(str2);
+
+    // TODO: Why?
+    if (len1 != len2) {
+        return false;
+    }
+
+    char* s1 = (char*) str1;
+    char* s2 = (char*) str2;
+
+    int cp1;
+    int l1;
+    int cp2;
+    int l2;
+
+    size_t i = 0;
+    //size_t j = 0; // TODO
+    while (i < len1 /*&& j < len2*/) {
+
+        l1 = lib_utf8_to_codepoint(s1, &cp1);
+        if (l1 <= 0 || cp1 < 0) {
+            // error
+            return false;
+        }
+        
+        l2 = lib_utf8_to_codepoint(s2, &cp2);
+        if (l2 <= 0 || cp2 < 0) {
+            // error
+            return false;
+        }
+
+        // TODO: Why?
+        if (l1 != l2) {
+            return false;
+        }
+        
+        cp1 = lib_utf8_to_case_codepoint(1, cp1);
+        if (cp1 < 0) {
+            // error
+            return false;
+        }        
+
+        cp2 = lib_utf8_to_case_codepoint(1, cp2);
+        if (cp2 < 0) {
+            // error
+            return false;
+        }        
+
+        if (cp1 != cp2) {
+            return false;
+        }
+
+        s1 += l1;
+        s2 += l1;
+        //s2 += l2; // TODO
+        i += l1;
+        //j += l2;  // TODO
+    }
+    return true;
+}
+
 const char* lib_utf8_strlast(const char* str) {
     if (!str) {
         return NULL;
@@ -328,14 +471,6 @@ const char* lib_utf8_strlast(const char* str) {
     s += len;
     s = lib_utf8_strprev(s);
     return s;
-
-/*
-    s = str4;
-    s += strlen(str4);
-    s = lib_utf8_strprev(s);
-
-*/
-
 }
 
 const char* lib_utf8_strnext(const char* str) {
@@ -363,10 +498,6 @@ const char* lib_utf8_strnext(const char* str) {
     return s;
 }
 
-bool _stremp(const char* str) {
-    return (!str || str[0] == '\0');
-}
-
 const char* lib_utf8_strprev(const char* str) {
     //printf(">> strprev: start\n");
     if (!str) {
@@ -376,7 +507,7 @@ const char* lib_utf8_strprev(const char* str) {
 
     s--;
     //printf(">> strprev: shift-1: %s\n", s);
-    if (_stremp(s)) {
+    if (lib_utf8_stremp(s)) {
         //printf(">> strprev: error-1\n");
         return NULL;
     }
@@ -393,7 +524,7 @@ const char* lib_utf8_strprev(const char* str) {
         // 2,3,4 - byte unicode
         s--;
         //printf(">> strprev: shift-2: %s\n", s);
-        if (_stremp(s)) {
+        if (lib_utf8_stremp(s)) {
             //printf(">> strprev: error-2\n");
             return NULL;
         }
@@ -403,7 +534,7 @@ const char* lib_utf8_strprev(const char* str) {
             // 10xxxxxx
             s--;
             //printf(">> strprev: shift-3: %s\n", s);
-            if (_stremp(s)) {
+            if (lib_utf8_stremp(s)) {
                 //printf(">> strprev: error-3\n");
                 return NULL;
             }
@@ -420,7 +551,7 @@ const char* lib_utf8_strprev(const char* str) {
                 // 10xxxxxx
                 s--;
                 //printf(">> strprev: shift-4: %s\n", s);
-                if (_stremp(s)) {
+                if (lib_utf8_stremp(s)) {
                     //printf(">> strprev: error-4\n");
                     return NULL;
                 }

@@ -89,6 +89,17 @@ char* lib_utf8_strtok(char* str, const char* delims);
 
 //// str: alt
 
+bool lib_utf8_stremp(const char* str);
+
+// equals by byte
+bool lib_utf8_streq(const char* str1, const char* str2);
+
+// equals by codepoint
+bool lib_utf8_strceq(const char* str1, const char* str2);
+
+// equals by ignorte case codepoint
+bool lib_utf8_strieq(const char* str1, const char* str2);
+
 const char* lib_utf8_strlast(const char* str);
 
 const char* lib_utf8_strnext(const char* str);
