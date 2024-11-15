@@ -130,7 +130,7 @@ int lib_uni_is_not_ffff(int c) {
 
 //// utf8
 
-int lib_utf8_get_codepoint_sequence_len(int cp) {
+size_t lib_utf8_get_codepoint_sequence_len(int cp) {
     if (cp < 0) {
         return 0; /* error */
     }
@@ -172,7 +172,7 @@ int lib_utf8_get_codepoint_sequence_len(int cp) {
 // by array (strong)
 //  1 000 000:  1.497s
 // 10 000 000: 14.500s
-int lib_utf8_get_byte_sequence_len_array(char first) {
+size_t lib_utf8_get_byte_sequence_len_array(char first) {
     unsigned char u = (unsigned char) first;
     return LIB_UTF8_SEQUENCE_LEN[u];
 }
@@ -180,7 +180,7 @@ int lib_utf8_get_byte_sequence_len_array(char first) {
 // by range (strong)
 //  1 000 000:  1.043s
 // 10 000 000: 10.000s
-int lib_utf8_get_byte_sequence_len_strong(char first) {
+size_t lib_utf8_get_byte_sequence_len_strong(char first) {
     unsigned char u = (unsigned char) first;
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
@@ -201,7 +201,7 @@ int lib_utf8_get_byte_sequence_len_strong(char first) {
 // by range
 //  1 000 000: 0.980s
 // 10 000 000: 9.500s
-int lib_utf8_get_byte_sequence_len_range(char first) {
+size_t lib_utf8_get_byte_sequence_len_range(char first) {
     unsigned char u = (unsigned char) first;
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
@@ -221,7 +221,7 @@ int lib_utf8_get_byte_sequence_len_range(char first) {
     return 0;
 }
 
-int lib_utf8_get_byte_sequence_len_alt(char first) {
+size_t lib_utf8_get_byte_sequence_len_alt(char first) {
     unsigned char u = (unsigned char) first;
     if (0xF0 == (0xF8 & u)) {
         return 4;
@@ -235,7 +235,7 @@ int lib_utf8_get_byte_sequence_len_alt(char first) {
 
 ////
 
-int lib_utf8_get_byte_sequence_len(char first) {
+size_t lib_utf8_get_byte_sequence_len(char first) {
     return lib_utf8_get_byte_sequence_len_array(first);
 }
 
@@ -257,11 +257,11 @@ int lib_utf8_to_utf8(char* buf, int cp) {
         return 0;
     }
 
-    int len = lib_utf8_get_codepoint_sequence_len(cp);
+    size_t len = lib_utf8_get_codepoint_sequence_len(cp);
     return _lib_utf8_to_char(buf, cp, len);
 }
 
-int lib_utf8_get_char_len(const char* str) {
+size_t lib_utf8_get_char_len(const char* str) {
     if (!str || str[0] == '\0') {
         return 0;
     }
@@ -287,7 +287,7 @@ int lib_utf8_get_char_info(const char* str, int* cp, int* len) {
 
     // Get sequence len of char by first byte 
     *len = lib_utf8_get_byte_sequence_len(str[0]);
-    if (*len <= 0) {
+    if (*len == 0) {
         return -1;
     }
 
@@ -479,8 +479,8 @@ const char* lib_utf8_strnext(const char* str) {
     }
 
     // Get sequence len of char by first byte 
-    int len = lib_utf8_get_byte_sequence_len(str[0]);
-    if (len <= 0) {
+    size_t len = lib_utf8_get_byte_sequence_len(str[0]);
+    if (len == 0) {
         // error
         return NULL;
     }
@@ -646,8 +646,8 @@ char* lib_utf8_strncat(char* dst, const char* src, size_t num) {
     }
 
     // Calculate count of first bytes by UTF-8 char numbers
-    int count = lib_utf8_get_first_byte_count(src, num);
-    if (count <= 0) {
+    size_t count = lib_utf8_get_first_byte_count(src, num);
+    if (count == 0) {
         return dst;
     }
     return strncat(dst, src, count);
@@ -751,12 +751,10 @@ char* lib_utf8_strtok(char* str, const char* delims) {
 
 ////
 
-int lib_utf8_strlen(const char* str) {
-    return lib_utf8_get_codepoint_count(str);
-}
-
-int lib_utf8_strlen_n(const char* str, int num) {
-    return lib_utf8_get_codepoint_count_n(str, num);
+size_t lib_utf8_strlen(const char* str) {
+    int len = lib_utf8_get_char_count(str);
+    // For compatibility with std::strlen
+    return len < 0 ? 0 : len;
 }
 
 ////
@@ -813,8 +811,8 @@ int lib_utf8_get_char_n(const char* str, int num, char* buf, int index) {
         char c = *s;
 
         // Get lenght of UTF-8 char
-        int len = lib_utf8_get_byte_sequence_len(c);
-        if (len <= 0) {
+        size_t len = lib_utf8_get_byte_sequence_len(c);
+        if (len == 0) {
             // error: invalid sequence lenght
             return -1;
         }
@@ -876,13 +874,13 @@ int lib_utf8_get_codepoint_count_n(const char* str, int num) {
     }
 
     int i = 0;
-    int count = 0;
+    size_t count = 0;
     while (i < num) {
         char c = str[i];
-        int len = lib_utf8_get_byte_sequence_len(c);
-        if (len <= 0) {
-            return -1;
-        }
+        size_t len = lib_utf8_get_byte_sequence_len(c);
+        //if (len == 0) {
+        //    return 0;
+        //}
         i += len;
         count++;
     }
@@ -895,11 +893,11 @@ int lib_utf8_get_first_byte_count_n(const char* str, int num, int char_num) {
     }
 
     int i = 0;
-    int count = 0;
+    size_t count = 0;
     while (i < num) {
         char c = str[i];
-        int len = lib_utf8_get_byte_sequence_len(c);
-        if (len <= 0) {
+        size_t len = lib_utf8_get_byte_sequence_len(c);
+        if (len == 0) {
             return -1;
         }
         i += len;
@@ -926,10 +924,10 @@ int lib_utf8_get_byte_count(const char* str) {
 }
 
 /**
- * Return count of UTF-8 chars
+ * Return count of UTF-8 chars or error (-1).
  */
 int lib_utf8_get_char_count(const char* str) {
-    return lib_utf8_strlen(str);
+    return lib_utf8_get_codepoint_count(str);
 }
 
 ////
@@ -1405,5 +1403,7 @@ https://github.com/benkasminbullock/unicode-c/blob/master/unicode.c
 https://dev.to/rdentato/utf-8-strings-in-c-1-3-42a4
 
 https://doc.cat-v.org/bell_labs/utf-8_history
+
+https://www.martinpickering.com/posts/unicode-in-c/
 
 */

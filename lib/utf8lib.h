@@ -4,24 +4,24 @@
 /*
  * Return lenght of UTF-8 char by codepoint or error (0).
  */
-int lib_utf8_get_codepoint_sequence_len(int cp);
+size_t lib_utf8_get_codepoint_sequence_len(int cp);
 
 // by array (strong)
-int lib_utf8_get_byte_sequence_len_array(char first);
+size_t lib_utf8_get_byte_sequence_len_array(char first);
 
 // by range (strong)
-int lib_utf8_get_byte_sequence_len_strong(char first);
+size_t lib_utf8_get_byte_sequence_len_strong(char first);
 
 // by range
-int lib_utf8_get_byte_sequence_len_range(char first);
+size_t lib_utf8_get_byte_sequence_len_range(char first);
 
 /*
  * Return lenght of UTF-8 char by first byte or error (0).
  */
-int lib_utf8_get_byte_sequence_len(char first);
+size_t lib_utf8_get_byte_sequence_len(char first);
 
 /*
- * Return codepoint by UTF-8 char.
+ * Return codepoint by UTF-8 char or error (-1).
  */
 int lib_utf8_get_codepoint(const char* str);
 
@@ -111,13 +111,7 @@ const char* lib_utf8_strprev(const char* str);
 /*
  * Return lenght of UTF-8 string.
  */
-int lib_utf8_strlen(const char* str);
-
-/*
- * Return lenght of UTF-8 string.
- * First numbers only.
- */
-int lib_utf8_strlen_n(const char* str, int num);
+size_t lib_utf8_strlen(const char* str);
 
 /*
  * Copy UTF-8 char from src to dst
@@ -150,20 +144,19 @@ int lib_utf8_get_char_n(const char* str, int num, char* buf, int index);
 const char* lib_utf8_get_char_next(const char* str, char* buf);
 
 /*
- * Calculate count of codepoints.
+ * Return count of codepoints or error (-1).
  */
 int lib_utf8_get_codepoint_count(const char* str);
 
 /*
- * Calculate count of codepoints.
+ * Return count of codepoints or error (-1).
  * First numbers only.
  */
 int lib_utf8_get_codepoint_count_n(const char* str, int num);
 
+int lib_utf8_get_first_byte_count(const char* str, int char_num);
 
 int lib_utf8_get_first_byte_count_n(const char* str, int num, int char_num);
-
-int lib_utf8_get_first_byte_count(const char* str, int char_num);
 
 /**
  * Return count of bytes
@@ -171,7 +164,7 @@ int lib_utf8_get_first_byte_count(const char* str, int char_num);
 int lib_utf8_get_byte_count(const char* str);
 
 /**
- * Return count of UTF-8 chars
+ * Return count of UTF-8 chars or error (-1).
  */
 int lib_utf8_get_char_count(const char* str);
 

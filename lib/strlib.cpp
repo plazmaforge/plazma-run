@@ -5,7 +5,7 @@
 
 #include "strlib.h"
 
-int lib_stremp(const char* str) {
+bool lib_stremp(const char* str) {
     return !str || str[0] == '\0';
 }
 
@@ -17,17 +17,15 @@ const char* lib_strsaf(const char* str) {
  * [allocate]
  */
 char* lib_strnew(size_t size) {
-  //if (size < 0) {
-  //  return NULL;
-  //}
-  char* dst = (char*) malloc(size * sizeof(char) + 1);
-  if (!dst) {
+  char* str = (char*) malloc(size * sizeof(char) + 1);
+  if (!str) {
     return NULL;
   }
-  for (int i = 0; i <= size; i++) {
-    dst[i] = '\0';
-  }    
-  return dst;
+  memset(str, 0, size + 1);
+  // for (int i = 0; i <= size; i++) {
+  //   str[i] = '\0';
+  // }    
+  return str;
 }
 
 /**
@@ -151,21 +149,15 @@ char* __lib_straddn__(int n, const char* str, ...) {
   return tmp;
 }
 
-char* lib_strcat(char* str1, const char* str2) {
-  if (!str1) {
-    return NULL;
+char* lib_strcat(char* dst, const char* src) {
+  if (!dst || !src) {
+    return dst;
   }
-  if (!str2) {
-    return str1;
-  }
-  return strcat(str1, str2);
+  return strcat(dst, src);
 }
 
 char* lib_strcpy(char* dst, const char* src) {
-  if (!dst) {
-    return NULL;
-  }
-  if (!src) {
+  if (!dst || !src) {
     return dst;
   }
   return strcpy(dst, src);
@@ -214,7 +206,7 @@ char* lib_strdup(const char* src) {
  * [allocate]
  */
 char* lib_strndup(const char* src, size_t size) {
-  if (!src || size < 0) {
+  if (!src) {
     return NULL;
   }
   size_t len = strlen(src);

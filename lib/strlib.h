@@ -6,7 +6,7 @@
 /**
  * Return true if a str is empty 
  */
-int lib_stremp(const char* str);
+bool lib_stremp(const char* str);
 
 /**
  * Return safe implemantation of a str 
@@ -40,7 +40,7 @@ char* __lib_straddn__(int n, const char* str1, ...);
 
 //char* lib_straddn(int n, const char* str, ...);
 
-char* lib_strcat(char* str1, const char* str2);
+char* lib_strcat(char* dst, const char* src);
 
 char* lib_strcpy(char* dst, const char* src);
 
