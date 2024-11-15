@@ -21,7 +21,7 @@
 /*
  * Return byte order mark (BOM) of a string.
  */
-int lib_bom_get_bom_n(const char* str, int num);
+int lib_bom_get_bom_n(const char* str, size_t num);
 
 /*
  * Convert BOM type to a string representation.
@@ -34,7 +34,7 @@ const char* lib_bom_to_bom_str(int bom);
 // BOM
 // https://en.wikipedia.org/wiki/Byte_order_mark
 
-int lib_bom_get_bom_n(const char* str, int num) {
+int lib_bom_get_bom_n(const char* str, size_t num) {
     if (!str || num < 2) {
         return LIB_BOM_NONE;
     }

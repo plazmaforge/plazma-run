@@ -783,12 +783,18 @@ int lib_utf8_get_char(const char* str, char* buf, int index) {
  * The buffer must be array with min size: 4 + 1
  * Return codepoint of this char or error (-1).
  */
-int lib_utf8_get_char_n(const char* str, int num, char* buf, int index) {
-    if (!str || !buf || num <= 0 || index < 0 || index >= num) {
+int lib_utf8_get_char_n(const char* str, size_t num, char* buf, int index) {
+    if (!str || num == 0) {
+        _reset_buf(buf);
+        return 0;
+    }
+
+    if (!buf || index < 0 || index >= num) {
         _reset_buf(buf);
         // error: invalid arguments
         return -1;
     }
+
     char* s = (char*) str;
 
     int i = 0;   // index og byte
@@ -868,18 +874,18 @@ int lib_utf8_get_codepoint_count(const char* str) {
     return lib_utf8_get_codepoint_count_n(str, strlen(str));
 }
 
-int lib_utf8_get_codepoint_count_n(const char* str, int num) {
-    if (!str || num <= 0) {
+int lib_utf8_get_codepoint_count_n(const char* str, size_t num) {
+    if (!str || num == 0) {
         return 0;
     }
 
-    int i = 0;
+    size_t i = 0;
     size_t count = 0;
     while (i < num) {
         char c = str[i];
         size_t len = lib_utf8_get_byte_sequence_len(c);
         //if (len == 0) {
-        //    return 0;
+        //    return -1;
         //}
         i += len;
         count++;
@@ -887,12 +893,12 @@ int lib_utf8_get_codepoint_count_n(const char* str, int num) {
     return count;
 }
 
-int lib_utf8_get_first_byte_count_n(const char* str, int num, int char_num) {
-    if (!str || num <= 0 || char_num < 0) {
+int lib_utf8_get_first_byte_count_n(const char* str, size_t num, size_t char_num) {
+    if (!str || num == 0 || char_num == 0) {
         return 0;
     }
 
-    int i = 0;
+    size_t i = 0;
     size_t count = 0;
     while (i < num) {
         char c = str[i];
@@ -909,7 +915,7 @@ int lib_utf8_get_first_byte_count_n(const char* str, int num, int char_num) {
     return i; // truncate?
 }
 
-int lib_utf8_get_first_byte_count(const char* str, int char_num) {
+int lib_utf8_get_first_byte_count(const char* str, size_t char_num) {
     if (!str) {
         return 0;
     }
@@ -1057,7 +1063,7 @@ bool lib_utf8_is_utf8_valid(const char* str) {
     return lib_utf8_is_utf8_valid_n(str, strlen(str));
 }
 
-bool lib_utf8_is_utf8_valid_n(const char* str, int num) {
+bool lib_utf8_is_utf8_valid_n(const char* str, size_t num) {
     if (!str) {
         return true;
     }
@@ -1065,7 +1071,7 @@ bool lib_utf8_is_utf8_valid_n(const char* str, int num) {
     return count >= 0;
 }
 
-bool lib_utf8_is_utf_valid_n(const char* str, int num) {
+bool lib_utf8_is_utf_valid_n(const char* str, size_t num) {
     if (!str) {
         return true;
     }
@@ -1096,8 +1102,8 @@ bool lib_utf8_is_ascii(const char* str) {
     return lib_utf8_is_ascii_n(str, strlen(str));
 }
 
-bool lib_utf8_is_ascii_n(const char* str, int num) {
-    if (!str || num <= 0) {
+bool lib_utf8_is_ascii_n(const char* str, size_t num) {
+    if (!str || num == 0) {
         return true;
     }
     int bom = lib_bom_get_bom_n(str, num);
@@ -1105,7 +1111,7 @@ bool lib_utf8_is_ascii_n(const char* str, int num) {
         return false;
     }
     unsigned char u;
-    for (int i = 0; i < num; i++) {
+    for (size_t i = 0; i < num; i++) {
         if (!lib_utf8_is_ascii_char(str[i])) {
             return false;
         }
@@ -1120,8 +1126,8 @@ bool lib_utf8_is_utf8(const char* str) {
     return lib_utf8_is_utf8_n(str, strlen(str));
 }
 
-bool lib_utf8_is_utf8_n(const char* str, int num) {
-    if (!str || num <= 0) {
+bool lib_utf8_is_utf8_n(const char* str, size_t num) {
+    if (!str || num == 0) {
         return true;
     }
     int bom = lib_bom_get_bom_n(str, num);
@@ -1134,7 +1140,7 @@ bool lib_utf8_is_utf8_n(const char* str, int num) {
 /*
  * Return byte order mark (BOM) of a string.
  */
-int lib_utf8_get_bom_n(const char* str, int num) {
+int lib_utf8_get_bom_n(const char* str, size_t num) {
     return lib_bom_get_bom_n(str, num);
 }
 

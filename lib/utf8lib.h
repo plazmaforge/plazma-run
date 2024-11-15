@@ -133,7 +133,7 @@ int lib_utf8_get_char(const char* str, char* buf, int index);
  * The buffer must be array with min size: 4 + 1
  * Return codepoint of this char or error (-1).
  */
-int lib_utf8_get_char_n(const char* str, int num, char* buf, int index);
+int lib_utf8_get_char_n(const char* str, size_t num, char* buf, int index);
 
 /**
  * Get current UTF-8 char from a string and move to next UTF-8 char.
@@ -152,11 +152,11 @@ int lib_utf8_get_codepoint_count(const char* str);
  * Return count of codepoints or error (-1).
  * First numbers only.
  */
-int lib_utf8_get_codepoint_count_n(const char* str, int num);
+int lib_utf8_get_codepoint_count_n(const char* str, size_t num);
 
-int lib_utf8_get_first_byte_count(const char* str, int char_num);
+int lib_utf8_get_first_byte_count(const char* str, size_t char_num);
 
-int lib_utf8_get_first_byte_count_n(const char* str, int num, int char_num);
+int lib_utf8_get_first_byte_count_n(const char* str, size_t num, size_t char_num);
 
 /**
  * Return count of bytes
@@ -236,13 +236,13 @@ bool lib_utf8_is_utf8_valid(const char* str);
  * Return true if UTF-8 string is valid.
  * First numbers only.
  */
-bool lib_utf8_is_utf8_valid_n(const char* str, int num);
+bool lib_utf8_is_utf8_valid_n(const char* str, size_t num);
 
 /**
  * Return true if UTF (UTF-8, UTF-16, UTF-32) string is valid.
  * First numbers only.
  */
-bool lib_utf8_is_utf_valid_n(const char* str, int num);
+bool lib_utf8_is_utf_valid_n(const char* str, size_t num);
 
 /**
  * Return true if a string is ASCII
@@ -253,7 +253,7 @@ bool lib_utf8_is_ascii(const char* str);
  * Return true if a string is ASCII.
  * First numbers only.
  */
-bool lib_utf8_is_ascii_n(const char* str, int num);
+bool lib_utf8_is_ascii_n(const char* str, size_t num);
 
 /**
  * Return true if a string is UTF-8.
@@ -264,13 +264,13 @@ bool lib_utf8_is_utf8(const char* str);
  * Return true if a string is UTF-8.
  * First numbers only.
  */
-bool lib_utf8_is_utf8_n(const char* str, int num);
+bool lib_utf8_is_utf8_n(const char* str, size_t num);
 
 /*
  * Return byte order mark (BOM) of a string.
  * First numbers only.
  */
-int lib_utf8_get_bom_n(const char* str, int num);
+int lib_utf8_get_bom_n(const char* str, size_t num);
 
 /*
  * Convert BOM type to a string representation.
