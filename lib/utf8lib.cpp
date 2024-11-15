@@ -580,8 +580,56 @@ const char* lib_utf8_strprev(const char* str) {
     
     /* error */
     return 0;
+}
 
+char* lib_utf8_strlwr(char* str) {
+    // Ignore case error
+    lib_utf8_to_lower(str);
+    return str;
+}
 
+char* lib_utf8_strupr(char* str) {
+    // Ignore case error
+    lib_utf8_to_upper(str);
+    return str;
+}
+
+char* lib_utf8_strrev(char* str) {
+    if (!str || str[0] == '\0') {
+        return str;
+    }
+    size_t len = strlen(str);
+    //printf("\n");
+    //printf("!>> len: %lu\n", len);
+    if (len == 0) {
+        return str;
+    }
+    char tmp[len];
+    // char tmp[len + 1];
+    // tmp[len] = '\0';
+    size_t i = 0;
+    size_t pos = len - 1;
+    size_t chl = 0;
+    char* s = (char*) str;
+    while (i < len) {
+        chl = lib_utf8_get_byte_sequence_len(*s);
+        if (chl == 0) {
+            chl = 1;
+        }
+        //printf("!>> chl: %lu\n", chl);
+        //printf("!>> pos: %lu\n", pos);
+        size_t j = pos;
+        for (size_t k = 0; k < chl; k++) {
+            size_t z = j - k;
+            tmp[z] = str[i + chl - k - 1];
+        }
+        s += chl;
+        i += chl;
+        pos -= chl; 
+    }
+    //printf("!>>%s", tmp);
+    memcpy(str, tmp, len);
+    return str;
 }
 
 const char* lib_utf8_iterate(const char* str, char* buf, int* cp, int* len) {
@@ -946,7 +994,7 @@ int lib_utf8_get_char_count(const char* str) {
  * 
  * Return count of converted bytes or error (-1).
 */
-int lib_utf8_to_case(int mode, const char* str) {
+int lib_utf8_to_case(int mode, char* str) {
     if (!str) {
         return 0;
     }
@@ -1013,8 +1061,7 @@ int lib_utf8_to_case_codepoint(int mode, int cp) {
 
 ////
 
-int lib_utf8_to_lower(const char* str) {
-    //printf("to_lower\n");
+int lib_utf8_to_lower(char* str) {
     return lib_utf8_to_case(LIB_UNI_CASE_LOWER, str);
 }
 
@@ -1037,8 +1084,7 @@ int lib_utf8_to_lower_codepoint(int cp) {
 
 ////
 
-int lib_utf8_to_upper(const char* str) {
-    //printf("to_upper\n");
+int lib_utf8_to_upper(char* str) {
     return lib_utf8_to_case(LIB_UNI_CASE_UPPER, str);
 }
 
@@ -1103,7 +1149,7 @@ bool lib_utf8_is_ascii(const char* str) {
 }
 
 bool lib_utf8_is_ascii_n(const char* str, size_t num) {
-    if (!str || num == 0) {
+    if (!str || num <= 0) {
         return true;
     }
     int bom = lib_bom_get_bom_n(str, num);
@@ -1127,7 +1173,7 @@ bool lib_utf8_is_utf8(const char* str) {
 }
 
 bool lib_utf8_is_utf8_n(const char* str, size_t num) {
-    if (!str || num == 0) {
+    if (!str || num <= 0) {
         return true;
     }
     int bom = lib_bom_get_bom_n(str, num);

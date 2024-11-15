@@ -106,6 +106,12 @@ const char* lib_utf8_strnext(const char* str);
 
 const char* lib_utf8_strprev(const char* str);
 
+char* lib_utf8_strlwr(char* str);
+
+char* lib_utf8_strupr(char* str);
+
+char* lib_utf8_strrev(char* str);
+
 //// str: std
 
 /*
@@ -176,7 +182,7 @@ int lib_utf8_get_char_count(const char* str);
  * 
  * Return count of converted bytes or error (-1).
 */
-int lib_utf8_to_case(int mode, const char* str);
+int lib_utf8_to_case(int mode, char* str);
 
 /*
  * Convert current char of a string to lower/upper case
@@ -194,7 +200,7 @@ int lib_utf8_to_case_codepoint(int mode, int cp);
  * Convert all chars of a string to lower case.
  * Return count of converted bytes or error (-1).
  */
-int lib_utf8_to_lower(const char* str);
+int lib_utf8_to_lower(char* str);
 
 /*
  * Convert current char of a string to lower case.
@@ -211,7 +217,7 @@ int lib_utf8_to_lower_codepoint(int cp);
  * Convert all chars of a string to upper case.
  * Return count of converted bytes or error (-1).
  */
-int lib_utf8_to_upper(const char* str);
+int lib_utf8_to_upper(char* str);
 
 /*
  * Convert current char of a string to upper case.

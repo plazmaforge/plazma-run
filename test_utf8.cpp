@@ -161,7 +161,29 @@ void print_test(const char* input) {
     // LOWER CASE: UTF-8
     lib_utf8_to_lower(str4);
     print_str(str4, 4);
+    
+    // LWR CASE: UTF-8
+    printf("\n");
+    printf("_strlwr()\n");
+    printf("--------------------");
+    lib_utf8_strlwr(str4);
+    print_str(str4, 4);
 
+    // UPR CASE: UTF-8
+    printf("\n");
+    printf("_strupr()\n");
+    printf("--------------------");
+    lib_utf8_strupr(str4);
+    print_str(str4, 4);
+
+    // REV: UTF-8
+    printf("\n");
+    printf("_strrev()\n");
+    printf("--------------------");
+    lib_utf8_strrev(str4);
+    print_str(str4, 4);
+
+    //
     free(str4);
 
     // UTF-8 with BOM: [EF BB BF]
