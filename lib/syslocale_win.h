@@ -316,6 +316,9 @@ void lib_locale_win_init() {
     // TODO: Maybe check all UTF codepage.
     if (_out_cp == 65001) {
         // UTF-8
+        if (debug) {
+            printf("Ret ConsoleOutCP: UTF-8\n");
+        }
         return;
     }
 
