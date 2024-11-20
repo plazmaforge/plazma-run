@@ -196,7 +196,7 @@ int main(int argc, char* argv[]) {
     //    return 0;
     //}
 
-    lib_sys_locale_init();
+    lib_sys_locale_init_utf8();
 
     char* input = argc < 2 ? NULL : argv[1];
 

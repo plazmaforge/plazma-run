@@ -360,7 +360,7 @@ void lib_locale_win_init() {
             printf("Ret ConsoleCP   : UTF-8\n");
             printf("Ret ConsoleOutCP: UTF-8\n");
         }
-        setlocale(LC_ALL, "");
+        //setlocale(LC_ALL, "");
         return;
     }
 
@@ -369,7 +369,7 @@ void lib_locale_win_init() {
         if (debug) {
             printf("Ret ConsoleOutCP: UTF-8\n");
         }
-        setlocale(LC_ALL, "");
+        //setlocale(LC_ALL, "");
         return;
     }
 
@@ -391,7 +391,7 @@ void lib_locale_win_init() {
             printf("Set ConsoleCP   : %d\n", _new_cp);
             printf("Set ConsoleOutCP: %d\n", _new_cp);
         }
-        setlocale(LC_ALL, "");
+        //setlocale(LC_ALL, "");
         return;
     }
 
