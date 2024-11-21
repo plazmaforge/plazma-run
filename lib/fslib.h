@@ -292,6 +292,10 @@ const char* lib_fs_file_get_file_name(lib_fs_file_t* file);
 
 int lib_fs_file_get_file_type(lib_fs_file_t* file);
 
+char lib_fs_file_get_file_type_char(lib_fs_file_t* file);
+
+char* lib_fs_file_mode_add(lib_fs_file_t* file, char* mode);
+
 uint64_t lib_fs_file_get_file_size(lib_fs_file_t* file);
 
 int lib_fs_file_get_file_mode(lib_fs_file_t* file);

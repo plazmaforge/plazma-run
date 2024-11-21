@@ -1167,6 +1167,77 @@ int lib_fs_file_get_file_type(lib_fs_file_t* file) {
     return file->type;
 }
 
+/*
+char _file_type(char* path, struct stat Stat) {
+    char type = '\0';
+
+    if (S_IFCHR == ( S_IFMT & Stat.st_mode))
+        type = 'c';
+    else if (S_IFBLK == ( S_IFMT & Stat.st_mode))
+         type = 'b';
+    else if (S_IFIFO == ( S_IFMT & Stat.st_mode))
+        type = 'p';
+    else if (S_IFREG == ( S_IFMT & Stat.st_mode))
+        type = '-';
+    else if (S_IFSOCK == ( S_IFMT & Stat.st_mode))
+        type = 's';
+    else if (S_IFDIR == ( S_IFMT & Stat.st_mode))
+        type = 'd';
+    else if (_link(path, Stat))
+        type = 'l';
+    return type;
+}
+*/
+
+char lib_fs_file_get_file_type_char(lib_fs_file_t* file) {
+    if (!file) {
+        return '\0';
+    }
+
+    int type = file->type;
+
+    if (type == LIB_FS_CHR) {
+        return 'c';
+    } else if (type == LIB_FS_BLK) {
+        return 'b';
+    } else if (type == LIB_FS_FIFO) {
+        return 'p';
+    } else if (type == LIB_FS_REG) {
+        return '-';
+    } else if (type == LIB_FS_SOCK) {
+        return 's';
+    } else if (type == LIB_FS_DIR) {
+        return 'd';
+    } else if (type == LIB_FS_LNK) {
+        return 'l';
+    }
+
+    return '\0';
+}
+
+char* lib_fs_file_mode_add(lib_fs_file_t* file, char* mode) {
+    if (!file || !file->stat) {
+        for (int i = 1; i <= 9; i++) {
+            mode[i] = '-';
+        }
+        return mode;
+    }
+
+    int st_mode = file->stat->st_mode;
+
+    mode[1] = st_mode & S_IRUSR ? 'r' : '-';
+    mode[2] = st_mode & S_IWUSR ? 'w' : '-';
+    mode[3] = st_mode & S_IXUSR ? 'x' : '-';
+    mode[4] = st_mode & S_IRGRP ? 'r' : '-';
+    mode[5] = st_mode & S_IWGRP ? 'w' : '-';
+    mode[6] = st_mode & S_IXGRP ? 'x' : '-';
+    mode[7] = st_mode & S_IROTH ? 'r' : '-';
+    mode[8] = st_mode & S_IWOTH ? 'w' : '-';
+    mode[9] = st_mode & S_IXOTH ? 'x' : '-';
+
+    return mode;
+}
+
 uint64_t lib_fs_file_get_file_size(lib_fs_file_t* file) {
     if (!file || !file->stat) {
         return 0;
@@ -1239,7 +1310,8 @@ int lib_fs_file_is_dir(lib_fs_file_t* file) {
 
 int lib_fs_file_get_file_type_by_mode(int mode) {    
     #ifdef _WIN32
-    /* FS_DIR, FS_REG, FS_LNK only */
+
+    /* Base: FS_DIR, FS_REG, FS_LNK only */
     if (S_ISDIR(mode)) {
         return LIB_FS_DIR;
     } else if (S_ISREG(mode)) {
@@ -1249,13 +1321,15 @@ int lib_fs_file_get_file_type_by_mode(int mode) {
     }
     return LIB_FS_UNKNOWN;
     #else
-    /* Base */
+
+    /* Base: FS_DIR, FS_REG, FS_LNK */
     if (S_ISDIR(mode)) {
         return LIB_FS_DIR;
     } else if (S_ISREG(mode)) {
         return LIB_FS_REG;
     } else if (S_ISLNK(mode)) {
         return LIB_FS_LNK;
+
     /* Other */
     } else if (S_ISFIFO(mode)) {
         return LIB_FS_FIFO;
