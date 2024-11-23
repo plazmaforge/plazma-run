@@ -1435,7 +1435,7 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
         return -1;
     }
 
-    lib_fs_dirent_t* file;
+    lib_fs_dirent_t* dirent;
     //errno = 0;
     const char* pattern = NULL;
 
@@ -1456,15 +1456,15 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
     bool use_force_pattern = true; // optional
     bool is_force_pattern = use_force_pattern && pattern && pattern_count == 1;
 
-    while ((file = lib_fs_read_dir(dir)) != NULL) {
+    while ((dirent = lib_fs_read_dir(dir)) != NULL) {
 
-        char* file_name = file->name;
-        int file_type = lib_fs_get_dirent_type(file);
+        char* file_name = dirent->name;
+        int file_type = lib_fs_get_dirent_type(dirent);                       // dirent type (!)
         int is_recursive_ignore = lib_fs_is_recursive_ignore_file(file_name); // ., ..
         int is_ignore = lib_fs_is_ignore_file(file_name);                     // .git, .svn
         int is_force_ignore = is_recursive_ignore || is_ignore;
         int is_match = is_ignore ? 0 : (pattern == NULL || lib_fs_match_file_internal(pattern, file_name));
-        int is_dir_ = lib_fs_is_dirent_dir(file);
+        int is_dir_ = lib_fs_is_dirent_dir(dirent);                           // dirent type (!)
 
         if (!is_match && is_dir_ && is_force_pattern && !is_force_ignore) {
             is_match = 1;

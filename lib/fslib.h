@@ -79,9 +79,40 @@ typedef HANDLE lib_fs_fd_t;
 /* Directory pointer  */
 //typedef HANDLE lib_fs_dir_t;
 
-/* File Info          */
+/*
+typedef struct _BY_HANDLE_FILE_INFORMATION {
+  DWORD    dwFileAttributes;
+  FILETIME ftCreationTime;
+  FILETIME ftLastAccessTime;
+  FILETIME ftLastWriteTime;
+  DWORD    dwVolumeSerialNumber;
+  DWORD    nFileSizeHigh;
+  DWORD    nFileSizeLow;
+  DWORD    nNumberOfLinks;
+  DWORD    nFileIndexHigh;
+  DWORD    nFileIndexLow;
+} BY_HANDLE_FILE_INFORMATION, *PBY_HANDLE_FILE_INFORMATION, *LPBY_HANDLE_FILE_INFORMATION;
+*/
+/* File Info (stat)   */
 typedef BY_HANDLE_FILE_INFORMATION lib_fs_file_info_t;
 
+/*
+typedef struct _WIN32_FIND_DATAW {
+  DWORD    dwFileAttributes;
+  FILETIME ftCreationTime;
+  FILETIME ftLastAccessTime;
+  FILETIME ftLastWriteTime;
+  DWORD    nFileSizeHigh;
+  DWORD    nFileSizeLow;
+  DWORD    dwReserved0;
+  DWORD    dwReserved1;
+  WCHAR    cFileName[MAX_PATH];
+  WCHAR    cAlternateFileName[14];
+  DWORD    dwFileType;    // Obsolete. Do not use.
+  DWORD    dwCreatorType; // Obsolete. Do not use
+  WORD     wFinderFlags;  // Obsolete. Do not use
+} WIN32_FIND_DATAW, *PWIN32_FIND_DATAW, *LPWIN32_FIND_DATAW;
+*/
 /* Directory entry    */
 typedef struct lib_fs_dirent_t {
     int type; // OS Indepentent
@@ -101,11 +132,36 @@ typedef int lib_fs_fd_t;
 
 /* Directory pointer  */
 //typedef DIR lib_fs_dir_t;
-
+/*
+typedef struct stat {
+    ino_t       st_ino;         // File serial number.
+    off_t       st_size;        // File size in bytes.
+    dev_t       st_dev;         // ID of the device containing the file.
+    dev_t       st_rdev;        // Device ID.
+    uid_t       st_uid;         // User ID of file.
+    gid_t       st_gid;         // Group ID of file.
+    time_t      st_mtime;       // Time of last data modification.
+    time_t      st_atime;       // Time when file data was last accessed.
+    time_t      st_ctime;       // Time of last file status change.
+    mode_t      st_mode;        // File types and permissions.
+    nlink_t     st_nlink;       // Number of hard links to the file.
+    blkcnt_t    st_blocks;      // Blocks allocated for a file.
+    blksize_t   st_blksize;     // Preferred I/O block size for object.
+}
+*/
 /* File Info          */
 //#define lib_fs_file_info_t struct stat;
 typedef struct stat lib_fs_file_info_t;
 
+/*
+struct dirent {
+    ino_t          d_ino;       // Inode number
+    off_t          d_off;       // Offset to the next dirent
+    unsigned short d_reclen;    // Length of this record
+    unsigned char  d_type;      // Type of file; not supported by all file system types
+    char           d_name[NAME_MAX]; // filename
+};
+*/
 /* Directory entry    */
 typedef struct lib_fs_dirent_t {
     int type; // OS Indepentent
