@@ -200,6 +200,7 @@ int lib_fs_is_executable(const char* file_name) {
     return lib_fs_file_check(file_name, LIB_FS_FILE_CHECK_IS_EXECUTABLE);
 }
 
+// [allocate]
 char* lib_fs_get_base_name(const char* file_name) {
 
     if (!file_name) {

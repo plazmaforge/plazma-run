@@ -138,26 +138,14 @@ char* getUserName() {
 #else
 
 char* _get_user_name_by_id(uid_t uid) {
-    //#ifdef _WIN32
-    //if (username) {
-    //    return username;
-    //}
-    //username = getUserName();
-    //return username;
-    //#else
     struct passwd* pws;
     pws = getpwuid(uid);
     return pws->pw_name;
-    //#endif
 }
 
 char* _get_group_name_by_id(gid_t gid) {
-    //#ifdef _WIN32
-    //return NULL;
-    //#else
     struct group* g = getgrgid(gid);
     return g ? g->gr_name : NULL;
-    //#endif
 }
 
 #endif
@@ -165,7 +153,6 @@ char* _get_group_name_by_id(gid_t gid) {
 ////
 
 static char* username = NULL;
-
 
 char* _get_user_name(lib_fs_file_t* file) {
     #ifdef _WIN32
@@ -262,17 +249,88 @@ int main(int argc, char *argv[]) {
     //   perror("fflush error\n");
     //}
 
+    struct file_entry_t {
+        lib_fs_file_t* file;
+        char* path;
+        char* name;
+        char* nlink;
+        char* user;
+        char* group;
+        char* group_id;
+        //
+        int nlink_len;
+        int name_len;
+        int user_len;
+        int group_len;
+    };
+
+    file_entry_t* entry = NULL;
+    file_entry_t* entries[file_count];
+
+    int max_nlink_len = 0;
+    int max_name_len = 0;
+    int max_user_len = 0;
+    int max_group_len = 0;
+
     for (int i = 0; i < file_count; i++) {
         file = files[i];
+        entry = (file_entry_t*) malloc(sizeof(file_entry_t));
+        entries[i] = entry;
+
+        if (!file) {
+            continue;
+        }
+
+        entry->file = file;
+        entry->path = file->name;
+        entry->name = lib_fs_get_base_name(entry->path); // allocate
+        entry->nlink = _itoa(file->stat->st_nlink);      // allocate
+        entry->user = _get_user_name(file);
+        entry->group = _get_group_name(file);
+        entry->group_id = NULL;
+
+        if (!entry->group) {
+            entry->group_id = _get_group_id_str(file);
+            entry->group = entry->group_id;
+        }
+
+        entry->name_len = entry->name ? strlen(entry->name) : 0;
+        entry->nlink_len = entry->nlink ? strlen(entry->nlink) : 0;        
+        entry->user_len = entry->user ? strlen(entry->user) : 0;
+        entry->group_len = entry->group ? strlen(entry->group) : 0;
+
+        if (entry->name_len > max_name_len) {
+            max_name_len = entry->name_len;
+        }
+        if (entry->nlink_len > max_nlink_len) {
+            max_nlink_len = entry->nlink_len;
+        }
+        if (entry->user_len > max_user_len) {
+            max_user_len = entry->user_len;
+        }
+        if (entry->group_len > max_group_len) {
+            max_group_len = entry->group_len;
+        }
+    }
+
+    printf("max_name_len : %d\n", max_name_len);
+    printf("max_nlink_len: %d\n", max_nlink_len);
+    printf("max_user_len : %d\n", max_user_len);
+    printf("max_group_len: %d\n", max_group_len);
+
+    for (int i = 0; i < file_count; i++) {
+
+        entry = entries[i];
+        file = entry->file; // files[i];
 
         if (!file) {
             continue;
         }
 
         pos = 0;
-        char* path = file->name;
-        char* name = lib_fs_get_base_name(path);
-        int name_len = strlen(name);
+        //char* path = entry->path;     //file->name;
+        char* name = entry->name;       //lib_fs_get_base_name(path);
+        int name_len = entry->name_len; // strlen(name);
 
         if (buf_size > 0 && i > 0) {
             int try_pos = (stat_pos > 0 ? stat_pos : 0) + name_len;
@@ -290,28 +348,28 @@ int main(int argc, char *argv[]) {
         mode[10] = '\0';
         mode[0] = lib_fs_file_get_file_type_char(file);
         lib_fs_file_mode_add(file, mode);
-        pos += printf("%s ", mode);
+        pos += printf("%s  ", mode);
         //pos++;
         
         /* Print NLink      */
-        char* nlink = _itoa(file->stat->st_nlink);
-        pos += printf("%s \t", nlink);
+        char* nlink = entry->nlink;       // _itoa(file->stat->st_nlink);
+        pos += printf("%*s ", max_nlink_len, nlink);
         if (nlink) {
             free(nlink);
         }
 
         /* Print User Name  */
-        char* user_name = _get_user_name(file);
-        pos += printf("%s \t", user_name);
+        char* user_name = entry->user;    //_get_user_name(file);
+        pos += printf("%-*s  ", max_user_len, user_name);
 
         /* Print Group Name */
-        char* group_name = _get_group_name(file);
-        char* group_id = NULL;
-        if (!group_name) {
-            group_id = _get_group_id_str(file);
-            group_name = group_id;
-        }
-        pos += printf("%s \t", group_name);
+        char* group_name = entry->group;  // _get_group_name(file);
+        char* group_id = entry->group_id; // NULL;
+        //if (!group_name) {
+        //    group_id = _get_group_id_str(file);
+        //    group_name = group_id;
+        //}
+        pos += printf("%-*s ", max_group_len, group_name);
         if (!group_id) {
             free(group_id);
         }
@@ -353,6 +411,7 @@ int main(int argc, char *argv[]) {
         //}
 
         free(name);
+        free(entry);
     }
 
     //printf("\n\nmax: %i\n", max);
