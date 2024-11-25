@@ -350,7 +350,13 @@ int lib_fs_file_get_file_type(lib_fs_file_t* file);
 
 char lib_fs_file_get_file_type_char(lib_fs_file_t* file);
 
-char* lib_fs_file_mode_add(lib_fs_file_t* file, char* mode);
+char* lib_fs_file_get_uname(lib_fs_file_t* file);
+
+char* lib_fs_file_get_gname(lib_fs_file_t* file);
+
+char* lib_fs_file_add_attr(lib_fs_file_t* file, char* mode);
+
+char* lib_fs_file_add_mode(lib_fs_file_t* file, char* mode);
 
 uint64_t lib_fs_file_get_file_size(lib_fs_file_t* file);
 

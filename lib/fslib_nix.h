@@ -8,6 +8,9 @@
 #include <fnmatch.h>
 #include <limits.h> /* PATH_MAX */
 
+#include <grp.h>
+#include <pwd.h>
+
 #include "strlib.h"
 #include "fslib.h"
 
@@ -204,6 +207,33 @@ static int lib_fs_match_file_internal(const char* pattern, const char* name, int
 
 static int lib_fs_match_file_internal(const char* pattern, const char* name) {
     return lib_fs_match_file_internal(pattern, name, FNM_PERIOD);
+}
+
+//// uname, gname
+
+static char* lib_fs_get_uname_by_id(uid_t uid) {
+    struct passwd* pws;
+    pws = getpwuid(uid);
+    return pws->pw_name;
+}
+
+static char* lib_fs_get_gname_by_id(gid_t gid) {
+    struct group* g = getgrgid(gid);
+    return g ? g->gr_name : NULL;
+}
+
+char* lib_fs_file_get_uname(lib_fs_file_t* file) {
+    if (!file || !file->stat) {
+        return NULL;
+    }
+    return lib_fs_get_uname_by_id(file->stat->st_uid);
+}
+
+char* lib_fs_file_get_gname(lib_fs_file_t* file) {    
+    if (!file || !file->stat) {
+        return NULL;
+    }
+    return lib_fs_get_gname_by_id(file->stat->st_gid);
 }
 
 #endif

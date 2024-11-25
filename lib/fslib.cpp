@@ -1216,7 +1216,24 @@ char lib_fs_file_get_file_type_char(lib_fs_file_t* file) {
     return '\0';
 }
 
-char* lib_fs_file_mode_add(lib_fs_file_t* file, char* mode) {
+char* lib_fs_file_add_attr(lib_fs_file_t* file, char* mode) {
+    if (!mode) {
+        return NULL;
+    }
+    if (!file || !file->stat) {
+        for (int i = 0; i <= 9; i++) {
+            mode[i] = '-';
+        }
+        return mode;
+    }
+    mode[0] = lib_fs_file_get_file_type_char(file);
+    return lib_fs_file_add_mode(file, mode);
+}
+
+char* lib_fs_file_add_mode(lib_fs_file_t* file, char* mode) {
+    if (!mode) {
+        return NULL;
+    }
     if (!file || !file->stat) {
         for (int i = 1; i <= 9; i++) {
             mode[i] = '-';
