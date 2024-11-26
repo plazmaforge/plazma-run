@@ -6,10 +6,11 @@
 #include <errno.h>
 #include <dirent.h>
 #include <fnmatch.h>
-#include <limits.h> /* PATH_MAX */
-
-#include <grp.h>
-#include <pwd.h>
+#include <limits.h>    /* PATH_MAX            */
+#include <pwd.h>       /* getpwuid: passwd    */
+#include <grp.h>       /* getgrgid: group     */
+#include <sys/xattr.h> /* listxattr           */
+#include <sys/acl.h>   /* acl_get_file: acl_t */
 
 #include "strlib.h"
 #include "fslib.h"
@@ -234,6 +235,40 @@ char* lib_fs_file_get_gname(lib_fs_file_t* file) {
         return NULL;
     }
     return lib_fs_get_gname_by_id(file->stat->st_gid);
+}
+
+char lib_fs_get_mode_access(const char* path) {
+    if (!path) {
+        return ' ';
+    }
+    acl_t acl = NULL;
+    acl_entry_t dummy;
+    ssize_t xattr = 0;
+    char chr;
+
+    acl = acl_get_link_np(path, ACL_TYPE_EXTENDED);
+    if (acl && acl_get_entry(acl, ACL_FIRST_ENTRY, &dummy) == -1) {
+        acl_free(acl);
+        acl = NULL;
+    }
+    xattr = listxattr(path, NULL, 0, XATTR_NOFOLLOW);
+    if (xattr < 0) {
+        xattr = 0;
+    }
+        
+    if (xattr > 0) {
+        chr = '@';
+    } else if (acl != NULL) {
+        chr = '+';
+    } else {
+        chr = ' ';
+    }
+
+    if (acl) {
+        acl_free(acl);
+    }
+    //printf("%c\n", chr);
+    return chr;
 }
 
 #endif

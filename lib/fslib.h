@@ -358,6 +358,10 @@ char* lib_fs_file_add_attr(lib_fs_file_t* file, char* mode);
 
 char* lib_fs_file_add_mode(lib_fs_file_t* file, char* mode);
 
+char lib_fs_file_get_mode_access(lib_fs_file_t* file);
+
+char lib_fs_get_mode_access(const char* path);
+
 uint64_t lib_fs_file_get_file_size(lib_fs_file_t* file);
 
 int lib_fs_file_get_file_mode(lib_fs_file_t* file);

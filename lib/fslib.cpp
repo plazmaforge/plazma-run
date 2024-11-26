@@ -1253,7 +1253,16 @@ char* lib_fs_file_add_mode(lib_fs_file_t* file, char* mode) {
     mode[8] = st_mode & S_IWOTH ? 'w' : '-';
     mode[9] = st_mode & S_IXOTH ? 'x' : '-';
 
+    mode[10] = lib_fs_file_get_mode_access(file);
+
     return mode;
+}
+
+char lib_fs_file_get_mode_access(lib_fs_file_t* file) {
+    if (!file) {
+        return ' ';
+    }
+    return lib_fs_get_mode_access(file->name);
 }
 
 uint64_t lib_fs_file_get_file_size(lib_fs_file_t* file) {

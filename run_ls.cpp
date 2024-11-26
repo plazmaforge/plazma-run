@@ -220,14 +220,13 @@ int main(int argc, char *argv[]) {
 
         /* Print Mode      */
         if (use_mode) {
-            char mode[10 + 1];
+            char mode[11 + 1];
             memset(mode, '-', 10);
-            mode[10] = '\0';
+            mode[10] = ' ';
+            mode[11] = '\0';
 
-            //mode[0] = lib_fs_file_get_file_type_char(file);        
-            //lib_fs_file_add_mode(file, mode);
             lib_fs_file_add_attr(file, mode);
-            pos += printf("%s  ", mode);
+            pos += printf("%s ", mode);
         }
         
         /* Print NLink      */

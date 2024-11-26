@@ -41,6 +41,8 @@ static wchar_t* getRealPathW(const wchar_t* wpath);
 
 static wchar_t* getCurrentDirW();
 
+static wchar_t* getUserNameW();
+
 // [allocate]
 char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name) { 
     if (lib_fs_is_current_find_path(dir_name)) {
@@ -505,6 +507,11 @@ char* lib_fs_file_get_gname(lib_fs_file_t* file) {
 }
 
 ////
+
+char lib_fs_get_mode_access(const char* path) {
+    // TODO: Stub
+    return ' ';
+}
 
 #endif
 
