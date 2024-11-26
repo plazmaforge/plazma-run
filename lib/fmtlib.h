@@ -34,4 +34,6 @@ int lib_fmt_print_file_date_time(time_t time, char* buf, int buf_len, bool use_t
 
 int lib_fmt_print_file_size(uint64_t size);
 
+int lib_fmt_print_file_size_fixed(uint64_t size, int len);
+
 #endif // PLAZMA_LIB_FMTLIB_H

@@ -47,3 +47,16 @@ int lib_fmt_print_file_size(uint64_t size) {
         return printf("%12llu    ", size);
     }
 }
+
+int lib_fmt_print_file_size_fixed(uint64_t size, int len) {
+    int index = lib_fmt_get_size_format_index(size, 1);
+    const lib_fmt_size_format_t* format = index >= 0 ? &(LIB_FMT_SIZE_FORMATS[index]) : NULL;
+
+    if (format) {
+        double value = (double) size / (double) format->factor;
+        const char* unit = format->unit;
+        return printf("%*.1f %s ", len, value, unit);
+    } else {
+        return printf("%*llu    ", len, size);
+    }
+}

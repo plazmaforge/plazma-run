@@ -29,6 +29,22 @@ int _lib_len_counter(int val) {
     return len;
 }
 
+int _lib_len_counter_u64(uint64_t val) {
+    if (val == 0) {
+        return 0;
+    }
+    long num = val;
+    int len = 0;
+    //if(val < 0) {
+    //    num *= -1;
+    //}        
+    while(num != 0) {
+        num = num / 10;
+        len++;
+    }
+    return len;
+}
+
 char* _lib_itoa(int val) {
     if(val == 0) {
         return lib_strdup("0");
@@ -62,12 +78,41 @@ bool _is_heap(void* ptr) {
 
 ////
 
-// char* _get_gid_str(lib_fs_file_t* file) {
-//     if (!file || !file->stat) {
-//         return NULL;
-//     }
-//     return _lib_itoa(file->stat->st_gid);
-// }
+/*
+ -1: Not pretty format - bytes only
+  0: Pretty format     - start with 'Kb'
+  1: Flex pretty       - start with 'Mb' 
+*/
+static int min_size_format = 1;
+
+const lib_fmt_size_format_t* _get_size_format(uint64_t size) {
+    if (min_size_format < 0) {
+        return NULL; // No format. It is not pretty format. Size in bytes only
+    }
+    int index = lib_fmt_get_size_format_index(size, min_size_format);
+    return index >= 0 ? &(LIB_FMT_SIZE_FORMATS[index]) : NULL;
+}
+
+double _get_unit_size(uint64_t size, const lib_fmt_size_format_t* format) {
+    return (double) size / (double) format->factor;
+}
+
+uint64_t _get_unit_isize(uint64_t size, const lib_fmt_size_format_t* format) {
+    return (uint64_t) _get_unit_size(size, format);
+}
+
+int _print_size(uint64_t size, int len) {
+    const lib_fmt_size_format_t* format = _get_size_format(size);
+
+    if (format) {
+        double value = _get_unit_size(size, format);
+        const char* unit = format->unit;
+        return printf("%*.1f%c ", len + 2, value, unit[0]);
+    } else {
+        return printf("%*llu  ", len + 2, size);
+        //return printf("%*lluB ", len + 2, size);
+    }
+}
 
 int main(int argc, char *argv[]) {
 
@@ -155,6 +200,7 @@ int main(int argc, char *argv[]) {
     int max_name_len = 0;
     int max_uname_len = 0;
     int max_gname_len = 0;
+    int max_size_len = 0;
 
     for (int i = 0; i < file_count; i++) {
         file = files[i];
@@ -177,6 +223,24 @@ int main(int argc, char *argv[]) {
         entry->uname_len = entry->uname ? strlen(entry->uname) : 0;
         entry->gname_len = entry->gname ? strlen(entry->gname) : 0;
 
+        uint64_t size = lib_fs_file_get_file_size(file);
+        int size_len = _lib_len_counter_u64(size);
+
+        const lib_fmt_size_format_t* format = _get_size_format(size);
+        if (format) {
+            uint64_t unit_size = _get_unit_isize(size, format);
+            int unit_size_len = _lib_len_counter_u64(unit_size);
+
+            //printf("name: %s\t, size: %llu, size_len: %d, unit_size: %llu, unit_size_len: %d\n"
+            //, entry->name, size, size_len, unit_size, unit_size_len);
+
+            size_len = unit_size_len;
+        } else {
+            //printf("name: %s\t, size: %llu, size_len: %d\n"
+            //, entry->name, size, size_len);
+        }
+        //printf(">>size_len: %d\n", size_len);
+
         if (entry->name_len > max_name_len) {
             max_name_len = entry->name_len;
         }
@@ -189,12 +253,18 @@ int main(int argc, char *argv[]) {
         if (entry->gname_len > max_gname_len) {
             max_gname_len = entry->gname_len;
         }
+
+        if (size_len > max_size_len) {
+            max_size_len = size_len;
+        }
+
     }
 
     //printf("max_name_len  : %d\n", max_name_len);
     //printf("max_nlink_len : %d\n", max_nlink_len);
     //printf("max_uname_len : %d\n", max_uname_len);
     //printf("max_gname_len : %d\n\n", max_gname_len);
+    //printf("max_size_len : %d\n\n", max_size_len);
 
     for (int i = 0; i < file_count; i++) {
 
@@ -250,7 +320,7 @@ int main(int argc, char *argv[]) {
         /* Print Size    */
         if (use_size & use_size_first) {
             uint64_t size = lib_fs_file_get_file_size(file);
-            pos += lib_fmt_print_file_size(size);
+            pos += _print_size(size, max_size_len);
         }
 
         /* Print DateTime */
@@ -262,7 +332,7 @@ int main(int argc, char *argv[]) {
         /* Print Size    */
         if (use_size & !use_size_first) {
             uint64_t size = lib_fs_file_get_file_size(file);
-            pos += lib_fmt_print_file_size(size);
+            pos += _print_size(size, max_size_len);
         }
 
         if (stat_pos < 0) {
