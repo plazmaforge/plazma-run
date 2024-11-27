@@ -9,6 +9,67 @@
 #include "fmtlib.h"
 #include "strlib.h"
 
+typedef struct run_ls_config {
+    bool is_all;
+    bool is_long;
+    bool is_human;
+    //
+    bool use_mode;
+    bool use_nlink;
+    bool use_uname;
+    bool use_gname;
+    bool use_date;
+    bool use_time;
+    bool use_size;
+    bool use_size_first;
+
+    /*
+     -1: Not pretty format - bytes only
+      0: Pretty format     - start with 'Kb'
+      1: Flex pretty       - start with 'Mb' 
+    */
+    int min_size_format;
+
+} run_ls_config;
+
+typedef struct run_ls_context {
+    run_ls_config* config;
+    //
+    int max_nlink_len;
+    int max_name_len;
+    int max_uname_len;
+    int max_gname_len;
+    int max_size_len;
+} run_config;
+
+void run_ls_config_set_columns(run_ls_config* config, bool flag) {
+    config->use_mode       = flag;
+    config->use_nlink      = flag;
+    config->use_uname      = flag;
+    config->use_gname      = flag;
+    config->use_date       = flag;
+    config->use_time       = flag;
+    config->use_size       = flag;
+}
+
+void run_ls_config_init(run_ls_config* config) {
+    config->is_all         = true;
+    config->is_long        = true;
+    config->is_human       = false;
+    //
+    run_ls_config_set_columns(config, true);
+    config->use_size_first = true;
+    config->min_size_format = 1;
+}
+
+void run_ls_context_init(run_ls_context* context) {
+    context->max_nlink_len = 0;
+    context->max_name_len  = 0;
+    context->max_uname_len = 0;
+    context->max_gname_len = 0;
+    context->max_size_len  = 0;
+}
+
 void usage() {
     fprintf(stderr, "Usage: run-ls\n");
 }
@@ -33,11 +94,8 @@ int _lib_len_counter_u64(uint64_t val) {
     if (val == 0) {
         return 0;
     }
-    long num = val;
+    uint64_t num = val;
     int len = 0;
-    //if(val < 0) {
-    //    num *= -1;
-    //}        
     while(num != 0) {
         num = num / 10;
         len++;
@@ -78,14 +136,8 @@ bool _is_heap(void* ptr) {
 
 ////
 
-/*
- -1: Not pretty format - bytes only
-  0: Pretty format     - start with 'Kb'
-  1: Flex pretty       - start with 'Mb' 
-*/
-static int min_size_format = 1;
-
-const lib_fmt_size_format_t* _get_size_format(uint64_t size) {
+const lib_fmt_size_format_t* _get_size_format(run_ls_context* context, uint64_t size) {
+    int min_size_format = context->config->min_size_format;
     if (min_size_format < 0) {
         return NULL; // No format. It is not pretty format. Size in bytes only
     }
@@ -101,8 +153,9 @@ uint64_t _get_unit_isize(uint64_t size, const lib_fmt_size_format_t* format) {
     return (uint64_t) _get_unit_size(size, format);
 }
 
-int _print_size(uint64_t size, int len) {
-    const lib_fmt_size_format_t* format = _get_size_format(size);
+int _print_size(run_ls_context* context, uint64_t size) {
+    const lib_fmt_size_format_t* format = _get_size_format(context, size);
+    int len = context->max_size_len;
 
     if (format) {
         double value = _get_unit_size(size, format);
@@ -114,24 +167,9 @@ int _print_size(uint64_t size, int len) {
     }
 }
 
-int main(int argc, char *argv[]) {
+int run_ls(run_ls_context* context) {
 
-    bool error = false;
-    int opt;
-    while ((opt = getopt(argc, argv, "al")) != -1) {
-        switch (opt) {
-        case 'a':
-            // TODO
-            break;
-        case 'l':
-            // TODO
-            break;
-        case '?':
-            error = true;
-            break;
-        }
-    }
-
+    run_ls_config* config = context->config;
     char* dir_name = lib_fs_get_current_dir(); //fs_get_current_find_path();
     //printf("Current Dir: %s\n", dir_name);
 
@@ -148,18 +186,9 @@ int main(int argc, char *argv[]) {
 
     //lib_io_buf_init();
 
-    bool use_mode = true;
-    bool use_nlink = true;
-    bool use_uname = true;
-    bool use_gname = true;
-    bool use_date = true;
-    bool use_time = true;
-    bool use_size = true;
-    bool use_size_first = true;
-
     int DATE_LEN = 10; // YYYY-MM-DD
     int TIME_LEN = 8;  // HH:MM:SS
-    int BUF_LEN = DATE_LEN + 1 + (use_time ? (TIME_LEN + 1) : 0);
+    int BUF_LEN = DATE_LEN + 1 + (config->use_time ? (TIME_LEN + 1) : 0);
     char buf[BUF_LEN];
 
     int pos = 0;
@@ -196,12 +225,6 @@ int main(int argc, char *argv[]) {
     file_entry_t* entry = NULL;
     file_entry_t* entries[file_count];
 
-    int max_nlink_len = 0;
-    int max_name_len = 0;
-    int max_uname_len = 0;
-    int max_gname_len = 0;
-    int max_size_len = 0;
-
     for (int i = 0; i < file_count; i++) {
         file = files[i];
         entry = (file_entry_t*) malloc(sizeof(file_entry_t)); 
@@ -226,7 +249,7 @@ int main(int argc, char *argv[]) {
         uint64_t size = lib_fs_file_get_file_size(file);
         int size_len = _lib_len_counter_u64(size);
 
-        const lib_fmt_size_format_t* format = _get_size_format(size);
+        const lib_fmt_size_format_t* format = _get_size_format(context, size);
         if (format) {
             uint64_t unit_size = _get_unit_isize(size, format);
             int unit_size_len = _lib_len_counter_u64(unit_size);
@@ -241,30 +264,30 @@ int main(int argc, char *argv[]) {
         }
         //printf(">>size_len: %d\n", size_len);
 
-        if (entry->name_len > max_name_len) {
-            max_name_len = entry->name_len;
+        if (entry->name_len > context->max_name_len) {
+            context->max_name_len = entry->name_len;
         }
-        if (entry->nlink_len > max_nlink_len) {
-            max_nlink_len = entry->nlink_len;
+        if (entry->nlink_len > context->max_nlink_len) {
+            context->max_nlink_len = entry->nlink_len;
         }
-        if (entry->uname_len > max_uname_len) {
-            max_uname_len = entry->uname_len;
+        if (entry->uname_len > context->max_uname_len) {
+            context->max_uname_len = entry->uname_len;
         }
-        if (entry->gname_len > max_gname_len) {
-            max_gname_len = entry->gname_len;
+        if (entry->gname_len > context->max_gname_len) {
+            context->max_gname_len = entry->gname_len;
         }
 
-        if (size_len > max_size_len) {
-            max_size_len = size_len;
+        if (size_len > context->max_size_len) {
+            context->max_size_len = size_len;
         }
 
     }
 
-    //printf("max_name_len  : %d\n", max_name_len);
-    //printf("max_nlink_len : %d\n", max_nlink_len);
-    //printf("max_uname_len : %d\n", max_uname_len);
-    //printf("max_gname_len : %d\n\n", max_gname_len);
-    //printf("max_size_len : %d\n\n", max_size_len);
+    //printf("max_name_len  : %d\n", context->max_name_len);
+    //printf("max_nlink_len : %d\n", context->max_nlink_len);
+    //printf("max_uname_len : %d\n", context->max_uname_len);
+    //printf("max_gname_len : %d\n", context->max_gname_len);
+    //printf("max_size_len : %d\n\n", context->max_size_len);
 
     for (int i = 0; i < file_count; i++) {
 
@@ -289,7 +312,7 @@ int main(int argc, char *argv[]) {
         }
 
         /* Print Mode      */
-        if (use_mode) {
+        if (config->use_mode) {
             char mode[11 + 1];
             memset(mode, '-', 10);
             mode[10] = ' ';
@@ -300,39 +323,39 @@ int main(int argc, char *argv[]) {
         }
         
         /* Print NLink      */
-        if (use_nlink) {
+        if (config->use_nlink) {
             int nlink = entry->nlink;
-            pos += printf("%*d ", max_nlink_len, nlink);
+            pos += printf("%*d ", context->max_nlink_len, nlink);
         }
 
         /* Print User Name  */
-        if (use_uname) {
+        if (config->use_uname) {
             char* uname = entry->uname;
-            pos += printf("%-*s  ", max_uname_len, uname);
+            pos += printf("%-*s  ", context->max_uname_len, uname);
         }
 
         /* Print Group Name */
-        if (use_uname) {
+        if (config->use_uname) {
             char* gname = entry->gname;
-            pos += printf("%-*s ", max_gname_len, gname);
+            pos += printf("%-*s ", context->max_gname_len, gname);
         }
         
         /* Print Size    */
-        if (use_size & use_size_first) {
+        if (config->use_size & config->use_size_first) {
             uint64_t size = lib_fs_file_get_file_size(file);
-            pos += _print_size(size, max_size_len);
+            pos += _print_size(context, size);
         }
 
         /* Print DateTime */
-        if (use_date) {
+        if (config->use_date) {
             time_t time = lib_fs_file_get_file_mtime(file);
-            pos += lib_fmt_print_file_date_time(time, buf, BUF_LEN, use_time);
+            pos += lib_fmt_print_file_date_time(time, buf, BUF_LEN, config->use_time);
         }
 
         /* Print Size    */
-        if (use_size & !use_size_first) {
+        if (config->use_size & !config->use_size_first) {
             uint64_t size = lib_fs_file_get_file_size(file);
-            pos += _print_size(size, max_size_len);
+            pos += _print_size(context, size);
         }
 
         if (stat_pos < 0) {
@@ -399,4 +422,45 @@ int main(int argc, char *argv[]) {
     free(dir_name);
 
     return 0;
+}
+
+int main(int argc, char *argv[]) {
+
+    bool error = false;
+    int opt;
+    run_ls_config config;
+    run_ls_config_init(&config);
+
+    while ((opt = getopt(argc, argv, "alh")) != -1) {
+        switch (opt) {
+        case 'a':
+            config.is_all = true;
+            break;
+        case 'l':
+            config.is_long = true;
+            break;
+        case 'h':
+            config.is_human = true;
+            break;
+        case '?':
+            error = true;
+            break;
+        }
+    }
+
+    if (error) {
+        usage();
+        return 1;
+    }
+
+    if (config.is_human) {
+        // Set human size mode: start with 'Kb'
+        config.min_size_format = 0;
+    }
+
+    run_ls_context context;
+    run_ls_context_init(&context);
+    context.config = &config;
+
+    return run_ls(&context);
 }
