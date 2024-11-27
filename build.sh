@@ -76,6 +76,7 @@ $CC $CFLAGS run_hex_byte.cpp -o run_hex_byte.o
 $CC $CFLAGS run_ssldump.cpp -o run_ssldump.o
 
 $CC $CFLAGS run_encmap.cpp -o run_encmap.o
+$CC $CFLAGS run_ctype.cpp -o run_ctype.o
 
 $CC $CFLAGS test_getopt.cpp -o test_getopt.o
 $CC $CFLAGS test_echo.cpp -o test_echo.o
@@ -109,9 +110,9 @@ $CC $LDFLAGS getopt.o iodef.o iolib.o run_hex_byte.o -o run-hex-byte
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump
 
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_encmap.o -o run-encmap
+$CC $LDFLAGS run_ctype.o -o run-ctype
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_locale.o -o test-locale
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o utf8lib.o test_utf8.o -o test-utf8
-
