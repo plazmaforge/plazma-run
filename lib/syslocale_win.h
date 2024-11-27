@@ -15,8 +15,10 @@
 
 ////
 
-static UINT _cp;
-static UINT _out_cp;
+static UINT _cp;       // Console Codepage       : GetConsoleCP()
+static UINT _out_cp;   // Console Output Codepage: GetConsoleOutputCP()
+static UINT _ans_cp;   // ANSI Codepage          : GetACP()
+static UINT _oem_cp;   // OEM Codepage           : GetOEMCP()
 
 int getCodepage(int cat);
 
@@ -285,9 +287,11 @@ static void loadLocaleAllWin(SysInfo& sysInfo) {
 }
 */
 
-void getConsoleCodepage() {
-    _cp = GetConsoleCP();
+void loadConsoleCodepage() {
+    _cp     = GetConsoleCP();
     _out_cp = GetConsoleOutputCP();
+    _ans_cp = GetACP();
+    _oem_cp = GetOEMCP();
 }
 
 void setConsoleCodepage(UINT cp, UINT out_cp) {
@@ -305,15 +309,24 @@ lib_locale_t* lib_sys_load_locale_os(int cat) {
 }
 
 void lib_locale_win_init() {
-
-    getConsoleCodepage();
+    loadConsoleCodepage();
     if (debug) {
         printf("\n");
         printf("Get ConsoleCP   : %d\n", _cp);
         printf("Get ConsoleOutCP: %d\n", _out_cp);
+        printf("Get ACP         : %d\n", _ans_cp);
+        printf("Get OEM         : %d\n", _oem_cp);
     }
 
-    // TODO: Maybe check all UTF codepage.
+    if (_cp == 65001 && _out_cp == 65001) {
+        // UTF-8
+        if (debug) {
+            printf("Ret ConsoleCP   : UTF-8\n");
+            printf("Ret ConsoleOutCP: UTF-8\n");
+        }
+        return;
+    }
+
     if (_out_cp == 65001) {
         // UTF-8
         if (debug) {
@@ -324,12 +337,17 @@ void lib_locale_win_init() {
 
     UINT _new_cp = 0;
 
-    // TODO: Maybe check codepage. If it is WIN codepage then return
-    // TODO: Maybe convert DOS to WIN codepage and return
-    //if (_out_cp == 866) {
-    //   _new_cp = 1251;       
-    //}
-
+    if (use_utf8) {
+        _new_cp = 65001;        
+    } else {
+        // TODO: Maybe check codepage. If it is WIN codepage then return
+        // TODO: Maybe convert DOS to WIN codepage and return
+        // TODO: Use GetACP()
+        //if (_out_cp == 866) {
+        //   _new_cp = 1251;       
+        //}
+    }
+    
     if (_new_cp > 0) {
         setConsoleCodepage(_new_cp);
         if (debug) {

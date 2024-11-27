@@ -13,6 +13,11 @@ lib_locale_t* lib_sys_load_current_locale_os() {
     return lib_sys_load_locale_os(LC_CTYPE);
 }
 
+void lib_sys_locale_os_init_utf8() {
+    use_utf8 = true;
+    lib_sys_locale_os_init();
+}
+
 void lib_sys_locale_os_init() {
 
     #if defined __APPLE__ && defined __MACH__

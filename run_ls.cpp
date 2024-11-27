@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <locale.h>
 
 #include "getopt.h"
 #include "fslib.h"
 #include "iodef.h"
 #include "fmtlib.h"
 #include "strlib.h"
+#include "syslib.h"
 
 typedef struct run_ls_config {
     bool is_all;
@@ -41,6 +43,20 @@ typedef struct run_ls_context {
     int max_gname_len;
     int max_size_len;
 } run_config;
+
+typedef struct file_entry_t {
+    lib_fs_file_t* file;
+    char* path;
+    char* name;
+    int nlink;
+    char* uname;
+    char* gname;
+    //
+    int nlink_len;
+    int name_len;
+    int uname_len;
+    int gname_len;
+} file_entry_t;
 
 void run_ls_config_set_columns(run_ls_config* config, bool flag) {
     config->use_mode       = flag;
@@ -185,6 +201,7 @@ int run_ls(run_ls_context* context) {
     }
 
     //lib_io_buf_init();
+    lib_sys_locale_init_utf8();
 
     int DATE_LEN = 10; // YYYY-MM-DD
     int TIME_LEN = 8;  // HH:MM:SS
@@ -207,20 +224,6 @@ int run_ls(run_ls_context* context) {
     //   fprintf(stderr, "error-1: %d\n", err);
     //   perror("fflush error\n");
     //}
-
-    struct file_entry_t {
-        lib_fs_file_t* file;
-        char* path;
-        char* name;
-        int nlink;
-        char* uname;
-        char* gname;
-        //
-        int nlink_len;
-        int name_len;
-        int uname_len;
-        int gname_len;
-    };
 
     file_entry_t* entry = NULL;
     file_entry_t* entries[file_count];
@@ -420,6 +423,8 @@ int run_ls(run_ls_context* context) {
 
     lib_fs_files_free(files);                        
     free(dir_name);
+
+    lib_sys_locale_restore();
 
     return 0;
 }
