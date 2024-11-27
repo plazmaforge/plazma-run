@@ -40,6 +40,11 @@ typedef struct run_ls_config {
 
 } run_ls_config;
 
+static const int DATE_PART_LEN = 10; // YYYY-MM-DD
+static const int TIME_PART_LEN = 8;  // HH:MM:SS
+//static const int TIME_BUF_LEN = DATE_PART_LEN + 1 + (config->use_time ? (TIME_PART_LEN + 1) : 0);
+static const int TIME_BUF_LEN = DATE_PART_LEN + 1 + TIME_PART_LEN + 1; // Why last ' '?
+
 typedef struct run_ls_context {
     run_ls_config* config;
     //
@@ -48,6 +53,14 @@ typedef struct run_ls_context {
     int max_uname_len;
     int max_gname_len;
     int max_size_len;
+    //
+    int pos;
+    int stat_pos;
+    int total;
+    //
+    size_t buf_size;
+    //
+    char time_buf[TIME_BUF_LEN];
 } run_config;
 
 typedef struct file_entry_t {
@@ -90,13 +103,19 @@ void run_ls_context_init(run_ls_context* context) {
     context->max_uname_len = 0;
     context->max_gname_len = 0;
     context->max_size_len  = 0;
+    //
+    context->pos = 0;
+    context->stat_pos = -1;
+    context->total = 0;
+    //
+    context->buf_size = 0;
 }
 
 void usage() {
     fprintf(stderr, "Usage: run-ls\n");
 }
 
-int _lib_len_counter(int val) {
+static int _lib_len_counter(int val) {
     if (val == 0) {
         return 0;
     }
@@ -112,7 +131,7 @@ int _lib_len_counter(int val) {
     return len;
 }
 
-int _lib_len_counter_u64(uint64_t val) {
+static int _lib_len_counter_u64(uint64_t val) {
     if (val == 0) {
         return 0;
     }
@@ -125,7 +144,7 @@ int _lib_len_counter_u64(uint64_t val) {
     return len;
 }
 
-char* _lib_itoa(int val) {
+static char* _lib_itoa(int val) {
     if(val == 0) {
         return lib_strdup("0");
     }
@@ -149,7 +168,7 @@ char* _lib_itoa(int val) {
 
 ////
 
-bool _is_heap(void* ptr) {
+static bool _is_heap(void* ptr) {
     int x;
     uint64_t* pi = (uint64_t*) ptr;
     uint64_t* px = (uint64_t*) &x;
@@ -158,7 +177,24 @@ bool _is_heap(void* ptr) {
 
 ////
 
-const lib_fmt_size_format_t* _get_size_format(run_ls_context* context, uint64_t size) {
+static int _get_format(char* val) {
+    if (!val) {
+        return 0;
+    }
+
+    if (strcmp(val, "csv") == 0) {
+        return RUN_LS_FORMAT_CSV;
+    } else if (strcmp(optarg, "tsv") == 0) {
+        return RUN_LS_FORMAT_TSV;
+    } else if (strcmp(optarg, "xml") == 0) {
+        return RUN_LS_FORMAT_XML;
+    } else if (strcmp(optarg, "json") == 0) {
+        return RUN_LS_FORMAT_JSON;
+    }
+    return 0;
+}
+
+static const lib_fmt_size_format_t* _get_size_format(run_ls_context* context, uint64_t size) {
     int min_size_format = context->config->min_size_format;
     if (min_size_format < 0) {
         return NULL; // No format. It is not pretty format. Size in bytes only
@@ -167,15 +203,15 @@ const lib_fmt_size_format_t* _get_size_format(run_ls_context* context, uint64_t 
     return index >= 0 ? &(LIB_FMT_SIZE_FORMATS[index]) : NULL;
 }
 
-double _get_unit_size(uint64_t size, const lib_fmt_size_format_t* format) {
+static double _get_unit_size(uint64_t size, const lib_fmt_size_format_t* format) {
     return (double) size / (double) format->factor;
 }
 
-uint64_t _get_unit_isize(uint64_t size, const lib_fmt_size_format_t* format) {
+static uint64_t _get_unit_isize(uint64_t size, const lib_fmt_size_format_t* format) {
     return (uint64_t) _get_unit_size(size, format);
 }
 
-int _print_size(run_ls_context* context, uint64_t size) {
+static int _print_size(run_ls_context* context, uint64_t size) {
     const lib_fmt_size_format_t* format = _get_size_format(context, size);
     int len = context->max_size_len;
 
@@ -188,6 +224,80 @@ int _print_size(run_ls_context* context, uint64_t size) {
         //return printf("%*lluB ", len + 2, size);
     }
 }
+
+////
+
+static int _print_line(run_ls_context* context, file_entry_t* entry) {
+
+    run_ls_config* config = context->config;
+    lib_fs_file_t* file = entry->file;
+
+    int pos = 0;
+    char* name = entry->name;
+    int name_len = entry->name_len;
+
+    /* Print Mode      */
+    if (config->use_mode) {
+        char mode[11 + 1];
+        memset(mode, '-', 10);
+        mode[10] = ' ';
+        mode[11] = '\0';
+
+        lib_fs_file_add_attr(file, mode);
+        pos += printf("%s ", mode);
+    }
+        
+    /* Print NLink      */
+    if (config->use_nlink) {
+        int nlink = entry->nlink;
+        pos += printf("%*d ", context->max_nlink_len, nlink);
+    }
+
+    /* Print User Name  */
+    if (config->use_uname) {
+        char* uname = entry->uname;
+        pos += printf("%-*s  ", context->max_uname_len, uname);
+    }
+
+    /* Print Group Name */
+    if (config->use_uname) {
+        char* gname = entry->gname;
+        pos += printf("%-*s ", context->max_gname_len, gname);
+    }
+        
+    /* Print Size    */
+    if (config->use_size & config->use_size_first) {
+        uint64_t size = lib_fs_file_get_file_size(file);
+        pos += _print_size(context, size);
+    }
+
+    /* Print DateTime */
+    if (config->use_date) {
+        time_t time = lib_fs_file_get_file_mtime(file);
+        pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, config->use_time);
+    }
+
+    /* Print Size    */
+    if (config->use_size & !config->use_size_first) {
+        uint64_t size = lib_fs_file_get_file_size(file);
+        pos += _print_size(context, size);
+    }
+
+    if (context->stat_pos < 0) {
+        context->stat_pos = context->pos;
+        if (context->stat_pos < 0) {
+            context->stat_pos = 0;
+        }
+    }
+
+    /* Print Name   */
+    context->pos += printf("%s\n", name);
+    free(name);
+
+    return pos;
+}
+
+////
 
 int run_ls(run_ls_context* context) {
 
@@ -209,19 +319,14 @@ int run_ls(run_ls_context* context) {
     //lib_io_buf_init();
     lib_sys_locale_init_utf8();
 
-    int DATE_LEN = 10; // YYYY-MM-DD
-    int TIME_LEN = 8;  // HH:MM:SS
-    int BUF_LEN = DATE_LEN + 1 + (config->use_time ? (TIME_LEN + 1) : 0);
-    char buf[BUF_LEN];
+    context->pos = 0;
+    context->stat_pos = -1;
+    context->total = 0;
 
-    int pos = 0;
-    int stat_pos = -1;
-    int total = 0;
+    context->buf_size = 0; //lib_io_stdout_get_buf_size();
+    //context->buf_size = lib_io_get_buf_page(buf_size);
 
-    size_t buf_size = 0; //lib_io_stdout_get_buf_size();
-    //buf_size = lib_io_get_buf_page(buf_size);
-
-    //printf("buf size: %lu\n", buf_size);
+    //printf("buf size: %lu\n", context->buf_size);
     //fflush(stdout);
     //int max = 0;
 
@@ -301,87 +406,24 @@ int run_ls(run_ls_context* context) {
     for (int i = 0; i < file_count; i++) {
 
         entry = entries[i];
-        file = entry->file; // files[i];
+        file = entry->file;
 
         if (!file) {
             continue;
         }
-
-        pos = 0;
-        char* name = entry->name;
-        int name_len = entry->name_len;
-
-        if (buf_size > 0 && i > 0) {
-            int try_pos = (stat_pos > 0 ? stat_pos : 0) + name_len;
-            if (total + try_pos > buf_size) {
+        
+        if (context->buf_size > 0 && i > 0) {
+            int try_pos = (context->stat_pos > 0 ? context->stat_pos : 0) + entry->name_len;
+            if (context->total + try_pos > context->buf_size) {
                 fflush(stdout);
-                //pos = printf("%s: %d, %d, %d, %d\n", "FLUSH (!)", total, try_pos, stat_pos, name_len);
-                total = 0;
+                //context->pos = printf("%s: %d, %d, %d, %d\n", "FLUSH (!)", context->total, try_pos, context->stat_pos, entry->name_len);
+                context->total = 0;
             }
         }
 
-        /* Print Mode      */
-        if (config->use_mode) {
-            char mode[11 + 1];
-            memset(mode, '-', 10);
-            mode[10] = ' ';
-            mode[11] = '\0';
+        context->pos = _print_line(context, entry);
+        context->total += context->pos;
 
-            lib_fs_file_add_attr(file, mode);
-            pos += printf("%s ", mode);
-        }
-        
-        /* Print NLink      */
-        if (config->use_nlink) {
-            int nlink = entry->nlink;
-            pos += printf("%*d ", context->max_nlink_len, nlink);
-        }
-
-        /* Print User Name  */
-        if (config->use_uname) {
-            char* uname = entry->uname;
-            pos += printf("%-*s  ", context->max_uname_len, uname);
-        }
-
-        /* Print Group Name */
-        if (config->use_uname) {
-            char* gname = entry->gname;
-            pos += printf("%-*s ", context->max_gname_len, gname);
-        }
-        
-        /* Print Size    */
-        if (config->use_size & config->use_size_first) {
-            uint64_t size = lib_fs_file_get_file_size(file);
-            pos += _print_size(context, size);
-        }
-
-        /* Print DateTime */
-        if (config->use_date) {
-            time_t time = lib_fs_file_get_file_mtime(file);
-            pos += lib_fmt_print_file_date_time(time, buf, BUF_LEN, config->use_time);
-        }
-
-        /* Print Size    */
-        if (config->use_size & !config->use_size_first) {
-            uint64_t size = lib_fs_file_get_file_size(file);
-            pos += _print_size(context, size);
-        }
-
-        if (stat_pos < 0) {
-            stat_pos = pos;
-            if (stat_pos < 0) {
-                stat_pos = 0;
-            }
-        }
-
-        /* Print Name   */
-        pos += printf("%s\n", name);
-        total += pos;
-        //if (pos > max) {
-        //    max = pos;
-        //}
-
-        free(name);
         free(entry);
     }
 
@@ -432,23 +474,6 @@ int run_ls(run_ls_context* context) {
 
     lib_sys_locale_restore();
 
-    return 0;
-}
-
-int _get_format(char* val) {
-    if (!val) {
-        return 0;
-    }
-
-    if (strcmp(val, "csv") == 0) {
-        return RUN_LS_FORMAT_CSV;
-    } else if (strcmp(optarg, "tsv") == 0) {
-        return RUN_LS_FORMAT_TSV;
-    } else if (strcmp(optarg, "xml") == 0) {
-        return RUN_LS_FORMAT_XML;
-    } else if (strcmp(optarg, "json") == 0) {
-        return RUN_LS_FORMAT_JSON;
-    }
     return 0;
 }
 

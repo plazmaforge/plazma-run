@@ -5,14 +5,10 @@
 #include "getopt.h"
 #include "iodef.h"
 
-void usage() {
-    fprintf(stderr, "Usage: run-encmap [-f csv | tsv | array] file\n");
-}
-
-int ENCMAP_SPC   = 0;
-int ENCMAP_CSV   = 1;
-int ENCMAP_TSV   = 2;
-int ENCMAP_ARRAY = 3;
+int RUN_ENCMAP_FORMAT_SPC   = 0;
+int RUN_ENCMAP_FORMAT_CSV   = 1;
+int RUN_ENCMAP_FORMAT_TSV   = 2;
+int RUN_ENCMAP_FORMAT_ARRAY = 3;
 
 typedef struct map_record_t {
     char icode[16];   /* international char code */
@@ -23,6 +19,10 @@ typedef struct map_record_t {
     int mode;
     bool use_comments;
 } map_record_t;
+
+void usage() {
+    fprintf(stderr, "Usage: run-encmap [-f csv | tsv | array] file\n");
+}
 
 bool is_ignore_line(char* str) {
     if (*str == '\0') {
@@ -135,13 +135,13 @@ int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
 
     //printf("%s", line);
 
-    if (record->mode == ENCMAP_SPC) {
+    if (record->mode == RUN_ENCMAP_FORMAT_SPC) {
         printf("[%s]-[%s]-[%s]\n", record->icode, record->ucode, record->name); // SPC
-    } else if (record->mode == ENCMAP_CSV) {
+    } else if (record->mode == RUN_ENCMAP_FORMAT_CSV) {
         printf("%s,%s,\"%s\"\n", record->icode, record->ucode, record->name);   // CSV
-    } else if (record->mode == ENCMAP_TSV) {
+    } else if (record->mode == RUN_ENCMAP_FORMAT_TSV) {
         printf("%s\t%s\t\"%s\"\n", record->icode, record->ucode, record->name); // TSV
-    } else if (record->mode == ENCMAP_ARRAY) {
+    } else if (record->mode == RUN_ENCMAP_FORMAT_ARRAY) {
 
         if (record->number > 1) {
             //printf("%s%i\n", ",", number);
@@ -180,7 +180,7 @@ int run_encmap(int mode, const char* file_name) {
     record.mode = mode;
     record.number = 0;
 
-    if (mode == ENCMAP_ARRAY) {
+    if (mode == RUN_ENCMAP_FORMAT_ARRAY) {
         printf("%s\n", "static const int ENCODING_MAP[][2] = {");
     }
 
@@ -197,7 +197,7 @@ int run_encmap(int mode, const char* file_name) {
     }
 
 
-    if (mode == ENCMAP_ARRAY) {
+    if (mode == RUN_ENCMAP_FORMAT_ARRAY) {
 
         if (record.number > 0 && record.use_comments) {
             printf("  /* %s */ \n", record.name);
@@ -219,7 +219,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    int mode = ENCMAP_TSV;
+    int mode = RUN_ENCMAP_FORMAT_TSV;
     bool use_comments = false;
 
     bool error = false;
@@ -229,13 +229,13 @@ int main(int argc, char* argv[]) {
         case 'f':
             if (optarg) {
                 if (strcmp(optarg, "spc") == 0) {
-                    mode = ENCMAP_SPC;
+                    mode = RUN_ENCMAP_FORMAT_SPC;
                 } else if (strcmp(optarg, "csv") == 0) {
-                    mode = ENCMAP_CSV;
+                    mode = RUN_ENCMAP_FORMAT_CSV;
                 } else if (strcmp(optarg, "tsv") == 0) {
-                    mode = ENCMAP_TSV;
+                    mode = RUN_ENCMAP_FORMAT_TSV;
                 } else if (strcmp(optarg, "array") == 0) {
-                    mode = ENCMAP_ARRAY;
+                    mode = RUN_ENCMAP_FORMAT_ARRAY;
                     use_comments = true;
                 } else {
                     error = true;
