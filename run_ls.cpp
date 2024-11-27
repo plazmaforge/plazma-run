@@ -11,10 +11,16 @@
 #include "strlib.h"
 #include "syslib.h"
 
+int RUN_LS_FORMAT_CSV  = 1;
+int RUN_LS_FORMAT_TSV  = 2;
+int RUN_LS_FORMAT_XML  = 3;
+int RUN_LS_FORMAT_JSON = 4;
+
 typedef struct run_ls_config {
     bool is_all;
     bool is_long;
     bool is_human;
+    int format;
     //
     bool use_mode;
     bool use_nlink;
@@ -429,34 +435,85 @@ int run_ls(run_ls_context* context) {
     return 0;
 }
 
+int _get_format(char* val) {
+    if (!val) {
+        return 0;
+    }
+
+    if (strcmp(val, "csv") == 0) {
+        return RUN_LS_FORMAT_CSV;
+    } else if (strcmp(optarg, "tsv") == 0) {
+        return RUN_LS_FORMAT_TSV;
+    } else if (strcmp(optarg, "xml") == 0) {
+        return RUN_LS_FORMAT_XML;
+    } else if (strcmp(optarg, "json") == 0) {
+        return RUN_LS_FORMAT_JSON;
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
 
     bool error = false;
-    int opt;
-    run_ls_config config;
-    run_ls_config_init(&config);
+    const char* error_msg;
+    const char* error_arg;
 
-    while ((opt = getopt(argc, argv, "alh")) != -1) {
+    int opt;
+    int long_ind;
+
+    bool is_all   = true;
+    bool is_long  = true;
+    bool is_human = false;    
+    int format    = 0;
+
+    static struct option long_options[] = {
+          {"format", required_argument, 0, 'f'},
+          {NULL,     0,                 0, 0 }
+    };
+
+    while ((opt = getopt_long(argc, argv, "alhf:", long_options, &long_ind)) != -1) {
         switch (opt) {
         case 'a':
-            config.is_all = true;
+            is_all = true;
             break;
         case 'l':
-            config.is_long = true;
+            is_long = true;
             break;
         case 'h':
-            config.is_human = true;
+            is_human = true;
+            break;
+        case 'f':
+            format = _get_format(optarg);
+            if (format == 0) {
+                error = true;
+                error_msg = "Unsupported format";
+                //error_arg = optarg;
+            }
             break;
         case '?':
+            error = true;
+            break;
+        case ':':
             error = true;
             break;
         }
     }
 
     if (error) {
+        if (error_msg) {
+            fprintf(stderr, "%s\n", error_msg);
+        }
         usage();
         return 1;
     }
+
+    run_ls_config config;
+    run_ls_config_init(&config);
+
+    config.is_all   = is_all;
+    config.is_long  = is_long;
+    config.is_human = is_human;
+    config.format   = format;
 
     if (config.is_human) {
         // Set human size mode: start with 'Kb'
