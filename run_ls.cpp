@@ -26,7 +26,7 @@ typedef struct run_ls_config {
     bool use_nlink;
     bool use_uname;
     bool use_gname;
-    bool use_date;
+    //bool use_date;
     bool use_time;
     bool use_size;
     bool use_size_first;
@@ -82,7 +82,7 @@ void run_ls_config_set_columns(run_ls_config* config, bool flag) {
     config->use_nlink      = flag;
     config->use_uname      = flag;
     config->use_gname      = flag;
-    config->use_date       = flag;
+    //config->use_date       = flag;
     config->use_time       = flag;
     config->use_size       = flag;
 }
@@ -272,16 +272,16 @@ static int _print_line(run_ls_context* context, file_entry_t* entry) {
     }
 
     /* Print DateTime */
-    if (config->use_date) {
+    if (config->use_time) {
         time_t time = lib_fs_file_get_file_mtime(file);
-        pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, config->use_time);
+        pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
     }
 
     /* Print Size    */
-    if (config->use_size & !config->use_size_first) {
-        uint64_t size = lib_fs_file_get_file_size(file);
-        pos += _print_size(context, size);
-    }
+    //if (config->use_size & !config->use_size_first) {
+    //    uint64_t size = lib_fs_file_get_file_size(file);
+    //    pos += _print_size(context, size);
+    //}
 
     if (context->stat_pos < 0) {
         context->stat_pos = context->pos;
@@ -292,6 +292,87 @@ static int _print_line(run_ls_context* context, file_entry_t* entry) {
 
     /* Print Name   */
     context->pos += printf("%s\n", name);
+    free(name);
+
+    return pos;
+}
+
+static int _print_line_csv(run_ls_context* context, file_entry_t* entry) {
+
+    run_ls_config* config = context->config;
+    lib_fs_file_t* file = entry->file;
+
+    int pos = 0;
+
+    /* Print Mode      */
+    if (config->use_mode) {
+        char mode[11 + 1];
+        memset(mode, '-', 10);
+        mode[10] = ' ';
+        mode[11] = '\0';
+
+        lib_fs_file_add_attr(file, mode);
+        pos += printf("\"");
+        pos += printf("%s", mode);
+        pos += printf("\"");
+        pos += printf(", ");        
+    }
+        
+    /* Print NLink      */
+    if (config->use_nlink) {
+        int nlink = entry->nlink;
+        pos += printf("%d", nlink);
+        pos += printf(", ");
+    }
+
+    /* Print User Name  */
+    if (config->use_uname) {
+        char* uname = entry->uname;
+        pos += printf("\"");
+        pos += printf("%s", uname);
+        pos += printf("\"");
+        pos += printf(", ");
+    }
+
+    /* Print Group Name */
+    if (config->use_uname) {
+        char* gname = entry->gname;
+        pos += printf("\"");
+        pos += printf("%s", gname);
+        pos += printf("\"");
+        pos += printf(", ");
+    }
+        
+    /* Print Size    */
+    if (config->use_size & config->use_size_first) {
+        uint64_t size = lib_fs_file_get_file_size(file);
+        pos += _print_size(context, size);
+        pos += printf(", ");
+    }
+
+    /* Print DateTime */
+    if (config->use_time) {
+        time_t time = lib_fs_file_get_file_mtime(file);
+        pos += printf("\"");
+        pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
+        pos += printf("\"");
+        pos += printf(", ");
+    }
+
+    if (context->stat_pos < 0) {
+        context->stat_pos = context->pos;
+        if (context->stat_pos < 0) {
+            context->stat_pos = 0;
+        }
+    }
+
+    /* Print Name   */
+    char* name = entry->name;
+    pos += printf("\"");
+    context->pos += printf("%s", name);
+    pos += printf("\"");
+    context->pos += printf("\n");
+
     free(name);
 
     return pos;
@@ -421,8 +502,14 @@ int run_ls(run_ls_context* context) {
             }
         }
 
-        context->pos = _print_line(context, entry);
+        
+        if (config->format == RUN_LS_FORMAT_CSV) {
+            context->pos = _print_line_csv(context, entry);
+        } else {
+            context->pos = _print_line(context, entry);            
+        }
         context->total += context->pos;
+        
 
         free(entry);
     }
@@ -480,8 +567,8 @@ int run_ls(run_ls_context* context) {
 int main(int argc, char *argv[]) {
 
     bool error = false;
-    const char* error_msg;
-    const char* error_arg;
+    const char* error_msg = NULL;
+    const char* error_arg = NULL;
 
     int opt;
     int long_ind;
@@ -540,7 +627,7 @@ int main(int argc, char *argv[]) {
     config.is_human = is_human;
     config.format   = format;
 
-    if (config.is_human) {
+    if (config.is_human && config.format == 0) {
         // Set human size mode: start with 'Kb'
         config.min_size_format = 0;
     }
