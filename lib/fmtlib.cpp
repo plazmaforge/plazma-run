@@ -32,7 +32,7 @@ int lib_fmt_print_file_date_time(time_t time, char* buf, int buf_len, bool use_t
     } else {
         strftime(buf, buf_len, "%Y-%m-%d", timev);
     }
-    return printf("%s ", buf);
+    return printf("%s", buf);
 }
 
 int lib_fmt_print_file_size(uint64_t size) {

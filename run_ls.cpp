@@ -11,10 +11,12 @@
 #include "strlib.h"
 #include "syslib.h"
 
-int RUN_LS_FORMAT_CSV  = 1;
-int RUN_LS_FORMAT_TSV  = 2;
-int RUN_LS_FORMAT_XML  = 3;
-int RUN_LS_FORMAT_JSON = 4;
+int RUN_LS_FORMAT_DEF  = 0; // by default
+int RUN_LS_FORMAT_TAB  = 1; // Table with value separator: | 
+int RUN_LS_FORMAT_CSV  = 2; // CSV
+int RUN_LS_FORMAT_TSV  = 3; // TSV
+int RUN_LS_FORMAT_XML  = 4; // XML
+int RUN_LS_FORMAT_JSON = 5; // JSON
 
 typedef struct run_ls_config {
     bool is_all;
@@ -37,13 +39,14 @@ typedef struct run_ls_config {
       1: Flex pretty       - start with 'Mb' 
     */
     int min_size_format;
+    const char* value_separator;
 
 } run_ls_config;
 
 static const int DATE_PART_LEN = 10; // YYYY-MM-DD
 static const int TIME_PART_LEN = 8;  // HH:MM:SS
 //static const int TIME_BUF_LEN = DATE_PART_LEN + 1 + (config->use_time ? (TIME_PART_LEN + 1) : 0);
-static const int TIME_BUF_LEN = DATE_PART_LEN + 1 + TIME_PART_LEN + 1; // Why last ' '?
+static const int TIME_BUF_LEN = DATE_PART_LEN + 1 + TIME_PART_LEN + 1; // (+1): With '\0'
 
 typedef struct run_ls_context {
     run_ls_config* config;
@@ -91,10 +94,13 @@ void run_ls_config_init(run_ls_config* config) {
     config->is_all         = true;
     config->is_long        = true;
     config->is_human       = false;
+    config->format         = RUN_LS_FORMAT_DEF;
     //
     run_ls_config_set_columns(config, true);
     config->use_size_first = true;
     config->min_size_format = 1;
+    //
+    config->value_separator = " ";
 }
 
 void run_ls_context_init(run_ls_context* context) {
@@ -190,6 +196,8 @@ static int _get_format(char* val) {
         return RUN_LS_FORMAT_XML;
     } else if (strcmp(optarg, "json") == 0) {
         return RUN_LS_FORMAT_JSON;
+    } else if (strcmp(optarg, "tab") == 0) {
+        return RUN_LS_FORMAT_TAB;
     }
     return 0;
 }
@@ -211,90 +219,48 @@ static uint64_t _get_unit_isize(uint64_t size, const lib_fmt_size_format_t* form
     return (uint64_t) _get_unit_size(size, format);
 }
 
-static int _print_size(run_ls_context* context, uint64_t size) {
-    const lib_fmt_size_format_t* format = _get_size_format(context, size);
+//// Print Value
+
+static int _print_size_txt(run_ls_context* context, uint64_t size) {
+    return printf("%llu", size);
+}
+
+static int _print_size_fix(run_ls_context* context, uint64_t size) {
+
+    // Get max len
     int len = context->max_size_len;
+
+    // In bytes only without unit
+    //if (!context->config->is_human) {
+    //    return printf("%*llu", len, size);
+    //}
+
+    // Find size format
+    const lib_fmt_size_format_t* format = _get_size_format(context, size);
 
     if (format) {
         double value = _get_unit_size(size, format);
         const char* unit = format->unit;
-        return printf("%*.1f%c ", len + 2, value, unit[0]);
+        return printf("%*.1f%c", len + 2, value, unit[0]); // (+2) for '.1'
     } else {
-        return printf("%*llu  ", len + 2, size);
+        return printf("%*llu ", len + 2, size);            // (+2) for '.1'
         //return printf("%*lluB ", len + 2, size);
     }
 }
 
-////
+//// Print Line CSV ////
 
-static int _print_line(run_ls_context* context, file_entry_t* entry) {
+static int _print_quote(run_ls_context* context) {
+    return printf("\"");
+}
 
-    run_ls_config* config = context->config;
-    lib_fs_file_t* file = entry->file;
+static int _print_value_separator(run_ls_context* context) {
+    //return printf(", ");
+    return printf("%s", context->config->value_separator);
+}
 
-    int pos = 0;
-    char* name = entry->name;
-    int name_len = entry->name_len;
-
-    /* Print Mode      */
-    if (config->use_mode) {
-        char mode[11 + 1];
-        memset(mode, '-', 10);
-        mode[10] = ' ';
-        mode[11] = '\0';
-
-        lib_fs_file_add_attr(file, mode);
-        pos += printf("%s ", mode);
-    }
-        
-    /* Print NLink      */
-    if (config->use_nlink) {
-        int nlink = entry->nlink;
-        pos += printf("%*d ", context->max_nlink_len, nlink);
-    }
-
-    /* Print User Name  */
-    if (config->use_uname) {
-        char* uname = entry->uname;
-        pos += printf("%-*s  ", context->max_uname_len, uname);
-    }
-
-    /* Print Group Name */
-    if (config->use_uname) {
-        char* gname = entry->gname;
-        pos += printf("%-*s ", context->max_gname_len, gname);
-    }
-        
-    /* Print Size    */
-    if (config->use_size & config->use_size_first) {
-        uint64_t size = lib_fs_file_get_file_size(file);
-        pos += _print_size(context, size);
-    }
-
-    /* Print DateTime */
-    if (config->use_time) {
-        time_t time = lib_fs_file_get_file_mtime(file);
-        pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
-    }
-
-    /* Print Size    */
-    //if (config->use_size & !config->use_size_first) {
-    //    uint64_t size = lib_fs_file_get_file_size(file);
-    //    pos += _print_size(context, size);
-    //}
-
-    if (context->stat_pos < 0) {
-        context->stat_pos = context->pos;
-        if (context->stat_pos < 0) {
-            context->stat_pos = 0;
-        }
-    }
-
-    /* Print Name   */
-    context->pos += printf("%s\n", name);
-    free(name);
-
-    return pos;
+static int _print_line_separator(run_ls_context* context) {
+    return printf("\n");
 }
 
 static int _print_line_csv(run_ls_context* context, file_entry_t* entry) {
@@ -303,83 +269,223 @@ static int _print_line_csv(run_ls_context* context, file_entry_t* entry) {
     lib_fs_file_t* file = entry->file;
 
     int pos = 0;
+    bool has = false;
 
     /* Print Mode      */
     if (config->use_mode) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
         char mode[11 + 1];
         memset(mode, '-', 10);
         mode[10] = ' ';
         mode[11] = '\0';
 
         lib_fs_file_add_attr(file, mode);
-        pos += printf("\"");
+        pos += _print_quote(context);
         pos += printf("%s", mode);
-        pos += printf("\"");
-        pos += printf(", ");        
+        pos += _print_quote(context);
+        has = true;
     }
         
     /* Print NLink      */
     if (config->use_nlink) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
         int nlink = entry->nlink;
         pos += printf("%d", nlink);
-        pos += printf(", ");
+        has = true;
     }
 
     /* Print User Name  */
     if (config->use_uname) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
         char* uname = entry->uname;
-        pos += printf("\"");
+        pos += _print_quote(context);
         pos += printf("%s", uname);
-        pos += printf("\"");
-        pos += printf(", ");
+        pos += _print_quote(context);
+        has = true;
     }
 
     /* Print Group Name */
     if (config->use_uname) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
         char* gname = entry->gname;
-        pos += printf("\"");
+        pos += _print_quote(context);
         pos += printf("%s", gname);
-        pos += printf("\"");
-        pos += printf(", ");
+        pos += _print_quote(context);
+        has = true;
     }
         
     /* Print Size    */
     if (config->use_size & config->use_size_first) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
         uint64_t size = lib_fs_file_get_file_size(file);
-        pos += _print_size(context, size);
-        pos += printf(", ");
+        pos += _print_size_txt(context, size);
+        has = true;
     }
 
     /* Print DateTime */
     if (config->use_time) {
-        time_t time = lib_fs_file_get_file_mtime(file);
-        pos += printf("\"");
-        pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
-        pos += printf("\"");
-        pos += printf(", ");
-    }
-
-    if (context->stat_pos < 0) {
-        context->stat_pos = context->pos;
-        if (context->stat_pos < 0) {
-            context->stat_pos = 0;
+        if (has) {
+            pos += _print_value_separator(context);
         }
+        time_t time = lib_fs_file_get_file_mtime(file);
+        pos += _print_quote(context);
+        pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
+        pos += _print_quote(context);
+        has = true;
     }
 
     /* Print Name   */
+    if (has) {
+        pos += _print_value_separator(context);
+    }
     char* name = entry->name;
-    pos += printf("\"");
-    context->pos += printf("%s", name);
-    pos += printf("\"");
-    context->pos += printf("\n");
-
+    pos += _print_quote(context);
+    pos += printf("%s", name);
+    pos += _print_quote(context);
     free(name);
+
+    /* Print Line  */
+    pos += _print_line_separator(context);
+
+    return pos;
+}
+
+//// Print Line TSV ////
+static int _print_line_tsv(run_ls_context* context, file_entry_t* entry) {
+    return _print_line_csv(context, entry);
+}
+
+//// Print Line FIX ////
+
+static int _print_line_fix(run_ls_context* context, file_entry_t* entry) {
+
+    run_ls_config* config = context->config;
+    lib_fs_file_t* file = entry->file;
+
+    int pos = 0;
+    bool has = false;
+
+    //char* name = entry->name;
+    //int name_len = entry->name_len;
+
+    /* Print Mode      */
+    if (config->use_mode) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        char mode[11 + 1];
+        memset(mode, '-', 10);
+        mode[10] = ' ';
+        mode[11] = '\0';
+
+        lib_fs_file_add_attr(file, mode);
+        pos += printf("%s", mode);
+        has = true;
+    }
+        
+    /* Print NLink      */
+    if (config->use_nlink) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        int nlink = entry->nlink;
+        pos += printf("%*d", context->max_nlink_len, nlink);
+        has = true;
+    }
+
+    /* Print User Name  */
+    if (config->use_uname) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        char* uname = entry->uname;
+        pos += printf("%-*s ", context->max_uname_len, uname);
+        has = true;
+    }
+
+    /* Print Group Name */
+    if (config->use_uname) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        char* gname = entry->gname;
+        pos += printf("%-*s", context->max_gname_len, gname);
+        has = true;
+    }
+        
+    /* Print Size    */
+    if (config->use_size & config->use_size_first) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        uint64_t size = lib_fs_file_get_file_size(file);
+        pos += _print_size_fix(context, size);
+        has = true;
+    }
+
+    /* Print DateTime */
+    if (config->use_time) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        time_t time = lib_fs_file_get_file_mtime(file);
+        pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
+        has = true;
+    }
+
+    /* Print Size    */
+    //if (config->use_size & !config->use_size_first) {
+    //    uint64_t size = lib_fs_file_get_file_size(file);
+    //    pos += _print_size(context, size);
+    //}
+
+    // if (context->stat_pos < 0) {
+    //     context->stat_pos = context->pos;
+    //     if (context->stat_pos < 0) {
+    //         context->stat_pos = 0;
+    //     }
+    // }
+
+    /* Print Name   */
+    if (has) {
+        pos += _print_value_separator(context);
+    }
+    char* name = entry->name;
+    pos += printf("%s", name);
+    free(name);
+
+    /* Print Line  */
+    pos += _print_line_separator(context);
 
     return pos;
 }
 
 ////
 
+static int _print_line(run_ls_context* context, file_entry_t* entry) {
+
+    run_ls_config* config = context->config;
+
+    if (config->format == RUN_LS_FORMAT_CSV) {
+        return _print_line_csv(context, entry);
+    } else if (config->format == RUN_LS_FORMAT_TSV) {
+        return _print_line_tsv(context, entry);
+    }
+
+    return _print_line_fix(context, entry);;
+}
+
+////
 int run_ls(run_ls_context* context) {
 
     run_ls_config* config = context->config;
@@ -501,13 +607,14 @@ int run_ls(run_ls_context* context) {
                 context->total = 0;
             }
         }
-
         
-        if (config->format == RUN_LS_FORMAT_CSV) {
-            context->pos = _print_line_csv(context, entry);
-        } else {
-            context->pos = _print_line(context, entry);            
-        }
+        // if (config->format == RUN_LS_FORMAT_CSV) {
+        //     context->pos = _print_line_csv(context, entry);
+        // } else {
+        //     context->pos = _print_line_fix(context, entry);            
+        // }
+
+        context->pos = _print_line(context, entry);
         context->total += context->pos;
         
 
@@ -627,9 +734,20 @@ int main(int argc, char *argv[]) {
     config.is_human = is_human;
     config.format   = format;
 
-    if (config.is_human && config.format == 0) {
+    if (config.is_human 
+        && (config.format == RUN_LS_FORMAT_DEF || config.format == RUN_LS_FORMAT_TAB)) {
         // Set human size mode: start with 'Kb'
         config.min_size_format = 0;
+    }
+
+    if (config.format == RUN_LS_FORMAT_DEF) {
+        config.value_separator = " ";
+    } else if (config.format == RUN_LS_FORMAT_CSV) {
+        config.value_separator = ",";
+    } else if (config.format == RUN_LS_FORMAT_TSV) {
+        config.value_separator = "\t";
+    } else if (config.format == RUN_LS_FORMAT_TAB) {
+        config.value_separator = " | ";
     }
 
     run_ls_context context;
