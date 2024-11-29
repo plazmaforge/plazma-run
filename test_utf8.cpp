@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,7 +8,6 @@
 //#include "wstrlib.h"
 #include "syslib.h"
 #include "utf8lib.h"
-#include "enclib.h"
 
 void usage() {
     printf("Usage: test-utf8 <text>\n");
@@ -243,10 +241,6 @@ int main(int argc, char* argv[]) {
     //        val = -1264967296
 
     printf("val = %i\n", val);
-
-    printf("\n");
-    //lib_enc_print_encodings();
-
 
     lib_sys_locale_restore(); // Important for WIN32: The locale was changed for the terminal
     return 0;
