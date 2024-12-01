@@ -72,9 +72,9 @@ static const lib_encoding_t lib_encodings[] = {
       WINDOWS
     */
 
-    {1250,    "CP1250",      "Windows Latin 2",       "1250 WINDOWS-1250 MS-EE"},
+    {1250,    "CP1250",      "Windows Latin 2, CE",   "1250 WINDOWS-1250 MS-EE"},
     {1251,    "CP1251",      "Windows Cyrillic",      "1251 WINDOWS-1251 MS-CYRL"},
-    {1252,    "CP1252",      "Windows Latin 1",       "1252 WINDOWS-1252 MS-ANSI"},
+    {1252,    "CP1252",      "Windows Latin 1, WE",   "1252 WINDOWS-1252 MS-ANSI"},
     {1253,    "CP1253",      "Windows Greek",         "1253 WINDOWS-1253 MS-GREEK"},
     {1254,    "CP1254",      "Windows Turkish",       "1254 WINDOWS-1254 MS-TURK"},
     {1255,    "CP1255",      "Windows Hebrew",        "1255 WINDOWS-1255 MS-HEBR"},
@@ -183,6 +183,61 @@ bool lib_enc_is_ucs_encoding(int id) {
     /**/  || id == 1012000
     /**/  || id == 1012001
     /**/  || id == 1012002);
+}
+
+////
+
+int lib_enc_dos_to_win(int id) {
+    /*
+     437 -> 1252 Latin 1, Western European
+     737 -> 1253 Greek
+     775 -> 1257 Baltic
+     850 -> 1252 Latin 1, Western European
+     852 -> 1250 Latin 2, Central European
+     855 -> 1251 Cyrilik
+     857 -> 1254 Turkish
+     860 -> ---- Portuguese
+     861 -> ---- Icelandic
+     862 -> 1255 Hebrew
+     863 -> ---- French Canada
+     864 -> 1256 Arabic
+     865 -> ---- Nordic
+     866 -> 1251 Cyrilik
+     869 -> 1253 Greek
+    */
+    switch (id) {
+        case 437:
+            return 1252; // Latin 1, Western European
+        case 737:
+            return 1253; // Greek
+        case 775:
+            return 1257; // Baltic
+        case 850:
+            return 1252; // Latin 1, Western European
+        case 852:
+            return 1250; // Latin 2, Central European
+        case 855:
+            return 1251; // Cyrilik
+        case 857:
+            return 1254; // Turkish
+        case 860:
+            return 1252; // Latin 1, Western European (?)
+        case 861:
+            return 1252; // Latin 1, Western European (?)
+        case 862:
+            return 1255; // Hebrew
+        case 863:
+            return 1252; // Latin 1, Western European (?)
+        case 864:
+            return 1256; // Arabic
+        case 865:
+            return 1252; // Latin 1, Western European (?)
+        case 866:
+            return 1251; // Cyrilik
+        case 869:
+            return 1253; // Greek
+    }
+    return 0;  
 }
 
 int lib_enc_get_encoding_type(int id) {

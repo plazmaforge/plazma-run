@@ -303,6 +303,42 @@ void setConsoleCodepage(UINT cp) {
     setConsoleCodepage(cp, cp);
 }
 
+UINT convertDosToWinCodepage(UINT cp) {
+    switch (cp) {
+        case 437:
+            return 1252; // Latin 1, Western European
+        case 737:
+            return 1253; // Greek
+        case 775:
+            return 1257; // Baltic
+        case 850:
+            return 1252; // Latin 1, Western European
+        case 852:
+            return 1250; // Latin 2, Central European
+        case 855:
+            return 1251; // Cyrilik
+        case 857:
+            return 1254; // Turkish
+        case 860:
+            return 1252; // Latin 1, Western European (?)
+        case 861:
+            return 1252; // Latin 1, Western European (?)
+        case 862:
+            return 1255; // Hebrew
+        case 863:
+            return 1252; // Latin 1, Western European (?)
+        case 864:
+            return 1256; // Arabic
+        case 865:
+            return 1252; // Latin 1, Western European (?)
+        case 866:
+            return 1251; // Cyrilik
+        case 869:
+            return 1253; // Greek
+    }
+    return 0;  
+}
+
 lib_locale_t* lib_sys_load_locale_os(int cat) {
     //return lib_sys_parse_locale(lib_sys_get_locale(cat));
     return loadLocaleWin(cat);
@@ -324,6 +360,7 @@ void lib_locale_win_init() {
             printf("Ret ConsoleCP   : UTF-8\n");
             printf("Ret ConsoleOutCP: UTF-8\n");
         }
+        setlocale(LC_ALL, "");
         return;
     }
 
@@ -332,20 +369,19 @@ void lib_locale_win_init() {
         if (debug) {
             printf("Ret ConsoleOutCP: UTF-8\n");
         }
+        setlocale(LC_ALL, "");
         return;
     }
 
     UINT _new_cp = 0;
 
     if (use_utf8) {
-        _new_cp = 65001;        
+        _new_cp = 65001; // UTF-8
     } else {
-        // TODO: Maybe check codepage. If it is WIN codepage then return
-        // TODO: Maybe convert DOS to WIN codepage and return
-        // TODO: Use GetACP()
-        //if (_out_cp == 866) {
-        //   _new_cp = 1251;       
-        //}
+        _new_cp = convertDosToWinCodepage(_cp);
+        if (_new_cp == 0) {
+            _new_cp = GetACP(); 
+        }
     }
     
     if (_new_cp > 0) {
@@ -355,6 +391,7 @@ void lib_locale_win_init() {
             printf("Set ConsoleCP   : %d\n", _new_cp);
             printf("Set ConsoleOutCP: %d\n", _new_cp);
         }
+        setlocale(LC_ALL, "");
         return;
     }
 
@@ -471,10 +508,11 @@ void lib_locale_win_init() {
 }
 
 void lib_locale_win_restore() {
-    if (_out_cp == 65001) {
-        // UTF-8
-        return;
-    }
+    
+    //if (_out_cp == 65001) {
+    //    // UTF-8
+    //    return;
+    //}
     
     UINT _cur_cp = GetConsoleCP();
     UINT _cur_out_cp = GetConsoleOutputCP();
