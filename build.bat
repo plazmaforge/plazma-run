@@ -65,7 +65,7 @@ rem compile
 %CC% %CFLAGS% run_hex_byte.cpp -o run_hex_byte.o
 %CC% %CFLAGS% run_ssldump.cpp -o run_ssldump.o
 
-%CC% %CFLAGS% run_encmap.cpp -o run_encmap.o
+%CC% %CFLAGS% run_unimap.cpp -o run_unimap.o
 %CC% %CFLAGS% run_ctype.cpp -o run_ctype.o
 
 %CC% %CFLAGS% test_getopt.cpp -o test_getopt.o
@@ -100,7 +100,7 @@ rem link
 %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_hex_byte.o -o run-hex-byte.exe
 %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 
-%CC% %LDFLAGS% getopt.o iodef.o iolib.o run_encmap.o -o run-encmap.exe
+%CC% %LDFLAGS% getopt.o iodef.o iolib.o run_unimap.o -o run-unimap.exe
 %CC% %LDFLAGS% run_ctype.o -o run-ctype.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe

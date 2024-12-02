@@ -11,9 +11,9 @@ int RUN_ENCMAP_FORMAT_TSV   = 2;
 int RUN_ENCMAP_FORMAT_ARRAY = 3;
 
 typedef struct map_record_t {
-    char icode[16];   /* international char code */
-    char ucode[16];   /* unicode char code       */
-    char name[255];   /* char name               */
+    char icode[16];      /* international char code */
+    char ucode[16];      /* unicode char code       */
+    char name[255];      /* char name               */
     char prev_name[255];
     int number;
     int mode;
@@ -21,7 +21,7 @@ typedef struct map_record_t {
 } map_record_t;
 
 void usage() {
-    fprintf(stderr, "Usage: run-encmap [-f csv | tsv | array] file\n");
+    fprintf(stderr, "Usage: run-unimap [-f csv | tsv | array] file\n");
 }
 
 bool is_ignore_line(char* str) {
@@ -71,7 +71,7 @@ int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
         len = 0;
         while (str 
             && *str != '\0'
-            && *str != '\r'            
+            && *str != '\r'
             && *str != '\n'
             && *str != '\t') {
             str++;
@@ -85,25 +85,43 @@ int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
             }
             strncpy(record->icode, val, len);
             record->icode[len] = '\0';
+            //printf("col = %d, len = %d, val = %s\n", col, len, val);
         } else if (col == 2) {
             strncpy(record->ucode, val, len);
             record->ucode[len] = '\0';
-        } else if (col == 3) {
-            record->prev_name[0] = '\0';
-            if (len > 0) {
+            //printf("col = %d, len = %d, val = %s\n", col, len, val);
+        } else if (col == 3 || col == 4) {
+            //printf("col = %d, len = %d, val = %s\n", col, len, val);
+            if (col == 3 && len == 1 && *val == '#') {
+                //printf("continue\n");
+            } else {
+                record->prev_name[0] = '\0';
+                if (len > 0) {
 
-                // move name to prev_name (!)
-                strcpy(record->prev_name, record->name);
+                    // move name to prev_name (!)
+                    strcpy(record->prev_name, record->name);
 
-                // skip '#'
-                // shift first char: val + 1
-                len--; 
+                    // skip '#'
+                    // shift first char: val + 1
+                    bool shift = false;
+                    if (*val == '#') {
+                        shift = true;
+                        len--;
+                    }
 
-                strncpy(record->name, val + 1, len);
-                //record->name[len] = '\0';
+                    //if (is_shift) {
+                    //    len--; 
+                    //}
+
+                    strncpy(record->name, shift ? val + 1 : val, len);
+                    //record->name[len] = '\0';
+                }
+                record->name[len] = '\0';
+                if (col == 4) {
+                    break;
+                }
+                //break;
             }
-            record->name[len] = '\0';
-            break;
         } else {
             break;
         }
@@ -112,14 +130,17 @@ int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
             break;
         }
 
+        // Check end of the line
         if (*str == '\0' 
             || *str == '\r' 
             || *str == '\n') {
             break;
         }
 
+        // Move to the next column
         val += len;
 
+        // Check the column separator
         if (*str == '\t') {
             str++;
             val++;
@@ -159,7 +180,7 @@ int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
     return 0;
 }
 
-int run_encmap(int mode, const char* file_name) {
+int run_unimap(int mode, const char* file_name) {
 
     if (!file_name) {
         fprintf(stderr, "Unable to open file!\n");
@@ -268,7 +289,7 @@ int main(int argc, char* argv[]) {
 
     lib_io_buf_init();
 
-    return run_encmap(mode, file_name);
+    return run_unimap(mode, file_name);
 
 }
 
