@@ -24,21 +24,50 @@ void usage() {
     fprintf(stderr, "Usage: run-unimap [-f csv | tsv | array] file\n");
 }
 
-bool is_ignore_line(char* str) {
-    if (*str == '\0') {
-        // Empty string
+bool _is_empty(char* str) {
+    return (!str || *str == '\0');
+}
+
+bool _is_blank(char* str) {
+    return (*str == ' ');
+}
+
+bool _is_tab(char* str) {
+    return (*str == '\t');
+}
+
+bool _is_space(char* str) {
+    return _is_blank(str) || _is_tab(str);
+}
+
+bool _is_comment(char* str) {
+    return (*str == '#');
+}
+
+bool _is_end(char* str) {
+    return (*str == '\r' || *str == '\n');
+}
+
+bool _is_valid(char* str) {
+    return !_is_empty(str) 
+        && !_is_tab(str) 
+        && !_is_end(str);
+}
+
+/**
+ * Returns true if the line is ignore 
+ */
+bool _is_ignore_line(char* str) {
+    if (_is_empty(str)) {
         return true;
     }
 
-    if (*str == ' ' 
-           || *str == '\t'
-           || *str == '\r'
-           || *str == '\n') {
+    if (_is_space(str) || _is_end(str)) {
 
             //str++;
             // Whitespace: incorrect line
             return true;
-    } else if (*str == '#') {
+    } else if (_is_comment(str)) {
             // Comment line (#): ignore line
             return true;
     } 
@@ -46,15 +75,11 @@ bool is_ignore_line(char* str) {
     return false;
 }
 
-int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
+int run_line(map_record_t* record, char* line) {
     if (!line) {
         return 1;
     }
     
-    //if (is_ignore_line(line)) {
-    //    return 0;
-    //}
-
     char* str = line;
     char* val = str;
 
@@ -69,11 +94,7 @@ int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
     for(;;) {
 
         len = 0;
-        while (str 
-            && *str != '\0'
-            && *str != '\r'
-            && *str != '\n'
-            && *str != '\t') {
+        while (_is_valid(str)) {
             str++;
             len++;
         }
@@ -92,7 +113,7 @@ int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
             //printf("col = %d, len = %d, val = %s\n", col, len, val);
         } else if (col == 3 || col == 4) {
             //printf("col = %d, len = %d, val = %s\n", col, len, val);
-            if (col == 3 && len == 1 && *val == '#') {
+            if (col == 3 && len == 1 && _is_comment(val)) {
                 //printf("continue\n");
             } else {
                 record->prev_name[0] = '\0';
@@ -104,14 +125,10 @@ int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
                     // skip '#'
                     // shift first char: val + 1
                     bool shift = false;
-                    if (*val == '#') {
+                    if (_is_comment(val)) {
                         shift = true;
                         len--;
                     }
-
-                    //if (is_shift) {
-                    //    len--; 
-                    //}
 
                     strncpy(record->name, shift ? val + 1 : val, len);
                     //record->name[len] = '\0';
@@ -126,14 +143,8 @@ int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
             break;
         }
 
-        if (!str) {
-            break;
-        }
-
-        // Check end of the line
-        if (*str == '\0' 
-            || *str == '\r' 
-            || *str == '\n') {
+        // Check empty or end of the line
+        if (_is_empty(str) || _is_end(str)) {
             break;
         }
 
@@ -141,7 +152,7 @@ int run_line(map_record_t* record, /*int mode, int number,*/ char* line) {
         val += len;
 
         // Check the column separator
-        if (*str == '\t') {
+        if (_is_tab(str)) {
             str++;
             val++;
         }
@@ -196,7 +207,6 @@ int run_unimap(int mode, const char* file_name) {
 
     // Buffer to store each line of the file.
     char line[256];
-    //int number = 0;
     map_record_t record;
     record.mode = mode;
     record.number = 0;
@@ -208,13 +218,12 @@ int run_unimap(int mode, const char* file_name) {
     while (fgets(line, sizeof(line), file)) {
 
         // Skip empty, comments line
-        if (is_ignore_line(line)) {
+        if (_is_ignore_line(line)) {
             continue;
         }
-        //number++;
         record.number++;
 
-        run_line(&record /*mode, number*/, line);
+        run_line(&record, line);
     }
 
 
