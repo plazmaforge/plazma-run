@@ -6,32 +6,26 @@
 #include "getopt.h"
 #include "iodef.h"
 
-int RUN_ENCMAP_FORMAT_SPC    = 0;
-int RUN_ENCMAP_FORMAT_CSV    = 1;
-int RUN_ENCMAP_FORMAT_TSV    = 2;
-int RUN_ENCMAP_FORMAT_TAB    = 3;
-int RUN_ENCMAP_FORMAT_MAP  = 4;
-int RUN_ENCMAP_FORMAT_ARRAY2 = 5;
+int RUN_UNIMAP_FORMAT_SPC   = 0;
+int RUN_UNIMAP_FORMAT_CSV   = 1;
+int RUN_UNIMAP_FORMAT_TSV   = 2;
+int RUN_UNIMAP_FORMAT_TAB   = 3;
+int RUN_UNIMAP_FORMAT_MAP   = 4;
+int RUN_UNIMAP_FORMAT_ARRAY = 5;
 
 typedef struct run_unimap_config_t {
-    int mode;
+    int format;
     bool use_comments;
 } run_unimap_config_t;
 
-typedef struct run_unimap_record_t {
+typedef struct run_unimap_entry_t {
     char icode[16];      /* international char code */
     char ucode[16];      /* unicode char code       */
     char name[255];      /* char name               */
     char prev_name[255];
     int number;
     run_unimap_config_t* config;
-    //int mode;
-    //bool use_comments;
-} run_unimap_record_t;
-
-void usage() {
-    fprintf(stderr, "Usage: run-unimap [-f csv | tsv | tab | array] file\n");
-}
+} run_unimap_entry_t;
 
 bool _is_empty(char* str) {
     return (!str || *str == '\0');
@@ -74,9 +68,6 @@ bool _is_no_data(char* str) {
     char* chr = str;
     int count = 0;
     for (int i = 0; i < len; i++) {
-        // if (str[i] == ' ') {
-        //     count++;
-        // }
         if (*chr == ' ') {
             count++;
         }
@@ -122,14 +113,14 @@ bool _is_ignore_line(char* str) {
     return false;
 }
 
-void _read_line(run_unimap_record_t* record, char* line) {
+void _read_line(run_unimap_entry_t* entry, char* line) {
     
     char* str = line;
     char* val = str;
 
-    record->icode[0]  = '\0';
-    record->ucode[0]  = '\0';
-    //record->name[0]   = '\0';
+    entry->icode[0]  = '\0';
+    entry->ucode[0]  = '\0';
+    //entry->name[0]   = '\0';
 
     int col = 0;
     int len = 0;
@@ -148,23 +139,23 @@ void _read_line(run_unimap_record_t* record, char* line) {
             if (strlen(val) == 0) {
                 blank = true;
             }
-            strncpy(record->icode, val, len);
-            record->icode[len] = '\0';
+            strncpy(entry->icode, val, len);
+            entry->icode[len] = '\0';
             //printf("col = %d, len = %d, val = %s\n", col, len, val);
         } else if (col == 2) {
-            strncpy(record->ucode, val, len);
-            record->ucode[len] = '\0';
+            strncpy(entry->ucode, val, len);
+            entry->ucode[len] = '\0';
             //printf("col = %d, len = %d, val = %s\n", col, len, val);
         } else if (col == 3 || col == 4) {
             //printf("col = %d, len = %d, val = %s\n", col, len, val);
             if (col == 3 && len == 1 && _is_comment(val)) {
                 //printf("continue\n");
             } else {
-                record->prev_name[0] = '\0';
+                entry->prev_name[0] = '\0';
                 if (len > 0) {
 
                     // move name to prev_name (!)
-                    strcpy(record->prev_name, record->name);
+                    strcpy(entry->prev_name, entry->name);
 
                     // skip '#'
                     // shift first char: val + 1
@@ -174,10 +165,10 @@ void _read_line(run_unimap_record_t* record, char* line) {
                         len--;
                     }
 
-                    strncpy(record->name, shift ? val + 1 : val, len);
-                    //record->name[len] = '\0';
+                    strncpy(entry->name, shift ? val + 1 : val, len);
+                    //entry->name[len] = '\0';
                 }
-                record->name[len] = '\0';
+                entry->name[len] = '\0';
                 if (col == 4) {
                     break;
                 }
@@ -205,67 +196,66 @@ void _read_line(run_unimap_record_t* record, char* line) {
 
     if (col < 3) {
         // move name to prev_name (!)
-        strcpy(record->prev_name, record->name);
-        record->name[0] = '\0';
+        strcpy(entry->prev_name, entry->name);
+        entry->name[0] = '\0';
     }
 
     //printf("%s", line);
 }
 
-void _print_line(run_unimap_record_t* record) {
-    if (record->config->mode == RUN_ENCMAP_FORMAT_SPC) {
-        printf("[%s]-[%s]-[%s]\n", record->icode, record->ucode, record->name); // SPC
-    } else if (record->config->mode == RUN_ENCMAP_FORMAT_CSV) {
-        printf("%s,%s,\"%s\"\n", record->icode, record->ucode, record->name);   // CSV
-    } else if (record->config->mode == RUN_ENCMAP_FORMAT_TSV) {
-        printf("%s\t%s\t\"%s\"\n", record->icode, record->ucode, record->name); // TSV
-    } else if (record->config->mode == RUN_ENCMAP_FORMAT_TAB) {
-        printf("%6s | %6s | %s\n", record->icode, record->ucode, record->name); // TAB
-    } else if (record->config->mode == RUN_ENCMAP_FORMAT_MAP) {
+void _print_indent() {
+    printf("  ");
+}
 
-        if (record->number > 1) {
-            //printf("%s%i\n", ",", record->number);
-            
-            if (record->config->use_comments) {
-                printf("%s /* %s */ \n", ",", record->prev_name);
+void _print_line(run_unimap_entry_t* entry) {
+
+    run_unimap_config_t* config = entry->config;
+    int format = config->format;
+
+    if (format == RUN_UNIMAP_FORMAT_SPC) {
+        printf("[%s]-[%s]-[%s]\n", entry->icode, entry->ucode, entry->name); // SPC
+    } else if (format == RUN_UNIMAP_FORMAT_CSV) {
+        printf("%s,%s,\"%s\"\n", entry->icode, entry->ucode, entry->name);    // CSV
+    } else if (format == RUN_UNIMAP_FORMAT_TSV) {
+        printf("%s\t%s\t\"%s\"\n", entry->icode, entry->ucode, entry->name);  // TSV
+    } else if (format == RUN_UNIMAP_FORMAT_TAB) {
+        printf("%6s | %6s | %s\n", entry->icode, entry->ucode, entry->name);  // TAB
+    } else if (format == RUN_UNIMAP_FORMAT_MAP) {
+        if (entry->number > 1) {
+            //printf("%s%i\n", ",", entry->number);            
+            if (config->use_comments) {
+                printf("%s /* %s */ \n", ",", entry->prev_name);
             } else {
                 printf("%s\n", ",");
             }
         }
-
-        printf("    {%s, %s}", record->icode, _is_no_data(record->ucode) ? "NO_CHR" : record->ucode);                  // MAP
-    } else if (record->config->mode == RUN_ENCMAP_FORMAT_ARRAY2) {
-        int index = record->number - 1;
-
-        //if (record->number == 1) {
-        //   printf("  ");
-        //}
-
-        if (record->number > 1) {
-            //printf("%s%i\n", ",", record->number);
-            
+        _print_indent();
+        printf("{%s, %s}", entry->icode, _is_no_data(entry->ucode) ? "NO_CHR" : entry->ucode);  // MAP
+    } else if (format == RUN_UNIMAP_FORMAT_ARRAY) {
+        if (entry->number > 1) {
+            //printf("%s%i\n", ",", entry->number);            
             printf(",");
-            if (index % 8 == 0) {
+            if ((entry->number - 1) % 8 == 0) {
                 printf("\n");
-                printf("  ");
+                _print_indent();
             } else {
                 printf(" ");
             }
         } else {
-            printf("  ");
+            _print_indent();
         }
 
-        printf("%s", _is_no_data(record->ucode) ? "NO_CHR" : _to_case(0, record->ucode));                  // ARRAY
+        printf("%s", _is_no_data(entry->ucode) ? "NO_CHR" : _to_case(0, entry->ucode));                  // ARRAY
     }
 }
 
-int run_line(run_unimap_record_t* record, char* line) {
+int run_line(run_unimap_entry_t* entry, char* line) {
     if (!line) {
         return 1;
     }
 
-    _read_line(record, line);
-    _print_line(record);
+    _read_line(entry, line);
+    _print_line(entry);
 
     return 0;
 }
@@ -286,13 +276,13 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
 
     // Buffer to store each line of the file.
     char line[256];
-    run_unimap_record_t record;
-    record.config = config;
-    record.number = 0;
+    run_unimap_entry_t entry;
+    entry.config = config;
+    entry.number = 0;
 
-    if (config->mode == RUN_ENCMAP_FORMAT_MAP) {
+    if (config->format == RUN_UNIMAP_FORMAT_MAP) {
         printf("%s\n", "static const int unicode_map[][2] = {");
-    } else if (config->mode == RUN_ENCMAP_FORMAT_ARRAY2) {
+    } else if (config->format == RUN_UNIMAP_FORMAT_ARRAY) {
         printf("%s\n", "static const int unicode_array[] = {");
     }
 
@@ -302,32 +292,30 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
         if (_is_ignore_line(line)) {
             continue;
         }
-        record.number++;
+        entry.number++;
 
-        run_line(&record, line);
+        run_line(&entry, line);
     }
 
 
-    if (config->mode == RUN_ENCMAP_FORMAT_MAP) {
+    if (config->format == RUN_UNIMAP_FORMAT_MAP) {
 
-        if (record.number > 0 && config->use_comments) {
-            printf("  /* %s */ \n", record.name);
+        if (entry.number > 0 && config->use_comments) {
+            printf("  /* %s */ \n", entry.name);
         }
 
         printf("\n%s\n", "};");
-    } else if (config->mode == RUN_ENCMAP_FORMAT_ARRAY2) {
-
-        //if (record.number > 0 && config->use_comments) {
-        //    printf("  /* %s */ \n", record.name);
-        //}
-
+    } else if (config->format == RUN_UNIMAP_FORMAT_ARRAY) {
         printf("\n%s\n", "};");
     }
-
 
     fclose(file);
 
     return 0;
+}
+
+void usage() {
+    fprintf(stderr, "Usage: run-unimap [-f csv | tsv | tab | array] file\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -338,7 +326,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    int mode = RUN_ENCMAP_FORMAT_TSV;
+    int format = RUN_UNIMAP_FORMAT_TSV;
     bool use_comments = false;
 
     bool error = false;
@@ -348,18 +336,18 @@ int main(int argc, char* argv[]) {
         case 'f':
             if (optarg) {
                 if (strcmp(optarg, "spc") == 0) {
-                    mode = RUN_ENCMAP_FORMAT_SPC;
+                    format = RUN_UNIMAP_FORMAT_SPC;
                 } else if (strcmp(optarg, "csv") == 0) {
-                    mode = RUN_ENCMAP_FORMAT_CSV;
+                    format = RUN_UNIMAP_FORMAT_CSV;
                 } else if (strcmp(optarg, "tsv") == 0) {
-                    mode = RUN_ENCMAP_FORMAT_TSV;
+                    format = RUN_UNIMAP_FORMAT_TSV;
                 } else if (strcmp(optarg, "tab") == 0) {
-                    mode = RUN_ENCMAP_FORMAT_TAB;
+                    format = RUN_UNIMAP_FORMAT_TAB;
                 } else if (strcmp(optarg, "map") == 0) {
-                    mode = RUN_ENCMAP_FORMAT_MAP;
+                    format = RUN_UNIMAP_FORMAT_MAP;
                     use_comments = true;
                 } else if (strcmp(optarg, "array") == 0) {
-                    mode = RUN_ENCMAP_FORMAT_ARRAY2;
+                    format = RUN_UNIMAP_FORMAT_ARRAY;
                     use_comments = true;
                 } else {
                     error = true;
@@ -389,7 +377,7 @@ int main(int argc, char* argv[]) {
     }
 
     run_unimap_config_t config;
-    config.mode = mode;
+    config.format = format;
     config.use_comments = use_comments;
 
     char* file_name = argv[optind];
@@ -399,5 +387,3 @@ int main(int argc, char* argv[]) {
     return run_unimap(&config, file_name);
 
 }
-
-//#CYRILLIC SMALL LETTER YERU 
