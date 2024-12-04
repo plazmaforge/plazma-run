@@ -126,6 +126,11 @@ void _read_line(run_unimap_entry_t* entry, char* line) {
     int len = 0;
     bool blank = false;
 
+    //    Format: Three tab-separated columns
+    //        Column #1 is the Input code (in hex)
+    //        Column #2 is the Unicode (in hex as 0xXXXX)
+    //        Column #3 is the Unicode name (follows a comment sign, '#')
+
     for(;;) {
 
         len = 0;
@@ -135,22 +140,31 @@ void _read_line(run_unimap_entry_t* entry, char* line) {
         }
 
         col++;
+        //printf("col = %d, len = %d, val = %s\n", col, len, val);
+
         if (col == 1) {
+            // Column #1: Input code in hex
             if (strlen(val) == 0) {
                 blank = true;
             }
             strncpy(entry->icode, val, len);
             entry->icode[len] = '\0';
-            //printf("col = %d, len = %d, val = %s\n", col, len, val);
         } else if (col == 2) {
+            // Column #2: Unicode in hex
             strncpy(entry->ucode, val, len);
             entry->ucode[len] = '\0';
-            //printf("col = %d, len = %d, val = %s\n", col, len, val);
         } else if (col == 3 || col == 4) {
-            //printf("col = %d, len = %d, val = %s\n", col, len, val);
-            if (col == 3 && len == 1 && _is_comment(val)) {
-                //printf("continue\n");
-            } else {
+            // Column #3: Unicode name
+
+            // Check virtual column
+            // For example 8859-2.TXT: #[tab] <name>
+            bool is_virt_col = (col == 3 && len == 1 && _is_comment(val));
+            
+            //if (col == 3 && len == 1 && _is_comment(val)) {
+            //    //printf("continue\n");
+            //} else {
+
+            if (!is_virt_col) {    
                 entry->prev_name[0] = '\0';
                 if (len > 0) {
 
@@ -159,14 +173,12 @@ void _read_line(run_unimap_entry_t* entry, char* line) {
 
                     // skip '#'
                     // shift first char: val + 1
-                    bool shift = false;
-                    if (_is_comment(val)) {
-                        shift = true;
+                    bool shift = _is_comment(val);
+                    if (shift) {
                         len--;
                     }
 
                     strncpy(entry->name, shift ? val + 1 : val, len);
-                    //entry->name[len] = '\0';
                 }
                 entry->name[len] = '\0';
                 if (col == 4) {
@@ -203,61 +215,83 @@ void _read_line(run_unimap_entry_t* entry, char* line) {
     //printf("%s", line);
 }
 
-void _print_indent() {
-    printf("  ");
+int _print_indent() {
+    return printf("  ");
 }
 
-void _print_line(run_unimap_entry_t* entry) {
+int _print_line_separator() {
+    return printf("\n");
+}
+                
+int _print_name_comment(char* name) {
+    return printf(" /* %s */", name);
+}
 
-    run_unimap_config_t* config = entry->config;
-    int format = config->format;
+int _print_hex_comment(int hex) {
+    unsigned int u = (unsigned int) hex;
+    //return printf(" /* 0x%0*x */", 2, u);
+    return printf(" /* 0x%02x */", u);
+}
+
+int _print_line_map(run_unimap_entry_t* entry) {
+    int pos = 0;
+    //if (entry->number > 1) {
+    if (entry->is_start) {
+        pos += printf(",");
+        if (entry->config->use_comments) {
+            pos += _print_name_comment(entry->prev_name);
+        }
+        pos += _print_line_separator();
+    } else {
+        entry->is_start = true;
+    }
+    pos += _print_indent();
+    pos += printf("{%s, %s}", entry->icode, _is_no_data(entry->ucode) ? "NO_CHR" : entry->ucode);  // MAP
+    return pos;
+}
+
+int _print_line_array(run_unimap_entry_t* entry) {
+    int pos = 0;
+    //if (entry->number > 1) {
+    if (entry->is_start) {    
+        int index = entry->number - 1;
+        int column = 8;
+        pos += printf(",");
+        if (index % column == 0) {
+            if (entry->config->use_comments) {
+                pos += _print_hex_comment(index - column); // move to prev row (-column)
+            }
+            pos += _print_line_separator();
+            pos += _print_indent();
+        } else {
+            pos += printf(" ");
+        }
+    } else {
+        entry->is_start = true;
+        pos += _print_indent();
+    }
+    pos += printf("%s", _is_no_data(entry->ucode) ? "NO_CHR" : _to_case(0, entry->ucode));          // ARRAY
+    return pos;
+}
+
+int _print_line(run_unimap_entry_t* entry) {
+
+    int format = entry->config->format;
 
     if (format == RUN_UNIMAP_FORMAT_SPC) {
-        printf("[%s]-[%s]-[%s]\n", entry->icode, entry->ucode, entry->name); // SPC
+        return printf("[%s]-[%s]-[%s]\n", entry->icode, entry->ucode, entry->name);  // SPC
     } else if (format == RUN_UNIMAP_FORMAT_CSV) {
-        printf("%s,%s,\"%s\"\n", entry->icode, entry->ucode, entry->name);    // CSV
+        return printf("%s,%s,\"%s\"\n", entry->icode, entry->ucode, entry->name);    // CSV
     } else if (format == RUN_UNIMAP_FORMAT_TSV) {
-        printf("%s\t%s\t\"%s\"\n", entry->icode, entry->ucode, entry->name);  // TSV
+        return printf("%s\t%s\t\"%s\"\n", entry->icode, entry->ucode, entry->name);  // TSV
     } else if (format == RUN_UNIMAP_FORMAT_TAB) {
-        printf("%6s | %6s | %s\n", entry->icode, entry->ucode, entry->name);  // TAB
+        return printf("%6s | %6s | %s\n", entry->icode, entry->ucode, entry->name);  // TAB
     } else if (format == RUN_UNIMAP_FORMAT_MAP) {
-        //if (entry->number > 1) {
-        if (entry->is_start) {
-            //printf("%s%i\n", ",", entry->number);            
-            if (config->use_comments) {
-                printf("%s /* %s */ \n", ",", entry->prev_name);
-            } else {
-                printf("%s\n", ",");
-            }
-        } else {
-            entry->is_start = true;
-        }
-        _print_indent();
-        printf("{%s, %s}", entry->icode, _is_no_data(entry->ucode) ? "NO_CHR" : entry->ucode);  // MAP
+        return _print_line_map(entry);                                               // MAP
     } else if (format == RUN_UNIMAP_FORMAT_ARRAY) {
-        //if (entry->number > 1) {
-        if (entry->is_start) {    
-            //printf("%s%i\n", ",", entry->number);
-            int index = entry->number - 1;
-            int column = 8;
-            printf(",");
-            if (index % column == 0) {
-                if (config->use_comments) {
-                    unsigned int u = (unsigned int) (index - column); // move to prev row (-column)
-                    printf(" /* 0x%0*x */", 2, u);
-                }
-                printf("\n");
-                _print_indent();
-            } else {
-                printf(" ");
-            }
-        } else {
-            entry->is_start = true;
-            _print_indent();
-        }
-
-        printf("%s", _is_no_data(entry->ucode) ? "NO_CHR" : _to_case(0, entry->ucode));                  // ARRAY
+        return _print_line_array(entry);                                             // ARRAY
     }
+    return 0;
 }
 
 int run_line(run_unimap_entry_t* entry, char* line) {
@@ -293,9 +327,11 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
     entry.is_start = false;
 
     if (config->format == RUN_UNIMAP_FORMAT_MAP) {
-        printf("%s\n", "static const int unicode_map[][2] = {");
+        printf("static const int unicode_map[][2] = {");
+        _print_line_separator();
     } else if (config->format == RUN_UNIMAP_FORMAT_ARRAY) {
-        printf("%s\n", "static const int unicode_array[] = {");
+        printf("static const int unicode_array[] = {");
+        _print_line_separator();
     }
 
     while (fgets(line, sizeof(line), file)) {
@@ -318,10 +354,13 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
     if (config->format == RUN_UNIMAP_FORMAT_MAP) {
 
         if (entry.number > 0 && config->use_comments) {
-            printf("  /* %s */ \n", entry.name);
+            printf(" ");
+            _print_name_comment(entry.name);
         }
 
-        printf("\n%s\n", "};");
+        _print_line_separator();
+        printf("};");
+        _print_line_separator();
     } else if (config->format == RUN_UNIMAP_FORMAT_ARRAY) {
 
         if (entry.number > 0 && config->use_comments) {
@@ -330,11 +369,13 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
             int column = 8;
             int mod = index % column;
             printf(" ");
-            unsigned int u = (unsigned int) (index - mod); // move to prev row (-mod)
-            printf(" /* 0x%0*x */", 2, u);
+            _print_hex_comment(index - mod); // move to prev row (-mod)
+            
         }
 
-        printf("\n%s\n", "};");
+        _print_line_separator();
+        printf("};");
+        _print_line_separator();
     }
 
     fclose(file);
