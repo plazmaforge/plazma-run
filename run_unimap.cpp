@@ -304,10 +304,12 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
         if (_is_ignore_line(line)) {
             continue;
         }
+
         entry.number++;
-        if (entry.number <= 128) {
-            continue;
-        }
+        
+        //if (entry.number <= 128) {
+        //    continue;
+        //}
 
         run_line(&entry, line);
     }
