@@ -4,7 +4,6 @@
 #include <ctype.h>
 
 #include "getopt.h"
-#include "iodef.h"
 
 int RUN_UNIMAP_FORMAT_SPC   = 0;
 int RUN_UNIMAP_FORMAT_CSV   = 1;
@@ -24,6 +23,7 @@ typedef struct run_unimap_entry_t {
     char name[255];      /* char name               */
     char prev_name[255];
     int number;
+    bool is_start;
     run_unimap_config_t* config;
 } run_unimap_entry_t;
 
@@ -221,27 +221,38 @@ void _print_line(run_unimap_entry_t* entry) {
     } else if (format == RUN_UNIMAP_FORMAT_TAB) {
         printf("%6s | %6s | %s\n", entry->icode, entry->ucode, entry->name);  // TAB
     } else if (format == RUN_UNIMAP_FORMAT_MAP) {
-        if (entry->number > 1) {
+        //if (entry->number > 1) {
+        if (entry->is_start) {
             //printf("%s%i\n", ",", entry->number);            
             if (config->use_comments) {
                 printf("%s /* %s */ \n", ",", entry->prev_name);
             } else {
                 printf("%s\n", ",");
             }
+        } else {
+            entry->is_start = true;
         }
         _print_indent();
         printf("{%s, %s}", entry->icode, _is_no_data(entry->ucode) ? "NO_CHR" : entry->ucode);  // MAP
     } else if (format == RUN_UNIMAP_FORMAT_ARRAY) {
-        if (entry->number > 1) {
-            //printf("%s%i\n", ",", entry->number);            
+        //if (entry->number > 1) {
+        if (entry->is_start) {    
+            //printf("%s%i\n", ",", entry->number);
+            int index = entry->number - 1;
+            int column = 8;
             printf(",");
-            if ((entry->number - 1) % 8 == 0) {
+            if (index % column == 0) {
+                if (config->use_comments) {
+                    unsigned int u = (unsigned int) (index - column); // move to prev row (-column)
+                    printf(" /* 0x%0*x */", 2, u);
+                }
                 printf("\n");
                 _print_indent();
             } else {
                 printf(" ");
             }
         } else {
+            entry->is_start = true;
             _print_indent();
         }
 
@@ -277,8 +288,9 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
     // Buffer to store each line of the file.
     char line[256];
     run_unimap_entry_t entry;
-    entry.config = config;
-    entry.number = 0;
+    entry.config   = config;
+    entry.number   = 0;
+    entry.is_start = false;
 
     if (config->format == RUN_UNIMAP_FORMAT_MAP) {
         printf("%s\n", "static const int unicode_map[][2] = {");
@@ -293,6 +305,9 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
             continue;
         }
         entry.number++;
+        if (entry.number <= 128) {
+            continue;
+        }
 
         run_line(&entry, line);
     }
@@ -306,6 +321,17 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
 
         printf("\n%s\n", "};");
     } else if (config->format == RUN_UNIMAP_FORMAT_ARRAY) {
+
+        if (entry.number > 0 && config->use_comments) {
+            
+            int index = entry.number - 1;
+            int column = 8;
+            int mod = index % column;
+            printf(" ");
+            unsigned int u = (unsigned int) (index - mod); // move to prev row (-mod)
+            printf(" /* 0x%0*x */", 2, u);
+        }
+
         printf("\n%s\n", "};");
     }
 
@@ -381,8 +407,6 @@ int main(int argc, char* argv[]) {
     config.use_comments = use_comments;
 
     char* file_name = argv[optind];
-
-    lib_io_buf_init();
 
     return run_unimap(&config, file_name);
 

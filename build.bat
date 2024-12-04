@@ -100,7 +100,7 @@ rem link
 %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_hex_byte.o -o run-hex-byte.exe
 %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 
-%CC% %LDFLAGS% getopt.o iodef.o iolib.o run_unimap.o -o run-unimap.exe
+%CC% %LDFLAGS% getopt.o iolib.o run_unimap.o -o run-unimap.exe
 %CC% %LDFLAGS% run_ctype.o -o run-ctype.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe

@@ -110,7 +110,7 @@ $CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha512.o run_sha512.o -o run-
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_hex_byte.o -o run-hex-byte
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump
 
-$CC $LDFLAGS getopt.o iodef.o iolib.o run_unimap.o -o run-unimap
+$CC $LDFLAGS getopt.o iolib.o run_unimap.o -o run-unimap
 $CC $LDFLAGS run_ctype.o -o run-ctype
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
