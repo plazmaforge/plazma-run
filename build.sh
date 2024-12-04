@@ -35,6 +35,7 @@ $CC $CFLAGS lib/sysinfo.cpp -o sysinfo.o
 $CC $CFLAGS lib/syslib.cpp -o syslib.o
 $CC $CFLAGS lib/getopt.cpp -o getopt.o
 $CC $CFLAGS lib/utf8lib.cpp -o utf8lib.o
+$CC $CFLAGS lib/unimap.cpp -o unimap.o
 
 $CC $CFLAGS lib/common.cpp -o common.o
 $CC $CFLAGS lib/debug.cpp -o debug.o
