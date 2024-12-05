@@ -67,6 +67,8 @@ rem compile
 %CC% %CFLAGS% run_ssldump.cpp -o run_ssldump.o
 
 %CC% %CFLAGS% run_unimap.cpp -o run_unimap.o
+%CC% %CFLAGS% run_iconv.cpp -o run_iconv.o
+
 %CC% %CFLAGS% run_ctype.cpp -o run_ctype.o
 
 %CC% %CFLAGS% test_getopt.cpp -o test_getopt.o
@@ -102,6 +104,8 @@ rem link
 %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 
 %CC% %LDFLAGS% getopt.o iolib.o run_unimap.o -o run-unimap.exe
+%CC% %LDFLAGS% getopt.o iolib.o unimap.o run_iconv.o -o run-iconv.exe
+
 %CC% %LDFLAGS% run_ctype.o -o run-ctype.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe
