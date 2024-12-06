@@ -118,7 +118,11 @@ int* _lib_unimap_get_map_id(int id) {
     }
 
     // DOS
-    if (id == 866) {
+    if (id == 437) {
+        return (int*) unimap_cp437;
+    } else if (id == 850) {
+        return (int*) unimap_cp850;
+    } else if (id == 866) {
         return (int*) unimap_cp866;
     }
 
@@ -163,6 +167,9 @@ int lib_unimap_get_unimap_id(lib_unimap_t* unimap, int id) {
     return 0;
 }
 
+/**
+ *  b2b convert
+ */
 int lib_unimap_conv_id(int from, int to, char* data, size_t len) {
     if (!data || len == 0) {
         return 0;
@@ -224,7 +231,7 @@ int lib_unimap_conv_id(int from, int to, char* data, size_t len) {
         idx = _lib_unimap_find_idx(to_map.map, to_map.len, ucode);
         if (idx < 0) {
             //fprintf(stderr, ">> error: NO_CHR (FFF)\n");
-            ocode = NO_CHR;
+            ocode = '?'; /* NO_CHR */;
         } else {
             //fprintf(stderr, ">> oidx  : %d\n", idx);
             ocode = idx + to_map.start;
