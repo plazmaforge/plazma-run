@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
 #define LIB_ENC_ISO_TYPE 1
 #define LIB_ENC_DOS_TYPE 2
@@ -108,7 +110,11 @@ static const lib_encoding_t lib_encodings[] = {
 
 };
 
+size_t lib_enc_get_encoding_size();
 
+/**
+ * Returns true if the encoding id is ISO type 
+ */
 bool lib_enc_is_iso_encoding(int id) {
   return (   id == 28591
           || id == 28592
@@ -128,6 +134,9 @@ bool lib_enc_is_iso_encoding(int id) {
           || id == 28606);
 }
 
+/**
+ * Returns true if the encoding id is DOS type 
+ */
 bool lib_enc_is_dos_encoding(int id) {
   return (   id == 437
           || id == 737
@@ -148,6 +157,9 @@ bool lib_enc_is_dos_encoding(int id) {
           || id == 869);
 }
 
+/**
+ * Returns true if the encoding id is WIN type 
+ */
 bool lib_enc_is_win_encoding(int id) {
   return (   id == 1250
           || id == 1251
@@ -160,6 +172,9 @@ bool lib_enc_is_win_encoding(int id) {
           || id == 1258);
 }
 
+/**
+ * Returns true if the encoding id is UTF type 
+ */
 bool lib_enc_is_utf_encoding(int id) {
   return (   id == 65000
           || id == 65001
@@ -175,6 +190,9 @@ bool lib_enc_is_utf_encoding(int id) {
     /**/  || id == 12002); /* codepage = 12000 */
 }
 
+/**
+ * Returns true if the encoding id is UCS type 
+ */
 bool lib_enc_is_ucs_encoding(int id) {
   return (   id == 1001200
     /**/  || id == 1001201
@@ -185,8 +203,9 @@ bool lib_enc_is_ucs_encoding(int id) {
     /**/  || id == 1012002);
 }
 
-////
-
+/**
+ * Converts DOS encoding id to WIN encoding id
+ */
 int lib_enc_dos_to_win(int id) {
     /*
      437 -> 1252 Latin 1, Western European
@@ -240,6 +259,9 @@ int lib_enc_dos_to_win(int id) {
     return 0;  
 }
 
+/**
+ * Returns encoding type by encoding id
+ */
 int lib_enc_get_encoding_type(int id) {
 
   if (lib_enc_is_iso_encoding(id)) {
@@ -257,6 +279,9 @@ int lib_enc_get_encoding_type(int id) {
   return 0;
 }
 
+/**
+ * Returns name of encoding type by encoding id
+ */
 const char* lib_enc_get_encoding_type_name(int id) {
   
   // Get encoding type by id
@@ -277,9 +302,56 @@ const char* lib_enc_get_encoding_type_name(int id) {
   return "";
 }
 
+static char* _to_case(int mode, char* str) {
+    if (!str) {
+        return str;
+    }
+    size_t len = strlen(str);
+    if (len == 0) {
+        return str;
+    }
+    char* chr = str;
+    for (int i = 0; i < len; i++) {
+        *chr = mode ? toupper(*chr) : tolower(*chr);
+        chr++;
+    }
+    return str;
+}
+
+bool _lib_enc_equals(const char* name, lib_encoding_t* encoding) {
+  if (!name || !encoding) {
+    return false;
+  }
+  char* uname = _to_case(1, (char*) name);
+  return strcmp(uname, encoding->name) == 0;
+}
+
+/**
+ * Returns encoding id by encoding name
+ */
+int lib_enc_get_encoding_id(const char* name) {
+  if (!name) {
+    return 0;
+  }
+  size_t size = lib_enc_get_encoding_size();
+  for (size_t i = 0; i < size; i++) {
+    lib_encoding_t e = lib_encodings[i];
+
+    // TODO: Use alieas too
+    if (_lib_enc_equals(name, &e)) {
+      return e.id;
+    }    
+  }  
+  return 0;
+}
+
+size_t lib_enc_get_encoding_size() {
+  return sizeof(lib_encodings) / sizeof(lib_encoding_t);
+}
+
 void lib_enc_print_encodings() {
-    int size = sizeof(lib_encodings) / sizeof(lib_encoding_t);
-    for (int i = 0; i < size; i++) {
+    size_t size = sizeof(lib_encodings) / sizeof(lib_encoding_t);
+    for (size_t i = 0; i < size; i++) {
         lib_encoding_t e = lib_encodings[i];
         //printf("%s   \t%s\t\t %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id));
         printf("%-15s %-25s %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id));
