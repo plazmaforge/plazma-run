@@ -171,15 +171,24 @@ int lib_unimap_conv_id(int from, int to, char* data, size_t len) {
     // Get 'from' map
     lib_unimap_t from_map;
     lib_unimap_get_unimap_id(&from_map, from);
-    if (!from_map.map || from_map.len == 0) {
-        //fprintf(stderr, "From Map not found : %d", from);
-        return -11;
-    }
 
     // Get 'to' map
     lib_unimap_t to_map;
     lib_unimap_get_unimap_id(&to_map, to);
-    if (!to_map.map || to_map.len == 0) {
+
+    bool has_from = from_map.map;
+    bool has_to   = to_map.map;
+
+    if (!has_from && !has_to) {
+        return -1112;
+    }
+
+    if (!has_from) {
+        //fprintf(stderr, "From Map not found : %d", from);
+        return -11;
+    }
+
+    if (!has_to) {
         //fprintf(stderr, "To Map not found : %d", to);
         return -12;
     }

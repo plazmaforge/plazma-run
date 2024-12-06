@@ -69,14 +69,19 @@ int main(int argc, char* argv[]) {
     int from_encoding_id = lib_enc_get_encoding_id(from_encoding);
     if (from_encoding_id == 0) {
         error = true;
-        fprintf(stderr, "Encoding 'from' not found: %s\n", from_encoding);
+        fprintf(stderr, "Encoding not found (from): %s\n", from_encoding);
     }
 
     int to_encoding_id = lib_enc_get_encoding_id(to_encoding);
     if (to_encoding_id == 0) {
         error = true;
-        fprintf(stderr, "Encoding 'to' not found: %s\n", to_encoding);
+        fprintf(stderr, "Encoding not found (to)  : %s\n", to_encoding);
     }
+
+    //if (!lib_fs_exists(file_name)) {
+    //    error = true;
+    //    fprintf(stderr, "File not found           : %s\n", file_name);
+    //}
 
     if (error) {
         return 1;
@@ -90,7 +95,17 @@ int main(int argc, char* argv[]) {
 
     int ret = lib_unimap_conv_id(from_encoding_id, to_encoding_id, data, size);
     if (ret != 0) {
-        fprintf(stderr, "Converting error\n");
+        const char* error_msg;
+        if (ret == -11) {
+            error_msg = "encoding not supported (from)";
+        } else if (ret == -12) {
+            error_msg = "encoding not supported (to)";
+        } else if (ret == -1112) {
+            error_msg = "encoding not supported (from, to)";
+        } else {
+            error_msg = "unknown";
+        }
+        fprintf(stderr, "Convert error: %s\n", error_msg);
         return 1;
     }
 
