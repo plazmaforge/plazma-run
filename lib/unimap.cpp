@@ -3,7 +3,12 @@
 
 #include "unimap.h"
 
-#define NO_CHR 0x00
+//#define DEBUG    1
+//#define DEBUG_LL 1
+//#define ERROR    1
+
+#define NO_CHR 0xFFFD
+#define NO_DAT '?'
 
 /* DOS   */
 
@@ -377,58 +382,95 @@ int lib_unimap_conv_id(int from, int to, char* data, size_t len) {
     bool has_from = from_map.map;
     bool has_to   = to_map.map;
 
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv  : from=%d, to=%d\n", from, to);
+    #endif
+
     if (!has_from && !has_to) {
-        //fprintf(stderr, "Encoding map not found (from, to): %d, %d", from, to);
+        #ifdef ERROR
+        fprintf(stderr, "Encoding map not found (from, to): %d, %d", from, to);
+        #endif
         return -1112;
     }
 
     if (!has_from) {
-        //fprintf(stderr, "Encoding map not found (from)    : %d", from);
+        #ifdef ERROR
+        fprintf(stderr, "Encoding map not found (from)    : %d", from);
+        #endif
         return -11;
     }
 
     if (!has_to) {
-        //fprintf(stderr, "Encoding map not found (to)      : %d", to);
+        #ifdef ERROR
+        fprintf(stderr, "Encoding map not found (to)      : %d", to);
+        #endif
         return -12;
     }
+
 
     unsigned char c;
 
     for (int i = 0; i < len; i++) {
         c = (unsigned char) data[i];        
         int icode = c;
-        //fprintf(stderr, ">> icode : 0x%02X\n", (unsigned int) icode);
+
+        #ifdef DEBUG_LL
+        fprintf(stderr, ">> icode : 0x%02X\n", (unsigned int) icode);
+        #endif
 
         // 1. icode -> icode
         if (icode < from_map.start) {
-            //fprintf(stderr, ">> icode : skip\n");
+            #ifdef DEBUG_LL
+            fprintf(stderr, ">> icode : skip\n");
+            #endif
             continue;
         }
 
         // 2. icode -> 'from_map'
         int idx = icode - from_map.start;
-        //fprintf(stderr, ">> oidx  : %d\n", idx);
+        #ifdef DEBUG_LL
+        fprintf(stderr, ">> oidx  : %d\n", idx);
+        #endif
 
         // Get UTF8 code from 'from_map"
         if (idx >= from_map.len) {
             // error: NO_CHR (?)
-            //fprintf(stderr, ">> error: NO_CHR (-13)\n");
+            #ifdef ERROR
+            fprintf(stderr, ">> error: NO_CHR (-13)\n");
+            #endif
             return -13;
         }
+
         int ucode = from_map.map[idx];
-        //fprintf(stderr, ">> ucode : 0x%02X\n", (unsigned int) ucode);
+        #ifdef DEBUG_LL
+        fprintf(stderr, ">> ucode : 0x%02X\n", (unsigned int) ucode);
+        #endif
 
         // Find index in 'to_map' by ucode
         int ocode = 0;
-        idx = _lib_unimap_find_idx(to_map.map, to_map.len, ucode);
-        if (idx < 0) {
-            //fprintf(stderr, ">> error: NO_CHR (FFF)\n");
-            ocode = '?'; /* NO_CHR */;
+        if (ucode == 0xFFFD) {
+            #ifdef ERROR
+            fprintf(stderr, ">> error : ucode is NO_CHR (U+FFFD)\n");
+            #endif
+            ocode = NO_DAT;
         } else {
-            //fprintf(stderr, ">> oidx  : %d\n", idx);
-            ocode = idx + to_map.start;
+            idx = _lib_unimap_find_idx(to_map.map, to_map.len, ucode);
+            if (idx < 0) {
+                #ifdef ERROR
+                fprintf(stderr, ">> error : ocode not found\n");
+                #endif
+                ocode = NO_DAT;
+            } else {
+                #ifdef DEBUG_LL
+                fprintf(stderr, ">> oidx  : %d\n", idx);
+                #endif
+                ocode = idx + to_map.start;
+            }
         }
-        //fprintf(stderr, ">> ocode : 0x%02X\n\n", (unsigned int) ocode);
+
+        #ifdef DEBUG_LL
+        fprintf(stderr, ">> ocode : 0x%02X\n\n", (unsigned int) ocode);
+        #endif
 
         data[i] = ocode;
     }
