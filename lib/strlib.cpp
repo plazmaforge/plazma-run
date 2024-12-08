@@ -17,14 +17,12 @@ const char* lib_strsaf(const char* str) {
  * [allocate]
  */
 char* lib_strnew(size_t size) {
-  char* str = (char*) malloc(size * sizeof(char) + 1);
+  size_t _size = size * sizeof(char) + 1;
+  char* str = (char*) malloc(_size);
   if (!str) {
     return NULL;
   }
-  memset(str, 0, size + 1);
-  // for (int i = 0; i <= size; i++) {
-  //   str[i] = '\0';
-  // }    
+  memset(str, 0, _size);
   return str;
 }
 
@@ -46,26 +44,113 @@ char* lib_stradd(const char* str1, const char* str2) {
   return dst;
 }
 
-/**
- * [allocate]
- */
-char* lib_straddv_(const char* str1, const char* str2, const char* str3) {
-  if (!str1) {
+// /**
+//  * [allocate]
+//  */
+// char* lib_straddv_(const char* str1, const char* str2, const char* str3) {
+//   if (!str1) {
+//     return NULL;
+//   }
+//   char* dst = lib_strnew(lib_strlen(str1) + lib_strlen(str2) + lib_strlen(str3));
+//   if (!dst) {
+//     return NULL;
+//   }
+//   lib_strcpy(dst, str1);
+//   if (str2) {
+//     lib_strcat(dst, str2);
+//   }
+//   if (str3) {
+//     lib_strcat(dst, str3);
+//   }
+//   return dst;
+// }
+
+char* lib_strapp(const char* str, ...) {
+
+  va_list args;
+  va_start(args, str);
+  const char* s;
+  size_t len = 0;
+  int i = 0;
+
+  for (s = str; s != NULL; s = va_arg(args, const char*)) {
+    i++;
+    len += strlen(s);
+  }
+  va_end(args);
+
+  if (i == 0) {
     return NULL;
   }
-  char* dst = lib_strnew(lib_strlen(str1) + lib_strlen(str2) + lib_strlen(str3));
-  if (!dst) {
+
+  if (len == 0) {
+    return lib_strdup("");
+  }
+
+  char* tmp = lib_strnew(len);
+  if (!tmp) {
     return NULL;
   }
-  lib_strcpy(dst, str1);
-  if (str2) {
-    lib_strcat(dst, str2);
+
+  va_start(args, str);
+  for (s = str; s != NULL; s = va_arg(args, const char*)) {  
+    lib_strcat(tmp, s);
   }
-  if (str3) {
-    lib_strcat(dst, str3);
-  }
-  return dst;
+  va_end(args);
+
+  return tmp;
 }
+
+char* lib_strappn(int n, const char* str, ...) {
+  if (n <= 0) {
+    return NULL;
+  }
+
+  va_list args;
+  const char* s;
+  size_t len = 0;
+  size_t i = 0;
+  int null_count = 0;
+
+  va_start(args, str);
+  s = str; 
+  for (i = 0; i < n; i++) {
+    if (s) {
+      len += strlen(s);      
+    } else {
+      null_count++;
+    }    
+    s = va_arg(args, const char*);
+  }
+  va_end(args);
+
+  if (i == null_count) {
+    return NULL;
+  }
+
+  if (len == 0) {
+    return lib_strdup("");
+  }
+
+  char* tmp = lib_strnew(len);
+  if (!tmp) {
+    return NULL;
+  }
+
+  va_start(args, str);
+  s = str;
+  for (i = 0; i < n; i++) {    
+    if (s) {
+      lib_strcat(tmp, s);
+    }    
+    s = va_arg(args, const char*);
+  }
+  va_end(args);
+
+  return tmp;
+}
+
+////
 
 char* __lib_straddv__(const char* str, ...) {
 
