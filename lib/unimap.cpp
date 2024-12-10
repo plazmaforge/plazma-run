@@ -510,7 +510,7 @@ static const int unimap_cp1258[] = {
 /**
  * Returns unimap array by Encoding ID 
  */
-int* _lib_unimap_get_map_id(int id) {
+int* _lib_unimap_get_map_by_id(int id) {
     if (id <= 0) {
         return NULL;
     }
@@ -591,12 +591,18 @@ int _lib_unimap_find_idx(int* map, size_t len, int ucode) {
 
 ////
 
-int* lib_unimap_get_map_id(int id) {
-    return _lib_unimap_get_map_id(id);
+/**
+ * Returns unimap array by Encoding ID 
+ */
+int* lib_unimap_get_map_by_id(int id) {
+    return _lib_unimap_get_map_by_id(id);
 }
 
-int lib_unimap_get_unimap_id(lib_unimap_t* unimap, int id) {
-    int* map = _lib_unimap_get_map_id(id);
+/**
+ * Return unimap by Encoding ID
+ */
+int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int id) {
+    int* map = _lib_unimap_get_map_by_id(id);
     unimap->map = map;
     if (!map) {
         unimap->start = 0;
@@ -609,20 +615,21 @@ int lib_unimap_get_unimap_id(lib_unimap_t* unimap, int id) {
 }
 
 /**
- *  b2b convert
+ * Converts data by Encoding IDs 
+ * b2b convert only
  */
-int lib_unimap_conv_id(int from, int to, char* data, size_t len) {
+int lib_unimap_conv_by_id(int from, int to, char* data, size_t len) {
     if (!data || len == 0) {
         return 0;
     }
 
     // Get 'from' map
     lib_unimap_t from_map;
-    lib_unimap_get_unimap_id(&from_map, from);
+    lib_unimap_get_unimap_by_id(&from_map, from);
 
     // Get 'to' map
     lib_unimap_t to_map;
-    lib_unimap_get_unimap_id(&to_map, to);
+    lib_unimap_get_unimap_by_id(&to_map, to);
 
     bool has_from = from_map.map;
     bool has_to   = to_map.map;

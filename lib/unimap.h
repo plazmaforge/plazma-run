@@ -7,10 +7,20 @@ typedef struct lib_unimap_t {
     size_t len;   /* lenght of array */
 } lib_unimap_t;
 
-int* lib_unimap_get_map_id(int id);
+/**
+ * Returns unimap array by Encoding ID 
+ */
+int* lib_unimap_get_map_by_id(int id);
 
-int lib_unimap_get_unimap_id(lib_unimap_t* unimap, int id);
+/**
+ * Return unimap by Encoding ID
+ */
+int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int id);
 
-int lib_unimap_conv_id(int from, int to, char* data, size_t len);
+/**
+ * Converts data by Encoding IDs 
+ * b2b convert only
+ */
+int lib_unimap_conv_by_id(int from, int to, char* data, size_t len);
 
 #endif // PLAZMA_LIB_UNIMAP_H

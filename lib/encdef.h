@@ -13,10 +13,10 @@
 #define LIB_ENC_UCS_TYPE 11
 
 typedef struct lib_encoding_t {
-    int id;                  /* 437         , 1251               */
-    const char* name;        /* 'CP437'     , 'WINDOWS-1251'     */
-    const char* description; /* 'Latin (US)', 'Windows Cyrillic' */
-    const char* alias;       /* alias or aliases                 */
+    int id;                  /* 437           , 1251               */
+    const char* name;        /* 'CP437'       , 'WINDOWS-1251'     */
+    const char* description; /* 'DOS Latin US', 'Windows Cyrillic' */
+    const char* alias;       /* alias or aliases                   */
 } lib_encoding_t;
 
 static const lib_encoding_t lib_encodings[] = {
@@ -110,7 +110,15 @@ static const lib_encoding_t lib_encodings[] = {
 
 };
 
+/**
+ * Returns size of encoding 
+ */
 size_t lib_enc_get_encoding_size();
+
+/**
+ * Returns encoding by index 
+ */
+lib_encoding_t lib_enc_get_encoding(size_t index);
 
 /**
  * Returns true if the encoding id is ISO type 
@@ -322,6 +330,7 @@ bool _lib_enc_equals(const char* name, lib_encoding_t* encoding) {
   if (!name || !encoding) {
     return false;
   }
+  // Convert encoding name to upper case
   char* uname = _to_case(1, (char*) name);
   return strcmp(uname, encoding->name) == 0;
 }
@@ -349,8 +358,12 @@ size_t lib_enc_get_encoding_size() {
   return sizeof(lib_encodings) / sizeof(lib_encoding_t);
 }
 
+lib_encoding_t lib_enc_get_encoding(size_t index) {
+  return lib_encodings[index];
+}
+
 void lib_enc_print_encodings() {
-    size_t size = sizeof(lib_encodings) / sizeof(lib_encoding_t);
+    size_t size = lib_enc_get_encoding_size();
     for (size_t i = 0; i < size; i++) {
         lib_encoding_t e = lib_encodings[i];
         //printf("%s   \t%s\t\t %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id));

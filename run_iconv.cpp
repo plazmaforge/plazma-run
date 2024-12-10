@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
     size_t size = 0;
     char* data = lib_io_read_bytes(file_name, size);
 
-    int ret = lib_unimap_conv_id(from_encoding_id, to_encoding_id, data, size);
+    int ret = lib_unimap_conv_by_id(from_encoding_id, to_encoding_id, data, size);
     if (ret != 0) {
         const char* error_msg;
         if (ret == -11) {
