@@ -245,7 +245,7 @@ int lib_utf8_get_codepoint(const char* str) {
     return cp;
 }
 
-
+/* lib_utf8_to_char */
 int lib_utf8_to_utf8(char* buf, int cp) {
 
     if (!buf) {

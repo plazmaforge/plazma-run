@@ -599,16 +599,21 @@ int* lib_unimap_get_map_by_id(int id) {
 }
 
 /**
- * Return unimap by Encoding ID
+ * Loads unimap by Encoding ID
  */
 int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int id) {
+    if (!unimap) {
+        return -1;
+    }
     int* map = _lib_unimap_get_map_by_id(id);
     unimap->map = map;
+    unimap->id  = id;
     if (!map) {
         unimap->start = 0;
         unimap->len   = 0;
         return -1;
     }
+    
     unimap->start = 128; // TODO
     unimap->len   = 128; // TODO
     return 0;
@@ -618,47 +623,71 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int id) {
  * Converts data by Encoding IDs 
  * b2b convert only
  */
-int lib_unimap_conv_by_id(int from, int to, char* data, size_t len) {
-    if (!data || len == 0) {
+int lib_unimap_conv_by_id(int from_id, int to_id, char* data, size_t len) {
+    if (!data) {
+        return -1;
+    }    
+    if (len == 0) {
         return 0;
     }
 
     // Get 'from' map
     lib_unimap_t from_map;
-    lib_unimap_get_unimap_by_id(&from_map, from);
+    lib_unimap_get_unimap_by_id(&from_map, from_id);
 
     // Get 'to' map
     lib_unimap_t to_map;
-    lib_unimap_get_unimap_by_id(&to_map, to);
+    lib_unimap_get_unimap_by_id(&to_map, to_id);
 
-    bool has_from = from_map.map;
-    bool has_to   = to_map.map;
+    return lib_unimap_conv_by_map(&from_map, &to_map, data, len);
+}
+
+/**
+ * Converts data by Encoding Maps 
+ * b2b convert only
+ */
+int lib_unimap_conv_by_map(lib_unimap_t* from_map, lib_unimap_t* to_map, char* data, size_t len) {
+    if (!from_map || !to_map || !data) {
+        return -1;
+    }
+    if (len == 0) {
+        return 0;
+    }
 
     #ifdef DEBUG
-    fprintf(stderr, ">> conv  : from=%d, to=%d\n", from, to);
+    fprintf(stderr, ">> conv  : from_id=%d, to_id=%d\n", from_map->id, to_map->id);
     #endif
+
+    if (from_map->id == to_map->id) {
+        #ifdef DEBUG
+        fprintf(stderr, ">> conv  : Encodings are identical\n");
+        #endif
+        return 0;
+    }
+
+    bool has_from = from_map->map;
+    bool has_to   = to_map->map;
 
     if (!has_from && !has_to) {
         #ifdef ERROR
-        fprintf(stderr, "Encoding map not found (from, to): %d, %d", from, to);
+        fprintf(stderr, "Conversion from/to map unsupported: %d, %d\n", from_map->id, to_map->id);
         #endif
-        return -1112;
+        return LIB_UNIMAP_ERR_MAP_ALL_USUPPORTED;
     }
 
     if (!has_from) {
         #ifdef ERROR
-        fprintf(stderr, "Encoding map not found (from)    : %d", from);
+        fprintf(stderr, "Conversion from map unsupported   : %d\n", from_map->id);
         #endif
-        return -11;
+        return LIB_UNIMAP_ERR_MAP_FROM_USUPPORTED;
     }
 
     if (!has_to) {
         #ifdef ERROR
-        fprintf(stderr, "Encoding map not found (to)      : %d", to);
+        fprintf(stderr, "Conversion to map unsupported     : %d\n", to_map->id);
         #endif
-        return -12;
+        return LIB_UNIMAP_ERR_MAP_TO_USUPPORTED;
     }
-
 
     unsigned char c;
 
@@ -671,7 +700,7 @@ int lib_unimap_conv_by_id(int from, int to, char* data, size_t len) {
         #endif
 
         // 1. icode -> icode
-        if (icode < from_map.start) {
+        if (icode < from_map->start) {
             #ifdef DEBUG_LL
             fprintf(stderr, ">> icode : skip\n");
             #endif
@@ -679,13 +708,13 @@ int lib_unimap_conv_by_id(int from, int to, char* data, size_t len) {
         }
 
         // 2. icode -> 'from_map'
-        int idx = icode - from_map.start;
+        int idx = icode - from_map->start;
         #ifdef DEBUG_LL
         fprintf(stderr, ">> oidx  : %d\n", idx);
         #endif
 
         // Get UTF8 code from 'from_map"
-        if (idx >= from_map.len) {
+        if (idx >= from_map->len) {
             // error: NO_CHR (?)
             #ifdef ERROR
             fprintf(stderr, ">> error: NO_CHR (-13)\n");
@@ -693,7 +722,7 @@ int lib_unimap_conv_by_id(int from, int to, char* data, size_t len) {
             return -13;
         }
 
-        int ucode = from_map.map[idx];
+        int ucode = from_map->map[idx];
         #ifdef DEBUG_LL
         fprintf(stderr, ">> ucode : 0x%02X\n", (unsigned int) ucode);
         #endif
@@ -706,7 +735,7 @@ int lib_unimap_conv_by_id(int from, int to, char* data, size_t len) {
             #endif
             ocode = NO_DAT;
         } else {
-            idx = _lib_unimap_find_idx(to_map.map, to_map.len, ucode);
+            idx = _lib_unimap_find_idx(to_map->map, to_map->len, ucode);
             if (idx < 0) {
                 #ifdef ERROR
                 fprintf(stderr, ">> error : ocode not found\n");
@@ -716,7 +745,7 @@ int lib_unimap_conv_by_id(int from, int to, char* data, size_t len) {
                 #ifdef DEBUG_LL
                 fprintf(stderr, ">> oidx  : %d\n", idx);
                 #endif
-                ocode = idx + to_map.start;
+                ocode = idx + to_map->start;
             }
         }
 

@@ -18,24 +18,25 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    const char* prog_name = getopt_prog_name(argv);
     bool error = false;
     int opt;
 
-    char* from_encoding = NULL;
-    char* to_encoding   = NULL;
+    char* from_code = NULL;
+    char* to_code   = NULL;
 
     while ((opt = getopt(argc, argv, "f:t:")) != -1) {
         switch (opt) {
         case 'f':
             if (optarg) {
-                from_encoding = optarg;
+                from_code = optarg;
             } else {
                 error = true;
             }
             break;
         case 't':
             if (optarg) {
-                to_encoding = optarg;
+                to_code = optarg;
             } else {
                 error = true;
             }
@@ -55,27 +56,27 @@ int main(int argc, char* argv[]) {
     }
 
     //if (argc - optind < min_arg) {
-    //    fprintf(stderr, "%s: Incorrect argument count\n", argv[0]);
+    //    fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
     //    usage();
     //    return 0;
     //}
 
     char* file_name = argv[optind];
 
-    //printf("from_encoding   : %s\n", from_encoding);
-    //printf("to_encoding     : %s\n", to_encoding);
-    //printf("file_name       : %s\n", file_name);
+    //printf("from_code   : %s\n", from_code);
+    //printf("to_code     : %s\n", to_code);
+    //printf("file_name   : %s\n", file_name);
 
-    int from_encoding_id = lib_enc_get_encoding_id(from_encoding);
-    if (from_encoding_id == 0) {
+    int from_id = lib_enc_get_encoding_id(from_code);
+    int to_id = lib_enc_get_encoding_id(to_code);
+
+    if (from_id == 0) {
         error = true;
-        fprintf(stderr, "Encoding not found (from): %s\n", from_encoding);
+        fprintf(stderr, "%s: Encoding from %s not found\n", prog_name, from_code);
     }
-
-    int to_encoding_id = lib_enc_get_encoding_id(to_encoding);
-    if (to_encoding_id == 0) {
+    if (to_id == 0) {
         error = true;
-        fprintf(stderr, "Encoding not found (to)  : %s\n", to_encoding);
+        fprintf(stderr, "%s: Encoding to %s not found\n", prog_name, to_code);
     }
 
     //if (!lib_fs_exists(file_name)) {
@@ -87,25 +88,27 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    //printf("from_encoding_id: %d\n", from_encoding_id);
-    //printf("to_encoding_id  : %d\n", to_encoding_id);
+    //printf("from_id : %d\n", from_id);
+    //printf("to_id   : %d\n", to_id);
 
     size_t size = 0;
     char* data = lib_io_read_bytes(file_name, size);
+    if (!data) {
+        fprintf(stderr, "%s: Empty data\n", prog_name);
+        return 1;
+    }
 
-    int ret = lib_unimap_conv_by_id(from_encoding_id, to_encoding_id, data, size);
+    int ret = lib_unimap_conv_by_id(from_id, to_id, data, size);
     if (ret != 0) {
-        const char* error_msg;
-        if (ret == -11) {
-            error_msg = "encoding not supported (from)";
-        } else if (ret == -12) {
-            error_msg = "encoding not supported (to)";
-        } else if (ret == -1112) {
-            error_msg = "encoding not supported (from, to)";
+        if (ret == LIB_UNIMAP_ERR_MAP_FROM_USUPPORTED) {
+            fprintf(stderr, "%s: Conversion from %s unsupported\n", prog_name, from_code);
+        } else if (ret == LIB_UNIMAP_ERR_MAP_TO_USUPPORTED) {
+            fprintf(stderr, "%s: Conversion to %s unsupported\n", prog_name, to_code);
+        } else if (ret == LIB_UNIMAP_ERR_MAP_ALL_USUPPORTED) {
+            fprintf(stderr, "%s: Conversion from %s to %s unsupported\n", prog_name, from_code, to_code);
         } else {
-            error_msg = "unknown";
+            fprintf(stderr, "%s: Conversion error\n", prog_name);
         }
-        fprintf(stderr, "Convert error: %s\n", error_msg);
         return 1;
     }
 

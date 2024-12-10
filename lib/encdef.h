@@ -330,8 +330,17 @@ bool _lib_enc_equals(const char* name, lib_encoding_t* encoding) {
   if (!name || !encoding) {
     return false;
   }
+  size_t len = strlen(name);
+  if (len == 0) {
+    return false;
+  }
   // Convert encoding name to upper case
-  char* uname = _to_case(1, (char*) name);
+  char uname[len + 1];
+  strcpy(uname, name);
+  uname[len] = '\0';
+
+  //char* uname = _to_case(1, (char*) name);
+  _to_case(1, uname);
   return strcmp(uname, encoding->name) == 0;
 }
 

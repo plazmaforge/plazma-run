@@ -12,7 +12,6 @@ static char *input = NULL;
 static int restopt = 0;
 static int init = 0;
 
-
 const char* find_short_option(const char* short_option, char c) {
     if (short_option == NULL) {
         return NULL;
@@ -377,4 +376,24 @@ int getopt_long(int argc, char* const argv[], const char* short_option, const st
 
 int getopt_long_only(int argc, char* const argv[], const char* short_option, const struct option* long_option, int* long_ind) {
     return getopt_internal(argc, argv, short_option, long_option, long_ind, 1);
+}
+
+const char* getopt_base_name(const char* name) {
+    if (!name) {
+        return NULL;
+    }
+    const char* base  = strrchr(name, '/');   /* NIX */
+    const char* base2 = strrchr(name, '\\');  /* WIN */
+    if (base2 > base) {
+        base = base2;
+    }
+    base = base ? (base + 1): name;
+    return base;
+}
+
+const char* getopt_prog_name(char* const argv[]) {
+    if (!argv) {
+        return NULL;
+    }
+    return getopt_base_name(argv[0]);
 }
