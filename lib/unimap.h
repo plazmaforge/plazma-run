@@ -34,4 +34,14 @@ int lib_unimap_conv_by_id(int from_id, int to_id, char* data, size_t len);
  */
 int lib_unimap_conv_by_map(lib_unimap_t* from_map, lib_unimap_t* to_map, char* data, size_t len);
 
+/**
+ * Returns true if the Encoding ID supports conversion map 
+ */
+bool lib_unimap_supports_map(int id);
+
+/**
+ * Return UTF-8 code by map and code 
+ */
+int lib_unimap_get_ucode(lib_unimap_t* from_map, int icode);
+
 #endif // PLAZMA_LIB_UNIMAP_H

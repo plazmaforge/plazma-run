@@ -245,8 +245,7 @@ int lib_utf8_get_codepoint(const char* str) {
     return cp;
 }
 
-/* lib_utf8_to_char */
-int lib_utf8_to_utf8(char* buf, int cp) {
+int lib_utf8_to_char(char* buf, int cp) {
 
     if (!buf) {
         return 0;
@@ -672,7 +671,7 @@ const char* lib_utf8_next(const char* str, int* cp, int* len) {
 }
 
 int lib_utf8_encode(char* buf, int cp) {
-    return lib_utf8_to_utf8(buf, cp);
+    return lib_utf8_to_char(buf, cp);
 }
 
 int lib_utf8_decode(const char* str, int* cp) {
@@ -1405,7 +1404,7 @@ int _lib_utf8_to_case_char(
 
     // Convert new codepoint to new char 
     // (min size = 4 + 1)
-    //*len2 = lib_utf8_to_utf8(buf, *cp2);
+    //*len2 = lib_utf8_to_char(buf, *cp2);
 
     *len2 = lib_utf8_get_codepoint_sequence_len(*cp2);
     if (buf) {

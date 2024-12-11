@@ -4,6 +4,7 @@
 #include "getopt.h"
 #include "iolib.h"
 #include "encdef.h"
+#include "enclib.h"
 #include "unimap.h"
 
 void usage() {
@@ -98,18 +99,33 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int ret = lib_unimap_conv_by_id(from_id, to_id, data, size);
-    if (ret != 0) {
-        if (ret == LIB_UNIMAP_ERR_MAP_FROM_USUPPORTED) {
-            fprintf(stderr, "%s: Conversion from %s unsupported\n", prog_name, from_code);
-        } else if (ret == LIB_UNIMAP_ERR_MAP_TO_USUPPORTED) {
-            fprintf(stderr, "%s: Conversion to %s unsupported\n", prog_name, to_code);
-        } else if (ret == LIB_UNIMAP_ERR_MAP_ALL_USUPPORTED) {
-            fprintf(stderr, "%s: Conversion from %s to %s unsupported\n", prog_name, from_code, to_code);
-        } else {
-            fprintf(stderr, "%s: Conversion error\n", prog_name);
+    bool is_b2b = true;
+    char* to_data = NULL;
+    if (lib_unimap_supports_map(from_id) && to_id == LIB_ENC_UTF_ID) {
+        is_b2b = false;
+        size_t to_size = 0;
+        to_data = lib_enc_conv_to_utf8_by_id(from_id, data, size, to_size);
+        if (!to_data) {
+            fprintf(stderr, "%s: Empty output data\n", prog_name);
+            free(data);
+            return 1;
         }
-        return 1;
+        data = to_data;
+    } else {
+        int ret = lib_unimap_conv_by_id(from_id, to_id, data, size);
+        if (ret != 0) {
+            if (ret == LIB_UNIMAP_ERR_MAP_FROM_USUPPORTED) {
+                fprintf(stderr, "%s: Conversion from %s unsupported\n", prog_name, from_code);
+            } else if (ret == LIB_UNIMAP_ERR_MAP_TO_USUPPORTED) {
+                fprintf(stderr, "%s: Conversion to %s unsupported\n", prog_name, to_code);
+            } else if (ret == LIB_UNIMAP_ERR_MAP_ALL_USUPPORTED) {
+                fprintf(stderr, "%s: Conversion from %s to %s unsupported\n", prog_name, from_code, to_code);
+            } else {
+                fprintf(stderr, "%s: Conversion error\n", prog_name);
+            }
+            free(data);
+            return 1;
+        }
     }
 
     for (int i = 0; i < size; i++) {

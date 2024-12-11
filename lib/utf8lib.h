@@ -26,10 +26,10 @@ size_t lib_utf8_get_byte_sequence_len(char first);
 int lib_utf8_get_codepoint(const char* str);
 
 /*
- * Convert codepoint to UTF-8 char.
+ * Convert codepoint to UTF-8 char and store it to the buffer
  * Return lenght of UTF-8 char or error (-1).
  */
-int lib_utf8_to_utf8(char* buf, int cp);
+int lib_utf8_to_char(char* buf, int cp);
 
 /*
  * Convert UTF-8 char to codepoint.
@@ -52,7 +52,7 @@ const char* lib_utf8_iterate(const char* str, char* buf, int* cp, int* len);
 const char* lib_utf8_next(const char* str, int* cp, int* len);
 
 /*
- * Encode utf8 char from codepoint.
+ * Encode utf8 char from codepoint and store it to the buffer
  * Return lenght of utf8 char or error (-1).
  */
 int lib_utf8_encode(char* buf, int cp);

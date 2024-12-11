@@ -30,6 +30,8 @@ rem compile
 %CC% %CFLAGS% lib/getopt.cpp -o getopt.o
 %CC% %CFLAGS% lib/utf8lib.cpp -o utf8lib.o
 %CC% %CFLAGS% lib/unimap.cpp -o unimap.o
+%CC% %CFLAGS% lib/encdef.cpp -o encdef.o
+%CC% %CFLAGS% lib/enclib.cpp -o enclib.o
 
 %CC% %CFLAGS% lib/common.cpp -o common.o
 %CC% %CFLAGS% lib/debug.cpp -o debug.o
@@ -105,7 +107,7 @@ rem link
 %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 
 %CC% %LDFLAGS% getopt.o iolib.o run_unimap.o -o run-unimap.exe
-%CC% %LDFLAGS% getopt.o iolib.o unimap.o run_iconv.o -o run-iconv.exe
+%CC% %LDFLAGS% getopt.o iolib.o unimap.o utf8lib.o encdef.o enclib.o run_iconv.o -o run-iconv.exe
 
 %CC% %LDFLAGS% run_ctype.o -o run-ctype.exe
 
@@ -113,5 +115,5 @@ rem link
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_locale.o -o test-locale
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o utf8lib.o test_utf8.o -o test-utf8.exe
-%CC% %LDFLAGS% test_enc.o -o test-enc.exe
+%CC% %LDFLAGS% encdef.o test_enc.o -o test-enc.exe
 %CC% %LDFLAGS% strlib.o test_strlib.o -o test-strlib.exe
