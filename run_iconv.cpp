@@ -101,16 +101,15 @@ int main(int argc, char* argv[]) {
 
     bool is_b2b = true;
     char* to_data = NULL;
+    size_t to_size = 0;
     if (lib_unimap_supports_map(from_id) && to_id == LIB_ENC_UTF_ID) {
-        is_b2b = false;
-        size_t to_size = 0;
+        is_b2b = false;        
         to_data = lib_enc_conv_to_utf8_by_id(from_id, data, size, to_size);
         if (!to_data) {
             fprintf(stderr, "%s: Empty output data\n", prog_name);
             free(data);
             return 1;
         }
-        data = to_data;
     } else {
         int ret = lib_unimap_conv_by_id(from_id, to_id, data, size);
         if (ret != 0) {
@@ -126,10 +125,12 @@ int main(int argc, char* argv[]) {
             free(data);
             return 1;
         }
+        to_data = data;
+        to_size = size;
     }
 
-    for (int i = 0; i < size; i++) {
-        printf("%c", data[i]);
+    for (int i = 0; i < to_size; i++) {
+        printf("%c", to_data[i]);
     }
 
 }
