@@ -91,27 +91,35 @@ int main(int argc, char* argv[]) {
 
     //printf("from_id : %d\n", from_id);
     //printf("to_id   : %d\n", to_id);
+    
+    char* from_data  = NULL;
+    size_t from_size = 0;
+    char* to_data    = NULL;
+    size_t to_size   = 0;
 
-    size_t size = 0;
-    char* data = lib_io_read_bytes(file_name, size);
-    if (!data) {
-        fprintf(stderr, "%s: Empty data\n", prog_name);
+    from_data = lib_io_read_bytes(file_name, from_size);
+    if (!from_data) {
+        fprintf(stderr, "%s: Empty input data\n", prog_name);
         return 1;
     }
 
-    bool is_b2b = true;
-    char* to_data = NULL;
-    size_t to_size = 0;
+    bool b2b = false;
     if (lib_unimap_supports_map(from_id) && to_id == LIB_ENC_UTF_ID) {
-        is_b2b = false;        
-        to_data = lib_enc_conv_to_utf8_by_id(from_id, data, size, to_size);
+        int ret = lib_enc_conv_to_utf8_by_id(from_id, from_data, from_size, &to_data, &to_size);
+        if (ret != 0) {
+            fprintf(stderr, "%s: Conversion error\n", prog_name);
+            free(from_data);
+            free(to_data);
+            return 1;
+        }
         if (!to_data) {
             fprintf(stderr, "%s: Empty output data\n", prog_name);
-            free(data);
+            free(from_data);
             return 1;
         }
     } else {
-        int ret = lib_unimap_conv_by_id(from_id, to_id, data, size);
+        b2b = true;
+        int ret = lib_unimap_conv_by_id(from_id, to_id, from_data, from_size);
         if (ret != 0) {
             if (ret == LIB_UNIMAP_ERR_MAP_FROM_USUPPORTED) {
                 fprintf(stderr, "%s: Conversion from %s unsupported\n", prog_name, from_code);
@@ -122,15 +130,20 @@ int main(int argc, char* argv[]) {
             } else {
                 fprintf(stderr, "%s: Conversion error\n", prog_name);
             }
-            free(data);
+            free(from_data);
             return 1;
         }
-        to_data = data;
-        to_size = size;
+        to_data = from_data;
+        to_size = from_size;
     }
 
     for (int i = 0; i < to_size; i++) {
         printf("%c", to_data[i]);
+    }
+
+    free(from_data);
+    if (!b2b) {
+        free(to_data);
     }
 
 }
