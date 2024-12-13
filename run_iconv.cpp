@@ -137,9 +137,12 @@ int main(int argc, char* argv[]) {
         to_size = from_size;
     }
 
-    for (int i = 0; i < to_size; i++) {
-        printf("%c", to_data[i]);
-    }
+    to_data[to_size] = '\0';
+    puts(to_data);
+
+    //for (int i = 0; i < to_size; i++) {
+    //    printf("%c", to_data[i]);
+    //}
 
     free(from_data);
     if (!b2b) {
