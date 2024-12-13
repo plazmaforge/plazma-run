@@ -42,7 +42,7 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     char** to_data, size_t* to_len) {
 
     #ifdef DEBUG
-    fprintf(stderr, ">> lib_enc_conv_by_id : from_id=%d, to_id=%d\n", from_id, to_id);
+    fprintf(stderr, ">> lib_enc_conv_by_id: from_id=%d, to_id=%d\n", from_id, to_id);
     #endif
 
     if (!from_data || !to_data || !to_len) {
@@ -57,7 +57,7 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     *to_len  = 0;
 
     bool has_from = lib_unimap_supports_map(from_id);
-    bool has_to = lib_unimap_supports_map(to_id);
+    bool has_to   = lib_unimap_supports_map(to_id);
 
     // unimap <-> unimap
     if (has_from && has_to) {
@@ -84,7 +84,7 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     if (has_from && to_id == LIB_ENC_UTF8_ID) {
 
         #ifdef DEBUG
-        fprintf(stderr, ">> lib_enc_conv_by_id : unimap -> UTF-8\n");
+        fprintf(stderr, ">> lib_enc_conv_by_id: unimap -> UTF-8\n");
         #endif
 
         return lib_enc_conv_to_utf8_by_id(from_id, from_data, from_len, to_data, to_len);
@@ -94,7 +94,7 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     if (from_id == LIB_ENC_UTF8_ID && has_to) {
 
         #ifdef DEBUG
-        fprintf(stderr, ">> lib_enc_conv_by_id : UTF-8 -> unimap\n");
+        fprintf(stderr, ">> lib_enc_conv_by_id: UTF-8 -> unimap\n");
         #endif
 
         return lib_enc_conv_from_utf8_by_id(to_id, from_data, from_len, to_data, to_len);
@@ -103,7 +103,6 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     // TODO: unimap -> UTF-16
     // TODO: unimap -> UTF-32
 
-    // TODO: UTF-8  -> unimap
     // TODO: UTF-16 -> unimap
     // TODO: UTF-32 -> unimap
 
@@ -404,7 +403,12 @@ int lib_enc_conv_from_utf8_by_map(lib_unimap_t* conv_map, char* from_data, size_
         }
 
         // Convert UTF-8 code to code by conv_map
-        ocode = lib_unimap_conv_ucode(conv_map, ucode);
+        if (ucode < conv_map->start) {
+            ocode = ucode; 
+        } else {
+            ocode = lib_unimap_conv_ucode(conv_map, ucode);
+        }
+        
         if (ocode < 0) {
             // error
             #ifdef ERROR
