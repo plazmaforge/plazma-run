@@ -38,12 +38,12 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
         memcpy(data, from_data, len);
 
         // Conversion b2b only
-        lib_unimap_conv_by_id(from_id, to_id, data, len);
+        int ret = lib_unimap_conv_by_id(from_id, to_id, data, len);
 
         *to_data = data;
         *to_len  = len;
 
-        return 0;
+        return ret;
     }
 
     // unimap -> UTF-8
