@@ -9,6 +9,11 @@
 #define LIB_ENC_ERR_CONV_TO_USUPPORTED        -2002
 
 /**
+ * Returns (conversion only) encoding id by encoding name 
+ */
+int lib_enc_get_conv_encoding_id(const char* name);
+
+/**
  * Converts data by Encoding IDs 
  */
 int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len, 

@@ -6,6 +6,32 @@
 #include "utf8lib.h"
 
 /**
+ * Returns true if the Encoding ID supports conversion
+ */
+static bool _lib_enc_supports_conv(int id) {
+    if (id == LIB_ENC_UTF8_ID) {
+        return true;
+    }
+    return lib_unimap_supports_map(id);
+} 
+
+/**
+ * Returns (conversion only) encoding id by encoding name 
+ */
+int lib_enc_get_conv_encoding_id(const char* name) {
+    int id = lib_enc_get_encoding_id(name);
+    if (id == 0) {
+        return 0;
+    }
+
+    // Check support conversion
+    if (!_lib_enc_supports_conv(id)) {
+        return 0;
+    }
+    return id;
+}
+
+/**
  * Converts data by Encoding IDs 
  */
 int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
