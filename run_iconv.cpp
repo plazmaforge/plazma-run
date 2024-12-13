@@ -60,9 +60,20 @@ static void _data_free(char* from_data, char* to_data) {
     }
 }
 
+void _print_encodings() {
+    size_t size = lib_enc_get_encoding_size();
+    for (size_t i = 0; i < size; i++) {        
+        lib_encoding_t e = lib_enc_get_encoding(i);
+        if (!lib_enc_supports_conv(e.id)) {
+            continue;
+        }
+        printf("%-15s %-25s %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id));
+    }
+}
+
 int main(int argc, char* argv[]) {
 
-    int min_arg = 5;
+    int min_arg = 1;
     if (argc < min_arg + 1) {
         usage();
         return 1;
@@ -74,22 +85,18 @@ int main(int argc, char* argv[]) {
 
     char* from_code = NULL;
     char* to_code   = NULL;
+    bool opt_list   = false;
 
-    while ((opt = getopt(argc, argv, "f:t:")) != -1) {
+    while ((opt = getopt(argc, argv, "f:t:l")) != -1) {
         switch (opt) {
+        case 'l':
+            opt_list = true;
+            break;
         case 'f':
-            if (optarg) {
-                from_code = optarg;
-            } else {
-                error = true;
-            }
+            from_code = optarg;
             break;
         case 't':
-            if (optarg) {
-                to_code = optarg;
-            } else {
-                error = true;
-            }
+            to_code = optarg;
             break;
         case '?':
             error = true;
@@ -98,6 +105,19 @@ int main(int argc, char* argv[]) {
             error = true;
             break;
         }
+
+        if (opt_list) {
+            break;
+        }
+    }
+
+    if (opt_list) {
+        _print_encodings();
+        return 0;
+    }
+
+    if (!from_code || !to_code) {
+        error = true;
     }
 
     if (error) {

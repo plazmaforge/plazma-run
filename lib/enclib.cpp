@@ -8,7 +8,7 @@
 /**
  * Returns true if the Encoding ID supports conversion
  */
-static bool _lib_enc_supports_conv(int id) {
+bool lib_enc_supports_conv(int id) {
     if (id == LIB_ENC_UTF8_ID) {
         return true;
     }
@@ -25,7 +25,7 @@ int lib_enc_get_conv_encoding_id(const char* name) {
     }
 
     // Check support conversion
-    if (!_lib_enc_supports_conv(id)) {
+    if (!lib_enc_supports_conv(id)) {
         return 0;
     }
     return id;

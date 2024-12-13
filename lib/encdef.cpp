@@ -339,6 +339,20 @@ int lib_enc_get_encoding_id(const char* name) {
   return 0;
 }
 
+bool lib_enc_has_encoding_id(int id) {
+    if (id <= 0) {
+        return false;
+    }
+    size_t size = lib_enc_get_encoding_size();
+    for (size_t i = 0; i < size; i++) {
+        lib_encoding_t e = lib_encodings[i];
+        if (e.id == id) {
+            return true;
+        }    
+    }
+    return false;
+}
+
 size_t lib_enc_get_encoding_size() {
   return sizeof(lib_encodings) / sizeof(lib_encoding_t);
 }
