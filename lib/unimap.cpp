@@ -812,6 +812,42 @@ int _lib_unimap_conv_code(lib_unimap_t* from_map, lib_unimap_t* to_map, int icod
     return ocode;
 }
 
+int _lib_unimap_conv_ucode(lib_unimap_t* conv_map, int ucode) {
+
+    #ifdef DEBUG_LL
+    fprintf(stderr, ">> ucode : 0x%02X\n", (unsigned int) ucode);
+    #endif
+
+    // Find index in 'to_map' by ucode
+    int ocode = 0;
+    if (ucode == 0xFFFD) {
+        #ifdef ERROR
+        fprintf(stderr, ">> error : ucode is NO_CHR (U+FFFD)\n");
+        #endif
+        ocode = NO_DAT;
+    } else {
+        int idx = _lib_unimap_find_idx(conv_map->map, conv_map->len, ucode);
+        if (idx < 0) {
+            #ifdef ERROR
+            fprintf(stderr, ">> error : ocode not found\n");
+            #endif
+            ocode = NO_DAT;
+        } else {
+            #ifdef DEBUG_LL
+            fprintf(stderr, ">> oidx  : %d\n", idx);
+            #endif
+            ocode = idx + conv_map->start;
+        }
+    }
+
+    #ifdef DEBUG_LL
+    fprintf(stderr, ">> ocode : 0x%02X\n\n", (unsigned int) ocode);
+    #endif
+
+    return ocode;
+}
+
+
 int _lib_unimap_conv_char(lib_unimap_t* from_map, lib_unimap_t* to_map, char chr) {
     int icode = _lib_unimap_to_code(chr);
     return _lib_unimap_conv_code(from_map, to_map, icode);
@@ -914,3 +950,14 @@ bool lib_unimap_supports_map(int id) {
 int lib_unimap_get_ucode(lib_unimap_t* from_map, int icode) {
     return _lib_unimap_get_ucode(from_map, icode);
 }
+
+////
+
+int lib_unimap_conv_icode(lib_unimap_t* conv_map, int icode) {
+    return _lib_unimap_get_ucode(conv_map, icode);
+}
+
+int lib_unimap_conv_ucode(lib_unimap_t* conv_map, int ucode) {
+    return _lib_unimap_conv_ucode(conv_map, ucode);
+}
+

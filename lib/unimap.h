@@ -44,4 +44,10 @@ bool lib_unimap_supports_map(int id);
  */
 int lib_unimap_get_ucode(lib_unimap_t* from_map, int icode);
 
+////
+
+int lib_unimap_conv_icode(lib_unimap_t* conv_map, int icode);
+
+int lib_unimap_conv_ucode(lib_unimap_t* conv_map, int ucode);
+
 #endif // PLAZMA_LIB_UNIMAP_H
