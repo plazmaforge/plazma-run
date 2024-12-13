@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
     }
 
     bool b2b = false;
-    if (lib_unimap_supports_map(from_id) && to_id == LIB_ENC_UTF_ID) {
+    if (lib_unimap_supports_map(from_id) && to_id == LIB_ENC_UTF8_ID) {
         int ret = lib_enc_conv_to_utf8_by_id(from_id, from_data, from_size, &to_data, &to_size);
         if (ret != 0) {
             fprintf(stderr, "%s: Conversion error\n", prog_name);
@@ -121,11 +121,11 @@ int main(int argc, char* argv[]) {
         b2b = true;
         int ret = lib_unimap_conv_by_id(from_id, to_id, from_data, from_size);
         if (ret != 0) {
-            if (ret == LIB_UNIMAP_ERR_MAP_FROM_USUPPORTED) {
+            if (ret == LIB_UNIMAP_ERR_CONV_FROM_USUPPORTED) {
                 fprintf(stderr, "%s: Conversion from %s unsupported\n", prog_name, from_code);
-            } else if (ret == LIB_UNIMAP_ERR_MAP_TO_USUPPORTED) {
+            } else if (ret == LIB_UNIMAP_ERR_CONV_TO_USUPPORTED) {
                 fprintf(stderr, "%s: Conversion to %s unsupported\n", prog_name, to_code);
-            } else if (ret == LIB_UNIMAP_ERR_MAP_ALL_USUPPORTED) {
+            } else if (ret == LIB_UNIMAP_ERR_CONV_USUPPORTED) {
                 fprintf(stderr, "%s: Conversion from %s to %s unsupported\n", prog_name, from_code, to_code);
             } else {
                 fprintf(stderr, "%s: Conversion error\n", prog_name);

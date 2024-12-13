@@ -25,6 +25,7 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     bool has_from = lib_unimap_supports_map(from_id);
     bool has_to = lib_unimap_supports_map(to_id);
 
+    // unimap <-> unimap
     if (has_from && has_to) {
         size_t len = from_len;
         char* data = (char*) malloc(len);
@@ -45,13 +46,41 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
         return 0;
     }
 
-    if (has_from && to_id == LIB_ENC_UTF_ID) {
-        
+    // unimap -> UTF-8
+    if (has_from && to_id == LIB_ENC_UTF8_ID) {
+
         return lib_enc_conv_to_utf8_by_id(from_id, from_data, from_len, to_data, to_len);
     }
 
-    // TODO
-    return -1;
+    // TODO: unimap -> UTF-16
+    // TODO: unimap -> UTF-32
+
+    // TODO: UTF-8  -> unimap
+    // TODO: UTF-16 -> unimap
+    // TODO: UTF-32 -> unimap
+
+    if (!has_from && !has_to) {
+        #ifdef ERROR
+        fprintf(stderr, "Conversion from/to map unsupported: %d, %d\n", from_id, to_id);
+        #endif
+        return LIB_ENC_ERR_CONV_USUPPORTED;
+    }
+
+    if (!has_from) {
+        #ifdef ERROR
+        fprintf(stderr, "Conversion from map unsupported   : %d\n", from_id);
+        #endif
+        return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
+    }
+
+    if (!has_to) {
+        #ifdef ERROR
+        fprintf(stderr, "Conversion to map unsupported     : %d\n", to_id);
+        #endif
+        return LIB_ENC_ERR_CONV_TO_USUPPORTED;
+    }
+
+    return LIB_ENC_ERR_CONV_USUPPORTED;
 }
 
 /**

@@ -4,6 +4,10 @@
 #include "encdef.h"
 #include "unimap.h"
 
+#define LIB_ENC_ERR_CONV_USUPPORTED           -2000
+#define LIB_ENC_ERR_CONV_FROM_USUPPORTED      -2001
+#define LIB_ENC_ERR_CONV_TO_USUPPORTED        -2002
+
 /**
  * Converts data by Encoding IDs 
  */

@@ -870,21 +870,21 @@ int lib_unimap_conv_by_map(lib_unimap_t* from_map, lib_unimap_t* to_map, char* d
         #ifdef ERROR
         fprintf(stderr, "Conversion from/to map unsupported: %d, %d\n", from_map->id, to_map->id);
         #endif
-        return LIB_UNIMAP_ERR_MAP_ALL_USUPPORTED;
+        return LIB_UNIMAP_ERR_CONV_USUPPORTED;
     }
 
     if (!has_from) {
         #ifdef ERROR
         fprintf(stderr, "Conversion from map unsupported   : %d\n", from_map->id);
         #endif
-        return LIB_UNIMAP_ERR_MAP_FROM_USUPPORTED;
+        return LIB_UNIMAP_ERR_CONV_FROM_USUPPORTED;
     }
 
     if (!has_to) {
         #ifdef ERROR
         fprintf(stderr, "Conversion to map unsupported     : %d\n", to_map->id);
         #endif
-        return LIB_UNIMAP_ERR_MAP_TO_USUPPORTED;
+        return LIB_UNIMAP_ERR_CONV_TO_USUPPORTED;
     }
 
     unsigned char u;

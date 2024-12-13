@@ -1,9 +1,9 @@
 #ifndef PLAZMA_LIB_UNIMAP_H
 #define PLAZMA_LIB_UNIMAP_H
 
-#define LIB_UNIMAP_ERR_MAP_ALL_USUPPORTED   -1112
-#define LIB_UNIMAP_ERR_MAP_FROM_USUPPORTED  -11
-#define LIB_UNIMAP_ERR_MAP_TO_USUPPORTED    -12
+#define LIB_UNIMAP_ERR_CONV_USUPPORTED       -1000
+#define LIB_UNIMAP_ERR_CONV_FROM_USUPPORTED  -1001
+#define LIB_UNIMAP_ERR_CONV_TO_USUPPORTED    -1002
 
 typedef struct lib_unimap_t {
     int id;       /* encoding id     */
