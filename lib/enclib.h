@@ -36,7 +36,7 @@ int lib_enc_conv_from_utf8_by_id(int conv_id, char* from_data, size_t from_len,
 /**
  * Converts data to UTF-8 by Encoding Map
  */
-int lib_enc_conv_to_utf8_by_map(lib_unimap_t* from_map, char* from_data, size_t from_len, 
+int lib_enc_conv_to_utf8_by_map(lib_unimap_t* conv_map, char* from_data, size_t from_len, 
     char** to_data, size_t* to_len);
 
 /**
