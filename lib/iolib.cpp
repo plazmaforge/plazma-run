@@ -1,17 +1,88 @@
-
 #include <fcntl.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
 #include <ctype.h>
 
 #include "iolib.h"
 
-// https://www.delftstack.com/howto/c/read-binary-file-in-c/
+static char* _data_new(size_t size) {
+  return (char*) calloc(size, sizeof(char));
+}
 
+static int _get_file_size_stat(const char* file_name, size_t* size) {
+
+  if (!file_name || !size) {
+    return -1;
+  }
+  struct stat sb;
+  if (stat(file_name, &sb) == -1) {
+    return -1;
+  }
+  *size = sb.st_size; 
+  return 0;
+}
+
+////
+
+int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
+  if (!file_name || !data) {
+    // error: args
+    return -1;
+  }
+
+  // Read
+  FILE* file = fopen(file_name, "rb");
+  if (!file) {
+    // error: io
+    return -1;
+  }
+
+  size_t file_size = 0;
+  if (_get_file_size_stat(file_name, &file_size) != 0) {
+    // error: io
+    return -1;
+  }
+
+  //fprintf(stderr, ">> file_open: input_size=%lu, file_size=%lu", size, file_size);
+
+  if (size == 0 || size > file_size) {
+    size = file_size;
+  }
+
+  //fprintf(stderr, ", size=%lu\n", size);
+
+  char* _data = _data_new(size);
+  if (!_data) {
+    // error: mem
+    return -1;
+  }
+
+  size_t _size = fread(_data, sizeof(char), size, file);
+  *data = _data;
+
+  //fprintf(stderr, ">> file_read: size=%lu\n", _size);
+
+  fclose(file);  
+
+  return _size;
+
+}
+
+int lib_io_read_all_bytes(const char* file_name, char** data) {
+  // (!): size = 0: for load all data 
+  return _lib_io_read_bytes(file_name, data, 0);
+}
+
+int lib_io_read_bytes2(const char* file_name, char** data, size_t size) {
+  // (!): size = 0: no load
+  if (size == 0) {
+    return 0;
+  }
+  return _lib_io_read_bytes(file_name, data, size);
+}
 
 char* lib_io_read_bytes(const char* file_name, size_t& size) {
 
@@ -21,37 +92,28 @@ char* lib_io_read_bytes(const char* file_name, size_t& size) {
   }
 
   // Read
-  FILE* in_file = fopen(file_name, "rb");
-  if (!in_file) {
-    //perror("fopen");
+  FILE* file = fopen(file_name, "rb");
+  if (!file) {
     return NULL;
-    //exit(EXIT_FAILURE);
   }
 
-  struct stat sb;
-  if (stat(file_name, &sb) == -1) {
-    //perror("stat");
+  size_t file_size = 0;
+  if (_get_file_size_stat(file_name, &file_size) != 0) {
     return NULL;
-    //exit(EXIT_FAILURE);
-  }
-  
-  if (size <= 0 || size > sb.st_size) {
-    size = sb.st_size;
   }
 
-  char* data = (char*) malloc(size * sizeof(char));
+  if (size == 0 || size > file_size) {
+    size = file_size;
+  }
+
+  char* data = _data_new(size);
   if (!data) {
     size = 0;
     return NULL;
   }
 
-  //fread(data, sb.st_size, 1, in_file);
-  fread(data, size, 1, in_file);
-  //printf("read data: size = %lu\n", size);
-
-  fclose(in_file);
-
-  //exit(EXIT_SUCCESS);
+  fread(data, size, 1, file);
+  fclose(file);
 
   return data;
 
@@ -189,3 +251,5 @@ char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& siz
     return data;
 
 }
+
+// https://www.delftstack.com/howto/c/read-binary-file-in-c/

@@ -26,6 +26,10 @@ static void _conv_error(int errno, const char* prog_name, char* from_code, char*
     fprintf(stderr, "%s: Conversion error\n", prog_name);
 }
 
+static void _file_error(int errno, const char* prog_name, const char* file_name) {
+    fprintf(stderr, "%s: %s: No such file or directory\n", prog_name, file_name);
+}
+
 static void _data_error(int errno, const char* prog_name) {
     if (errno == 1) {
         fprintf(stderr, "%s: Empty input data\n", prog_name);
@@ -168,7 +172,14 @@ int main(int argc, char* argv[]) {
     char* to_data    = NULL;
     size_t to_size   = 0;
 
-    from_data = lib_io_read_bytes(file_name, from_size);
+    int retval = lib_io_read_all_bytes(file_name, &from_data);
+    if (retval < 0) {
+        _file_error(retval, prog_name, file_name);
+        _data_free(from_data, to_data);
+        return 1;
+    }
+    from_size = retval;
+
     if (_is_empty_data(from_data, from_size)) {
         _data_error(1, prog_name);
         _data_free(from_data, to_data);
@@ -186,34 +197,6 @@ int main(int argc, char* argv[]) {
         _data_free(from_data, to_data);
         return 1;
     }
-
-    /*
-    int errno = 0;
-    if (has_from && to_id == LIB_ENC_UTF8_ID) {
-        errno = lib_enc_conv_to_utf8_by_id(from_id, from_data, from_size, &to_data, &to_size);
-        if (errno != 0) {
-            _conv_error(errno, prog_name, from_code, to_code);
-            free(from_data);
-            free(to_data);
-            return 1;
-        }
-        if (_is_empty_data(to_data, to_size)) {
-            _data_error(2, prog_name);
-            free(from_data);
-            free(to_data);
-            return 1;
-        }
-    } else {
-        errno = lib_unimap_conv_by_id(from_id, to_id, from_data, from_size);
-        if (errno != 0) {
-            _conv_error(errno, prog_name, from_code, to_code);
-            free(from_data);
-            return 1;
-        }
-        to_data = from_data;
-        to_size = from_size;
-    }
-    */
 
     //printf(">> from ptr : %p\n", from_data);
     //printf(">> to   ptr : %p\n", to_data);
