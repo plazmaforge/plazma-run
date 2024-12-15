@@ -201,11 +201,14 @@ int main(int argc, char* argv[]) {
     //printf(">> from ptr : %p\n", from_data);
     //printf(">> to   ptr : %p\n", to_data);
 
-    //to_data[to_size] = '\0';
+    to_data[to_size] = '\0';
     //puts(to_data);
-    
-    printf("%.*s", (int) to_size, to_data);
+    printf("%s", to_data);
 
+    // WIN: Bug in UTF-8
+    //printf("%.*s", (int) to_size, to_data);
+
+    // WIN: Bug in UTF-8
     //for (int i = 0; i < to_size; i++) {
     //    printf("%c", to_data[i]);
     //}
