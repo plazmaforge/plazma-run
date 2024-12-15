@@ -23,8 +23,20 @@ int run_hex_byte(const char* file_name) {
         return 1;
     }
 
+    //size_t size = 0;
+    //char* data = lib_io_read_bytes(file_name, size);
+
+    ////
+    char* data = NULL;
     size_t size = 0;
-    char* data = lib_io_read_bytes(file_name, size);
+    int retval = lib_io_read_all_bytes(file_name, &data);
+    if (retval < 0) {
+        // error
+        return 1;
+    }
+    size = retval;
+    ////
+
     if (size == 0 || !data) {
         fprintf(stderr, "No input data\n");
         if (data) {

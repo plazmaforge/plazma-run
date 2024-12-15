@@ -582,8 +582,18 @@ void lib_ask_print_data(const lib_ask_positions_t* positions, const char* data, 
 
 void lib_ask_find(const char* file_name, const char* input, int input_size, const lib_ask_config* config) {
 
+    //size_t file_size = 0;
+    //char* data = lib_io_read_bytes(file_name, file_size);
+
+    ////
+    char* data = NULL;
     size_t file_size = 0;
-    char* data = lib_io_read_bytes(file_name, file_size);
+    int retval = lib_io_read_all_bytes(file_name, &data);
+    if (retval < 0) {
+        return; // -1;
+    }
+    file_size = retval;
+    ////
 
     if (!data) {
         //printf("File '%s' not found\n", fileName);

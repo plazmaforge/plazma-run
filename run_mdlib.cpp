@@ -136,13 +136,18 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
         error = 0;
 
         for (int i = optind; i < argc; i++) {
-            file_name = argv[i];
-            size = 0;
+            file_name = argv[i];            
             errno = 0;
-            data = lib_io_read_bytes(file_name, size);
 
-            // ERROR
-            if (errno != 0) {
+            //size = 0;
+            //data = lib_io_read_bytes(file_name, size);
+
+            ////
+            data = NULL;
+            size = 0;
+            int retval = lib_io_read_all_bytes(file_name, &data);
+            if (retval < 0) {
+                // error
                 if (data) {
                     free(data);
                 }
@@ -150,6 +155,18 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
                 fprintf(stderr, "%s: %s: %s\n", app_name, file_name, strerror(errno));
                 continue;
             }
+            size = retval;
+            ////
+
+            // ERROR
+            //if (errno != 0) {
+            //    if (data) {
+            //        free(data);
+            //    }
+            //    error = 1;
+            //    fprintf(stderr, "%s: %s: %s\n", app_name, file_name, strerror(errno));
+            //    continue;
+            //}
 
             // NO DATA
             if (!data) {

@@ -483,7 +483,20 @@ int run_ssldump(const char* file_name) {
     }
 
     size_t size = 0;
-    char* buf = lib_io_read_bytes(file_name, size);
+    char* buf = NULL;
+
+    //char* buf = lib_io_read_bytes(file_name, size);
+    ////
+    int retval = lib_io_read_all_bytes(file_name, &buf);
+    if (retval < 0) {
+        // error
+        fprintf(stderr, "IO Error\n");
+        return 1;
+
+    }
+    size = retval;
+    ////
+
     if (size == 0 || !buf) {
         fprintf(stderr, "No input buf\n");
         return 1;

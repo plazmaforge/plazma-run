@@ -127,7 +127,14 @@ void lib_dmp_dump_file_def(const char* file_name, lib_dmp_config_t* config) {
 
 void lib_dmp_dump_file(const char* file_name, size_t& size, lib_dmp_config_t* config) {
 
-  char* data = lib_io_read_bytes(file_name, size);
+  //char* data = lib_io_read_bytes(file_name, size);
+  char* data = NULL;
+  size = 0;
+  int retval = lib_io_read_all_bytes(file_name, &data);
+  if (retval < 0) {
+    return; // -1;
+  }
+  size = retval;
   lib_dmp_dump_bytes(data, size, config);
 
   free(data);  
