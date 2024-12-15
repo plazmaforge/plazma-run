@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    retval =  lib_enc_conv_by_id(from_id, to_id, from_data, from_size, &to_data, &to_size);
+    retval = lib_enc_conv_by_id(from_id, to_id, from_data, from_size, &to_data, &to_size);
     if (retval != 0) {
         _conv_error(retval, prog_name, from_code, to_code);
         _data_free(from_data, to_data);
@@ -201,9 +201,10 @@ int main(int argc, char* argv[]) {
     //printf(">> from ptr : %p\n", from_data);
     //printf(">> to   ptr : %p\n", to_data);
 
-    to_data[to_size] = '\0';
+    //to_data[to_size] = '\0';
     //puts(to_data);
-    printf("%s", to_data);
+    
+    printf("%.*s", (int) to_size, to_data);
 
     //for (int i = 0; i < to_size; i++) {
     //    printf("%c", to_data[i]);

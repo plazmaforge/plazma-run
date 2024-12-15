@@ -865,6 +865,13 @@ int lib_unimap_conv_by_id(int from_id, int to_id, char* data, size_t len) {
         return 0;
     }
 
+    if (from_id == to_id) {
+        #ifdef DEBUG
+        fprintf(stderr, ">> conv  : Encodings are identical\n");
+        #endif
+        return 0;
+    }
+
     // Get 'from' map
     lib_unimap_t from_map;
     lib_unimap_get_unimap_by_id(&from_map, from_id);

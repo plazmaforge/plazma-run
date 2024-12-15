@@ -35,6 +35,22 @@ int lib_enc_get_conv_encoding_id(const char* name) {
     return id;
 }
 
+static char* _data_copy(char* src, size_t size) {
+    if (!src) {
+        return NULL;
+    }
+    char* data = (char*) malloc(size);
+    if (!data) {
+        // error
+        return NULL;
+    }
+        
+    // Copy data
+    memcpy(data, src, size);
+
+    return data;
+} 
+
 /**
  * Converts data by Encoding IDs 
  */
@@ -51,6 +67,21 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
 
     if (from_len == 0) {
         return 0;
+    }
+
+    if (from_id == to_id) {
+
+        // Copy data
+        char* data = _data_copy(from_data, from_len);
+        if (!data) {
+            // error
+            return -1;
+        }
+        
+        *to_data = data;
+        *to_len  = from_len;
+
+        return 0;
     }    
 
     *to_data = NULL;
@@ -61,23 +92,21 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
 
     // unimap <-> unimap
     if (has_from && has_to) {
-        size_t len = from_len;
-        char* data = (char*) malloc(len);
+
+        // Copy data
+        char* data = _data_copy(from_data, from_len);
         if (!data) {
             // error
             return -1;
         }
         
-        // Copy data
-        memcpy(data, from_data, len);
-
         // Conversion b2b only
-        int ret = lib_unimap_conv_by_id(from_id, to_id, data, len);
+        int retval = lib_unimap_conv_by_id(from_id, to_id, data, from_len);
 
         *to_data = data;
-        *to_len  = len;
+        *to_len  = from_len;
 
-        return ret;
+        return retval;
     }
 
     // unimap -> UTF-8
