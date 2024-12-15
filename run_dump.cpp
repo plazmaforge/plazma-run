@@ -70,7 +70,12 @@ int main(int argc, char* argv[]) {
     config->col_count = width;
     config->show_text = show_text;
 
-    lib_dmp_dump_file_def(file_name, config);
+    int retval = lib_dmp_dump_file_def(file_name, config);
+    if (retval < 0) {
+        fprintf(stderr, "%s: %s: No such file or directory\n", argv[0], file_name);
+        retval = 1;
+    }
 
     lib_dmp_file_free(config);
+    return retval;
 }

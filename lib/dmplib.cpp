@@ -15,9 +15,9 @@ void lib_dmp_file_free(lib_dmp_config_t* config) {
     free(config);
 }
 
-void lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) {
+int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) {
     if (data == NULL || size == 0) {
-        return;
+        return -1;
     }
 
     int col_count = config ? config->col_count : LIB_DMP_DEF_COL_COUNT;
@@ -118,24 +118,27 @@ void lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config)
           //printf("%02HHx", data[i]);
     }*/
 
+    return 0;
+
 }
 
-void lib_dmp_dump_file_def(const char* file_name, lib_dmp_config_t* config) {
+int lib_dmp_dump_file_def(const char* file_name, lib_dmp_config_t* config) {
     size_t size = 0;
-    lib_dmp_dump_file(file_name, size, config);
+    return lib_dmp_dump_file(file_name, size, config);
 }
 
-void lib_dmp_dump_file(const char* file_name, size_t& size, lib_dmp_config_t* config) {
+int lib_dmp_dump_file(const char* file_name, size_t& size, lib_dmp_config_t* config) {
 
   //char* data = lib_io_read_bytes(file_name, size);
   char* data = NULL;
   size = 0;
   int retval = lib_io_read_all_bytes(file_name, &data);
   if (retval < 0) {
-    return; // -1;
+    return -1;
   }
   size = retval;
-  lib_dmp_dump_bytes(data, size, config);
+  retval = lib_dmp_dump_bytes(data, size, config);
 
-  free(data);  
+  free(data);
+  return retval;
 }
