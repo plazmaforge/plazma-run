@@ -202,7 +202,6 @@ int main(int argc, char* argv[]) {
     //printf(">> to   ptr : %p\n", to_data);
 
     to_data[to_size] = '\0';
-    //puts(to_data);
     printf("%s", to_data);
 
     // WIN: Bug in UTF-8

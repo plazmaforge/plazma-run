@@ -9,6 +9,35 @@
 // #define DEBUG_LL 1
 // #define ERROR    1
 
+static char* _char_new(size_t size) {
+  return (char*) calloc(size, sizeof(char));
+}
+
+static char* _data_new(size_t size) {
+  char* data = _char_new(size + 1);
+  if (!data) {
+    return NULL;
+  }
+  data[size] = '\0';
+  return data;
+}
+
+static char* _data_copy(char* src, size_t size) {
+    if (!src) {
+        return NULL;
+    }
+    char* data = _data_new(size);
+    if (!data) {
+        // error
+        return NULL;
+    }
+        
+    // Copy data
+    memcpy(data, src, size);
+
+    return data;
+} 
+
 /**
  * Returns true if the Encoding ID supports conversion
  */
@@ -34,22 +63,6 @@ int lib_enc_get_conv_encoding_id(const char* name) {
     }
     return id;
 }
-
-static char* _data_copy(char* src, size_t size) {
-    if (!src) {
-        return NULL;
-    }
-    char* data = (char*) malloc(size);
-    if (!data) {
-        // error
-        return NULL;
-    }
-        
-    // Copy data
-    memcpy(data, src, size);
-
-    return data;
-} 
 
 /**
  * Converts data by Encoding IDs 
@@ -277,7 +290,7 @@ int lib_enc_conv_to_utf8_by_map(lib_unimap_t* conv_map, char* from_data, size_t 
         return -1;
     }
 
-    new_data = (char*) malloc(new_len);
+    new_data = _data_new(new_len);
     if (!new_data) {
         // error
         return -1;
@@ -421,7 +434,7 @@ int lib_enc_conv_from_utf8_by_map(lib_unimap_t* conv_map, char* from_data, size_
         return -1;
     }
 
-    new_data = (char*) malloc(new_len);
+    new_data = _data_new(new_len);
     if (!new_data) {
         // error
         return -1;

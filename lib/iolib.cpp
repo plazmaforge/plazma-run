@@ -8,8 +8,17 @@
 
 #include "iolib.h"
 
-static char* _data_new(size_t size) {
+static char* _char_new(size_t size) {
   return (char*) calloc(size, sizeof(char));
+}
+
+static char* _data_new(size_t size) {
+  char* data = _char_new(size + 1);
+  if (!data) {
+    return NULL;
+  }
+  data[size] = '\0';
+  return data;
 }
 
 static int _file_size_stat(const char* file_name, size_t* size) {
@@ -61,6 +70,7 @@ int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
   }
 
   size_t _size = fread(_data, sizeof(char), size, file);
+  _data[_size] = '\0';
   *data = _data;
 
   //fprintf(stderr, ">> file_read: size=%lu\n", _size);
