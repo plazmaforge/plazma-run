@@ -9,16 +9,16 @@ void usage() {
     fprintf(stderr, "Usage: run-iconv -f fromcode -t tocode file\n");
 }
 
-static void _conv_error(int errno, const char* prog_name, char* from_code, char* to_code) {
-    if (errno == LIB_ENC_ERR_CONV_FROM_USUPPORTED || errno == LIB_UNIMAP_ERR_CONV_FROM_USUPPORTED) {
+static void _conv_error(int error_code, const char* prog_name, char* from_code, char* to_code) {
+    if (error_code == LIB_ENC_ERR_CONV_FROM_USUPPORTED || error_code == LIB_UNIMAP_ERR_CONV_FROM_USUPPORTED) {
         fprintf(stderr, "%s: Conversion from %s unsupported\n", prog_name, from_code);
         return;
     }    
-    if (errno == LIB_ENC_ERR_CONV_TO_USUPPORTED || errno == LIB_UNIMAP_ERR_CONV_TO_USUPPORTED) {
+    if (error_code == LIB_ENC_ERR_CONV_TO_USUPPORTED || error_code == LIB_UNIMAP_ERR_CONV_TO_USUPPORTED) {
         fprintf(stderr, "%s: Conversion to %s unsupported\n", prog_name, to_code);
         return;
     }    
-    if (errno == LIB_ENC_ERR_CONV_USUPPORTED || errno == LIB_UNIMAP_ERR_CONV_USUPPORTED) {
+    if (error_code == LIB_ENC_ERR_CONV_USUPPORTED || error_code == LIB_UNIMAP_ERR_CONV_USUPPORTED) {
         fprintf(stderr, "%s: Conversion from %s unsupported\n", prog_name, from_code);
         fprintf(stderr, "%s: Conversion to %s unsupported\n", prog_name, to_code);
         return;
@@ -26,16 +26,16 @@ static void _conv_error(int errno, const char* prog_name, char* from_code, char*
     fprintf(stderr, "%s: Conversion error\n", prog_name);
 }
 
-static void _file_error(int errno, const char* prog_name, const char* file_name) {
+static void _file_error(int error_code, const char* prog_name, const char* file_name) {
     fprintf(stderr, "%s: %s: No such file or directory\n", prog_name, file_name);
 }
 
-static void _data_error(int errno, const char* prog_name) {
-    if (errno == 1) {
+static void _data_error(int error_code, const char* prog_name) {
+    if (error_code == 1) {
         fprintf(stderr, "%s: Empty input data\n", prog_name);
         return;
     }    
-    if (errno == 2) {
+    if (error_code == 2) {
         fprintf(stderr, "%s: Empty output data\n", prog_name);
         return;
     }
@@ -186,9 +186,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    int errno =  lib_enc_conv_by_id(from_id, to_id, from_data, from_size, &to_data, &to_size);
-    if (errno != 0) {
-        _conv_error(errno, prog_name, from_code, to_code);
+    retval =  lib_enc_conv_by_id(from_id, to_id, from_data, from_size, &to_data, &to_size);
+    if (retval != 0) {
+        _conv_error(retval, prog_name, from_code, to_code);
         _data_free(from_data, to_data);
         return 1;
     }
