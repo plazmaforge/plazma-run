@@ -12,7 +12,7 @@ static char* _data_new(size_t size) {
   return (char*) calloc(size, sizeof(char));
 }
 
-static int _get_file_size_stat(const char* file_name, size_t* size) {
+static int _file_size_stat(const char* file_name, size_t* size) {
 
   if (!file_name || !size) {
     return -1;
@@ -41,7 +41,7 @@ int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
   }
 
   size_t file_size = 0;
-  if (_get_file_size_stat(file_name, &file_size) != 0) {
+  if (_file_size_stat(file_name, &file_size) != 0) {
     // error: io
     return -1;
   }
@@ -71,6 +71,38 @@ int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
 
 }
 
+int _lib_io_write_bytes(const char* file_name, char* data, size_t size) {
+
+  if (!file_name || !data) {
+    // error: args
+    return -1;
+  }
+
+  if (size == 0) {
+    // no data
+    return 0;
+  }
+
+  // Write
+  FILE* file = fopen(file_name, "wb+");
+  if (!file) {
+    // error: io
+    return -1;
+  }
+
+  //fprintf(stderr, ">> file_open: input_size=%lu\n", input_size);
+
+  size_t _size = fwrite(data, sizeof(char), size, file);
+
+  //fprintf(stderr, ">> file_write: size=%lu\n", _size);
+
+  fclose(file);
+
+  return _size;
+}
+
+////
+
 int lib_io_read_all_bytes(const char* file_name, char** data) {
   // (!): size = 0: for load all data 
   return _lib_io_read_bytes(file_name, data, 0);
@@ -83,6 +115,16 @@ int lib_io_read_bytes2(const char* file_name, char** data, size_t size) {
   }
   return _lib_io_read_bytes(file_name, data, size);
 }
+
+int lib_io_write_all_bytes(const char* file_name, char* data, size_t size) {
+  return _lib_io_write_bytes(file_name, data, size);
+}
+
+int lib_io_write_bytes2(const char* file_name, char* data, size_t size) {
+  return _lib_io_write_bytes(file_name, data, size);
+}
+
+////
 
 char* lib_io_read_bytes(const char* file_name, size_t& size) {
 
@@ -98,7 +140,7 @@ char* lib_io_read_bytes(const char* file_name, size_t& size) {
   }
 
   size_t file_size = 0;
-  if (_get_file_size_stat(file_name, &file_size) != 0) {
+  if (_file_size_stat(file_name, &file_size) != 0) {
     return NULL;
   }
 
