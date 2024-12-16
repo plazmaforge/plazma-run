@@ -118,7 +118,7 @@ int lib_io_read_all_bytes(const char* file_name, char** data) {
   return _lib_io_read_bytes(file_name, data, 0);
 }
 
-int lib_io_read_bytes2(const char* file_name, char** data, size_t size) {
+int lib_io_read_bytes(const char* file_name, char** data, size_t size) {
   // (!): size = 0: no load
   if (size == 0) {
     return 0;
@@ -130,91 +130,92 @@ int lib_io_write_all_bytes(const char* file_name, char* data, size_t size) {
   return _lib_io_write_bytes(file_name, data, size);
 }
 
-int lib_io_write_bytes2(const char* file_name, char* data, size_t size) {
+int lib_io_write_bytes(const char* file_name, char* data, size_t size) {
   return _lib_io_write_bytes(file_name, data, size);
 }
 
 ////
 
-char* lib_io_read_bytes(const char* file_name, size_t& size) {
+// char* lib_io_read_bytes(const char* file_name, size_t& size) {
 
-  if (!file_name) {
-    size = 0;
-    return NULL;
-  }
+//   if (!file_name) {
+//     size = 0;
+//     return NULL;
+//   }
 
-  // Read
-  FILE* file = fopen(file_name, "rb");
-  if (!file) {
-    return NULL;
-  }
+//   // Read
+//   FILE* file = fopen(file_name, "rb");
+//   if (!file) {
+//     return NULL;
+//   }
 
-  size_t file_size = 0;
-  if (_file_size_stat(file_name, &file_size) != 0) {
-    return NULL;
-  }
+//   size_t file_size = 0;
+//   if (_file_size_stat(file_name, &file_size) != 0) {
+//     return NULL;
+//   }
 
-  if (size == 0 || size > file_size) {
-    size = file_size;
-  }
+//   if (size == 0 || size > file_size) {
+//     size = file_size;
+//   }
 
-  char* data = _data_new(size);
-  if (!data) {
-    size = 0;
-    return NULL;
-  }
+//   char* data = _data_new(size);
+//   if (!data) {
+//     size = 0;
+//     return NULL;
+//   }
 
-  fread(data, size, 1, file);
-  fclose(file);
+//   fread(data, size, 1, file);
+//   fclose(file);
 
-  return data;
+//   return data;
 
-}
+// }
 
-void lib_io_write_bytes(const char* file_name, char* data, size_t& size) {
+// void lib_io_write_bytes(const char* file_name, char* data, size_t& size) {
 
-  if (!file_name || size <= 0) {
-    size = 0;
-    return;
-  }
+//   if (!file_name || size <= 0) {
+//     size = 0;
+//     return;
+//   }
 
-  // Write
-  FILE* output_file = fopen(file_name, "wb+");
-  if (!output_file) {
-    //perror("fopen");
-    return;
-    //exit(EXIT_FAILURE);
-  }
+//   // Write
+//   FILE* output_file = fopen(file_name, "wb+");
+//   if (!output_file) {
+//     //perror("fopen");
+//     return;
+//     //exit(EXIT_FAILURE);
+//   }
 
-  //size_t size = sizeof data;
+//   //size_t size = sizeof data;
 
-  size = fwrite(data, 1, size, output_file);
-  //printf("write data: size = %lu\n", size);
-  fclose(output_file);
+//   size = fwrite(data, 1, size, output_file);
+//   //printf("write data: size = %lu\n", size);
+//   fclose(output_file);
 
-  // Read
-  // int fd = open(fileName, O_RDONLY);
-  // if (fd == -1) {
-  //   perror("open\n");
-  //   exit(EXIT_FAILURE);
-  // }
+//   // Read
+//   // int fd = open(fileName, O_RDONLY);
+//   // if (fd == -1) {
+//   //   perror("open\n");
+//   //   exit(EXIT_FAILURE);
+//   // }
 
-  // struct stat sb;
-  // if (stat(fileName, &sb) == -1) {
-  //   perror("stat");
-  //   exit(EXIT_FAILURE);
-  // }
+//   // struct stat sb;
+//   // if (stat(fileName, &sb) == -1) {
+//   //   perror("stat");
+//   //   exit(EXIT_FAILURE);
+//   // }
 
-  // char* file_contents = (char*) malloc(sb.st_size);
-  // read(fd, file_contents, sb.st_size);
+//   // char* file_contents = (char*) malloc(sb.st_size);
+//   // read(fd, file_contents, sb.st_size);
 
-  // printf("read data: %s\n", file_contents);
-  // close(fd);
+//   // printf("read data: %s\n", file_contents);
+//   // close(fd);
 
-  // free(file_contents);
+//   // free(file_contents);
 
-  // exit(EXIT_SUCCESS);
-}
+//   // exit(EXIT_SUCCESS);
+// }
+
 
 void lib_fs_file_data_free(lib_fs_file_data_t* file_data) {
     if (!file_data) {
@@ -225,9 +226,16 @@ void lib_fs_file_data_free(lib_fs_file_data_t* file_data) {
 }
 
 void lib_fs_file_data_list_free(lib_fs_file_data_t** file_list, int file_count) {
-    if (!file_list || file_count <= 0) {
+    if (!file_list) {
         return;
     }
+
+    // TODO: Use size_t
+    if (file_count <= 0) {
+      free(file_list);
+      return;
+    }
+
     for (int i = 0; i < file_count; i++) {
         lib_fs_file_data_free(file_list[i]);
     }
@@ -252,26 +260,37 @@ char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& siz
 
     for (int i = 0; i < file_count; i++) {
         file_name = file_names[i];
-        file_size = 0;
+        //file_size = 0;
 
+        // TODO: Use _new()
         file_data = (lib_fs_file_data_t*) malloc(sizeof(lib_fs_file_data_t));
         if (!file_data) {
             lib_fs_file_data_list_free(file_list, file_count);
             size = 0;
             return NULL;
         }
+        file_data->data = NULL;
+        file_data->size = 0;
 
-        file_data->data = lib_io_read_bytes(file_name, file_size);
-        if (!file_data->data) {
+        //file_data->data = lib_io_read_bytes(file_name, file_size);
+        char* data = NULL;
+        int retval = lib_io_read_all_bytes(file_name, &data);
+
+        if (retval < 0 || !data) {
+            lib_fs_file_data_free(file_data);
             lib_fs_file_data_list_free(file_list, file_count);
             size = 0;
             return NULL;
         }
 
-        file_data->size = file_size;
+        file_data->data = data;
+        file_data->size = retval;
+
+        //file_data->size = file_size;
 
         file_list[i] = file_data;
-        total_size += file_size;
+        //total_size += file_size;
+        total_size += file_data->size;
     }
 
     // V1

@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,16 +25,16 @@ int main(int argc, char* argv[]) {
     }
 
     // Config
-    bool binary_mode = false;
+    bool bin_mode        = false;
     bool find_first_only = false;
-    bool ignore_case = false;
+    bool ignore_case     = false;
 
     bool error = false;
     int opt;
     while ((opt = getopt(argc, argv, "bil")) != -1) {
         switch (opt) {
         case 'b':
-            binary_mode = true;
+            bin_mode = true;
             break;
         case 'i':
             ignore_case = true;
@@ -74,11 +73,13 @@ int main(int argc, char* argv[]) {
 
     lib_sys_locale_init();
 
-    lib_ask_config* config = lib_ask_config_new();
-    config->binary_mode = binary_mode;
-    config->find_first_only = find_first_only;
-    config->ignore_case = ignore_case;
-    config->print_file_name = true; // TODO: add optional
+    lib_ask_config_t config;
+    lib_ask_config_init(&config);
+
+    config.bin_mode        = bin_mode;
+    config.find_first_only = find_first_only;
+    config.ignore_case     = ignore_case;
+    config.print_file_name = true; // TODO: add optional
 
     int wildcard_index = lib_wc_get_wildcard_index(file_name);
 
@@ -104,7 +105,7 @@ int main(int argc, char* argv[]) {
 
         for (int i = 0; i < file_count; i++) {
             file = files[i];
-            lib_ask_find(files[i]->name, input, input_size, config);
+            lib_ask_find(files[i]->name, input, input_size, &config);
 
             //free(file);
             //fs_file_free(file);
@@ -113,14 +114,12 @@ int main(int argc, char* argv[]) {
         lib_fs_files_free(files);
                 
         free(dir_name);
-        free(config);
         lib_sys_locale_restore(); // Important for WIN32: The locale was changed for the terminal
         return 0;
     }
 
-    lib_ask_find(file_name, input, input_size, config);
+    lib_ask_find(file_name, input, input_size, &config);
 
-    free(config);
     lib_sys_locale_restore(); // Important for WIN32: The locale was changed for the terminal
     return 0;
 

@@ -92,7 +92,7 @@ static bool lib_ask_contains(const char* data, const char* input, int start, int
 
 static bool lib_ask_icontains(const char* data, const char* input, int start, int size) {
     for (size_t i = 0; i < size; i++) {
-        if (std::tolower(data[start + i]) != std::tolower(input[i])) {
+        if (tolower(data[start + i]) != tolower(input[i])) {
             return false;
         }
     }
@@ -101,11 +101,11 @@ static bool lib_ask_icontains(const char* data, const char* input, int start, in
 
 ////
 
-static bool lib_ask_get_binary_mode(const lib_ask_config* config) {
+static bool lib_ask_is_bin_mode(lib_ask_config_t* config) {
     if (!config) {
-        return LIB_ASK_BINARY_MODE; // default value
+        return LIB_ASK_BIN_MODE; // default value
     }
-    return config->binary_mode;
+    return config->bin_mode;
 }
 
 static bool lib_ask_check_input(const char* data, size_t data_size, const char* input, size_t input_size) {
@@ -121,19 +121,28 @@ static bool lib_ask_check_input(const char* data, size_t data_size, const char* 
 
 ////
 
+/*
 lib_ask_config_t* lib_ask_config_new() {
     lib_ask_config_t* config = (lib_ask_config_t*) malloc(sizeof(lib_ask_config_t));
     if (!config) {
         return NULL;
     }
-    config->binary_mode = LIB_ASK_BINARY_MODE;
+    lib_ask_config_init(config);
+    return config;
+}
+*/
+
+void lib_ask_config_init(lib_ask_config_t* config) {
+    if (!config) {
+        return;
+    }
+    config->bin_mode = LIB_ASK_BIN_MODE;
     config->find_first_only = LIB_ASK_FIND_FIRST_ONLY;
     config->ignore_case = LIB_ASK_IGNORE_CASE;
     config->print_file_name = LIB_ASK_PRINT_FILE_NAME;
-    return config;
 }
 
-lib_ask_position_t* lib_ask_position_new() {
+static lib_ask_position_t* lib_ask_position_new() {
     lib_ask_position_t* position = (lib_ask_position_t*) malloc(sizeof(lib_ask_position_t));
     if (!position) {
         return NULL;
@@ -148,7 +157,7 @@ lib_ask_position_t* lib_ask_position_new() {
     return position;
 }
 
-lib_ask_positions_t* lib_ask_positions_new() {
+static lib_ask_positions_t* lib_ask_positions_new() {
     lib_ask_positions_t* positions = (lib_ask_positions_t*) malloc(sizeof(lib_ask_positions_t));
     if (!positions) {
         return NULL;
@@ -159,10 +168,58 @@ lib_ask_positions_t* lib_ask_positions_new() {
     return positions;
 }
 
+void lib_ask_positions_free(lib_ask_positions_t* positions) {
+    if (!positions) {
+        return;
+    }
+    lib_ask_position_t* curr = positions->first;
+    lib_ask_position_t* next = NULL;
+    while (curr != NULL) {
+        next = curr->next;
+        curr->prev = NULL;
+        curr->next = NULL;
+        free(curr);
+        curr = next;
+    }
+    positions->first = NULL;
+    positions->last = NULL;
+    free(positions);
+}
+
+static lib_ask_result_t* lib_ask_result_new() {
+    lib_ask_result_t* result = (lib_ask_result_t*) malloc(sizeof(lib_ask_result_t));
+    if (!result) {
+        return NULL;
+    }
+    lib_ask_positions_t* positions = lib_ask_positions_new();
+    if (!positions) {
+        free(result);
+        return NULL;
+    }
+    result->positions = positions;
+    return result;
+}
+
+void lib_ask_result_free(lib_ask_result_t* result) {
+    if (!result) {
+        return;
+    }
+    lib_ask_positions_free(result->positions);
+    result->positions = NULL;
+    free(result);
+}
+
 ////
 
-lib_ask_positions_t* lib_ask_find_binary(const char* data, size_t data_size, const char* input, size_t input_size, const lib_ask_config* config) {
+lib_ask_result_t* lib_ask_find_bin(const char* data, size_t data_size, const char* input, size_t input_size, lib_ask_config_t* config) {
     if (!lib_ask_check_input(data, data_size, input, input_size)) {
+        // error
+        return NULL;
+    }
+
+    lib_ask_result_t* result = lib_ask_result_new();
+    if (!result) {
+        // error
         return NULL;
     }
 
@@ -170,7 +227,7 @@ lib_ask_positions_t* lib_ask_find_binary(const char* data, size_t data_size, con
     bool find_first_only = LIB_ASK_FIND_FIRST_ONLY;
 
     // by config
-    if (config != NULL) {
+    if (config) {
         find_first_only = config->find_first_only;
     }
 
@@ -180,7 +237,9 @@ lib_ask_positions_t* lib_ask_find_binary(const char* data, size_t data_size, con
     for (size_t pos = 0; pos < data_size; pos++) {
 
         if (pos + input_size > data_size) {
-            return positions;
+            // done: input oversize
+            //return positions;
+            return result;
         }
 
         bool found = lib_ask_contains(data, input, pos, input_size);
@@ -188,8 +247,9 @@ lib_ask_positions_t* lib_ask_find_binary(const char* data, size_t data_size, con
         if (found) {
             lib_ask_position_t* position = lib_ask_position_new();
             if (!position) {
-                // error
-                return positions;
+                // error: mem
+                //return positions;
+                return result;
             }
             position->index = pos;
             position->prev = NULL;
@@ -197,11 +257,13 @@ lib_ask_positions_t* lib_ask_find_binary(const char* data, size_t data_size, con
 
             if (positions == NULL) {
                 curr = position;
-                positions = lib_ask_positions_new();
-                if (!positions) {
-                    // error
-                    return positions;
-                }
+                positions = result->positions; // lib_ask_positions_new();
+
+                //if (!positions) {
+                //    // error
+                //    return positions;
+                //}
+
                 positions->first = curr;
                 positions->last = curr;
                 positions->size = 1;
@@ -215,12 +277,16 @@ lib_ask_positions_t* lib_ask_find_binary(const char* data, size_t data_size, con
             }
 
             if (find_first_only) {
-                return positions;
+                // done: first only
+                //return positions;
+                return result;
             }
         }
 
     }
-    return positions;
+
+    //return positions;
+    return result;
 }
 
 void lib_ask_fixed_end_row_index(const char* data, size_t data_size, const char* input, size_t input_size, lib_ask_position_t* curr) {
@@ -248,8 +314,14 @@ void lib_ask_fixed_end_row_index(const char* data, size_t data_size, const char*
     //printf("endRowIndex: %d\n", curr->end_row_index);     
 }
 
-lib_ask_positions_t* lib_ask_find_text(const char* data, size_t data_size, const char* input, size_t input_size, const lib_ask_config* config) {
+lib_ask_result_t* lib_ask_find_txt(const char* data, size_t data_size, const char* input, size_t input_size, lib_ask_config_t* config) {
     if (!lib_ask_check_input(data, data_size, input, input_size)) {
+        return NULL;
+    }
+
+    lib_ask_result_t* result = lib_ask_result_new();
+    if (!result) {
+        // error
         return NULL;
     }
 
@@ -278,7 +350,9 @@ lib_ask_positions_t* lib_ask_find_text(const char* data, size_t data_size, const
 
         if (pos + input_size > data_size) {
             lib_ask_fixed_end_row_index(data, data_size, input, input_size, curr);
-            return positions;
+            // done: input oversize
+            //return positions;
+            return result;
         }
 
         skip = 0;
@@ -293,7 +367,9 @@ lib_ask_positions_t* lib_ask_find_text(const char* data, size_t data_size, const
             row++;
             if (pos >= data_size) {
                 lib_ask_fixed_end_row_index(data, data_size, input, input_size, curr);
-                return positions;
+                // done: input oversize
+                //return positions;
+                return result;
             }
         }
 
@@ -309,8 +385,9 @@ lib_ask_positions_t* lib_ask_find_text(const char* data, size_t data_size, const
         if (found) {
             lib_ask_position_t* position = lib_ask_position_new();
             if (!position) {
-                // error
-                return positions;
+                // error: mem
+                //return positions;
+                return result;
             }
             position->index = pos;
             position->row = row;
@@ -326,11 +403,13 @@ lib_ask_positions_t* lib_ask_find_text(const char* data, size_t data_size, const
 
             if (positions == NULL) {
                 curr = position;
-                positions = lib_ask_positions_new();
-                if (!positions) {
-                    // error
-                    return NULL;
-                }
+                positions = result->positions; // lib_ask_positions_new();
+
+                //if (!positions) {
+                //    // error
+                //    return NULL;
+                //}
+
                 positions->first = curr;
                 positions->last = curr;
                 positions->size = 1;
@@ -345,17 +424,20 @@ lib_ask_positions_t* lib_ask_find_text(const char* data, size_t data_size, const
 
             if (find_first_only) {
                 lib_ask_fixed_end_row_index(data, data_size, input, input_size, curr);
-                return positions;
+                // done: first only
+                //return positions;
+                return result;
             }
         }
 
     }
 
     lib_ask_fixed_end_row_index(data, data_size, input, input_size, curr);
-    return positions;
+    //return positions;
+    return result;
 }
 
-void lib_ask_print_text_position(const lib_ask_position_t* position, const char* data, int data_size, int input_size, const char* format, int width) {
+void lib_ask_print_txt_position(const lib_ask_position_t* position, const char* data, int data_size, int input_size, const char* format, int width) {
     if (position == NULL) {
         return;
     }
@@ -430,10 +512,15 @@ void lib_ask_print_text_position(const lib_ask_position_t* position, const char*
 
 }
 
-void lib_ask_print_text(const lib_ask_positions_t* positions, const char* data, int data_size, int input_size) {
-    if (!positions) {
+void lib_ask_print_txt(const lib_ask_result_t* result, const char* data, size_t data_size, size_t input_size) {
+    if (!result) {
         return;
     }
+    if (!result->positions) {
+        return;
+    }
+
+    lib_ask_positions_t* positions = result->positions;
     lib_ask_position_t* curr = positions->first;
     if (!curr) {
         return;
@@ -456,12 +543,12 @@ void lib_ask_print_text(const lib_ask_positions_t* positions, const char* data, 
     }
 
     while (curr) {
-        lib_ask_print_text_position(curr, data, data_size, input_size, format, width);
+        lib_ask_print_txt_position(curr, data, data_size, input_size, format, width);
         curr = curr->next;
     }
 }
 
-void lib_ask_print_binary_position(const lib_ask_position_t* position, const char* data, int data_size, int input_size, const char* format, int width) {
+void lib_ask_print_bin_position(const lib_ask_position_t* position, const char* data, int data_size, int input_size, const char* format, int width) {
     if (!position) {
         return;
     }
@@ -513,10 +600,15 @@ void lib_ask_print_binary_position(const lib_ask_position_t* position, const cha
 
 }
 
-void lib_ask_print_binary(const lib_ask_positions_t* positions, const char* data, int data_size, int input_size) {
-    if (!positions) {
+void lib_ask_print_bin(const lib_ask_result_t* result, const char* data, size_t data_size, size_t input_size) {
+    if (!result) {
         return;
     }
+    if (!result->positions) {
+        return;
+    }
+
+    lib_ask_positions_t* positions = result->positions;
     lib_ask_position_t* curr = positions->first;
     if (!curr) {
         return;
@@ -537,81 +629,62 @@ void lib_ask_print_binary(const lib_ask_positions_t* positions, const char* data
     }
 
     while (curr) {
-        lib_ask_print_binary_position(curr, data, data_size, input_size, format, width);
+        lib_ask_print_bin_position(curr, data, data_size, input_size, format, width);
         curr = curr->next;
     }
 }
 
-void lib_ask_positions_free(lib_ask_positions_t* positions) {
-    if (!positions) {
-        return;
-    }
-    lib_ask_position_t* curr = positions->first;
-    lib_ask_position_t* next = NULL;
-    while (curr != NULL) {
-        next = curr->next;
-        curr->prev = NULL;
-        curr->next = NULL;
-        free(curr);
-        curr = next;
-    }
-    positions->first = NULL;
-    positions->last = NULL;
-    free(positions);
-}
-
 ////
 
-lib_ask_positions_t* lib_ask_find_data(const char* data, size_t data_size, const char* input, size_t input_size, const lib_ask_config* config) {
-    if (lib_ask_get_binary_mode(config)) {
-        return lib_ask_find_binary(data, data_size, input, input_size, config);
+lib_ask_result_t* lib_ask_find_data(const char* data, size_t data_size, const char* input, size_t input_size, lib_ask_config_t* config) {
+    if (lib_ask_is_bin_mode(config)) {
+        return lib_ask_find_bin(data, data_size, input, input_size, config);
     } else {
-        return lib_ask_find_text(data, data_size, input, input_size, config);
+        return lib_ask_find_txt(data, data_size, input, input_size, config);
     }
 }
 
-void lib_ask_print_data(const lib_ask_positions_t* positions, const char* data, int data_size, int input_size, const lib_ask_config* config) {
-    if (lib_ask_get_binary_mode(config)) {
-        lib_ask_print_binary(positions, data, data_size, input_size);
+void lib_ask_print_data(const lib_ask_result_t* result, const char* data, size_t data_size, size_t input_size, lib_ask_config_t* config) {
+    if (lib_ask_is_bin_mode(config)) {
+        lib_ask_print_bin(result, data, data_size, input_size);
     } else {
-        lib_ask_print_text(positions, data, data_size, input_size);
+        lib_ask_print_txt(result, data, data_size, input_size);
     }
 }
 
 ////
 
-void lib_ask_find(const char* file_name, const char* input, int input_size, const lib_ask_config* config) {
+void lib_ask_find(const char* file_name, const char* input, size_t input_size, lib_ask_config_t* config) {
 
-    //size_t file_size = 0;
-    //char* data = lib_io_read_bytes(file_name, file_size);
-
-    ////
     char* data = NULL;
-    size_t file_size = 0;
+    size_t data_size = 0;
     int retval = lib_io_read_all_bytes(file_name, &data);
     if (retval < 0) {
         return; // -1;
     }
-    file_size = retval;
-    ////
+    data_size = retval;
 
     if (!data) {
-        //printf("File '%s' not found\n", fileName);
-        return;
+        return; // -1
     }
 
-    if (file_size == 0) {
-        //printf("File '%s' is empty\n", fileName);
+    if (data_size == 0) {
         free(data);
-        return;
+        return; // 0
     }
 
-    lib_ask_positions_t* positions = lib_ask_find_data(data, file_size, input, input_size, config);
+    lib_ask_result_t* result = lib_ask_find_data(data, data_size, input, input_size, config);
     
-    if (!positions) {
-        //printf("Not found\n");
+    if (!result) {
         free(data);
-        return;
+        return; // -1
+    }
+
+    lib_ask_positions_t* positions = result->positions;
+    if (!positions) {
+        free(data);
+        lib_ask_result_free(result);
+        return; // -1
     }
 
     if (config->print_file_name) {
@@ -620,9 +693,10 @@ void lib_ask_find(const char* file_name, const char* input, int input_size, cons
         free(real_path);
     }
 
-    lib_ask_print_data(positions, data, file_size, input_size, config);
-    lib_ask_positions_free(positions);
+    lib_ask_print_data(result, data, data_size, input_size, config);
 
     free(data);
+    lib_ask_result_free(result);
 
+    // return 0;    
 }

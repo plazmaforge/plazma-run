@@ -66,16 +66,15 @@ int main(int argc, char* argv[]) {
 
     lib_io_buf_init();
 
-    lib_dmp_config_t* config = lib_dmp_file_new();
-    config->col_count = width;
-    config->show_text = show_text;
+    lib_dmp_config_t config;
+    config.col_count = width;
+    config.show_text = show_text;
 
-    int retval = lib_dmp_dump_file_def(file_name, config);
+    int retval = lib_dmp_dump_file_all(file_name, &config);
     if (retval < 0) {
         fprintf(stderr, "%s: %s: No such file or directory\n", argv[0], file_name);
-        retval = 1;
+        return 1;
     }
 
-    lib_dmp_file_free(config);
-    return retval;
+    return 0;
 }

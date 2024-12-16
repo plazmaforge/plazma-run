@@ -4,20 +4,26 @@
 #include "iolib.h"
 #include "dmplib.h"
 
+/*
 lib_dmp_config_t* lib_dmp_file_new() {
     return (lib_dmp_config_t*) malloc(sizeof(lib_dmp_config_t));
 }
 
-void lib_dmp_file_free(lib_dmp_config_t* config) {
+void lib_dmp_config_free(lib_dmp_config_t* config) {
     if (!config) {
         return;
     }
     free(config);
 }
+*/
 
 int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) {
-    if (data == NULL || size == 0) {
+    if (!data) {
         return -1;
+    }
+
+    if (size == 0) {
+        return 0;
     }
 
     int col_count = config ? config->col_count : LIB_DMP_DEF_COL_COUNT;
@@ -122,23 +128,38 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
 
 }
 
-int lib_dmp_dump_file_def(const char* file_name, lib_dmp_config_t* config) {
-    size_t size = 0;
-    return lib_dmp_dump_file(file_name, size, config);
+static int _lib_dmp_dump_file(const char* file_name, size_t size, lib_dmp_config_t* config) {
+    if (!file_name) {
+        return -1;
+    }
+
+    char* data = NULL;
+    int retval = 0;
+
+    if (size == 0) {
+        retval = lib_io_read_all_bytes(file_name, &data);
+    } else {
+        retval = lib_io_read_bytes(file_name, &data, size);
+    } 
+  
+    if (retval < 0) {
+        return -1;
+    }
+
+    size = retval;
+    retval = lib_dmp_dump_bytes(data, size, config);
+
+    free(data);
+    return retval;
 }
 
-int lib_dmp_dump_file(const char* file_name, size_t& size, lib_dmp_config_t* config) {
+int lib_dmp_dump_file_all(const char* file_name, lib_dmp_config_t* config) {
+    return _lib_dmp_dump_file(file_name, 0, config);
+}
 
-  //char* data = lib_io_read_bytes(file_name, size);
-  char* data = NULL;
-  size = 0;
-  int retval = lib_io_read_all_bytes(file_name, &data);
-  if (retval < 0) {
-    return -1;
-  }
-  size = retval;
-  retval = lib_dmp_dump_bytes(data, size, config);
-
-  free(data);
-  return retval;
+int lib_dmp_dump_file(const char* file_name, size_t size, lib_dmp_config_t* config) {
+    if (size == 0) {
+        return 0;
+    }
+    return _lib_dmp_dump_file(file_name, size, config);
 }

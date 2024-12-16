@@ -14,12 +14,8 @@ typedef struct {
     bool show_text;
 } lib_dmp_config_t;
 
-lib_dmp_config_t* lib_dmp_file_new();
+int lib_dmp_dump_file_all(const char* file_name, lib_dmp_config_t* config);
 
-void lib_dmp_file_free(lib_dmp_config_t* config);
-
-int lib_dmp_dump_file_def(const char* file_name, lib_dmp_config_t* config);
-
-int lib_dmp_dump_file(const char* file_name, size_t& size, lib_dmp_config_t* config);
+int lib_dmp_dump_file(const char* file_name, size_t size, lib_dmp_config_t* config);
 
 #endif // PLAZMA_LIB_DMPLIB_H
