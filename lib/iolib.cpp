@@ -8,6 +8,9 @@
 
 #include "iolib.h"
 
+/**
+ * Allocate char array
+ */
 static char* _char_new(size_t size) {
   return (char*) calloc(size, sizeof(char));
 }
@@ -75,6 +78,27 @@ static long _file_size_seek(const char* file_name) {
     return -1;
   }
   return _file_size_fseek(file);
+}
+
+static void _lib_io_file_data_init(lib_fs_file_data_t* file_data) {
+  if (!file_data) {
+    return;
+  }
+  file_data->data = NULL;
+  file_data->size = 0;
+}
+
+static lib_fs_file_data_t* _lib_io_file_data_new() {
+  lib_fs_file_data_t* file_data = (lib_fs_file_data_t*) malloc(sizeof(lib_fs_file_data_t));
+  if (!file_data) {
+    return NULL;
+  }
+  _lib_io_file_data_init(file_data);
+  return file_data;
+}
+
+static lib_fs_file_data_t** _lib_io_file_list_new(size_t size) {
+  return (lib_fs_file_data_t**) calloc(size, sizeof(lib_fs_file_data_t*));
 }
 
 ////
@@ -180,87 +204,6 @@ int lib_io_write_bytes(const char* file_name, char* data, size_t size) {
 
 ////
 
-// char* lib_io_read_bytes(const char* file_name, size_t& size) {
-
-//   if (!file_name) {
-//     size = 0;
-//     return NULL;
-//   }
-
-//   // Read
-//   FILE* file = fopen(file_name, "rb");
-//   if (!file) {
-//     return NULL;
-//   }
-
-//   size_t file_size = 0;
-//   if (_file_size_stat(file_name, &file_size) != 0) {
-//     return NULL;
-//   }
-
-//   if (size == 0 || size > file_size) {
-//     size = file_size;
-//   }
-
-//   char* data = _data_new(size);
-//   if (!data) {
-//     size = 0;
-//     return NULL;
-//   }
-
-//   fread(data, size, 1, file);
-//   fclose(file);
-
-//   return data;
-
-// }
-
-// void lib_io_write_bytes(const char* file_name, char* data, size_t& size) {
-
-//   if (!file_name || size <= 0) {
-//     size = 0;
-//     return;
-//   }
-
-//   // Write
-//   FILE* output_file = fopen(file_name, "wb+");
-//   if (!output_file) {
-//     //perror("fopen");
-//     return;
-//     //exit(EXIT_FAILURE);
-//   }
-
-//   //size_t size = sizeof data;
-
-//   size = fwrite(data, 1, size, output_file);
-//   //printf("write data: size = %lu\n", size);
-//   fclose(output_file);
-
-//   // Read
-//   // int fd = open(fileName, O_RDONLY);
-//   // if (fd == -1) {
-//   //   perror("open\n");
-//   //   exit(EXIT_FAILURE);
-//   // }
-
-//   // struct stat sb;
-//   // if (stat(fileName, &sb) == -1) {
-//   //   perror("stat");
-//   //   exit(EXIT_FAILURE);
-//   // }
-
-//   // char* file_contents = (char*) malloc(sb.st_size);
-//   // read(fd, file_contents, sb.st_size);
-
-//   // printf("read data: %s\n", file_contents);
-//   // close(fd);
-
-//   // free(file_contents);
-
-//   // exit(EXIT_SUCCESS);
-// }
-
-
 void lib_fs_file_data_free(lib_fs_file_data_t* file_data) {
     if (!file_data) {
         return;
@@ -286,63 +229,75 @@ void lib_fs_file_data_list_free(lib_fs_file_data_t** file_list, int file_count) 
     free(file_list);
 }
 
-char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& size) {
-    if (!file_names || file_count <= 0) {
-        return NULL;
+int lib_io_read_cat_bytes(const char** file_names, size_t file_count, char** data, size_t* size) {
+
+    if (data) {
+        *data = NULL;
+    }
+    if (size) {
+        *size = 0;
     }
 
-    lib_fs_file_data_t** file_list = (lib_fs_file_data_t**) calloc(file_count, sizeof(lib_fs_file_data_t*));
+    if (!file_names || !data || !size) {
+        return -1;
+    }
+
+    if (file_count == 0) {
+        return 0;
+    }
+
+    lib_fs_file_data_t** file_list = _lib_io_file_list_new(file_count);
     if (!file_list) {
-        size = 0;
-        return NULL;
+        //*size = 0;
+        // error: mem
+        return -1;
     }
 
     lib_fs_file_data_t* file_data = NULL;
     const char* file_name = NULL;
-    size_t file_size = 0;
+    //size_t file_size = 0;
     size_t total_size = 0;
 
     for (int i = 0; i < file_count; i++) {
-        file_name = file_names[i];
-        //file_size = 0;
 
-        // TODO: Use _new()
-        file_data = (lib_fs_file_data_t*) malloc(sizeof(lib_fs_file_data_t));
+        file_name = file_names[i];
+        if (!file_name) {
+          file_list[i] = NULL;
+          continue;
+        }
+
+        file_data = _lib_io_file_data_new();
         if (!file_data) {
             lib_fs_file_data_list_free(file_list, file_count);
-            size = 0;
-            return NULL;
+            //*size = 0;
+            // TODO: ups may be continue
+            return -1;
         }
-        file_data->data = NULL;
-        file_data->size = 0;
 
-        //file_data->data = lib_io_read_bytes(file_name, file_size);
-        char* data = NULL;
-        int retval = lib_io_read_all_bytes(file_name, &data);
+        char* input_data = NULL;
+        int retval = lib_io_read_all_bytes(file_name, &input_data);
 
-        if (retval < 0 || !data) {
+        if (retval < 0 || !input_data) {
             lib_fs_file_data_free(file_data);
             lib_fs_file_data_list_free(file_list, file_count);
-            size = 0;
-            return NULL;
+            //*size = 0;
+            // TODO: ups may be continue
+            return -1;
         }
 
-        file_data->data = data;
+        file_data->data = input_data;
         file_data->size = retval;
 
-        //file_data->size = file_size;
-
         file_list[i] = file_data;
-        //total_size += file_size;
         total_size += file_data->size;
     }
 
     // V1
-    char* data = (char*) malloc((total_size) * sizeof(char));
-    if (!data) {
+    char* total_data = _data_new(total_size);
+    if (!total_data) {
         lib_fs_file_data_list_free(file_list, file_count);
-        size = 0;
-        return NULL;
+        //*size = 0;
+        return -1;
     }
 
     int offset = 0;
@@ -350,9 +305,12 @@ char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& siz
     for (int j = 0; j < file_count; j++) {
 
         file_data = file_list[j];
+        if (!file_data) {
+          continue;
+        }
         
         for (int i = 0; i < file_data->size; i++) {
-            data[i + offset] = file_data->data[i];
+            total_data[i + offset] = file_data->data[i];
         }
         offset += file_data->size;
 
@@ -360,10 +318,10 @@ char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& siz
 
     lib_fs_file_data_list_free(file_list, file_count);
 
-    //data[total_size] = '\0';
-    size = total_size;
+    *data = total_data;
+    *size = total_size;
 
-    return data;
+    return 0;
 
 }
 

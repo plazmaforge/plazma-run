@@ -12,6 +12,6 @@ int lib_io_write_all_bytes(const char* file_name, char* data, size_t size);
 
 int lib_io_write_bytes(const char* file_name, char* data, size_t size);
 
-char* lib_io_read_cat_bytes(const char** file_names, int file_count, size_t& size);
+int lib_io_read_cat_bytes(const char** file_names, size_t file_count, char** data, size_t* size);
 
 #endif // PLAZMA_LIB_IOLIB_H

@@ -25,8 +25,15 @@ int main(int argc, char* argv[]) {
         file_names[i - 1] = argv[i];
     }
 
-    size_t size = 0;
-    char* data = lib_io_read_cat_bytes(file_names, file_count, size);
+    char* total_data = NULL;
+    size_t total_size = 0;
+
+    //char* total_data = lib_io_read_cat_bytes(file_names, file_count, &total_size);
+    int retval = lib_io_read_cat_bytes(file_names, file_count, &total_data, &total_size);
+    if (retval != 0 || !total_data) {
+        free(total_data);
+        return 1;
+    }
 
     lib_sys_locale_init(); // WIN32 fast output with setvbuf(?)
     lib_io_buf_init();
@@ -36,9 +43,11 @@ int main(int argc, char* argv[]) {
     //printf("%ls", lib_char_wchar(total_data));   // IMPORTANT for WIN32 
     //wprintf(L"%ls", lib_char_wchar(total_data)); // IMPORTANT for WIN32
 
-    for (int i = 0; i < size; i++) {
-        printf("%c", data[i]);
+    for (int i = 0; i < total_size; i++) {
+        printf("%c", total_data[i]);
     }
 
     lib_sys_locale_restore(); // Important for WIN32: The locale was changed for the terminal
+
+    return 0;
 }
