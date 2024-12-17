@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<time.h>
 
 int main() {
         
@@ -12,6 +13,10 @@ int main() {
     printf("float       : %2lu bytes\n", sizeof(float));
     printf("double      : %2lu bytes\n", sizeof(double));
     printf("long double : %2lu bytes\n", sizeof(long double));
-    
+
+    printf("\n");
+    printf("size_t      : %2lu bytes\n", sizeof(size_t));
+    printf("time_t      : %2lu bytes\n", sizeof(time_t));
+
     return 0;
 }
