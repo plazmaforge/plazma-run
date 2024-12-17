@@ -12,26 +12,69 @@ static char* _char_new(size_t size) {
   return (char*) calloc(size, sizeof(char));
 }
 
+/**
+ * Allocate NUL-terminated data array
+ */
 static char* _data_new(size_t size) {
   char* data = _char_new(size + 1);
   if (!data) {
     return NULL;
   }
-  data[size] = '\0';
+  data[size] = '\0'; /* NUL-terminated */
   return data;
 }
 
-static int _file_size_stat(const char* file_name, size_t* size) {
-
-  if (!file_name || !size) {
+static long _file_size_stat(const char* file_name) {
+  if (!file_name) {
     return -1;
   }
   struct stat sb;
   if (stat(file_name, &sb) == -1) {
     return -1;
   }
-  *size = sb.st_size; 
-  return 0;
+  return sb.st_size; 
+}
+
+static long _file_size_fstat(int fd) {
+  if (fd < 0) {
+    return -1;
+  }
+  struct stat sb;
+  if (fstat(fd, &sb) == -1) {
+    return -1;
+  }
+  return sb.st_size; 
+}
+
+static long _file_size_fseek(FILE* file) {
+  if (!file) {
+    return -1;
+  }  
+  if (fseek(file, 0, SEEK_END) != 0) {
+    rewind(file);
+    //fclose(file);
+    return -1;
+  }
+
+  long size = ftell(file);
+  rewind(file);
+  //fclose(file);
+
+  //if (size == LONG_MAX) {
+  //  size = -1;
+  //}  
+  return size;
+}
+
+static long _file_size_seek(const char* file_name) {
+  if (!file_name) {
+    return -1;
+  }
+  FILE* file = fopen(file_name, "rb");
+  if (!file) {
+    return -1;
+  }
+  return _file_size_fseek(file);
 }
 
 ////
@@ -50,7 +93,8 @@ int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
   }
 
   size_t file_size = 0;
-  if (_file_size_stat(file_name, &file_size) != 0) {
+  if ((file_size = _file_size_stat(file_name)) < 0) {
+  //if ((file_size = _file_size_fseek(file)) < 0) {  
     // error: io
     return -1;
   }
@@ -70,7 +114,7 @@ int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
   }
 
   size_t _size = fread(_data, sizeof(char), size, file);
-  _data[_size] = '\0';
+  _data[_size] = '\0'; /* NUL-terminated */
   *data = _data;
 
   //fprintf(stderr, ">> file_read: size=%lu\n", _size);
