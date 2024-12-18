@@ -37,22 +37,26 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
 
     bool show_text = config ? config->show_text : LIB_DMP_DEF_SHOW_TEXT;
 
-    //printf("size: %lu\n", size);
-    //printf("cols: %d\n", col_count);
-    //printf("rows: %d\n", row_count);
-    //printf("text: %d\n", show_text);
+    size_t buf_size = lib_io_stdout_get_buf_size();
+    buf_size = lib_io_get_buf_page(buf_size);
 
     int offset = 0;
     int i = 0;
 
     int pos = 0;
-    int stat_pos = -1;
     int total = 0;
 
-    /*
-    size_t buf_size = lib_io_stdout_get_buf_size();
-    buf_size = lib_io_get_buf_page(buf_size);
-    */
+    /* "0x%06X: "  2 + (6) + 2 = 10      */
+    /* " %02X"     (1 + (2)) * col_count */
+
+    /* " "         1                     */
+    /* "c"         col_count             */
+    /* "n"         1                     */
+
+    int row_size = 10 + (3 * col_count) + 1;
+    if (show_text) {
+        row_size += (1 + col_count);
+    }
 
     #ifdef LIB_DEBUG
     fprintf(stderr, ">> dmp_dump_bytes: config:\n");
@@ -60,26 +64,27 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
     fprintf(stderr, ">> col_count=%d\n", col_count);
     fprintf(stderr, ">> row_count=%d\n", row_count);
     fprintf(stderr, ">> show_text=%d\n", show_text);
+    fprintf(stderr, ">> row_size=%d\n", row_size);
 
     fprintf(stderr, ">> dmp_dump_bytes: start\n");
     #endif
 
     for (int row = 0; row < row_count; row++) {
 
-        #ifdef LIB_DEBUG
+        pos = 0; // reset pos for row
+
+        #ifdef LIB_DEBUG_LL
         fprintf(stderr, ">> dmp_dump_bytes: row=%d\n", row);
         #endif
 
-        /*
         if (buf_size > 0 && i > 0) {
-            int try_pos = (stat_pos > 0 ? stat_pos : 0);
-            if (total + try_pos > buf_size) {
+            //int try_pos = (stat_pos > 0 ? stat_pos : 0);
+            if (total + row_size > buf_size) {
                 fflush(stdout);
                 total = 0;
                 //pos = printf("%s\n", "FLUSH!!");
             }
         }
-        */
 
         offset = row * col_count;
         pos += printf("0x%06X: ", (unsigned int) offset);
@@ -97,6 +102,7 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
 
         if (!show_text) {
             pos += printf("\n");
+            total += pos;
             continue;
         }
 
@@ -122,6 +128,7 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
         }
 
         pos += printf("\n");
+        total += pos;
 
         /*
         if (stat_pos < 0) {
@@ -130,18 +137,10 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
                 stat_pos = 0;
             }
         }
-        */
-
-        total += pos;
-
+        */        
     }
 
-    /*
-    for (int i = 0; i < size; i++) {
-          printf(" %02X", (unsigned char) data[i]);
-          //printf("%02hhx", data[i]);
-          //printf("%02HHx", data[i]);
-    }*/
+    fflush(stdout);
 
     #ifdef LIB_DEBUG
     fprintf(stderr, ">> dmp_dump_bytes: finish\n");
