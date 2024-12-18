@@ -1,28 +1,27 @@
 #include <stdio.h>
 #include <cctype>
 
+#include "config.h"
 #include "iolib.h"
 #include "dmplib.h"
 
-/*
-lib_dmp_config_t* lib_dmp_file_new() {
-    return (lib_dmp_config_t*) malloc(sizeof(lib_dmp_config_t));
-}
-
-void lib_dmp_config_free(lib_dmp_config_t* config) {
-    if (!config) {
-        return;
-    }
-    free(config);
-}
-*/
-
 int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) {
+
+    #ifdef LIB_DEBUG
+    fprintf(stderr, ">> dmp_dump_bytes: size=%lu\n", size);
+    #endif
+
     if (!data) {
+        #ifdef LIB_ERROR
+        fprintf(stderr, "ERROR: Invalid arguments: data\n");
+        #endif
         return -1;
     }
 
     if (size == 0) {
+        #ifdef LIB_DEBUG
+        fprintf(stderr, ">> dmp_dump_bytes: return: size=%lu\n", size);
+        #endif
         return 0;
     }
 
@@ -50,11 +49,18 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
     int stat_pos = -1;
     int total = 0;
 
+    /*
     size_t buf_size = lib_io_stdout_get_buf_size();
     buf_size = lib_io_get_buf_page(buf_size);
+    */
+
+    #ifdef LIB_DEBUG
+    fprintf(stderr, ">> dmp_dump_bytes: start\n");
+    #endif
 
     for (int row = 0; row < row_count; row++) {
 
+        /*
         if (buf_size > 0 && i > 0) {
             int try_pos = (stat_pos > 0 ? stat_pos : 0);
             if (total + try_pos > buf_size) {
@@ -63,6 +69,7 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
                 //pos = printf("%s\n", "FLUSH!!");
             }
         }
+        */
 
         offset = row * col_count;
         pos += printf("0x%06X: ", (unsigned int) offset);
@@ -106,12 +113,14 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
 
         pos += printf("\n");
 
+        /*
         if (stat_pos < 0) {
             stat_pos = pos;
             if (stat_pos < 0) {
                 stat_pos = 0;
             }
         }
+        */
 
         total += pos;
 
@@ -124,12 +133,24 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
           //printf("%02HHx", data[i]);
     }*/
 
+    #ifdef LIB_DEBUG
+    fprintf(stderr, ">> dmp_dump_bytes: finish\n");
+    #endif
+
     return 0;
 
 }
 
 static int _lib_dmp_dump_file(const char* file_name, size_t size, lib_dmp_config_t* config) {
+
+    #ifdef LIB_DEBUG
+    fprintf(stderr, ">> dmp_dump_file: size=%lu\n", size);
+    #endif
+
     if (!file_name) {
+        #ifdef LIB_ERROR
+        fprintf(stderr, "ERROR: Invalid arguments: file_name\n");
+        #endif
         return -1;
     }
 

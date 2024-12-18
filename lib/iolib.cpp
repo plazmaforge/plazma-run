@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <ctype.h>
 
+#include "config.h"
 #include "iolib.h"
 
 /**
@@ -104,8 +105,21 @@ static lib_fs_file_data_t** _lib_io_file_list_new(size_t size) {
 ////
 
 int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
+
+  #ifdef LIB_DEBUG
+  fprintf(stderr, ">> io_read_bytes: size=%lu\n", size);
+  #endif
+
   if (!file_name || !data) {
     // error: args
+    #ifdef LIB_ERROR
+    if (!file_name) {
+      fprintf(stderr, "ERROR: Invalid arguments: file_name\n");
+    }
+    if (!data) {
+      fprintf(stderr, "ERROR: Invalid arguments: data\n");
+    }    
+    #endif     
     return -1;
   }
 
@@ -113,6 +127,9 @@ int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
   FILE* file = fopen(file_name, "rb");
   if (!file) {
     // error: io
+    #ifdef LIB_ERROR
+    fprintf(stderr, "ERROR: fopen: file_name=%s\n", file_name);
+    #endif     
     return -1;
   }
 
@@ -120,16 +137,19 @@ int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
   if ((file_size = _file_size_stat(file_name)) < 0) {
   //if ((file_size = _file_size_fseek(file)) < 0) {  
     // error: io
+    #ifdef LIB_ERROR
+    fprintf(stderr, "ERROR: file_size: file_name=%s\n", file_name);
+    #endif     
     return -1;
   }
-
-  //fprintf(stderr, ">> file_open: input_size=%lu, file_size=%lu", size, file_size);
 
   if (size == 0 || size > file_size) {
     size = file_size;
   }
 
-  //fprintf(stderr, ", size=%lu\n", size);
+  #ifdef LIB_DEBUG
+  fprintf(stderr, ">> io_read_bytes: open: file_size=%lu\n", file_size);
+  #endif
 
   char* _data = _data_new(size);
   if (!_data) {
@@ -138,12 +158,19 @@ int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
   }
 
   size_t _size = fread(_data, sizeof(char), size, file);
+
+  #ifdef LIB_DEBUG
+  fprintf(stderr, ">> io_read_bytes: read: size=%lu\n", _size);
+  #endif
+
   _data[_size] = '\0'; /* NUL-terminated */
   *data = _data;
 
-  //fprintf(stderr, ">> file_read: size=%lu\n", _size);
-
   fclose(file);  
+
+  #ifdef LIB_DEBUG
+  fprintf(stderr, ">> io_read_bytes: close\n");
+  #endif
 
   return _size;
 
@@ -151,13 +178,28 @@ int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
 
 int _lib_io_write_bytes(const char* file_name, char* data, size_t size) {
 
+  #ifdef LIB_DEBUG
+  fprintf(stderr, ">> io_write_bytes: size=%lu\n", size);
+  #endif
+
   if (!file_name || !data) {
     // error: args
+    #ifdef LIB_ERROR
+    if (!file_name) {
+      fprintf(stderr, "ERROR: Invalid arguments: file_name\n");
+    }
+    if (!data) {
+      fprintf(stderr, "ERROR: Invalid arguments: data\n");
+    }
+    #endif    
     return -1;
   }
 
   if (size == 0) {
     // no data
+    #ifdef LIB_DEBUG
+    fprintf(stderr, ">> io_write_bytes: return: size=%lu\n", size);
+    #endif
     return 0;
   }
 
@@ -165,16 +207,27 @@ int _lib_io_write_bytes(const char* file_name, char* data, size_t size) {
   FILE* file = fopen(file_name, "wb+");
   if (!file) {
     // error: io
+    #ifdef LIB_ERROR
+    fprintf(stderr, "ERROR: fopen: file_name=%s\n", file_name);
+    #endif     
     return -1;
   }
 
-  //fprintf(stderr, ">> file_open: input_size=%lu\n", input_size);
+  #ifdef LIB_DEBUG
+  fprintf(stderr, ">> io_write_bytes: open: input_size=%lu\n", size);
+  #endif
 
   size_t _size = fwrite(data, sizeof(char), size, file);
 
-  //fprintf(stderr, ">> file_write: size=%lu\n", _size);
+  #ifdef LIB_DEBUG
+  fprintf(stderr, ">> io_write_bytes: write: size=%lu\n", _size);
+  #endif
 
   fclose(file);
+
+  #ifdef LIB_DEBUG
+  fprintf(stderr, ">> io_write_bytes: close\n");
+  #endif
 
   return _size;
 }
