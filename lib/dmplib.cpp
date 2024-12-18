@@ -55,10 +55,20 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
     */
 
     #ifdef LIB_DEBUG
+    fprintf(stderr, ">> dmp_dump_bytes: config:\n");
+    fprintf(stderr, ">> size=%lu\n", size);
+    fprintf(stderr, ">> col_count=%d\n", col_count);
+    fprintf(stderr, ">> row_count=%d\n", row_count);
+    fprintf(stderr, ">> show_text=%d\n", show_text);
+
     fprintf(stderr, ">> dmp_dump_bytes: start\n");
     #endif
 
     for (int row = 0; row < row_count; row++) {
+
+        #ifdef LIB_DEBUG
+        fprintf(stderr, ">> dmp_dump_bytes: row=%d\n", row);
+        #endif
 
         /*
         if (buf_size > 0 && i > 0) {
@@ -77,7 +87,7 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
         // print data
         for (int col = 0; col < col_count; col++) {
             i = col + offset;
-            if (i == size) {
+            if (i >= size) {
                 break;
             }
             pos += printf(" %02X", (unsigned char) data[i]);
@@ -105,10 +115,10 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
         // print text
         for (int col = 0; col < col_count; col++) {
             i = col + offset;
-            if (i == size) {
+            if (i >= size) {
                 break;
             }
-            pos += printf("%c", std::isprint(data[i]) ? data[i] : '.');
+            pos += printf("%c", isprint(data[i]) ? data[i] : '.');
         }
 
         pos += printf("\n");
