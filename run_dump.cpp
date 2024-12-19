@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "getopt.h"
+#include "arglib.h"
 #include "dmplib.h"
 #include "iodef.h"
 
@@ -18,11 +19,14 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    prog_name = lib_arg_get_prog_name(argv);
+    bool error = false;
+    int opt;
+
+    // config
     int width = LIB_DMP_DEF_COL_COUNT;
     bool show_text = false; //DUMP_DEF_SHOW_TEXT;
 
-    bool error = false;
-    int opt;
     while ((opt = getopt(argc, argv, "w:a")) != -1) {
         switch (opt) {
         case 'w':
@@ -57,7 +61,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (argc - optind < min_arg) {
-        fprintf(stderr, "%s: Incorrect argument count\n", argv[0]);
+        fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
         usage();
         return 0;
     }
@@ -72,7 +76,7 @@ int main(int argc, char* argv[]) {
 
     int retval = lib_dmp_dump_file_all(file_name, &config);
     if (retval < 0) {
-        fprintf(stderr, "%s: %s: No such file or directory\n", argv[0], file_name);
+        fprintf(stderr, "%s: %s: No such file or directory\n", prog_name, file_name);
         return 1;
     }
 

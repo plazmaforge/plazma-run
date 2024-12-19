@@ -378,22 +378,22 @@ int getopt_long_only(int argc, char* const argv[], const char* short_option, con
     return getopt_internal(argc, argv, short_option, long_option, long_ind, 1);
 }
 
-const char* getopt_base_name(const char* name) {
-    if (!name) {
-        return NULL;
-    }
-    const char* base  = strrchr(name, '/');   /* NIX */
-    const char* base2 = strrchr(name, '\\');  /* WIN */
-    if (base2 > base) {
-        base = base2;
-    }
-    base = base ? (base + 1): name;
-    return base;
-}
+// const char* getopt_base_name(const char* name) {
+//     if (!name) {
+//         return NULL;
+//     }
+//     const char* base  = strrchr(name, '/');   /* NIX */
+//     const char* base2 = strrchr(name, '\\');  /* WIN */
+//     if (base2 > base) {
+//         base = base2;
+//     }
+//     base = base ? (base + 1): name;
+//     return base;
+// }
 
-const char* getopt_prog_name(char* const argv[]) {
-    if (!argv) {
-        return NULL;
-    }
-    return getopt_base_name(argv[0]);
-}
+// const char* getopt_prog_name(char* const argv[]) {
+//     if (!argv) {
+//         return NULL;
+//     }
+//     return getopt_base_name(argv[0]);
+// }

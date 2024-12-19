@@ -5,6 +5,7 @@
 #include <locale.h>
 
 #include "getopt.h"
+#include "arglib.h"
 #include "fslib.h"
 #include "iodef.h"
 #include "fmtlib.h"
@@ -115,10 +116,6 @@ void run_ls_context_init(run_ls_context* context) {
     context->total = 0;
     //
     context->buf_size = 0;
-}
-
-void usage() {
-    fprintf(stderr, "Usage: run-ls\n");
 }
 
 static int _lib_len_counter(int val) {
@@ -671,8 +668,13 @@ int run_ls(run_ls_context* context) {
     return 0;
 }
 
+void usage() {
+    fprintf(stderr, "Usage: run-ls\n");
+}
+
 int main(int argc, char *argv[]) {
 
+    prog_name = lib_arg_get_prog_name(argv);
     bool error = false;
     const char* error_msg = NULL;
     const char* error_arg = NULL;

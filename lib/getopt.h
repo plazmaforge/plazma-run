@@ -40,8 +40,8 @@ int getopt_long(int argc, char* const argv[], const char* short_option, const st
 
 int getopt_long_only(int argc, char* const argv[], const char* short_option, const struct option* long_option, int* long_ind);
 
-const char* getopt_base_name(const char* name);
+//const char* getopt_base_name(const char* name);
 
-const char* getopt_prog_name(char* const argv[]);
+//const char* getopt_prog_name(char* const argv[]);
 
 #endif // PLAZMA_LIB_GETOPT_H

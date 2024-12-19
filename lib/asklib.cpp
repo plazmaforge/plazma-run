@@ -121,17 +121,6 @@ static bool lib_ask_check_input(const char* data, size_t data_size, const char* 
 
 ////
 
-/*
-lib_ask_config_t* lib_ask_config_new() {
-    lib_ask_config_t* config = (lib_ask_config_t*) malloc(sizeof(lib_ask_config_t));
-    if (!config) {
-        return NULL;
-    }
-    lib_ask_config_init(config);
-    return config;
-}
-*/
-
 void lib_ask_config_init(lib_ask_config_t* config) {
     if (!config) {
         return;

@@ -4,6 +4,7 @@
 #include <ctype.h>
 
 #include "getopt.h"
+#include "arglib.h"
 #include "strlib.h"
 #include "wstrlib.h"
 #include "pathlib.h"
@@ -24,13 +25,15 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    prog_name = lib_arg_get_prog_name(argv);
+    bool error = false;
+    int opt;
+
     // Config
     bool bin_mode        = false;
     bool find_first_only = false;
     bool ignore_case     = false;
 
-    bool error = false;
-    int opt;
     while ((opt = getopt(argc, argv, "bil")) != -1) {
         switch (opt) {
         case 'b':
@@ -54,7 +57,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (argc - optind != min_arg) {
-        fprintf(stderr, "%s: Incorrect argument count\n", argv[0]);
+        fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
         usage();
         return 0;
     }

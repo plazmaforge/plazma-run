@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +24,7 @@ void print_args(char* args[], int count, int start, bool trailing) {
 }
 
 int main(int argc, char* argv[]) {
+    
     if (argc < 2) {
         usage();
         return 0;

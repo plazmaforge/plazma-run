@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <locale.h>
 
+#include "arglib.h"
 #include "iolib.h"
 #include "wstrlib.h"
 #include "syslib.h"
@@ -17,6 +18,8 @@ int main(int argc, char* argv[]) {
         usage();
         return 0;
     }
+
+    prog_name = lib_arg_get_prog_name(argv);
 
     int file_count = argc - 1;
 

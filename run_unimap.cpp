@@ -4,6 +4,7 @@
 #include <ctype.h>
 
 #include "getopt.h"
+#include "arglib.h"
 
 int RUN_UNIMAP_FORMAT_SPC   = 0;
 int RUN_UNIMAP_FORMAT_CSV   = 1;
@@ -395,11 +396,14 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    prog_name = lib_arg_get_prog_name(argv);
+    bool error = false;
+    int opt;
+
+    // config
     int format = RUN_UNIMAP_FORMAT_TSV;
     bool use_comments = false;
 
-    bool error = false;
-    int opt;
     while ((opt = getopt(argc, argv, "f:")) != -1) {
         switch (opt) {
         case 'f':

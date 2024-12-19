@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "getopt.h"
+#include "arglib.h"
 #include "iolib.h"
 
 /*
@@ -44,10 +45,6 @@ Handshake Header    : 0c 00 01 28     - (server key exchange)
 Curve Info          : 03 00 1d        - ("curve x25519")
 
 */
-
-void usage() {
-    printf("Usage: run-ssl-dump file\n");
-}
 
 void print_buf(const char* buf, size_t cur_pos, size_t data_len) {
     //printf("\ncur_pos: %lu, data_len: %lu\n", cur_pos, data_len);
@@ -511,6 +508,10 @@ int run_ssldump(const char* file_name) {
     return 0;
 }
 
+void usage() {
+    printf("Usage: run-ssl-dump file\n");
+}
+
 int main(int argc, char* argv[]) {
 
     if (argc < 2) {
@@ -518,15 +519,12 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    prog_name = lib_arg_get_prog_name(argv);
+
     const char* file_name = argv[1];
 
     lib_io_buf_init();
     
-    // #ifdef _WIN32
-    // char buf[65536];
-    // setvbuf(stdout, buf, _IOFBF, 65536);
-    // #endif
-
     return run_ssldump(file_name);
 }
 

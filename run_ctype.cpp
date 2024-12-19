@@ -1,8 +1,8 @@
-#include<stdio.h>
-#include<time.h>
+#include <stdio.h>
+#include <time.h>
 
 int main() {
-        
+    
     printf("char        : %2lu bytes\n", sizeof(char));
 
     printf("short       : %2lu bytes\n", sizeof(short));

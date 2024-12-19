@@ -1,13 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "arglib.h"
 #include "socketlib.h"
 #include "iodef.h"
 #include "nflib.h"
-
-void usage() {
-    fprintf(stderr, "Usage: run-get url\n");
-}
 
 int run_get(const char* url) {
 
@@ -63,11 +60,19 @@ int run_get(const char* url) {
     return 0;
 }
 
+void usage() {
+    fprintf(stderr, "Usage: run-get url\n");
+}
+
 int main(int argc, char *argv[]) {
+
     if (argc < 2) {
         usage();
         return 0;
     }
+
+    prog_name = lib_arg_get_prog_name(argv);
+
     const char* url = argv[1];
 
     lib_io_buf_init();

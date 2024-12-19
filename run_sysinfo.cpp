@@ -3,10 +3,7 @@
 #include <stdlib.h>
 #include <locale.h>
 
-// #include "getopt.h"
- #include "strlib.h"
-// #include "wstrlib.h"
-
+#include "strlib.h"
 #include "sysinfo.h"
 #include "syslocale_os.h"
 

@@ -2,12 +2,9 @@
 #include <stdlib.h>
 
 #include "getopt.h"
+#include "arglib.h"
 #include "iolib.h"
 #include "enclib.h"
-
-void usage() {
-    fprintf(stderr, "Usage: run-iconv -f fromcode -t tocode file\n");
-}
 
 static void _conv_error(int error_code, const char* prog_name, char* from_code, char* to_code) {
     if (error_code == LIB_ENC_ERR_CONV_FROM_USUPPORTED || error_code == LIB_UNIMAP_ERR_CONV_FROM_USUPPORTED) {
@@ -75,6 +72,10 @@ void _print_encodings() {
     }
 }
 
+void usage() {
+    fprintf(stderr, "Usage: run-iconv -f fromcode -t tocode file\n");
+}
+
 int main(int argc, char* argv[]) {
 
     int min_arg = 1;
@@ -83,7 +84,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    const char* prog_name = getopt_prog_name(argv);
+    prog_name = lib_arg_get_prog_name(argv);
     bool error = false;
     int opt;
 

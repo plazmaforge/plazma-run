@@ -1,21 +1,16 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "getopt.h"
+#include "arglib.h"
 #include "strlib.h"
 #include "wstrlib.h"
 #include "pathlib.h"
 #include "wclib.h"
 #include "fslib.h"
 #include "syslib.h"
-
-void usage() {
-    fprintf(stderr, "Usage: run-find path\n");
-    fprintf(stderr, "       run-find pattern\n");
-}
 
 void print_file_path(const char* path) {
     printf("%s\n", path);
@@ -144,12 +139,19 @@ void find_by_arg(const char* arg) {
 
 }
 
+void usage() {
+    fprintf(stderr, "Usage: run-find path\n");
+    fprintf(stderr, "       run-find pattern\n");
+}
+
 int main(int argc, char* argv[]) {
 
     if (argc < 2) {
         usage();
         return 0;
     }
+
+    prog_name = lib_arg_get_prog_name(argv);
 
     /*
     char* type = NULL;

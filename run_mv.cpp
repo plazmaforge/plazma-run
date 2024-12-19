@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "arglib.h"
 #include "fslib.h"
 
 void usage() {
@@ -10,10 +11,14 @@ void usage() {
 }
 
 int main(int argc, char* argv[]) {
+
     if (argc < 3) {
         usage();
         return 0;
     }
+
+    prog_name = lib_arg_get_prog_name(argv);
+
     char* src_file_name = argv[1];
     char* dst_file_name = argv[2];
 

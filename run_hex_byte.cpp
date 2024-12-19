@@ -3,11 +3,8 @@
 #include <string.h>
 
 #include "getopt.h"
+#include "arglib.h"
 #include "iolib.h"
-
-void usage() {
-    fprintf(stderr, "Usage: run-hex-byte file\n");
-}
 
 int check_byte(char b) {
     return ((b >= '0' && b <= '9') 
@@ -70,7 +67,7 @@ int run_hex_byte(const char* file_name) {
         j++;
 
         if (!check_byte(b1) || !check_byte(b2)) {
-           fprintf(stderr, "Invalid byte data\n");
+           fprintf(stderr, "%s: Invalid byte data\n", prog_name);
            //fprintf(stderr, "Invalid byte data. Ignore following data\n");
            free(data);
            free(out_data);
@@ -92,12 +89,19 @@ int run_hex_byte(const char* file_name) {
     return 0;
 }
 
+void usage() {
+    fprintf(stderr, "Usage: run-hex-byte file\n");
+}
+
 int main(int argc, char* argv[]) {
 
     if (argc < 2) {
         usage();
         return 0;
     }
+
+    prog_name = lib_arg_get_prog_name(argv);
+
     const char* file_name = argv[1];
     
     lib_io_buf_init();
