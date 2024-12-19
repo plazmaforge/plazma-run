@@ -2,6 +2,7 @@
 #include <errno.h>
 
 #include "getopt.h"
+#include "arglib.h"
 #include "iolib.h"
 
 #include "run_mdlib.h"
@@ -32,28 +33,8 @@ static void print_error(lib_md_config_t* config, const char* error) {
     fprintf(stderr, "Error calculation %s for %s: %s\n", config->md_name, (config->mode == RUN_MD_BY_STRING ? "string" : "file"), error);
 }
 
-static const char* get_base_name(const char* name) {
-    if (!name) {
-        return NULL;
-    }
-
-    const char* base = strrchr(name, '\\');
-    const char* base2 = strrchr(name, '/');
-
-    if (base2 > base) {
-        base = base2;
-    }
-
-    base = base ? (base + 1): name;
-
-    return base;
-}
-
 void run_md_usage(lib_md_config_t* config) {
-
-    const char* base_name = get_base_name(app_name);
-
-    fprintf(stderr, "Usage: %s [-tu] -s string | file ...\n", base_name);
+    fprintf(stderr, "Usage: %s [-tu] -s string | file ...\n", prog_name);
 }
 
 int run_md_by_mode(lib_md_config_t* config, const char* file_name, const char* data, size_t size) {
@@ -72,7 +53,8 @@ int run_md_by_mode(lib_md_config_t* config, const char* file_name, const char* d
 
 int run_md(lib_md_config_t* config, int argc, char* argv[]) {
 
-    app_name = argv[0];
+    //app_name = argv[0];
+    prog_name = lib_arg_get_prog_name(argv);
 
     if (argc < 2) {
         run_md_usage(config);
@@ -152,7 +134,7 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
                     free(data);
                 }
                 error = 1;
-                fprintf(stderr, "%s: %s: %s\n", app_name, file_name, strerror(errno));
+                fprintf(stderr, "%s: %s: %s\n", prog_name, file_name, strerror(errno));
                 continue;
             }
             size = retval;
@@ -171,7 +153,7 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
             // NO DATA
             if (!data) {
                 error = 1;
-                fprintf(stderr, "%s: %s: %s\n", app_name, file_name, "No data");
+                fprintf(stderr, "%s: %s: %s\n", prog_name, file_name, "No data");
                 continue;                    
             }
 

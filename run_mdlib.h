@@ -18,7 +18,5 @@ typedef struct lib_md_config_t {
 }
 lib_md_config_t;
 
-static char* app_name;
-
 int run_md(lib_md_config_t* config, int argc, char* argv[]);
 
