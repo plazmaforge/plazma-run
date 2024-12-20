@@ -352,28 +352,28 @@ char* lib_strdup_uq(const char* src) {
   }
 }
 
-int lib_is_strn_qt_opts(const char* src, size_t size, char quote) {
+bool lib_is_strn_qt_opts(const char* src, size_t size, char quote) {
   if (!src || size <= 0) {
     return 0;
   }
   return src[0] == quote && src[size - 1] == quote;
 }
 
-int lib_is_str_qt(const char* src, char quote) {
+bool lib_is_str_qt(const char* src, char quote) {
   if (!src) {
     return 0;
   }
   return lib_is_strn_qt_opts(src, strlen(src), quote);
 }
 
-int lib_is_strn_qt(const char* src, size_t size) {
+bool lib_is_strn_qt(const char* src, size_t size) {
   if (!src || size <= 0) {
     return 0;
   }
   return lib_is_strn_qt_opts(src, size, '\'') || lib_is_strn_qt_opts(src, size, '"');
 }
 
-int lib_is_str_qt(const char* src) {
+bool lib_is_str_qt(const char* src) {
   if (!src) {
     return 0;
   }

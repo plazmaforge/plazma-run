@@ -73,13 +73,13 @@ char* lib_strdup_qt(const char* src);
  */
 char* lib_strdup_uq(const char* src);
 
-int lib_is_strn_qt_opts(const char* src, size_t size, char quote);
+bool lib_is_strn_qt_opts(const char* src, size_t size, char quote);
 
-int lib_is_str_qt(const char* src, char quote);
+bool lib_is_str_qt(const char* src, char quote);
 
-int lib_is_strn_qt(const char* src, size_t size);
+bool lib_is_strn_qt(const char* src, size_t size);
 
-int lib_is_str_qt(const char* src);
+bool lib_is_str_qt(const char* src);
 
 int lib_stralen(/*const*/ char** array);
 
