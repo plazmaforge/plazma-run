@@ -9,7 +9,7 @@
 int run_get(const char* url) {
 
     if (!url) {
-        fprintf(stderr, "Cannot parse url. Url is empty\n");
+        fprintf(stderr, "%s: Cannot parse url. Url is empty\n", prog_name);
         return 1;
     }
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
     const char* url = argv[1];
 
-    lib_io_buf_init();
+    //lib_io_buf_init();
 
     return run_get(url);
 }

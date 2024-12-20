@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     }
 
     prog_name = lib_arg_get_prog_name(argv);
-    bool error = false;
+    int error = 0;
     int opt;
 
     // config
@@ -36,10 +36,10 @@ int main(int argc, char* argv[]) {
                 } else if (strcmp(optarg, "32") == 0) {
                     width = 32;
                 } else {
-                    error = true;
+                    error = 1;
                 }
             } else {
-                error = true;
+                error = 1;
             }
             break;
         case 'a':
@@ -47,10 +47,10 @@ int main(int argc, char* argv[]) {
             show_text = true;
             break;
         case '?':
-            error = true;
+            error = 1;
             break;
         case ':':
-            error = true;
+            error = 1;
             break;
         }
     }

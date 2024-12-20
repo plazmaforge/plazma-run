@@ -7,53 +7,84 @@
 
 #include "run_mdlib.h"
 
-static void print_title(lib_md_config_t* config, const char* title) {
+static int _print_title(lib_md_config_t* config, const char* title) {
     if (!title) {
-        return;
+        return 0;
     }
-    printf("%s (\"%s\") = ", config->md_name, title);
+    return printf("%s (\"%s\") = ", config->md_name, title);
 }
 
-static void print_sum(lib_md_config_t* config, unsigned char sum[]) {
+static int _print_sum(lib_md_config_t* config, unsigned char sum[]) {
     const char* fmt = config->is_upper  ? "%02X" : "%02x";
+    int pos = 0;
     for (int i = 0; i < config->md_size; i++) {
-        printf(fmt, sum[i]);
+        pos += printf(fmt, sum[i]);
     }
+    return pos;
 }
 
-static void print_result(lib_md_config_t* config, const char* title, unsigned char sum[]) {
+static int _print_result(lib_md_config_t* config, const char* title, unsigned char sum[]) {
+    int pos = 0;
     if (config->is_title) {
-        print_title(config, title);
+        pos += _print_title(config, title);
     }
-    print_sum(config, sum);
-    printf("\n");
+    pos += _print_sum(config, sum);
+    pos += printf("\n");
+    return pos;
 }
 
-static void print_error(lib_md_config_t* config, const char* error) {
-    fprintf(stderr, "Error calculation %s for %s: %s\n", config->md_name, (config->mode == RUN_MD_BY_STRING ? "string" : "file"), error);
+static const char* _strsaf(const char* value) {
+    return value ? value : "";
+}
+
+static const char* _get_mode_type(lib_md_config_t* config) {
+    return (config->mode == RUN_MD_BY_STRING ? "string" : "file");
+}
+
+static const char* _get_mode_input(lib_md_config_t* config, const char* file_name, const char* data) {
+    return _strsaf(config->mode == RUN_MD_BY_STRING ? data : file_name);
+}
+
+static void _file_error(lib_md_config_t* config, const char* file_name) {
+    fprintf(stderr, "%s: %s: %s\n", prog_name, file_name, strerror(errno));
+}
+
+static void _data_error(lib_md_config_t* config, const char* file_name) {
+    if (config->mode == RUN_MD_BY_FILE) {
+        fprintf(stderr, "%s: %s: %s\n", prog_name, file_name, "No Data");
+    } else {
+        fprintf(stderr, "%s: %s\n", prog_name, "No Data");
+    }
+}
+
+static void _calc_error(lib_md_config_t* config, const char* file_name, const char* data) {
+    fprintf(stderr, "%s: Error calculation %s for %s: %s\n", 
+    prog_name,
+    config->md_name, 
+    _get_mode_type(config), 
+    _get_mode_input(config, file_name, data));
+}
+
+int run_md_by_mode(lib_md_config_t* config, const char* file_name, const char* data, size_t size) {
+    if (!data) {
+        _data_error(config, file_name);
+        return 1;
+    }
+    unsigned char sum[config->md_size];
+    if (config->md_func((const unsigned char*) data, size, sum) != 0) {
+        _calc_error(config, file_name, data);
+        return 1;
+    }
+    _print_result(config, _get_mode_input(config, file_name, data), sum);
+    return 0;
 }
 
 void run_md_usage(lib_md_config_t* config) {
     fprintf(stderr, "Usage: %s [-tu] -s string | file ...\n", prog_name);
 }
 
-int run_md_by_mode(lib_md_config_t* config, const char* file_name, const char* data, size_t size) {
-    if (!data) {
-        print_error(config, (config->mode == RUN_MD_BY_STRING ? "String is empty" : "Data is empty"));
-        return 1;
-    }
-    unsigned char sum[config->md_size];
-    if (config->md_func((const unsigned char*) data, size, sum) != 0) {
-        print_error(config, (config->mode == RUN_MD_BY_STRING ? data : file_name));
-        return 1;
-    }
-    print_result(config, (config->mode == RUN_MD_BY_STRING ? data : file_name), sum);
-    return 0;
-}
-
 int run_md(lib_md_config_t* config, int argc, char* argv[]) {
 
-    //app_name = argv[0];
     prog_name = lib_arg_get_prog_name(argv);
 
     if (argc < 2) {
@@ -61,7 +92,7 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
         return 1;
     }
 
-    bool error = false;
+    int error = 0;
     int opt;
 
     config->mode = RUN_MD_BY_FILE; /* Set mode by file */
@@ -87,10 +118,10 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
             data = optarg;
             break;
         case '?':
-            error = true;
+            error = 1;
             break;
         case ':':
-            error = true;
+            error = 1;
             break;
         }
     }
@@ -109,7 +140,7 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
     } else {
 
         if (argc - optind < 1) {
-            //fprintf(stderr, "%s: Incorrect argument count\n", argv[0]);
+            //fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
             run_md_usage(config);
             return 1;
         }
@@ -134,26 +165,16 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
                     free(data);
                 }
                 error = 1;
-                fprintf(stderr, "%s: %s: %s\n", prog_name, file_name, strerror(errno));
+                _file_error(config, file_name);
                 continue;
             }
             size = retval;
             ////
 
-            // ERROR
-            //if (errno != 0) {
-            //    if (data) {
-            //        free(data);
-            //    }
-            //    error = 1;
-            //    fprintf(stderr, "%s: %s: %s\n", app_name, file_name, strerror(errno));
-            //    continue;
-            //}
-
             // NO DATA
             if (!data) {
                 error = 1;
-                fprintf(stderr, "%s: %s: %s\n", prog_name, file_name, "No data");
+                _data_error(config, file_name);
                 continue;                    
             }
 

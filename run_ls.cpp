@@ -189,10 +189,10 @@ static int _get_format(char* val) {
         return RUN_LS_FORMAT_CSV;
     } else if (strcmp(optarg, "tsv") == 0) {
         return RUN_LS_FORMAT_TSV;
-    } else if (strcmp(optarg, "xml") == 0) {
-        return RUN_LS_FORMAT_XML;
-    } else if (strcmp(optarg, "json") == 0) {
-        return RUN_LS_FORMAT_JSON;
+    //} else if (strcmp(optarg, "xml") == 0) {
+    //    return RUN_LS_FORMAT_XML;
+    //} else if (strcmp(optarg, "json") == 0) {
+    //    return RUN_LS_FORMAT_JSON;
     } else if (strcmp(optarg, "tab") == 0) {
         return RUN_LS_FORMAT_TAB;
     }
@@ -669,16 +669,13 @@ int run_ls(run_ls_context* context) {
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-ls\n");
+    fprintf(stderr, "Usage: run-ls [-alh] [-f name]\n");
 }
 
 int main(int argc, char *argv[]) {
 
     prog_name = lib_arg_get_prog_name(argv);
-    bool error = false;
-    const char* error_msg = NULL;
-    const char* error_arg = NULL;
-
+    int error = 0;
     int opt;
     int long_ind;
 
@@ -706,24 +703,20 @@ int main(int argc, char *argv[]) {
         case 'f':
             format = _get_format(optarg);
             if (format == 0) {
-                error = true;
-                error_msg = "Unsupported format";
-                //error_arg = optarg;
+                error = 1;
+                fprintf(stderr, "%s: Unsupported format: %s\n", prog_name, optarg);
             }
             break;
         case '?':
-            error = true;
+            error = 1;
             break;
         case ':':
-            error = true;
+            error = 1;
             break;
         }
     }
 
     if (error) {
-        if (error_msg) {
-            fprintf(stderr, "%s\n", error_msg);
-        }
         usage();
         return 1;
     }

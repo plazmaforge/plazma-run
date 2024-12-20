@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
 
     const char* file_name = argv[1];
     
-    lib_io_buf_init();
+    //lib_io_buf_init();
 
     return run_hex_byte(file_name);
 

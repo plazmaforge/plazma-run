@@ -6,16 +6,16 @@
 #include "iolib.h"
 #include "enclib.h"
 
-static void _conv_error(int error_code, const char* prog_name, char* from_code, char* to_code) {
-    if (error_code == LIB_ENC_ERR_CONV_FROM_USUPPORTED || error_code == LIB_UNIMAP_ERR_CONV_FROM_USUPPORTED) {
+static void _conv_error(int error, char* from_code, char* to_code) {
+    if (error == LIB_ENC_ERR_CONV_FROM_USUPPORTED || error == LIB_UNIMAP_ERR_CONV_FROM_USUPPORTED) {
         fprintf(stderr, "%s: Conversion from %s unsupported\n", prog_name, from_code);
         return;
     }    
-    if (error_code == LIB_ENC_ERR_CONV_TO_USUPPORTED || error_code == LIB_UNIMAP_ERR_CONV_TO_USUPPORTED) {
+    if (error == LIB_ENC_ERR_CONV_TO_USUPPORTED || error == LIB_UNIMAP_ERR_CONV_TO_USUPPORTED) {
         fprintf(stderr, "%s: Conversion to %s unsupported\n", prog_name, to_code);
         return;
     }    
-    if (error_code == LIB_ENC_ERR_CONV_USUPPORTED || error_code == LIB_UNIMAP_ERR_CONV_USUPPORTED) {
+    if (error == LIB_ENC_ERR_CONV_USUPPORTED || error == LIB_UNIMAP_ERR_CONV_USUPPORTED) {
         fprintf(stderr, "%s: Conversion from %s unsupported\n", prog_name, from_code);
         fprintf(stderr, "%s: Conversion to %s unsupported\n", prog_name, to_code);
         return;
@@ -23,17 +23,17 @@ static void _conv_error(int error_code, const char* prog_name, char* from_code, 
     fprintf(stderr, "%s: Conversion error\n", prog_name);
 }
 
-static void _file_error(int error_code, const char* prog_name, const char* file_name) {
+static void _file_error(int error, const char* file_name) {
     fprintf(stderr, "%s: %s: No such file or directory\n", prog_name, file_name);
 }
 
-static void _data_error(int error_code, const char* prog_name) {
-    if (error_code == 1) {
-        fprintf(stderr, "%s: Empty input data\n", prog_name);
+static void _data_error(int error) {
+    if (error == 1) {
+        fprintf(stderr, "%s: No input data\n", prog_name);
         return;
     }    
-    if (error_code == 2) {
-        fprintf(stderr, "%s: Empty output data\n", prog_name);
+    if (error == 2) {
+        fprintf(stderr, "%s: No output data\n", prog_name);
         return;
     }
     fprintf(stderr, "%s: Data error\n", prog_name); 
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
     }
 
     prog_name = lib_arg_get_prog_name(argv);
-    bool error = false;
+    int error = 0;
     int opt;
 
     char* from_code = NULL;
@@ -104,10 +104,10 @@ int main(int argc, char* argv[]) {
             to_code = optarg;
             break;
         case '?':
-            error = true;
+            error = 1;
             break;
         case ':':
-            error = true;
+            error = 1;
             break;
         }
 
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (!from_code || !to_code) {
-        error = true;
+        error = 1;
     }
 
     if (error) {
@@ -148,16 +148,16 @@ int main(int argc, char* argv[]) {
     bool has_to   = to_id > 0;
 
     if (!has_from) {
-        error = true;
-        _conv_error(LIB_ENC_ERR_CONV_FROM_USUPPORTED, prog_name, from_code, to_code);
+        error = 1;
+        _conv_error(LIB_ENC_ERR_CONV_FROM_USUPPORTED, from_code, to_code);
     }
     if (!has_to) {
-        error = true;
-        _conv_error(LIB_ENC_ERR_CONV_TO_USUPPORTED, prog_name, to_code, to_code);
+        error = 1;
+        _conv_error(LIB_ENC_ERR_CONV_TO_USUPPORTED, to_code, to_code);
     }
 
     //if (!lib_fs_exists(file_name)) {
-    //    error = true;
+    //    error = 1;
     //    fprintf(stderr, "File not found           : %s\n", file_name);
     //}
 
@@ -175,26 +175,26 @@ int main(int argc, char* argv[]) {
 
     int retval = lib_io_read_all_bytes(file_name, &from_data);
     if (retval < 0) {
-        _file_error(retval, prog_name, file_name);
+        _file_error(retval, file_name);
         _data_free(from_data, to_data);
         return 1;
     }
     from_size = retval;
 
     if (_is_empty_data(from_data, from_size)) {
-        _data_error(1, prog_name);
+        _data_error(1);
         _data_free(from_data, to_data);
         return 1;
     }
     
     retval = lib_enc_conv_by_id(from_id, to_id, from_data, from_size, &to_data, &to_size);
     if (retval != 0) {
-        _conv_error(retval, prog_name, from_code, to_code);
+        _conv_error(retval, from_code, to_code);
         _data_free(from_data, to_data);
         return 1;
     }
     if (_is_empty_data(to_data, to_size)) {
-        _data_error(2, prog_name);
+        _data_error(2);
         _data_free(from_data, to_data);
         return 1;
     }

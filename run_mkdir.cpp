@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     char* dir_name = argv[1];
     int retval = lib_fs_create_dir(dir_name);
     if (retval != 0) {
-        fprintf(stderr, "Can't create directory: %s\n", dir_name);
+        fprintf(stderr, "%s: %s: Can't create directory\n", prog_name, dir_name);
     }
     return 0;
 }

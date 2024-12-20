@@ -276,7 +276,7 @@ int read_server_hello(const char* buf, size_t buf_len, size_t& cur_pos) {
 
         return 0;
     } else {
-        fprintf(stderr, "Unsupported Server Version: %02x%02x", version_1, version_2);
+        fprintf(stderr, "%s: Unsupported Server Version: %02x%02x", prog_name, version_1, version_2);
         return -1;
     }
     return 0;    
@@ -438,7 +438,7 @@ int read_handshake_header(const char* buf, size_t buf_len, size_t& cur_pos) {
         // Server Hello Done
         return read_server_hello_done(buf, buf_len, cur_pos);
     } else {
-        fprintf(stderr, "Unsupported Handshake Header: %02x\n", handshake_type);
+        fprintf(stderr, "%s: Unsupported Handshake Header: %02x\n", prog_name, handshake_type);
         return -1;
     }
 
@@ -465,7 +465,7 @@ int read_record_header(const char* buf, size_t buf_len, size_t& cur_pos) {
         // Handshake Record
         return read_handshake_header(buf, buf_len, cur_pos);
     } else {
-        fprintf(stderr, "Unsupported Record Header: %02x\n", record_type);
+        fprintf(stderr, "%s: Unsupported Record Header: %02x\n", prog_name, record_type);
         return -1;
     }
 
@@ -475,7 +475,7 @@ int read_record_header(const char* buf, size_t buf_len, size_t& cur_pos) {
 int run_ssldump(const char* file_name) {
 
     if (!file_name) {
-        fprintf(stderr, "File name is empty\n");
+        fprintf(stderr, "%s: File name is empty\n", prog_name);
         return 1;
     }
 
@@ -487,7 +487,7 @@ int run_ssldump(const char* file_name) {
     int retval = lib_io_read_all_bytes(file_name, &buf);
     if (retval < 0) {
         // error
-        fprintf(stderr, "IO Error\n");
+        fprintf(stderr, "%s: I/O Error\n", prog_name);
         return 1;
 
     }
@@ -495,13 +495,14 @@ int run_ssldump(const char* file_name) {
     ////
 
     if (size == 0 || !buf) {
-        fprintf(stderr, "No input buf\n");
+        fprintf(stderr, "%s: No Data\n", prog_name);
         return 1;
     }
 
     size_t cur_pos = 0;
     while (cur_pos <= size) {
         if (read_record_header(buf, size, cur_pos) != 0) {
+            fprintf(stderr, "%s: Read Error\n", prog_name);
             return 1;
         }
     }
@@ -509,7 +510,7 @@ int run_ssldump(const char* file_name) {
 }
 
 void usage() {
-    printf("Usage: run-ssl-dump file\n");
+    printf("Usage: run-ssldump file\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -523,7 +524,7 @@ int main(int argc, char* argv[]) {
 
     const char* file_name = argv[1];
 
-    lib_io_buf_init();
+    //lib_io_buf_init();
     
     return run_ssldump(file_name);
 }

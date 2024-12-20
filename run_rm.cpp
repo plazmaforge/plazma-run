@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     char* file_name = argv[1];
     int retval = lib_fs_remove(file_name);
     if (retval != 0) {
-        fprintf(stderr, "Can't remove file: %s\n", file_name);
+        fprintf(stderr, "%s: %s: Can't remove file\n", prog_name, file_name);
     }
     return 0;
 }

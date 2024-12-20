@@ -157,7 +157,7 @@ int main(int argc, char* argv[]) {
     char* type = NULL;
     char* size = NULL;
 
-    bool error = false;
+    int error = 0;
     int opt;
     while ((opt = getopt(argc, argv, "t:s:")) != -1) {
         switch (opt) {
@@ -168,20 +168,20 @@ int main(int argc, char* argv[]) {
             size = optarg;
             break;
         case '?':
-            error = true;
+            error = 1;
             break;
         }
     }
 
     if (error) {
         usage();
-        return 0;
+        return 1;
     }
 
     if (argc - optind != min_arg) {
-        printf("%s: Incorrect argument count\n", argv[0]);
+        printf("%s: Incorrect argument count\n", prog_name);
         usage();
-        return 0;
+        return 1;
     }
                                         
     char* input = lib_strdup_uq(argv[optind]);
@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
     size_t input_size = strlen(input);
     if (input_size == 0) {
         //printf("Input is empty\n");
-        return 0;
+        return 1;
     }
     */
 

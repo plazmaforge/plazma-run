@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 
     int retval = lib_fs_move(src_file_name, dst_file_name);
     if (retval != 0) {
-        fprintf(stderr, "Can't move file from %s to %s\n", src_file_name, dst_file_name);
+        fprintf(stderr, "%s: Can't move file from %s to %s\n", prog_name, src_file_name, dst_file_name);
     }
     return 0;
 }

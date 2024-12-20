@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
     }
 
     prog_name = lib_arg_get_prog_name(argv);
-    bool error = false;
+    int error = 0;
     int opt;
 
     // Config
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
             find_first_only = true;
             break;
         case '?':
-            error = true;
+            error = 1;
             break;
         }
     }

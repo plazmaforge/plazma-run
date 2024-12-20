@@ -295,6 +295,27 @@ int _print_line(run_unimap_entry_t* entry) {
     return 0;
 }
 
+static int _get_format(char* val) {
+    if (!val) {
+        return 0;
+    }
+
+    if (strcmp(val, "spc") == 0) {
+        return RUN_UNIMAP_FORMAT_SPC;
+    } else if (strcmp(val, "csv") == 0) {
+        return RUN_UNIMAP_FORMAT_CSV;
+    } else if (strcmp(val, "tsv") == 0) {
+        return RUN_UNIMAP_FORMAT_TSV;
+    } else if (strcmp(val, "tab") == 0) {
+        return RUN_UNIMAP_FORMAT_TAB;
+    } else if (strcmp(val, "map") == 0) {
+        return RUN_UNIMAP_FORMAT_MAP;
+    } else if (strcmp(val, "array") == 0) {
+        return RUN_UNIMAP_FORMAT_ARRAY;
+    }
+    return 0;
+}
+
 int run_line(run_unimap_entry_t* entry, char* line) {
     if (!line) {
         return 1;
@@ -309,14 +330,14 @@ int run_line(run_unimap_entry_t* entry, char* line) {
 int run_unimap(run_unimap_config_t* config, const char* file_name) {
 
     if (!file_name) {
-        fprintf(stderr, "Unable to open file!\n");
+        fprintf(stderr, "%s: File name is empty\n", prog_name);
         return 1;
     }
 
     FILE* file = fopen(file_name, "rb");
 
     if (!file) {
-        fprintf(stderr, "Unable to open file %s!\n", file_name);
+        fprintf(stderr, "%s: %s: Unable to open file\n", prog_name, file_name);
         return 1;
     }
 
@@ -385,7 +406,7 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-unimap [-f csv | tsv | tab | array] file\n");
+    fprintf(stderr, "Usage: run-unimap [-f csv | tsv | tab | map | array] file\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -397,7 +418,7 @@ int main(int argc, char* argv[]) {
     }
 
     prog_name = lib_arg_get_prog_name(argv);
-    bool error = false;
+    int error = 0;
     int opt;
 
     // config
@@ -407,33 +428,22 @@ int main(int argc, char* argv[]) {
     while ((opt = getopt(argc, argv, "f:")) != -1) {
         switch (opt) {
         case 'f':
-            if (optarg) {
-                if (strcmp(optarg, "spc") == 0) {
-                    format = RUN_UNIMAP_FORMAT_SPC;
-                } else if (strcmp(optarg, "csv") == 0) {
-                    format = RUN_UNIMAP_FORMAT_CSV;
-                } else if (strcmp(optarg, "tsv") == 0) {
-                    format = RUN_UNIMAP_FORMAT_TSV;
-                } else if (strcmp(optarg, "tab") == 0) {
-                    format = RUN_UNIMAP_FORMAT_TAB;
-                } else if (strcmp(optarg, "map") == 0) {
-                    format = RUN_UNIMAP_FORMAT_MAP;
-                    use_comments = true;
-                } else if (strcmp(optarg, "array") == 0) {
-                    format = RUN_UNIMAP_FORMAT_ARRAY;
-                    use_comments = true;
-                } else {
-                    error = true;
-                }
+            format = _get_format(optarg);
+            if (format == 0) {
+                error = 1;
+                fprintf(stderr, "%s: Unsupported format: %s\n", prog_name, optarg);
             } else {
-                error = true;
+                if (format == RUN_UNIMAP_FORMAT_MAP 
+                    || format == RUN_UNIMAP_FORMAT_ARRAY) {
+                    use_comments = true;
+                }
             }
             break;
         case '?':
-            error = true;
+            error = 1;
             break;
         case ':':
-            error = true;
+            error = 1;
             break;
         }
     }
@@ -444,7 +454,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (argc - optind < min_arg) {
-        fprintf(stderr, "%s: Incorrect argument count\n", argv[0]);
+        fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
         usage();
         return 0;
     }
