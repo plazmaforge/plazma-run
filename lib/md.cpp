@@ -3,6 +3,8 @@
 
 #include "common.h"
 #include "error.h"
+#include "memlib.h"
+
 #include "md.h"
 
 #if defined(LIB_MD_CAN_MD5)
@@ -142,11 +144,13 @@ void lib_md_free(lib_md_context_t *ctx) {
 
     #if defined(LIB_MD_C)
         if (ctx->hmac_ctx != NULL) {
-            lib_zeroize_and_free(ctx->hmac_ctx, 2 * ctx->md_info->block_size);
+            //lib_zeroize_and_free(ctx->hmac_ctx, 2 * ctx->md_info->block_size);
+            lib_free0(ctx->hmac_ctx, 2 * ctx->md_info->block_size);
         }
     #endif
 
-    lib_platform_zeroize(ctx, sizeof(lib_md_context_t));
+    //lib_platform_zeroize(ctx, sizeof(lib_md_context_t));
+    lib_memset0(ctx, sizeof(lib_md_context_t));
 }
 
 #define ALLOC(type)                                                        \
@@ -493,7 +497,8 @@ int lib_md_hmac_starts(lib_md_context_t *ctx, const unsigned char *key, size_t k
     }
 
 cleanup:
-    lib_platform_zeroize(sum, sizeof(sum));
+    //lib_platform_zeroize(sum, sizeof(sum));
+    lib_memset0(sum, sizeof(sum));
 
     return ret;
 }

@@ -14,6 +14,7 @@ fi
 
 # compile
 ############
+$CC $CFLAGS lib/memlib.cpp -o memlib.o
 $CC $CFLAGS lib/strlib.cpp -o strlib.o
 $CC $CFLAGS lib/wstrlib.cpp -o wstrlib.o
 $CC $CFLAGS lib/pathlib.cpp -o pathlib.o
@@ -107,11 +108,11 @@ $CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_
 
 $CC $LDFLAGS common.o debug.o iodef.o strlib.o socketlib.o nflib.o run_get.o -o run-get
 
-$CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o md5.o run_md5.o -o run-md5
-$CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha256.o run_sha224.o -o run-sha224
-$CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha256.o run_sha256.o -o run-sha256
-$CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha512.o run_sha384.o -o run-sha384
-$CC $LDFLAGS getopt.o common.o iolib.o run_mdlib.o sha512.o run_sha512.o -o run-sha512
+$CC $LDFLAGS getopt.o common.o memlib.o iolib.o run_mdlib.o md5.o run_md5.o -o run-md5
+$CC $LDFLAGS getopt.o common.o memlib.o iolib.o run_mdlib.o sha256.o run_sha224.o -o run-sha224
+$CC $LDFLAGS getopt.o common.o memlib.o iolib.o run_mdlib.o sha256.o run_sha256.o -o run-sha256
+$CC $LDFLAGS getopt.o common.o memlib.o iolib.o run_mdlib.o sha512.o run_sha384.o -o run-sha384
+$CC $LDFLAGS getopt.o common.o memlib.o iolib.o run_mdlib.o sha512.o run_sha512.o -o run-sha512
 
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_hex_byte.o -o run-hex-byte
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump

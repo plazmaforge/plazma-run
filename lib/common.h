@@ -7,9 +7,9 @@
 #include "alignment.h"
 #include "error.h"
 
-void lib_platform_zeroize(void* buf, size_t len);
+// void lib_platform_zeroize(void* buf, size_t len);
 
-void lib_zeroize_and_free(void* buf, size_t len);
+// void lib_zeroize_and_free(void* buf, size_t len);
 
 // Link Error: duplicate
 

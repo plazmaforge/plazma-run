@@ -8,6 +8,7 @@ call clean.bat
 
 rem compile
 
+%CC% %CFLAGS% lib/memlib.cpp -o memlib.o
 %CC% %CFLAGS% lib/strlib.cpp -o strlib.o
 %CC% %CFLAGS% lib/wstrlib.cpp -o wstrlib.o
 %CC% %CFLAGS% lib/pathlib.cpp -o pathlib.o
@@ -97,11 +98,11 @@ rem link
 
 %CC% %LDFLAGS% common.o debug.o iodef.o strlib.o socketlib.o nflib.o run_get.o -o run-get.exe %LIBS%
 
-%CC% %LDFLAGS% getopt.o common.o iolib.o run_mdlib.o md5.o run_md5.o -o run-md5.exe
-%CC% %LDFLAGS% getopt.o common.o iolib.o run_mdlib.o sha256.o run_sha224.o -o run-sha224.exe
-%CC% %LDFLAGS% getopt.o common.o iolib.o run_mdlib.o sha256.o run_sha256.o -o run-sha256.exe
-%CC% %LDFLAGS% getopt.o common.o iolib.o run_mdlib.o sha512.o run_sha384.o -o run-sha384.exe
-%CC% %LDFLAGS% getopt.o common.o iolib.o run_mdlib.o sha512.o run_sha512.o -o run-sha512.exe
+%CC% %LDFLAGS% getopt.o common.o memlib.o iolib.o run_mdlib.o md5.o run_md5.o -o run-md5.exe
+%CC% %LDFLAGS% getopt.o common.o memlib.o iolib.o run_mdlib.o sha256.o run_sha224.o -o run-sha224.exe
+%CC% %LDFLAGS% getopt.o common.o memlib.o iolib.o run_mdlib.o sha256.o run_sha256.o -o run-sha256.exe
+%CC% %LDFLAGS% getopt.o common.o memlib.o iolib.o run_mdlib.o sha512.o run_sha384.o -o run-sha384.exe
+%CC% %LDFLAGS% getopt.o common.o memlib.o iolib.o run_mdlib.o sha512.o run_sha512.o -o run-sha512.exe
 
 %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_hex_byte.o -o run-hex-byte.exe
 %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe

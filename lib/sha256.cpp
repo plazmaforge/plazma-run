@@ -7,6 +7,7 @@
 // 1
 
 #include "common.h"
+#include "memlib.h"
 #include "md.h"
 
 #if defined(LIB_SHA256_C) || defined(LIB_SHA224_C)
@@ -27,18 +28,19 @@
 #define SHA256_BLOCK_SIZE 64
 
 void lib_sha256_init(lib_sha256_context_t* ctx) {
-    memset(ctx, 0, sizeof(lib_sha256_context_t));
+    //memset(ctx, 0, sizeof(lib_sha256_context_t));
+    lib_memset0(ctx, sizeof(lib_sha256_context_t));
 }
 
 void lib_sha256_free(lib_sha256_context_t *ctx) {
-    if (ctx == NULL) {
-        return;
-    }
-
-    lib_platform_zeroize(ctx, sizeof(lib_sha256_context_t));
+    //if (ctx == NULL) {
+    //    return;
+    //}
+    //lib_platform_zeroize(ctx, sizeof(lib_sha256_context_t));
+    lib_memset0(ctx, sizeof(lib_sha256_context_t)); /* WHY memset0 */
 }
 
-void lib_sha256_clone(lib_sha256_context_t *dst, const lib_sha256_context_t* src) {
+void lib_sha256_clone(lib_sha256_context_t* dst, const lib_sha256_context_t* src) {
     *dst = *src;
 }
 
@@ -236,7 +238,8 @@ int lib_internal_sha256_process_c(lib_sha256_context_t* ctx,
     }
 
     /* Zeroise buffers and variables to clear sensitive data from memory. */
-    lib_platform_zeroize(&local, sizeof(local));
+    //lib_platform_zeroize(&local, sizeof(local));
+    lib_memset0(&local, sizeof(local));
 
     return 0;
 }

@@ -5,6 +5,8 @@
  */
 
 #include "common.h"
+#include "memlib.h"
+
 #include "md.h"
 
 #if defined(LIB_SHA512_C) || defined(LIB_SHA384_C)
@@ -38,18 +40,19 @@ static void sha512_put_uint64_be(uint64_t n, unsigned char *b, uint8_t i) {
 #endif /* LIB_SHA512_SMALLER */
 
 void lib_sha512_init(lib_sha512_context_t *ctx) {
-    memset(ctx, 0, sizeof(lib_sha512_context));
+    //memset(ctx, 0, sizeof(lib_sha512_context));
+    lib_memset0(ctx, sizeof(lib_sha512_context));
 }
 
 void lib_sha512_free(lib_sha512_context_t *ctx) {
-    if (ctx == NULL) {
-        return;
-    }
-
-    lib_platform_zeroize(ctx, sizeof(lib_sha512_context));
+    //if (ctx == NULL) {
+    //    return;
+    //}
+    //lib_platform_zeroize(ctx, sizeof(lib_sha512_context));
+    lib_memset0(ctx, sizeof(lib_sha512_context)); /* WHY memset0 */
 }
 
-void lib_sha512_clone(lib_sha512_context_t *dst, const lib_sha512_context_t *src) {
+void lib_sha512_clone(lib_sha512_context_t* dst, const lib_sha512_context_t* src) {
     *dst = *src;
 }
 
@@ -246,7 +249,8 @@ int lib_internal_sha512_process_c(lib_sha512_context_t *ctx, const unsigned char
     }
 
     /* Zeroise buffers and variables to clear sensitive data from memory. */
-    lib_platform_zeroize(&local, sizeof(local));
+    //lib_platform_zeroize(&local, sizeof(local));
+    lib_memset0(&local, sizeof(local));
 
     return 0;
 }
