@@ -4,6 +4,10 @@
 #include "fslib.h"
 #include "iodef.h"
 
+int lib_io_read_all_bytes2(const char* file_name, char** data, size_t* size);
+
+int lib_io_read_bytes2(const char* file_name, char** data, size_t* size);
+
 int lib_io_read_all_bytes(const char* file_name, char** data);
 
 int lib_io_read_bytes(const char* file_name, char** data, size_t size);

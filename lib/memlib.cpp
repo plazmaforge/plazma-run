@@ -3,7 +3,7 @@
 #include "memlib.h"
 
 void lib_memset0(void* data, size_t len) {
-    if (/*!data || */len == 0) {
+    if (!data || len == 0) {
         return;
     }
     memset(data, 0, len);

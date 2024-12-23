@@ -9,6 +9,29 @@
 #include "config.h"
 #include "iolib.h"
 
+#define LIB_IO_FSIZE_STAT 1
+#define LIB_IO_FSIZE_SEEK 2
+#define LIB_IO_FSIZE_PURE 3 
+
+#define LIB_IO_FSIZE_MODE LIB_IO_FSIZE_STAT
+
+#define LIB_IO_USE_RBUF   false
+#define LIB_IO_USE_WBUF   false
+#define LIB_IO_USE_BUF    false
+
+#define LIB_IO_RBUF_SIZE  4096
+#define LIB_IO_WBUF_SIZE  4096
+#define LIB_IO_BUF_SIZE   4096
+
+typedef struct lib_io_mode_t {
+  bool use_bin;    /* bin/txt                           */ 
+  bool use_buf;    /* bufferred                         */
+  bool use_fsize;  /* get file size (read only)         */
+  bool use_msize;  /* alloc mem by all size (read only) */
+  bool use_check;  /* full check read/write bytes       */
+  bool read_all;   /* read all data (read only)         */
+} lib_io_mode_t;
+
 /**
  * Allocate char array
  */
@@ -81,6 +104,33 @@ static long _file_size_seek(const char* file_name) {
   return _file_size_fseek(file);
 }
 
+static long _file_size(const char* file_name, FILE* file) {
+  long size = 0;
+  if (LIB_IO_FSIZE_MODE == LIB_IO_FSIZE_STAT) {
+    // stat
+    size = _file_size_stat(file_name);
+  } else if (LIB_IO_FSIZE_MODE == LIB_IO_FSIZE_SEEK) {
+    // seek
+    size = _file_size_fseek(file);
+  } else {
+    // default
+    size = _file_size_stat(file_name);
+  }
+
+  if (size < 0) {
+    #ifdef LIB_ERROR
+    fprintf(stderr, "ERROR: _file_size: file_name=%s\n", file_name);
+    #endif
+    return size;
+  }
+
+  #ifdef LIB_DEBUG
+  fprintf(stderr, "DEBUG: _file_size: file_name=%s, file_size=%lu\n", file_name, size);
+  #endif
+
+  return size;
+}
+
 static void _lib_io_file_data_init(lib_fs_file_data_t* file_data) {
   if (!file_data) {
     return;
@@ -104,11 +154,64 @@ static lib_fs_file_data_t** _lib_io_file_list_new(size_t size) {
 
 ////
 
-int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
+static int _init_mode(lib_io_mode_t* mode) {
+  if (!mode) {
+    return -1;
+  }
+  mode->use_bin    = true;
+  mode->use_buf    = LIB_IO_USE_BUF;
+  mode->use_fsize  = true;
+  mode->use_msize  = true;
+  mode->use_check  = false;
+  mode->read_all   = false;
+  return 0;
+}
+
+static FILE* _fopen(const char* file_name, const char* mode) {
+  FILE* file = fopen(file_name, mode);
+  if (!file) {
+    #ifdef LIB_ERROR
+    fprintf(stderr, "ERROR: _fopen: file_name=%s\n", file_name);
+    #endif     
+    return file;
+  }
+
+  #ifdef LIB_DEBUG
+  fprintf(stderr, "DEBUG: _fopen: file_name=%s\n", file_name);
+  #endif
+
+  return file;
+}
+
+static int	_fclose(FILE* file) {
+  int retval = fclose(file);
+  #ifdef LIB_DEBUG
+  fprintf(stderr, "DEBUG: _fclose\n");
+  #endif
+  return retval;
+}
+
+static int _lib_io_read(lib_io_mode_t* mode, const char* file_name, char** data, size_t size, size_t* out_size) {
 
   #ifdef LIB_DEBUG
   fprintf(stderr, ">> io_read_bytes: size=%lu\n", size);
   #endif
+
+  if (data) {
+    *data = NULL;
+  }
+
+  if (out_size) {
+    *out_size = 0;
+  }
+
+  if (size == 0 && !mode->read_all) {
+    // no data
+    #ifdef LIB_DEBUG
+    fprintf(stderr, ">> io_read_bytes: return: size=%lu\n", size);
+    #endif
+    return 0;
+  }
 
   if (!file_name || !data) {
     // error: args
@@ -119,45 +222,58 @@ int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
     if (!data) {
       fprintf(stderr, "ERROR: Invalid arguments: data\n");
     }    
-    #endif     
+    #endif
     return -1;
+  }
+
+  if (!mode->use_buf) {
+    // No buffer: Need file size
+    mode->use_fsize = true;
+    mode->use_msize = true;
   }
 
   // Read
-  FILE* file = fopen(file_name, "rb");
+  FILE* file = _fopen(file_name, "rb");
   if (!file) {
     // error: io
-    #ifdef LIB_ERROR
-    fprintf(stderr, "ERROR: fopen: file_name=%s\n", file_name);
-    #endif     
     return -1;
   }
 
-  size_t file_size = 0;
-  if ((file_size = _file_size_stat(file_name)) < 0) {
-  //if ((file_size = _file_size_fseek(file)) < 0) {  
-    // error: io
-    #ifdef LIB_ERROR
-    fprintf(stderr, "ERROR: file_size: file_name=%s\n", file_name);
-    #endif     
-    return -1;
+  if (mode->use_fsize) {
+    size_t file_size = 0;
+    if ((file_size = _file_size(file_name, file)) < 0) {
+      // error: io
+      _fclose(file);
+      return -1;
+    }
+
+    if (mode->read_all || size > file_size) {
+      size = file_size;
+    }
   }
 
-  if (size == 0 || size > file_size) {
-    size = file_size;
+  char* _data  = NULL;
+  size_t _size = 0;
+
+  if (!mode->use_buf) {
+
+    // Full read
+    _data = _data_new(size);
+    if (!_data) {
+      // error: mem
+      _fclose(file);
+      return -1;
+    }
+
+    _size = fread(_data, sizeof(char), size, file);
+
+  } else {
+
+    // Buffered read    
+    // error: not implemented yet
+    _fclose(file);
+    return -2;
   }
-
-  #ifdef LIB_DEBUG
-  fprintf(stderr, ">> io_read_bytes: open: file_size=%lu\n", file_size);
-  #endif
-
-  char* _data = _data_new(size);
-  if (!_data) {
-    // error: mem
-    return -1;
-  }
-
-  size_t _size = fread(_data, sizeof(char), size, file);
 
   #ifdef LIB_DEBUG
   fprintf(stderr, ">> io_read_bytes: read: size=%lu\n", _size);
@@ -165,22 +281,32 @@ int _lib_io_read_bytes(const char* file_name, char** data, size_t size) {
 
   _data[_size] = '\0'; /* NUL-terminated */
   *data = _data;
+  if (out_size) {
+      *out_size = _size;
+  }
 
-  fclose(file);  
-
-  #ifdef LIB_DEBUG
-  fprintf(stderr, ">> io_read_bytes: close\n");
-  #endif
-
+  _fclose(file);
   return _size;
 
 }
 
-int _lib_io_write_bytes(const char* file_name, char* data, size_t size) {
+static int _lib_io_write(lib_io_mode_t* mode, const char* file_name, char* data, size_t size, size_t* out_size) {
 
   #ifdef LIB_DEBUG
   fprintf(stderr, ">> io_write_bytes: size=%lu\n", size);
   #endif
+
+  if (out_size) {
+    *out_size = 0;
+  }
+
+  if (size == 0) {
+    // no data
+    #ifdef LIB_DEBUG
+    fprintf(stderr, ">> io_write_bytes: return: size=%lu\n", size);
+    #endif
+    return 0;
+  }
 
   if (!file_name || !data) {
     // error: args
@@ -195,64 +321,75 @@ int _lib_io_write_bytes(const char* file_name, char* data, size_t size) {
     return -1;
   }
 
-  if (size == 0) {
-    // no data
-    #ifdef LIB_DEBUG
-    fprintf(stderr, ">> io_write_bytes: return: size=%lu\n", size);
-    #endif
-    return 0;
-  }
-
   // Write
-  FILE* file = fopen(file_name, "wb+");
+  FILE* file = _fopen(file_name, "wb+");
   if (!file) {
     // error: io
-    #ifdef LIB_ERROR
-    fprintf(stderr, "ERROR: fopen: file_name=%s\n", file_name);
-    #endif     
     return -1;
   }
 
-  #ifdef LIB_DEBUG
-  fprintf(stderr, ">> io_write_bytes: open: input_size=%lu\n", size);
-  #endif
+  size_t _size = 0;
 
-  size_t _size = fwrite(data, sizeof(char), size, file);
-
+  if (!mode->use_buf) {
+    _size = fwrite(data, sizeof(char), size, file);
+  } else {
+    _fclose(file);
+    // error: not implemented yet
+    return -2;
+  }
+ 
   #ifdef LIB_DEBUG
   fprintf(stderr, ">> io_write_bytes: write: size=%lu\n", _size);
   #endif
 
-  fclose(file);
+  if (out_size) {
+    *out_size = _size;
+  }
 
-  #ifdef LIB_DEBUG
-  fprintf(stderr, ">> io_write_bytes: close\n");
-  #endif
-
+  _fclose(file);
   return _size;
 }
 
 ////
 
+int lib_io_read_all_bytes2(const char* file_name, char** data, size_t* size) {
+  lib_io_mode_t mode;
+  _init_mode(&mode);
+  mode.read_all = true; // for load all data 
+  return _lib_io_read(&mode, file_name, data, 0, size);
+}
+
+int lib_io_read_bytes2(const char* file_name, char** data, size_t* size) {
+  lib_io_mode_t mode;
+  _init_mode(&mode);
+  return _lib_io_read(&mode, file_name, data, (size ? *size : 0), size);
+}
+
+////
+
 int lib_io_read_all_bytes(const char* file_name, char** data) {
-  // (!): size = 0: for load all data 
-  return _lib_io_read_bytes(file_name, data, 0);
+  lib_io_mode_t mode;
+  _init_mode(&mode);
+  mode.read_all = true; // for load all data 
+  return _lib_io_read(&mode, file_name, data, 0, NULL);
 }
 
 int lib_io_read_bytes(const char* file_name, char** data, size_t size) {
-  // (!): size = 0: no load
-  if (size == 0) {
-    return 0;
-  }
-  return _lib_io_read_bytes(file_name, data, size);
+  lib_io_mode_t mode;
+  _init_mode(&mode);
+  return _lib_io_read(&mode, file_name, data, size, NULL);
 }
 
 int lib_io_write_all_bytes(const char* file_name, char* data, size_t size) {
-  return _lib_io_write_bytes(file_name, data, size);
+  lib_io_mode_t mode;
+  _init_mode(&mode);
+  return _lib_io_write(&mode, file_name, data, size, NULL);
 }
 
 int lib_io_write_bytes(const char* file_name, char* data, size_t size) {
-  return _lib_io_write_bytes(file_name, data, size);
+  lib_io_mode_t mode;
+  _init_mode(&mode);
+  return _lib_io_write(&mode, file_name, data, size, NULL);
 }
 
 ////
