@@ -119,4 +119,4 @@ rem link
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o utf8lib.o test_utf8.o -o test-utf8.exe
 %CC% %LDFLAGS% encdef.o test_enc.o -o test-enc.exe
 %CC% %LDFLAGS% strlib.o test_strlib.o -o test-strlib.exe
-%CC% %LDFLAGS% test_buf.o -o test-buf
+%CC% %LDFLAGS% test_buf.o -o test-buf.exe
