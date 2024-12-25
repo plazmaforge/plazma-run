@@ -173,13 +173,12 @@ int main(int argc, char* argv[]) {
     char* to_data    = NULL;
     size_t to_size   = 0;
 
-    int retval = lib_io_read_all_bytes(file_name, &from_data);
+    int retval = lib_io_read_all_bytes(file_name, &from_data, &from_size);
     if (retval < 0) {
         _file_error(retval, file_name);
         _data_free(from_data, to_data);
         return 1;
     }
-    from_size = retval;
 
     if (_is_empty_data(from_data, from_size)) {
         _data_error(1);

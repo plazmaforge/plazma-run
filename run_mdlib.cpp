@@ -152,13 +152,10 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
             file_name = argv[i];            
             errno = 0;
 
-            //size = 0;
-            //data = lib_io_read_bytes(file_name, size);
-
             ////
             data = NULL;
             size = 0;
-            int retval = lib_io_read_all_bytes(file_name, &data);
+            int retval = lib_io_read_all_bytes(file_name, &data, &size);
             if (retval < 0) {
                 // error
                 if (data) {
@@ -168,7 +165,6 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
                 _file_error(config, file_name);
                 continue;
             }
-            size = retval;
             ////
 
             // NO DATA

@@ -163,27 +163,20 @@ static int _lib_dmp_dump_file(const char* file_name, size_t size, lib_dmp_config
         return -1;
     }
 
-    char* data = NULL;
+    char* data       = NULL;
     size_t data_size = size;
-    int retval = 0;
-
-    //size_t isize = size;
-    //size_t osize = size;
+    int retval       = 0;
 
     if (size == 0) {
-        //retval = lib_io_read_all_bytes(file_name, &data);
-        retval = lib_io_read_all_bytes2(file_name, &data, &data_size);
+        retval = lib_io_read_all_bytes(file_name, &data, &data_size);
     } else {
-        //retval = lib_io_read_bytes(file_name, &data, size);
-        retval = lib_io_read_bytes2(file_name, &data, &data_size);
+        retval = lib_io_read_bytes(file_name, &data, size, &data_size);
     } 
   
     if (retval < 0) {
         return -1;
     }
 
-    //size = retval;
-    //retval = lib_dmp_dump_bytes(data, size, config);
     retval = lib_dmp_dump_bytes(data, data_size, config);
 
     free(data);

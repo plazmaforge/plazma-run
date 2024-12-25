@@ -286,7 +286,7 @@ static int _lib_io_read(lib_io_mode_t* mode, const char* file_name, char** data,
   }
 
   _fclose(file);
-  return _size;
+  return 0;
 
 }
 
@@ -347,26 +347,25 @@ static int _lib_io_write(lib_io_mode_t* mode, const char* file_name, char* data,
   }
 
   _fclose(file);
-  return _size;
+  return 0;
 }
 
 ////
 
-int lib_io_read_all_bytes2(const char* file_name, char** data, size_t* size) {
+int lib_io_read_all_bytes(const char* file_name, char** data, size_t* size) {
   lib_io_mode_t mode;
   _init_mode(&mode);
   mode.read_all = true; // for load all data 
   return _lib_io_read(&mode, file_name, data, 0, size);
 }
 
-int lib_io_read_bytes2(const char* file_name, char** data, size_t* size) {
+int lib_io_read_bytes(const char* file_name, char** data, size_t size, size_t* out_size) {
   lib_io_mode_t mode;
   _init_mode(&mode);
-  return _lib_io_read(&mode, file_name, data, (size ? *size : 0), size);
+  return _lib_io_read(&mode, file_name, data, size, out_size);
 }
 
-////
-
+/*
 int lib_io_read_all_bytes(const char* file_name, char** data) {
   lib_io_mode_t mode;
   _init_mode(&mode);
@@ -379,17 +378,20 @@ int lib_io_read_bytes(const char* file_name, char** data, size_t size) {
   _init_mode(&mode);
   return _lib_io_read(&mode, file_name, data, size, NULL);
 }
+*/
 
-int lib_io_write_all_bytes(const char* file_name, char* data, size_t size) {
+////
+
+int lib_io_write_all_bytes(const char* file_name, char* data, size_t size, size_t* out_size) {
   lib_io_mode_t mode;
   _init_mode(&mode);
-  return _lib_io_write(&mode, file_name, data, size, NULL);
+  return _lib_io_write(&mode, file_name, data, size, out_size);
 }
 
-int lib_io_write_bytes(const char* file_name, char* data, size_t size) {
+int lib_io_write_bytes(const char* file_name, char* data, size_t size, size_t* out_size) {
   lib_io_mode_t mode;
   _init_mode(&mode);
-  return _lib_io_write(&mode, file_name, data, size, NULL);
+  return _lib_io_write(&mode, file_name, data, size, out_size);
 }
 
 ////
@@ -438,14 +440,12 @@ int lib_io_read_cat_bytes(const char** file_names, size_t file_count, char** dat
 
     lib_fs_file_data_t** file_list = _lib_io_file_list_new(file_count);
     if (!file_list) {
-        //*size = 0;
         // error: mem
         return -1;
     }
 
     lib_fs_file_data_t* file_data = NULL;
     const char* file_name = NULL;
-    //size_t file_size = 0;
     size_t total_size = 0;
 
     for (int i = 0; i < file_count; i++) {
@@ -459,24 +459,27 @@ int lib_io_read_cat_bytes(const char** file_names, size_t file_count, char** dat
         file_data = _lib_io_file_data_new();
         if (!file_data) {
             lib_fs_file_data_list_free(file_list, file_count);
-            //*size = 0;
-            // TODO: ups may be continue
+            // error: mem
             return -1;
         }
 
-        char* input_data = NULL;
-        int retval = lib_io_read_all_bytes(file_name, &input_data);
+        char* data       = NULL;
+        size_t data_size = 0;
 
-        if (retval < 0 || !input_data) {
+        int retval = lib_io_read_all_bytes(file_name, &data, &data_size);
+        if (retval < 0 || !data) {
+            free(data);
+            data      = NULL;
+            data_size = 0;
+
             lib_fs_file_data_free(file_data);
             lib_fs_file_data_list_free(file_list, file_count);
-            //*size = 0;
             // TODO: ups may be continue
             return -1;
         }
 
-        file_data->data = input_data;
-        file_data->size = retval;
+        file_data->data = data;
+        file_data->size = data_size;
 
         file_list[i] = file_data;
         total_size += file_data->size;
@@ -486,7 +489,6 @@ int lib_io_read_cat_bytes(const char** file_names, size_t file_count, char** dat
     char* total_data = _data_new(total_size);
     if (!total_data) {
         lib_fs_file_data_list_free(file_list, file_count);
-        //*size = 0;
         return -1;
     }
 
@@ -510,7 +512,7 @@ int lib_io_read_cat_bytes(const char** file_names, size_t file_count, char** dat
 
     *data = total_data;
     *size = total_size;
-
+    
     return 0;
 
 }

@@ -647,11 +647,10 @@ void lib_ask_find(const char* file_name, const char* input, size_t input_size, l
 
     char* data = NULL;
     size_t data_size = 0;
-    int retval = lib_io_read_all_bytes(file_name, &data);
+    int retval = lib_io_read_all_bytes(file_name, &data, &data_size);
     if (retval < 0) {
         return; // -1;
     }
-    data_size = retval;
 
     if (!data) {
         return; // -1

@@ -479,30 +479,32 @@ int run_ssldump(const char* file_name) {
         return 1;
     }
 
-    size_t size = 0;
-    char* buf = NULL;
+    char* buf       = NULL;
+    size_t buf_size = 0;
 
-    //char* buf = lib_io_read_bytes(file_name, size);
     ////
-    int retval = lib_io_read_all_bytes(file_name, &buf);
+    int retval = lib_io_read_all_bytes(file_name, &buf, &buf_size);
     if (retval < 0) {
         // error
         fprintf(stderr, "%s: I/O Error\n", prog_name);
+        free(buf);
         return 1;
 
     }
-    size = retval;
     ////
 
-    if (size == 0 || !buf) {
+    if (buf_size == 0 || !buf) {
+        // error
         fprintf(stderr, "%s: No Data\n", prog_name);
+        free(buf);
         return 1;
     }
 
     size_t cur_pos = 0;
-    while (cur_pos <= size) {
-        if (read_record_header(buf, size, cur_pos) != 0) {
+    while (cur_pos <= buf_size) {
+        if (read_record_header(buf, buf_size, cur_pos) != 0) {
             fprintf(stderr, "%s: Read Error\n", prog_name);
+            free(buf);
             return 1;
         }
     }

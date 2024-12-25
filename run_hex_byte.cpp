@@ -20,19 +20,19 @@ int run_hex_byte(const char* file_name) {
         return 1;
     }
 
-    //size_t size = 0;
-    //char* data = lib_io_read_bytes(file_name, size);
-
     ////
-    char* data = NULL;
+    char* data  = NULL;
     size_t size = 0;
-    int retval = lib_io_read_all_bytes(file_name, &data);
+
+    int retval = lib_io_read_all_bytes(file_name, &data, &size);
     if (retval < 0) {
         // error
         return 1;
     }
-    size = retval;
     ////
+
+    //fprintf(stderr, "DEBUG: file_size=%lu\n", size);
+
 
     if (size == 0 || !data) {
         fprintf(stderr, "No input data\n");
@@ -43,7 +43,8 @@ int run_hex_byte(const char* file_name) {
     }
 
     if (size % 2 > 0) {
-        fprintf(stderr, "Invalid input data: file size [mod] 2 > 0\n");
+        fprintf(stderr, "Invalid input data: file_size=%lu, mod(file_size, 2)=%lu > 0\n", size, size % 2);
+        //fprintf(stderr, "Invalid input data: file size [mod] 2 > 0\n");
         //fprintf(stderr, "Invalid input data: file size [mod] 2 > 0. Ignore last byte.\n");
         free(data);
         return 1;
@@ -63,6 +64,10 @@ int run_hex_byte(const char* file_name) {
     while (i < size) {
         char b1 = data[i];
         char b2 = data[++i];
+
+        //printf("%c", b1);
+        //printf("%c", b2);
+
         i++;
         j++;
 

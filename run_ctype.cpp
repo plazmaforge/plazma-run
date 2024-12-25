@@ -16,6 +16,7 @@ int main() {
 
     printf("\n");
     printf("size_t      : %2lu bytes\n", sizeof(size_t));
+    printf("ssize_t     : %2lu bytes\n", sizeof(ssize_t));
     printf("time_t      : %2lu bytes\n", sizeof(time_t));
 
     return 0;
