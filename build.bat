@@ -80,6 +80,7 @@ rem compile
 %CC% %CFLAGS% test_utf8.cpp -o test_utf8.o
 %CC% %CFLAGS% test_enc.cpp -o test_enc.o
 %CC% %CFLAGS% test_strlib.cpp -o test_strlib.o
+%CC% %CFLAGS% test_buf.cpp -o test_buf.o
 
 rem link
 
@@ -118,3 +119,4 @@ rem link
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o utf8lib.o test_utf8.o -o test-utf8.exe
 %CC% %LDFLAGS% encdef.o test_enc.o -o test-enc.exe
 %CC% %LDFLAGS% strlib.o test_strlib.o -o test-strlib.exe
+%CC% %LDFLAGS% test_buf.o -o test-buf

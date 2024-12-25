@@ -90,6 +90,7 @@ $CC $CFLAGS test_locale.cpp -o test_locale.o
 $CC $CFLAGS test_utf8.cpp -o test_utf8.o
 $CC $CFLAGS test_enc.cpp -o test_enc.o
 $CC $CFLAGS test_strlib.cpp -o test_strlib.o
+$CC $CFLAGS test_buf.cpp -o test_buf.o
 
 # link
 ###########
@@ -128,3 +129,4 @@ $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o utf8lib.o test_utf8.o -o test-utf8
 $CC $LDFLAGS encdef.o test_enc.o -o test-enc
 $CC $LDFLAGS strlib.o test_strlib.o -o test-strlib
+$CC $LDFLAGS test_buf.o -o test-buf
