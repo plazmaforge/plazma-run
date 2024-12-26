@@ -69,6 +69,85 @@ int _fwrite_v3(FILE* file) {
     return 0;
 }
 
+////
+
+#ifdef _WIN32
+
+wchar_t* _utf8_to_wcs(const char* str) {
+    if (!str) {
+        return NULL;
+    }
+    size_t len = strlen(str);
+    int wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, NULL, 0);
+    wchar_t* wstr = malloc(sizeof(wchar_t) * wlen);
+    if (!wstr) {
+        return NULL;
+    }
+    MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
+    return wstr;
+}
+
+void _WriteConsoleW(const HANDLE handle, const wchar* str, size_t size, size_t* out_size) {
+    if (!buf) {
+        return;
+    }
+    WriteConsoleW(handle, str, size, out_size, NULL);
+}
+
+void _WriteConsole(const HANDLE handle, const char* str, size_t size, size_t* out_size) {
+    if (buf) {
+        return;
+    }
+    wchar_t* wstr = _utf8_to_wcs(str);
+    _WriteConsoleW(handle, wstr);
+}
+
+// void _WriteConsole(const DWORD handleId, const std::wstring &buffer) {
+//     const HANDLE handle = ::GetStdHandle(handleId);
+//     _WriteConsole(handle, buffer);
+// }
+
+// void _WriteConsole(const DWORD handleId, const std::string &buffer) {
+//     const HANDLE handle = ::GetStdHandle(handleId);
+//     _WriteConsole(handle, buffer);
+// }
+
+// void _WriteConsoleOutput(const std::wstring &buffer) {
+//     _WriteConsole(STD_OUTPUT_HANDLE, buffer);
+// }
+
+int _win_fputs(const char* str) {
+    if (!str) {
+        return;
+    }
+    size_t size = strlen(str);
+    size_t out_size;
+    _WriteConsole(STD_OUTPUT_HANDLE, str, size, &out_size)
+}
+
+#endif
+
+int _fwrite_v3w(FILE* file) {
+
+    #ifdef _WIN32
+    if (file != stdout) {
+        return;
+    }
+
+    // Combine lines into a single buffer
+    for (int i = 0; i < COUNT; i++) { 
+        _win_fputs("This is a line of text.\n");
+    } 
+
+    _win_fputs("The End: v3w\n");
+    #else
+    fputs("The End: v3w: Unsupported\n", file);
+    #endif
+    return 0;
+}
+
+////
+
 int _write_to_stream(int ver, FILE* file) {
     if (ver == 1) {
         return _fwrite_v1(file);
@@ -81,6 +160,9 @@ int _write_to_stream(int ver, FILE* file) {
     }
     if (ver == 3) {
         return _fwrite_v3(file);
+    }
+    if (ver == 33) {
+        return _fwrite_v3w(file);
     }
 
     // default
