@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include <wchar.h>
+#include <windows.h>
+#endif
+
 #define BUF_SIZE_MIN 4096
 #define BUF_SIZE_DEF 4096
 
@@ -79,7 +84,8 @@ wchar_t* _utf8_to_wcs(const char* str) {
     }
     size_t len = strlen(str);
     int wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, NULL, 0);
-    wchar_t* wstr = malloc(sizeof(wchar_t) * wlen);
+    //int wlen = len * 2;
+    wchar_t* wstr = (wchar_t*) malloc(sizeof(wchar_t) * wlen);
     if (!wstr) {
         return NULL;
     }
@@ -87,19 +93,22 @@ wchar_t* _utf8_to_wcs(const char* str) {
     return wstr;
 }
 
-void _WriteConsoleW(const HANDLE handle, const wchar* str, size_t size, size_t* out_size) {
-    if (!buf) {
+void _WriteConsoleW(const HANDLE handle, const wchar_t* str, size_t size, size_t* out_size) {
+    if (!str) {
         return;
     }
-    WriteConsoleW(handle, str, size, out_size, NULL);
+    DWORD dsize;
+    WriteConsoleW(handle, str, size, &dsize, NULL);
 }
 
 void _WriteConsole(const HANDLE handle, const char* str, size_t size, size_t* out_size) {
-    if (buf) {
+    if (!str) {
         return;
     }
     wchar_t* wstr = _utf8_to_wcs(str);
-    _WriteConsoleW(handle, wstr);
+    size_t wsize = wcslen(wstr);
+    size_t out_wsize;
+    _WriteConsoleW(handle, wstr, wsize, &out_wsize);
 }
 
 // void _WriteConsole(const DWORD handleId, const std::wstring &buffer) {
@@ -118,26 +127,39 @@ void _WriteConsole(const HANDLE handle, const char* str, size_t size, size_t* ou
 
 int _win_fputs(const char* str) {
     if (!str) {
-        return;
+        return 0;
     }
     size_t size = strlen(str);
     size_t out_size;
-    _WriteConsole(STD_OUTPUT_HANDLE, str, size, &out_size)
+    _WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), str, size, &out_size);
+    return 0;
 }
 
 #endif
 
 int _fwrite_v3w(FILE* file) {
 
-    #ifdef _WIN32
-    if (file != stdout) {
-        return;
+    // Set a larger buffer size
+    char buffer[BUF_SIZE];
+
+    int retval = setvbuf(file, buffer, _IOFBF, sizeof(buffer)); 
+    if (retval < 0) {
+        return retval;
     }
+
+    #ifdef _WIN32
+    //if (file != stdout) {
+    //    return 0;
+    //}
+
+    fprintf(stderr, "_fwrite_v3w: start\n");
 
     // Combine lines into a single buffer
     for (int i = 0; i < COUNT; i++) { 
         _win_fputs("This is a line of text.\n");
     } 
+
+    fprintf(stderr, "_fwrite_v3w: end\n");
 
     _win_fputs("The End: v3w\n");
     #else
