@@ -1,6 +1,7 @@
 #ifndef PLAZMA_LIB_STRLIB_H
 #define PLAZMA_LIB_STRLIB_H
 
+#include <stdbool.h>
 #include <string.h>
 
 /**
@@ -75,7 +76,7 @@ char* lib_strdup_uq(const char* src);
 
 bool lib_is_strn_qt_opts(const char* src, size_t size, char quote);
 
-bool lib_is_str_qt(const char* src, char quote);
+bool lib_is_str_qt_opts(const char* src, char quote);
 
 bool lib_is_strn_qt(const char* src, size_t size);
 

@@ -1,7 +1,7 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
+#include <stdlib.h> /* malloc, free             */
+#include <stdarg.h> /* va_start, va_arg, va_end */
+//#include <stdio.h>
+//#include <string.h>
 
 #include "strlib.h"
 
@@ -359,7 +359,7 @@ bool lib_is_strn_qt_opts(const char* src, size_t size, char quote) {
   return src[0] == quote && src[size - 1] == quote;
 }
 
-bool lib_is_str_qt(const char* src, char quote) {
+bool lib_is_str_qt_opts(const char* src, char quote) {
   if (!src) {
     return 0;
   }
