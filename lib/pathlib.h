@@ -1,6 +1,8 @@
 #ifndef PLAZMA_LIB_PATHLIB_H
 #define PLAZMA_LIB_PATHLIB_H
 
+#include <stdbool.h>
+
 /*
  Returns true if a char is cross-platform path separator: '/', '\'
 */

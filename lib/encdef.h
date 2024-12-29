@@ -1,6 +1,8 @@
 #ifndef PLAZMA_LIB_ENCDEF_H
 #define PLAZMA_LIB_ENCDEF_H
 
+#include <stdbool.h>
+
 #define LIB_ENC_ISO_TYPE 1
 #define LIB_ENC_DOS_TYPE 2
 #define LIB_ENC_WIN_TYPE 3

@@ -1,6 +1,8 @@
 #ifndef PLAZMA_LIB_WCLIB_H
 #define PLAZMA_LIB_WCLIB_H
 
+#include <stdbool.h>
+
 /*
  Returns true if a char is a wildcard char: '*', '?' , '[', ']'
 */

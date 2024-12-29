@@ -1,6 +1,8 @@
 #ifndef PLAZMA_LIB_IODEF_H
 #define PLAZMA_LIB_IODEF_H
 
+#include <stdbool.h>
+
 /**
  * Initialize I/O buffer
  */

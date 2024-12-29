@@ -8,13 +8,14 @@ call clean.bat
 
 rem compile
 
-%CC% %CFLAGS% lib/memlib.cpp -o memlib.o
-%CC% %CFLAGS% lib/strlib.cpp -o strlib.o
-%CC% %CFLAGS% lib/wstrlib.cpp -o wstrlib.o
-%CC% %CFLAGS% lib/pathlib.cpp -o pathlib.o
+%CC% %CFLAGS% lib/memlib.c -o memlib.o
+%CC% %CFLAGS% lib/strlib.c -o strlib.o
+%CC% %CFLAGS% lib/wstrlib.c -o wstrlib.o
+%CC% %CFLAGS% lib/pathlib.c -o pathlib.o
+%CC% %CFLAGS% lib/wclib.c -o wclib.o
+
 %CC% %CFLAGS% lib/fslib.cpp -o fslib.o
-%CC% %CFLAGS% lib/wclib.cpp -o wclib.o
-%CC% %CFLAGS% lib/iodef.cpp -o iodef.o
+%CC% %CFLAGS% lib/iodef.c -o iodef.o
 %CC% %CFLAGS% lib/iolib.cpp -o iolib.o
 %CC% %CFLAGS% lib/dmplib.cpp -o dmplib.o
 %CC% %CFLAGS% lib/fmtlib.cpp -o fmtlib.o
@@ -28,11 +29,12 @@ rem compile
 %CC% %CFLAGS% lib/syslocale_os.cpp -o syslocale_os.o
 %CC% %CFLAGS% lib/sysinfo.cpp -o sysinfo.o
 %CC% %CFLAGS% lib/syslib.cpp -o syslib.o
-%CC% %CFLAGS% lib/getopt.cpp -o getopt.o
-%CC% %CFLAGS% lib/utf8lib.cpp -o utf8lib.o
-%CC% %CFLAGS% lib/unimap.cpp -o unimap.o
-%CC% %CFLAGS% lib/encdef.cpp -o encdef.o
-%CC% %CFLAGS% lib/enclib.cpp -o enclib.o
+
+%CC% %CFLAGS% lib/getopt.c -o getopt.o
+%CC% %CFLAGS% lib/utf8lib.c -o utf8lib.o
+%CC% %CFLAGS% lib/unimap.c -o unimap.o
+%CC% %CFLAGS% lib/encdef.c -o encdef.o
+%CC% %CFLAGS% lib/enclib.c -o enclib.o
 
 %CC% %CFLAGS% lib/common.cpp -o common.o
 %CC% %CFLAGS% lib/debug.cpp -o debug.o
@@ -74,13 +76,13 @@ rem compile
 
 %CC% %CFLAGS% run_ctype.cpp -o run_ctype.o
 
-%CC% %CFLAGS% test_getopt.cpp -o test_getopt.o
+%CC% %CFLAGS% test_getopt.c -o test_getopt.o
 %CC% %CFLAGS% test_echo.cpp -o test_echo.o
 %CC% %CFLAGS% test_locale.cpp -o test_locale.o
 %CC% %CFLAGS% test_utf8.cpp -o test_utf8.o
-%CC% %CFLAGS% test_enc.cpp -o test_enc.o
-%CC% %CFLAGS% test_strlib.cpp -o test_strlib.o
-%CC% %CFLAGS% test_buf.cpp -o test_buf.o
+%CC% %CFLAGS% test_enc.c -o test_enc.o
+%CC% %CFLAGS% test_strlib.c -o test_strlib.o
+%CC% %CFLAGS% test_buf.c -o test_buf.o
 
 rem link
 

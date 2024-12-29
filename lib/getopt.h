@@ -5,7 +5,7 @@
 #define required_argument  1
 #define optional_argument  2
 
-struct option {
+typedef struct option {
 
 	/* name of long option */
 	const char *name;
@@ -24,7 +24,7 @@ struct option {
 
 	/* if flag not NULL, value to set *flag to; else return value */
 	int val;    
-};
+} option;
 
 extern char* optinput;
 //extern char* optname;
@@ -36,12 +36,8 @@ extern int opterr; // print option error flag (for all options)
 
 int getopt(int argc, char* const argv[], const char* optstr);
 
-int getopt_long(int argc, char* const argv[], const char* short_option, const struct option *long_option, int* long_ind);
+int getopt_long(int argc, char* const argv[], const char* short_option, const option *long_option, int* long_ind);
 
-int getopt_long_only(int argc, char* const argv[], const char* short_option, const struct option* long_option, int* long_ind);
-
-//const char* getopt_base_name(const char* name);
-
-//const char* getopt_prog_name(char* const argv[]);
+int getopt_long_only(int argc, char* const argv[], const char* short_option, const option* long_option, int* long_ind);
 
 #endif // PLAZMA_LIB_GETOPT_H

@@ -1,3 +1,4 @@
+//#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -19,8 +20,8 @@ const char* find_short_option(const char* short_option, char c) {
     return strchr(short_option, c);
 }
 
-const option* find_long_option(const option* long_option, int* long_index, const char* name, int len)  {
-    const option* p = long_option;
+const struct option* find_long_option(const struct option* long_option, int* long_index, const char* name, int len)  {
+    const struct option* p = long_option;
     int i = *long_index;
 
     // search option in long_option list
@@ -63,7 +64,7 @@ void getopt_init() {
     optinput = NULL;
 
     optind = 1;
-    optopt = NULL;
+    optopt = 0; //NULL;
     optarg = NULL;
     opterr = 1; // by default: print option error flag = true (for all options)
 
@@ -240,7 +241,7 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
         } else {
 
             int index = 0;
-            const option* p = find_long_option(long_option, &index, name, len);
+            const struct option* p = find_long_option(long_option, &index, name, len);
 
             if (p == NULL) {
                 if (print_error) {
@@ -370,30 +371,10 @@ int getopt(int argc, char* const argv[], const char* short_option) {
    return getopt_internal(argc, argv, short_option, NULL, NULL, 0);
 }
 
-int getopt_long(int argc, char* const argv[], const char* short_option, const struct option* long_option, int* long_ind) {
+int getopt_long(int argc, char* const argv[], const char* short_option, const option* long_option, int* long_ind) {
     return getopt_internal(argc, argv, short_option, long_option, long_ind, 0);
 }
 
 int getopt_long_only(int argc, char* const argv[], const char* short_option, const struct option* long_option, int* long_ind) {
     return getopt_internal(argc, argv, short_option, long_option, long_ind, 1);
 }
-
-// const char* getopt_base_name(const char* name) {
-//     if (!name) {
-//         return NULL;
-//     }
-//     const char* base  = strrchr(name, '/');   /* NIX */
-//     const char* base2 = strrchr(name, '\\');  /* WIN */
-//     if (base2 > base) {
-//         base = base2;
-//     }
-//     base = base ? (base + 1): name;
-//     return base;
-// }
-
-// const char* getopt_prog_name(char* const argv[]) {
-//     if (!argv) {
-//         return NULL;
-//     }
-//     return getopt_base_name(argv[0]);
-// }

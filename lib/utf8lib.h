@@ -1,6 +1,8 @@
 #ifndef PLAZMA_LIB_UTF8LIB_H
 #define PLAZMA_LIB_UTF8LIB_H
 
+#include <stdbool.h>
+
 /*
  * Return lenght of UTF-8 char by codepoint or error (0).
  */
