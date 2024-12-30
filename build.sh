@@ -78,7 +78,7 @@ $CC $CFLAGS run_sha256.cpp -o run_sha256.o
 $CC $CFLAGS run_sha384.cpp -o run_sha384.o
 $CC $CFLAGS run_sha512.cpp -o run_sha512.o
 
-$CC $CFLAGS run_hex_byte.cpp -o run_hex_byte.o
+$CC $CFLAGS run_hex2dat.cpp -o run_hex2dat.o
 $CC $CFLAGS run_ssldump.cpp -o run_ssldump.o
 
 $CC $CFLAGS run_unimap.cpp -o run_unimap.o
@@ -117,7 +117,7 @@ $CC $LDFLAGS getopt.o common.o memlib.o iolib.o run_mdlib.o sha256.o run_sha256.
 $CC $LDFLAGS getopt.o common.o memlib.o iolib.o run_mdlib.o sha512.o run_sha384.o -o run-sha384
 $CC $LDFLAGS getopt.o common.o memlib.o iolib.o run_mdlib.o sha512.o run_sha512.o -o run-sha512
 
-$CC $LDFLAGS getopt.o iodef.o iolib.o run_hex_byte.o -o run-hex-byte
+$CC $LDFLAGS getopt.o iodef.o iolib.o run_hex2dat.o -o run-hex2dat
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump
 
 $CC $LDFLAGS getopt.o iolib.o run_unimap.o -o run-unimap

@@ -6,17 +6,17 @@
 #include "arglib.h"
 #include "iolib.h"
 
-int check_byte(char b) {
+static int _check_byte(char b) {
     return ((b >= '0' && b <= '9') 
       || (b >= 'a' && b <= 'f')
       || (b >= 'A' && b <= 'F')
       );
 }
 
-int run_hex_byte(const char* file_name) {
+int run_hex2dat(const char* file_name) {
     
     if (!file_name) {
-        fprintf(stderr, "File name is empty\n");
+        fprintf(stderr, "%s: File name is empty\n", prog_name);
         return 1;
     }
 
@@ -26,24 +26,22 @@ int run_hex_byte(const char* file_name) {
 
     int retval = lib_io_read_all_bytes(file_name, &data, &size);
     if (retval < 0) {
-        // error
+        fprintf(stderr, "%s: I/O error\n", prog_name);
+        free(data);
         return 1;
     }
     ////
 
     //fprintf(stderr, "DEBUG: file_size=%lu\n", size);
 
-
     if (size == 0 || !data) {
-        fprintf(stderr, "No input data\n");
-        if (data) {
-            free(data);
-        }        
+        fprintf(stderr, "%s: No input data\n", prog_name);
+        free(data);
         return 1;
     }
 
     if (size % 2 > 0) {
-        fprintf(stderr, "Invalid input data: file_size=%lu, mod(file_size, 2)=%lu > 0\n", size, size % 2);
+        fprintf(stderr, "%s: Invalid input data: file_size=%lu, mod(file_size, 2)=%lu > 0\n", prog_name, size, size % 2);
         //fprintf(stderr, "Invalid input data: file size [mod] 2 > 0\n");
         //fprintf(stderr, "Invalid input data: file size [mod] 2 > 0. Ignore last byte.\n");
         free(data);
@@ -71,7 +69,7 @@ int run_hex_byte(const char* file_name) {
         i++;
         j++;
 
-        if (!check_byte(b1) || !check_byte(b2)) {
+        if (!_check_byte(b1) || !_check_byte(b2)) {
            fprintf(stderr, "%s: Invalid byte data\n", prog_name);
            //fprintf(stderr, "Invalid byte data. Ignore following data\n");
            free(data);
@@ -95,7 +93,7 @@ int run_hex_byte(const char* file_name) {
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-hex-byte file\n");
+    fprintf(stderr, "Usage: run-hex2dat file\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -111,6 +109,6 @@ int main(int argc, char* argv[]) {
     
     //lib_io_buf_init();
 
-    return run_hex_byte(file_name);
+    return run_hex2dat(file_name);
 
 }
