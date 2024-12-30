@@ -17,8 +17,8 @@ static int has_mmx() {
 }
 
 // legacy
-static const char* lib_cpu_get_cpu_arch_name_by_si_1(SYSTEM_INFO& info) {
-   switch (info.wProcessorArchitecture) {
+static const char* lib_cpu_get_cpu_arch_name_by_si_1(SYSTEM_INFO* info) {
+   switch (info->wProcessorArchitecture) {
     #ifdef PROCESSOR_ARCHITECTURE_IA64
     case PROCESSOR_ARCHITECTURE_IA64: return "x86_64";
     #endif
@@ -26,7 +26,7 @@ static const char* lib_cpu_get_cpu_arch_name_by_si_1(SYSTEM_INFO& info) {
     case PROCESSOR_ARCHITECTURE_AMD64: return "x86_64";
     #endif
     case PROCESSOR_ARCHITECTURE_INTEL:
-        switch (info.wProcessorLevel) {
+        switch (info->wProcessorLevel) {
          case 6: 
          case 5: 
          case 4:
@@ -38,7 +38,7 @@ static const char* lib_cpu_get_cpu_arch_name_by_si_1(SYSTEM_INFO& info) {
 }
 
 // legacy (?)
-const char* lib_cpu_get_cpu_isalist_by_si(SYSTEM_INFO& info) {
+const char* lib_cpu_get_cpu_isalist_by_si(SYSTEM_INFO* info) {
    switch (info.wProcessorArchitecture) {
     #ifdef PROCESSOR_ARCHITECTURE_IA64
     case PROCESSOR_ARCHITECTURE_IA64: return "ia64";
@@ -47,7 +47,7 @@ const char* lib_cpu_get_cpu_isalist_by_si(SYSTEM_INFO& info) {
     case PROCESSOR_ARCHITECTURE_AMD64: return "x86_64"; //"amd64";
     #endif
     case PROCESSOR_ARCHITECTURE_INTEL:
-        switch (info.wProcessorLevel) {
+        switch (info->wProcessorLevel) {
         case 6: return has_mmx()
             ? "pentium_pro+mmx pentium_pro pentium+mmx pentium i486 i386 i86"
             : "pentium_pro pentium i486 i386 i86";
@@ -62,15 +62,15 @@ const char* lib_cpu_get_cpu_isalist_by_si(SYSTEM_INFO& info) {
     return lib_cpu_get_cpu_arch_name_by_si(info);
 }
 
-lib_arch_t lib_cpu_get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
+lib_arch_t lib_cpu_get_cpu_arch_type_by_si(SYSTEM_INFO* info) {
 
-    switch (info.wProcessorArchitecture) {
+    switch (info->wProcessorArchitecture) {
     case PROCESSOR_ARCHITECTURE_IA64:
         return LIB_ARCH_ITANIUM;
     case PROCESSOR_ARCHITECTURE_AMD64:
         return LIB_ARCH_X86_64;
     case PROCESSOR_ARCHITECTURE_INTEL:
-        switch (info.wProcessorLevel) {
+        switch (info->wProcessorLevel) {
          case 6: 
          case 5: 
          case 4:
@@ -100,17 +100,17 @@ lib_arch_t lib_cpu_get_cpu_arch_type_by_si(SYSTEM_INFO& info) {
     }
 }
 
-const char* lib_cpu_get_cpu_arch_name_by_si_2(SYSTEM_INFO& info) {
+const char* lib_cpu_get_cpu_arch_name_by_si_2(SYSTEM_INFO* info) {
     lib_arch_t arch = lib_cpu_get_cpu_arch_type_by_si(info);
     return lib_cpu_get_arch_name(arch);
 }
 
-const char* lib_cpu_get_cpu_arch_name_by_si(SYSTEM_INFO& info) {
+const char* lib_cpu_get_cpu_arch_name_by_si(SYSTEM_INFO* info) {
     return lib_cpu_get_cpu_arch_name_by_si_2(info);
 }
 
-int lib_cpu_get_cpu_count_by_si(SYSTEM_INFO& info) {
-   int count = info.dwNumberOfProcessors;
+int lib_cpu_get_cpu_count_by_si(SYSTEM_INFO* info) {
+   int count = info->dwNumberOfProcessors;
 
    DWORD_PTR process_cpus;
    DWORD_PTR system_cpus;
@@ -133,31 +133,29 @@ int lib_cpu_get_cpu_count_by_si(SYSTEM_INFO& info) {
 
 ////
 
-void load_system_info(SYSTEM_INFO& info) {
-    //GetSystemInfo(&info);
-
-    ZeroMemory(&info, sizeof(SYSTEM_INFO));
-    GetNativeSystemInfo(&info);
+void load_system_info(SYSTEM_INFO* info) {
+    ZeroMemory(info, sizeof(SYSTEM_INFO));
+    GetNativeSystemInfo(info);
 }
 
 ////
 
 lib_arch_t lib_cpu_get_cpu_arch_type() {
     SYSTEM_INFO info;
-    load_system_info(info);
-    return lib_cpu_get_cpu_arch_type_by_si(info);
+    load_system_info(&info);
+    return lib_cpu_get_cpu_arch_type_by_si(&info);
 }
 
 const char* lib_cpu_get_cpu_issalist() {
     SYSTEM_INFO info;
-    load_system_info(info);
-    return lib_cpu_get_cpu_isalist_by_si(info);
+    load_system_info(&info);
+    return lib_cpu_get_cpu_isalist_by_si(&info);
 }
 
 int lib_cpu_get_cpu_count() {
     SYSTEM_INFO info;
-    load_system_info(info);
-    return lib_cpu_get_cpu_count_by_si(info);
+    load_system_info(&info);
+    return lib_cpu_get_cpu_count_by_si(&info);
 }
 
 #endif

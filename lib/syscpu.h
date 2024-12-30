@@ -204,15 +204,15 @@ const char* lib_cpu_get_cpu_arch_data_model(const char* arch_name);
 
 #if defined _WIN32
 
-const char* lib_cpu_get_cpu_isalist_by_si(SYSTEM_INFO& info);
+const char* lib_cpu_get_cpu_isalist_by_si(SYSTEM_INFO* info);
 
-lib_arch_t lib_cpu_get_cpu_arch_type_by_si(SYSTEM_INFO& info);
+lib_arch_t lib_cpu_get_cpu_arch_type_by_si(SYSTEM_INFO* info);
 
-const char* lib_cpu_get_cpu_arch_name_by_si_2(SYSTEM_INFO& info);
+const char* lib_cpu_get_cpu_arch_name_by_si_2(SYSTEM_INFO* info);
 
-const char* lib_cpu_get_cpu_arch_name_by_si(SYSTEM_INFO& info);
+const char* lib_cpu_get_cpu_arch_name_by_si(SYSTEM_INFO* info);
 
-int lib_cpu_get_cpu_count_by_si(SYSTEM_INFO& info);
+int lib_cpu_get_cpu_count_by_si(SYSTEM_INFO* info);
 
 #endif
 
