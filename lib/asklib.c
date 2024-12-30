@@ -25,7 +25,7 @@ static int lib_ask_get_width(int value) {
     return (count > 4) ? 0 : count;
 }
 
-static void lib_ask_calc_width_index(const lib_ask_positions_t* positions, int& index_width) {
+static void lib_ask_calc_width_index(const lib_ask_positions_t* positions, int* index_width) {
     if (positions == NULL) {
         return;
     }
@@ -37,10 +37,10 @@ static void lib_ask_calc_width_index(const lib_ask_positions_t* positions, int& 
         }
         curr = curr->next;
     }
-    index_width = lib_ask_get_width(max_index);
+    *index_width = lib_ask_get_width(max_index);
 }
 
-static void lib_ask_calc_width_cell(const lib_ask_positions_t* positions, int& row_width, int& col_width) {
+static void lib_ask_calc_width_cell(const lib_ask_positions_t* positions, int* row_width, int* col_width) {
     if (positions == NULL) {
         return;
     }
@@ -56,11 +56,11 @@ static void lib_ask_calc_width_cell(const lib_ask_positions_t* positions, int& r
         }
         curr = curr->next;
     }
-    row_width = lib_ask_get_width(max_row);
-    col_width = lib_ask_get_width(max_col);
-    if (row_width == 0 || col_width == 0) {
-      row_width = 0;
-      col_width = 0;
+    *row_width = lib_ask_get_width(max_row);
+    *col_width = lib_ask_get_width(max_col);
+    if (*row_width == 0 || *col_width == 0) {
+      *row_width = 0;
+      *col_width = 0;
     }
 }
 
@@ -525,7 +525,7 @@ void lib_ask_print_txt(const lib_ask_result_t* result, const char* data, size_t 
     } else {
         int row_width = 0; 
         int col_width = 0;
-        lib_ask_calc_width_cell(positions, row_width, col_width);
+        lib_ask_calc_width_cell(positions, &row_width, &col_width);
         width = row_width + col_width + 5;
 
         sprintf(format, "[_%id: _%id] ", row_width, col_width);
@@ -612,7 +612,7 @@ void lib_ask_print_bin(const lib_ask_result_t* result, const char* data, size_t 
         strcpy(format, "[%d] ");
     } else {
         int index_width = 0; 
-        lib_ask_calc_width_index(positions, index_width);
+        lib_ask_calc_width_index(positions, &index_width);
         width = index_width + 3;
         sprintf(format, "[_%id] ", index_width);
         lib_replace_n(format, sizeof(format) / sizeof(char), '_', '%');
