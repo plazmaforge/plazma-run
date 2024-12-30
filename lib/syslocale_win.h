@@ -221,7 +221,7 @@ static lib_locale_t* loadLocale(LCID lcid) {
        }
     }
 
-    locale->name = lib_sys_get_locale_name(language, country, le);
+    locale->name = lib_sys_build_locale_name(language, country, le);
  
     return locale;
 }

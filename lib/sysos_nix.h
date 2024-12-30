@@ -9,7 +9,7 @@
 #include <unistd.h>         /* CPU - sysconf(_SC_NPROCESSORS_ONLN) [NonMacOS?] */
 #include "sysos.h"
 
-void lib_sys_load_posix_common_info_opts(lib_os_info_t* os_info, /*struct*/ utsname* name) {
+void lib_sys_load_posix_common_info_opts(lib_os_info_t* os_info, struct utsname* name) {
 
    // CPU Info
    os_info->os_arch = strdup(lib_cpu_get_cpu_arch_name_by_machine(name->machine));
@@ -23,7 +23,7 @@ void lib_sys_load_posix_common_info_opts(lib_os_info_t* os_info, /*struct*/ utsn
 }
 
 void lib_sys_load_posix_common_info(lib_os_info_t* os_info) {
-   /*struct*/ utsname name;
+   struct utsname name;
    uname(&name);
    lib_sys_load_posix_common_info_opts(os_info, &name);
 }

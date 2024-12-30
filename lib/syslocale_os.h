@@ -1,6 +1,7 @@
 #ifndef PLAZMA_LIB_SYSLOCALE_OS_H
 #define PLAZMA_LIB_SYSLOCALE_OS_H
 
+#include <stdbool.h>
 #include "syslocale.h"
 
 static char* _locale;

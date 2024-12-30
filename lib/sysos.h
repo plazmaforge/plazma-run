@@ -11,7 +11,7 @@
   *
   */
 
-struct lib_os_info_t {
+typedef struct lib_os_info_t {
 
     // OS Version Info
     char* os_name;
@@ -39,13 +39,13 @@ struct lib_os_info_t {
     char* file_separator;
     char* line_separator;
 
-};
+} lib_os_info_t;
 
 
 /**
  * Returns OS Arch Size by OS Arch Name
  */
-int lib_sys_get_os_arch_size(const char* arch_name);
+//int lib_sys_get_os_arch_size(const char* arch_name);
 
 /**
  * Returns OS Arch Data Model by OS Arch 

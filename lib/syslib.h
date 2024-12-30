@@ -1,5 +1,5 @@
-#ifndef PLAZMA_LIB_SYSLIB_OS_H
-#define PLAZMA_LIB_SYSLIB_OS_H
+#ifndef PLAZMA_LIB_SYSLIB_H
+#define PLAZMA_LIB_SYSLIB_H
 
 void lib_sys_locale_init();
 

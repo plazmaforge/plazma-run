@@ -13,7 +13,7 @@
 //#define LC_MESSAGES 7
 //#endif
 
-struct lib_locale_t {
+typedef struct lib_locale_t {
     char* name;
 
     char* language;
@@ -21,7 +21,7 @@ struct lib_locale_t {
     char* country;
     char* variant;
     char* encoding;
-};
+} lib_locale_t;
 
 /*
  * Sets default LC locale
@@ -72,7 +72,7 @@ lib_locale_t* lib_sys_load_locale(int cat);
  * Returns a locale name by language, country, encoding in format: <language>_<COUNTRY>.<encoding>
  * [allocate]
  */
-char* lib_sys_get_locale_name(const char* language, const char* country, const char* encoding);
+char* lib_sys_build_locale_name(const char* language, const char* country, const char* encoding);
 
 /*
  * Print a locale

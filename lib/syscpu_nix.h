@@ -18,7 +18,7 @@
 #include "syscpu.h"
 
 lib_arch_t lib_cpu_get_cpu_arch_type() {
-    /*struct*/ utsname name;
+    struct utsname name;
     uname(&name);
     return lib_cpu_get_cpu_arch_type_by_machine(name.machine);
 }
@@ -30,7 +30,7 @@ const char* lib_cpu_get_cpu_issalist() {
    sysinfo(SI_ISALIST, list, sizeof(list));
    return strdup(list); // [alocate]
    #else
-   /*struct*/ utsname name;
+   struct utsname name;
    uname(&name);
    return lib_cpu_get_cpu_issalist_by_machine(name.machine);
    #endif    

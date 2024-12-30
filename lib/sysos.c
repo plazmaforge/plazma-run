@@ -12,9 +12,9 @@
 
 static lib_os_info_t* os_info = NULL;
 
-int lib_sys_get_os_arch_size(const char* arch_name) {
-    return lib_cpu_get_cpu_arch_size(arch_name);
-}
+//int lib_sys_get_os_arch_size(const char* arch_name) {
+//    return lib_cpu_get_cpu_arch_size(arch_name);
+//}
 
 const char* lib_sys_get_os_arch_data_model(const char* arch_name) {
     return lib_cpu_get_cpu_arch_data_model(arch_name);

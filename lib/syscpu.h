@@ -2,7 +2,6 @@
 #define PLAZMA_LIB_SYSCPU_H
 
 #if defined _WIN32
-//#include <io.h>
 #include <windows.h>
 #endif
 
@@ -96,11 +95,13 @@ typedef enum {
     LIB_ARCH_BIG_ENDIAN,
 } lib_arch_endian_t;
 
-static const struct lib_arch_data_t {
+typedef struct lib_arch_data_t {
     const char *name;
     unsigned int size;
     lib_arch_endian_t endian;
-} arch_data[] = {
+} lib_arch_data_t;
+
+static const lib_arch_data_t arch_data[] = {
     { "none",          0, LIB_ARCH_LITTLE_ENDIAN },
 
     { "alpha",        64, LIB_ARCH_BIG_ENDIAN },

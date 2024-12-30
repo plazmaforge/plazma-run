@@ -22,13 +22,14 @@ rem compile
 %CC% %CFLAGS% lib/socketlib.cpp -o socketlib.o
 %CC% %CFLAGS% lib/nflib.cpp -o nflib.o
 %CC% %CFLAGS% lib/asklib.cpp -o asklib.o
-%CC% %CFLAGS% lib/syscpu.cpp -o syscpu.o
-%CC% %CFLAGS% lib/sysos.cpp -o sysos.o
-%CC% %CFLAGS% lib/sysuser.cpp -o sysuser.o
-%CC% %CFLAGS% lib/syslocale.cpp -o syslocale.o
-%CC% %CFLAGS% lib/syslocale_os.cpp -o syslocale_os.o
-%CC% %CFLAGS% lib/sysinfo.cpp -o sysinfo.o
-%CC% %CFLAGS% lib/syslib.cpp -o syslib.o
+
+%CC% %CFLAGS% lib/syscpu.c -o syscpu.o
+%CC% %CFLAGS% lib/sysos.c -o sysos.o
+%CC% %CFLAGS% lib/sysuser.c -o sysuser.o
+%CC% %CFLAGS% lib/syslocale.c -o syslocale.o
+%CC% %CFLAGS% lib/syslocale_os.c -o syslocale_os.o
+%CC% %CFLAGS% lib/sysinfo.c -o sysinfo.o
+%CC% %CFLAGS% lib/syslib.c -o syslib.o
 
 %CC% %CFLAGS% lib/getopt.c -o getopt.o
 %CC% %CFLAGS% lib/utf8lib.c -o utf8lib.o

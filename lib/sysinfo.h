@@ -1,7 +1,7 @@
-#ifndef PLAZMA_LIB_SYSINFO_OS_H
-#define PLAZMA_LIB_SYSINFO_OS_H
+#ifndef PLAZMA_LIB_SYSINFO_H
+#define PLAZMA_LIB_SYSINFO_H
 
-struct lib_sys_info_t {
+typedef struct lib_sys_info_t {
 
     // OS Info
     const char* os_name;
@@ -60,7 +60,7 @@ struct lib_sys_info_t {
     const char* stderr_encoding;
     const char* unicode_encoding;   // The default endianness of unicode i.e. UnicodeBig or UnicodeLittle
 
-};
+} lib_sys_info_t;
 
 const lib_sys_info_t* lib_sys_get_sys_info();
 

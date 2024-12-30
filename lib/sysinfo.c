@@ -297,7 +297,8 @@ const char* lib_sys_get_os_arch() {
 
 int lib_sys_get_os_arch_size() {
     const lib_os_info_t* os_info = lib_sys_get_os_info();
-    return lib_sys_get_os_arch_size(os_info->os_arch);
+    //return lib_sys_get_os_arch_size(os_info->os_arch);
+    return lib_cpu_get_cpu_arch_size(os_info->os_arch);
 }
 
 const char* lib_sys_get_cpu_isalist() {

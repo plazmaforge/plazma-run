@@ -135,7 +135,7 @@ lib_locale_t* lib_sys_parse_locale(const char* locale) {
 }
 
 // [allocate]
-char* lib_sys_get_locale_name(const char* language, const char* country, const char* encoding) {
+char* lib_sys_build_locale_name(const char* language, const char* country, const char* encoding) {
   if (!language && !country && !encoding) {
      return NULL;
   }
