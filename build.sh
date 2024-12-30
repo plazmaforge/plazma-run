@@ -96,8 +96,8 @@ $CC $CFLAGS test_buf.c -o test_buf.o
 
 # link
 ###########
+$CC $LDFLAGS getopt.o strlib.o syslocale.o syslocale_os.o syslib.o run_echo.o -o run-echo
 $CC $LDFLAGS getopt.o iodef.o iolib.o dmplib.o run_dump.o -o run-dump
-$CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_echo.o -o run-echo
 $CC $LDFLAGS iodef.o iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_cat.o -o run-cat
 $CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o syscpu.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_sysinfo.o -o run-sysinfo
 $CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_find.o -o run-find
