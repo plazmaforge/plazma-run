@@ -78,9 +78,9 @@ rem compile
 %CC% %CFLAGS% run_ctype.cpp -o run_ctype.o
 
 %CC% %CFLAGS% test_getopt.c -o test_getopt.o
-%CC% %CFLAGS% test_echo.cpp -o test_echo.o
-%CC% %CFLAGS% test_locale.cpp -o test_locale.o
-%CC% %CFLAGS% test_utf8.cpp -o test_utf8.o
+%CC% %CFLAGS% test_echo.c -o test_echo.o
+%CC% %CFLAGS% test_locale.c -o test_locale.o
+%CC% %CFLAGS% test_utf8.c -o test_utf8.o
 %CC% %CFLAGS% test_enc.c -o test_enc.o
 %CC% %CFLAGS% test_strlib.c -o test_strlib.o
 %CC% %CFLAGS% test_buf.c -o test_buf.o
