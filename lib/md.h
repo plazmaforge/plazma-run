@@ -91,7 +91,7 @@ typedef enum {
  * Message digest information.
  * Allows message digest functions to be called in a generic way.
  */
-struct lib_md_info_t {
+typedef struct lib_md_info_t {
 
     /** Digest identifier */
     lib_md_type_t type;
@@ -101,7 +101,7 @@ struct lib_md_info_t {
 
     /** Block length of the digest function in bytes */
     unsigned char block_size;
-};
+} lib_md_info_t;
 
 
 typedef struct lib_md_context_t {

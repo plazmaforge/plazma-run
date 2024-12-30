@@ -18,8 +18,7 @@ typedef struct lib_sha512_context_t {
 #if defined(LIB_SHA384_C)
     int is384;                  /*!< Determines which function to use:                                                      0: Use SHA-512, or 1: Use SHA-384. */
 #endif
-}
-lib_sha512_context;
+} lib_sha512_context_t;
 
 void lib_sha512_init(lib_sha512_context_t *ctx);
 

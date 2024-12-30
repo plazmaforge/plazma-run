@@ -43,13 +43,13 @@ $CC $CFLAGS lib/unimap.c -o unimap.o
 $CC $CFLAGS lib/encdef.c -o encdef.o
 $CC $CFLAGS lib/enclib.c -o enclib.o
 
-$CC $CFLAGS lib/common.cpp -o common.o
-$CC $CFLAGS lib/debug.cpp -o debug.o
+$CC $CFLAGS lib/common.c -o common.o
+$CC $CFLAGS lib/debug.c -o debug.o
 
-$CC $CFLAGS lib/md.cpp -o md.o
-$CC $CFLAGS lib/md5.cpp -o md5.o
-$CC $CFLAGS lib/sha256.cpp -o sha256.o
-$CC $CFLAGS lib/sha512.cpp -o sha512.o
+$CC $CFLAGS lib/md.c -o md.o
+$CC $CFLAGS lib/md5.c -o md5.o
+$CC $CFLAGS lib/sha256.c -o sha256.o
+$CC $CFLAGS lib/sha512.c -o sha512.o
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
    $CC $CFLAGS lib/sysos_mac.mm -o sysos_mac.o

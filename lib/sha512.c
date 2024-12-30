@@ -40,16 +40,16 @@ static void sha512_put_uint64_be(uint64_t n, unsigned char *b, uint8_t i) {
 #endif /* LIB_SHA512_SMALLER */
 
 void lib_sha512_init(lib_sha512_context_t *ctx) {
-    //memset(ctx, 0, sizeof(lib_sha512_context));
-    lib_memset0(ctx, sizeof(lib_sha512_context));
+    //memset(ctx, 0, sizeof(lib_sha512_context_t));
+    lib_memset0(ctx, sizeof(lib_sha512_context_t));
 }
 
 void lib_sha512_free(lib_sha512_context_t *ctx) {
     //if (ctx == NULL) {
     //    return;
     //}
-    //lib_platform_zeroize(ctx, sizeof(lib_sha512_context));
-    lib_memset0(ctx, sizeof(lib_sha512_context)); /* WHY memset0 */
+    //lib_platform_zeroize(ctx, sizeof(lib_sha512_context_t));
+    lib_memset0(ctx, sizeof(lib_sha512_context_t)); /* WHY memset0 */
 }
 
 void lib_sha512_clone(lib_sha512_context_t* dst, const lib_sha512_context_t* src) {
