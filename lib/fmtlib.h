@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <time.h>
 
 #define LIB_FMT_KILOBYTE_FACTOR ((uint64_t) 1024)

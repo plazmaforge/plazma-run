@@ -20,13 +20,13 @@ $CC $CFLAGS lib/wstrlib.c -o wstrlib.o
 $CC $CFLAGS lib/pathlib.c -o pathlib.o
 $CC $CFLAGS lib/wclib.c -o wclib.o
 
-$CC $CFLAGS lib/fslib.cpp -o fslib.o
+$CC $CFLAGS lib/fslib.c -o fslib.o
 $CC $CFLAGS lib/iodef.c -o iodef.o
-$CC $CFLAGS lib/iolib.cpp -o iolib.o
-$CC $CFLAGS lib/dmplib.cpp -o dmplib.o
-$CC $CFLAGS lib/fmtlib.cpp -o fmtlib.o
-$CC $CFLAGS lib/socketlib.cpp -o socketlib.o
-$CC $CFLAGS lib/nflib.cpp -o nflib.o
+$CC $CFLAGS lib/iolib.c -o iolib.o
+$CC $CFLAGS lib/dmplib.c -o dmplib.o
+$CC $CFLAGS lib/fmtlib.c -o fmtlib.o
+$CC $CFLAGS lib/socketlib.c -o socketlib.o
+$CC $CFLAGS lib/nflib.c -o nflib.o
 $CC $CFLAGS lib/asklib.cpp -o asklib.o
 
 $CC $CFLAGS lib/syscpu.c -o syscpu.o

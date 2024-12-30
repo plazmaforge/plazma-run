@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <cctype>
+#include <ctype.h>
 
 #include "config.h"
 #include "iolib.h"

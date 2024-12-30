@@ -33,9 +33,9 @@
 #include "wstrlib.h"
 #include "fslib.h"
 
-static int lib_fs_match_file_internal(const char* pattern, const char* name, int mode);
-
 static int lib_fs_match_file_internal(const char* pattern, const char* name);
+
+static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode);
 
 static wchar_t* getRealPathW(const wchar_t* wpath);
 
@@ -390,7 +390,11 @@ int lib_fs_close_dir(lib_fs_dir_t* dir) {
     return 0;
 }
 
-static int lib_fs_match_file_internal(const char* pattern, const char* name, int mode) {
+static int lib_fs_match_file_internal(const char* pattern, const char* name) {
+    return lib_fs_match_file_internal_mode(pattern, name, 0);
+}
+
+static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode) {
 
     // PathMatchSpecA
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
@@ -403,11 +407,6 @@ static int lib_fs_match_file_internal(const char* pattern, const char* name, int
 
     return lib_fs_match_file(name, pattern); // rotate pattern, name !
 }
-
-static int lib_fs_match_file_internal(const char* pattern, const char* name) {
-    return lib_fs_match_file_internal(pattern, name, 0);
-}
-
 
 //// uname, gname
 

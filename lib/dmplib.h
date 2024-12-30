@@ -2,6 +2,7 @@
 #define PLAZMA_LIB_DMPLIB_H
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define LIB_DMP_MIN_COL_COUNT 16
 #define LIB_DMP_MAX_COL_COUNT 32

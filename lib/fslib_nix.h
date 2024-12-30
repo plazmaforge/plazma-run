@@ -15,9 +15,9 @@
 #include "strlib.h"
 #include "fslib.h"
 
-static int lib_fs_match_file_internal(const char* pattern, const char* name, int mode);
-
 static int lib_fs_match_file_internal(const char* pattern, const char* name);
+
+static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode);
 
 // [allocate]
 char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name) {
@@ -195,7 +195,11 @@ int lib_fs_close_dir(lib_fs_dir_t* dir) {
 
 ////
 
-static int lib_fs_match_file_internal(const char* pattern, const char* name, int mode) {
+static int lib_fs_match_file_internal(const char* pattern, const char* name) {
+    return lib_fs_match_file_internal_mode(pattern, name, FNM_PERIOD);
+}
+
+static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode) {
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
     //return fnmatch(pattern, name, FNM_PERIOD) == 0; // true id '0'
 
@@ -204,10 +208,6 @@ static int lib_fs_match_file_internal(const char* pattern, const char* name, int
     return res;
 
     //return match(name, pattern); // rotate pattern, name !
-}
-
-static int lib_fs_match_file_internal(const char* pattern, const char* name) {
-    return lib_fs_match_file_internal(pattern, name, FNM_PERIOD);
 }
 
 //// uname, gname

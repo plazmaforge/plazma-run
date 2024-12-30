@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 #include <math.h>
 
 #include "fslib.h"
@@ -462,7 +463,7 @@ void lib_ask_print_txt_position(const lib_ask_position_t* position, const char* 
         if (c == '\r' || c == '\n') {
             break;
         }
-        //if (!std::isprint(c)) {
+        //if (!isprint(c)) {
             //c = '?';
             //break;
         //}
@@ -554,7 +555,7 @@ void lib_ask_print_bin_position(const lib_ask_position_t* position, const char* 
 
     for (size_t i = start_index; i < end_index2; i++)  {
         c = data[i];
-        if (!std::isprint(c)) {
+        if (!isprint(c)) {
             //c = ' ';
             break;
         }

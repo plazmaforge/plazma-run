@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -460,7 +459,7 @@ lib_nf_file_t* lib_nf_open(const char* url, const char* mode) {
 	return fp;
 }
 
-char* lib_nf_get_file_contents(lib_nf_file_t* fp, int* size, int init_size, int buf_size) {
+char* lib_nf_get_file_contents_opts(lib_nf_file_t* fp, int* size, int init_size, int buf_size) {
 	if (!fp) {
 		return NULL;
 	}
@@ -499,6 +498,6 @@ char* lib_nf_get_file_contents(lib_nf_file_t* fp, int* size, int init_size, int 
 }
 
 char* lib_nf_get_file_contents(lib_nf_file_t* fp, int* size) {
-	return lib_nf_get_file_contents(fp, size, 65536, 4096);
+	return lib_nf_get_file_contents_opts(fp, size, 65536, 4096); // TOOD: Use constants
 }
 

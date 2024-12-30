@@ -2,6 +2,7 @@
 #define PLAZMA_LIB_ASKLIB_H
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 /*
  Define default config parameters
@@ -24,8 +25,8 @@ typedef struct lib_ask_position_t {
     int row;
     int start_row_index;
     int end_row_index;
-    lib_ask_position_t* prev;
-    lib_ask_position_t* next;
+    /*struct*/ lib_ask_position_t* prev;
+    /*struct*/ lib_ask_position_t* next;
 } lib_ask_position_t;
 
 typedef struct lib_ask_positions_t {

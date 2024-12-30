@@ -1,4 +1,3 @@
-
 #ifndef PLAZMA_LIB_NETLIB_H
 #define PLAZMA_LIB_NETLIB_H
 
@@ -6,9 +5,11 @@
 #define LIB_NF_TYPE_FTP   2
 #define LIB_NF_TYPE_HTTP  3
 
+#include <stdbool.h>
+
 #include "socketlib.h"
 
-typedef struct lib_nf_file_s {
+typedef struct lib_nf_file_t {
 	int type;
     lib_socket_fd_t fd;
 	int64_t offset;
