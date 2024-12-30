@@ -1,4 +1,4 @@
-set "CC=g++"
+set "CC=gcc"
 set "CFLAGS=-c -Ilib"
 set "LDFLAGS="
 set "LIBS=-lversion -lws2_32"
@@ -45,37 +45,37 @@ rem compile
 %CC% %CFLAGS% lib/sha256.c -o sha256.o
 %CC% %CFLAGS% lib/sha512.c -o sha512.o
 
-%CC% %CFLAGS% run_dump.cpp -o run_dump.o
-%CC% %CFLAGS% run_echo.cpp -o run_echo.o
-%CC% %CFLAGS% run_cat.cpp -o run_cat.o
-%CC% %CFLAGS% run_sysinfo.cpp -o run_sysinfo.o
-%CC% %CFLAGS% run_find.cpp -o run_find.o
-%CC% %CFLAGS% run_ask.cpp -o run_ask.o
-%CC% %CFLAGS% run_ls.cpp -o run_ls.o
+%CC% %CFLAGS% run_echo.c -o run_echo.o
+%CC% %CFLAGS% run_dump.c -o run_dump.o
+%CC% %CFLAGS% run_cat.c -o run_cat.o
+%CC% %CFLAGS% run_sysinfo.c -o run_sysinfo.o
+%CC% %CFLAGS% run_find.c -o run_find.o
+%CC% %CFLAGS% run_ask.c -o run_ask.o
+%CC% %CFLAGS% run_ls.c -o run_ls.o
 
-%CC% %CFLAGS% run_mkdir.cpp -o run_mkdir.o
-%CC% %CFLAGS% run_rmdir.cpp -o run_rmdir.o
-%CC% %CFLAGS% run_mv.cpp -o run_mv.o
-%CC% %CFLAGS% run_rm.cpp -o run_rm.o
-%CC% %CFLAGS% run_cp.cpp -o run_cp.o
+%CC% %CFLAGS% run_mkdir.c -o run_mkdir.o
+%CC% %CFLAGS% run_rmdir.c -o run_rmdir.o
+%CC% %CFLAGS% run_mv.c -o run_mv.o
+%CC% %CFLAGS% run_rm.c -o run_rm.o
+%CC% %CFLAGS% run_cp.c -o run_cp.o
 
-%CC% %CFLAGS% run_get.cpp -o run_get.o
+%CC% %CFLAGS% run_get.c -o run_get.o
 
-%CC% %CFLAGS% run_mdlib.cpp -o run_mdlib.o
+%CC% %CFLAGS% run_mdlib.c -o run_mdlib.o
 
-%CC% %CFLAGS% run_md5.cpp -o run_md5.o
-%CC% %CFLAGS% run_sha224.cpp -o run_sha224.o
-%CC% %CFLAGS% run_sha256.cpp -o run_sha256.o
-%CC% %CFLAGS% run_sha384.cpp -o run_sha384.o
-%CC% %CFLAGS% run_sha512.cpp -o run_sha512.o
+%CC% %CFLAGS% run_md5.c -o run_md5.o
+%CC% %CFLAGS% run_sha224.c -o run_sha224.o
+%CC% %CFLAGS% run_sha256.c -o run_sha256.o
+%CC% %CFLAGS% run_sha384.c -o run_sha384.o
+%CC% %CFLAGS% run_sha512.c -o run_sha512.o
 
-%CC% %CFLAGS% run_hex2dat.cpp -o run_hex2dat.o
-%CC% %CFLAGS% run_ssldump.cpp -o run_ssldump.o
+%CC% %CFLAGS% run_hex2dat.c -o run_hex2dat.o
+rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 
-%CC% %CFLAGS% run_unimap.cpp -o run_unimap.o
-%CC% %CFLAGS% run_iconv.cpp -o run_iconv.o
+%CC% %CFLAGS% run_unimap.c -o run_unimap.o
+%CC% %CFLAGS% run_iconv.c -o run_iconv.o
 
-%CC% %CFLAGS% run_ctype.cpp -o run_ctype.o
+%CC% %CFLAGS% run_ctype.c -o run_ctype.o
 
 %CC% %CFLAGS% test_getopt.c -o test_getopt.o
 %CC% %CFLAGS% test_echo.c -o test_echo.o
@@ -94,6 +94,7 @@ rem link
 %CC% %LDFLAGS% getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_find.o -o run-find.exe %LIBS%
 %CC% %LDFLAGS% getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_ask.o -o run-ask.exe %LIBS%
 %CC% %LDFLAGS% getopt.o strlib.o wstrlib.o pathlib.o wclib.o fslib.o iodef.o fmtlib.o syslocale.o syslocale_os.o syslib.o run_ls.o -o run-ls.exe
+
 %CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_mkdir.o -o run-mkdir.exe
 %CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_rmdir.o -o run-rmdir.exe
 %CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fslib.o syslocale.o syslocale_os.o syslib.o run_mv.o -o run-mv.exe

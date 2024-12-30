@@ -55,8 +55,8 @@ typedef enum {
   LIB_FS_FILE_CHECK_EXISTS        = 1 << 4
 } lib_fs_file_check_t;
 
-const int LIB_FS_SCANDIR_FLAT      = -1; // Scandir flat mode (only one level)
-const int LIB_FS_SCANDIR_RECURSIVE = 0;  // Scandir recursive mode
+#define LIB_FS_SCANDIR_FLAT       -1 // Scandir flat mode (only one level)
+#define LIB_FS_SCANDIR_RECURSIVE   0 // Scandir recursive mode
 
 typedef enum {
   LIB_FS_FILE_SORT_NONE           = 0,

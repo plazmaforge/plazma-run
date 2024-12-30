@@ -1,8 +1,9 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
-const int RUN_MD_BY_STRING = 1;
-const int RUN_MD_BY_FILE   = 2;
+#define RUN_MD_BY_STRING 1
+#define RUN_MD_BY_FILE   2
 
 /* md function */
 typedef int (*lib_md_func) (const unsigned char *input, size_t ilen, unsigned char output[]);

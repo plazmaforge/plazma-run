@@ -1,6 +1,7 @@
 // Windows: Important lib order for UTF-8 (65001)
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <time.h>
 #include <locale.h>
 
@@ -65,7 +66,7 @@ typedef struct run_ls_context {
     size_t buf_size;
     //
     char time_buf[TIME_BUF_LEN];
-} run_config;
+} run_ls_context;
 
 typedef struct file_entry_t {
     lib_fs_file_t* file;
@@ -199,13 +200,40 @@ static int _get_format(char* val) {
     return 0;
 }
 
+/*
 static const lib_fmt_size_format_t* _get_size_format(run_ls_context* context, uint64_t size) {
     int min_size_format = context->config->min_size_format;
     if (min_size_format < 0) {
         return NULL; // No format. It is not pretty format. Size in bytes only
     }
     int index = lib_fmt_get_size_format_index(size, min_size_format);
-    return index >= 0 ? &(LIB_FMT_SIZE_FORMATS[index]) : NULL;
+    //return index >= 0 ? &(LIB_FMT_SIZE_FORMATS[index]) : NULL;
+
+    if (index < 0) {
+        return NULL;
+    }
+
+    lib_fmt_size_format_t format = lib_fmt_get_size_format(index);
+    return &format;
+}
+*/
+
+static void _get_size_format(run_ls_context* context, uint64_t size, lib_fmt_size_format_t* format) {
+    int min_size_format = context->config->min_size_format;
+    if (min_size_format < 0) {
+        return; // No format. It is not pretty format. Size in bytes only
+    }
+    int index = lib_fmt_get_size_format_index(size, min_size_format);
+
+    if (index < 0) {
+        format->factor = 0;
+        format->unit   = NULL;
+        return;
+    }
+
+    lib_fmt_size_format_t _format = lib_fmt_get_size_format(index);
+    format->factor = _format.factor;
+    format->unit   = _format.unit;
 }
 
 static double _get_unit_size(uint64_t size, const lib_fmt_size_format_t* format) {
@@ -233,11 +261,12 @@ static int _print_size_fix(run_ls_context* context, uint64_t size) {
     //}
 
     // Find size format
-    const lib_fmt_size_format_t* format = _get_size_format(context, size);
+    lib_fmt_size_format_t format;
+    _get_size_format(context, size, &format);
 
-    if (format) {
-        double value = _get_unit_size(size, format);
-        const char* unit = format->unit;
+    if (format.unit) {
+        double value = _get_unit_size(size, &format);
+        const char* unit = format.unit;
         return printf("%*.1f%c", len + 2, value, unit[0]); // (+2) for '.1'
     } else {
         return printf("%*llu ", len + 2, size);            // (+2) for '.1'
@@ -547,9 +576,12 @@ int run_ls(run_ls_context* context) {
         uint64_t size = lib_fs_file_get_file_size(file);
         int size_len = _lib_len_counter_u64(size);
 
-        const lib_fmt_size_format_t* format = _get_size_format(context, size);
-        if (format) {
-            uint64_t unit_size = _get_unit_isize(size, format);
+        //const lib_fmt_size_format_t* format = _get_size_format(context, size);
+        lib_fmt_size_format_t format;
+        _get_size_format(context, size, &format);
+
+        if (format.unit) {
+            uint64_t unit_size = _get_unit_isize(size, &format);
             int unit_size_len = _lib_len_counter_u64(unit_size);
 
             //printf("name: %s\t, size: %llu, size_len: %d, unit_size: %llu, unit_size_len: %d\n"

@@ -3,6 +3,21 @@
 
 #include "fmtlib.h"
 
+static const lib_fmt_size_format_t LIB_FMT_SIZE_FORMATS[] = {
+    {LIB_FMT_KILOBYTE_FACTOR, "Kb"},
+    {LIB_FMT_MEGABYTE_FACTOR, "Mb"},
+    {LIB_FMT_GIGABYTE_FACTOR, "Gb"},
+    {LIB_FMT_TERABYTE_FACTOR, "Tb"},
+    {LIB_FMT_PETABYTE_FACTOR, "Pb"},
+    {LIB_FMT_EXABYTE_FACTOR, "Eb"}
+    };
+
+static const int LIB_FMT_SIZE_FORMAT_COUNT = sizeof(LIB_FMT_SIZE_FORMATS) / sizeof(lib_fmt_size_format_t);
+
+lib_fmt_size_format_t lib_fmt_get_size_format(int index) {
+    return LIB_FMT_SIZE_FORMATS[index];
+}
+
 int lib_fmt_get_size_format_index(uint64_t size, int min_index) {
     if (size <= LIB_FMT_KILOBYTE_FACTOR) {
         return -1;
