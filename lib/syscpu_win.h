@@ -3,9 +3,9 @@
 
 #if defined _WIN32
 #include <windows.h>
-
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "syscpu.h"
 
 #ifndef PROCESSOR_ARCHITECTURE_ARM64
@@ -39,7 +39,7 @@ static const char* lib_cpu_get_cpu_arch_name_by_si_1(SYSTEM_INFO* info) {
 
 // legacy (?)
 const char* lib_cpu_get_cpu_isalist_by_si(SYSTEM_INFO* info) {
-   switch (info.wProcessorArchitecture) {
+   switch (info->wProcessorArchitecture) {
     #ifdef PROCESSOR_ARCHITECTURE_IA64
     case PROCESSOR_ARCHITECTURE_IA64: return "ia64";
     #endif
