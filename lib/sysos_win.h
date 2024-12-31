@@ -312,21 +312,21 @@ void loadOsInfo(lib_os_info_t* os_info) {
   os_info->os_build_version = buildNumber;
 
   // CPU Info
-  //os_info->os_arch = _strdup(getOsArch(si));
+  //os_info->os_arch = _strdup(getOsArch(&si));
   //os_info->os_arch_size = lib_cpu_get_cpu_arch_size(os_info->os_arch);
-  //os_info->os_arch_data = _strdup(getOsArchData(si));
+  //os_info->os_arch_data = _strdup(getOsArchData(&si));
   //os_info->cpu_endian = _strdup(lib_cpu_get_cpu_endian());
-  //os_info->cpu_isalist = getCpuIsalist(si);
+  //os_info->cpu_isalist = getCpuIsalist(&si);
 
-  os_info->os_arch = _strdup(lib_cpu_get_cpu_arch_name_by_si(si));
+  os_info->os_arch = _strdup(lib_cpu_get_cpu_arch_name_by_si(&si));
   os_info->os_arch_size = lib_cpu_get_cpu_arch_size(os_info->os_arch);
   os_info->cpu_endian = _strdup(lib_cpu_get_cpu_endian());
-  os_info->cpu_isalist = lib_cpu_get_cpu_isalist_by_si(si);
+  os_info->cpu_isalist = lib_cpu_get_cpu_isalist_by_si(&si);
 
   // C CPU Issue: os.cpu_count() WIN: GetLogicalProcessorInformationEx
   // https://github.com/giampaolo/psutil/issues/771
   // https://github.com/umezawatakeshi/GetLogicalProcessorInformationEx/blob/master/GetLogicalProcessorInformationEx.cc
-  os_info->cpu_count = lib_cpu_get_cpu_count_by_si(si); //cpu_count;
+  os_info->cpu_count = lib_cpu_get_cpu_count_by_si(&si); //cpu_count;
 
   // FS Info
   os_info->file_separator = _strdup("\\");
