@@ -2,7 +2,8 @@
 #define PLAZMA_LIB_SYSLOCALE_WIN_H
 
 #if defined _WIN32
-#include <io.h>
+//#include <io.h>
+#include <stdio.h>
 #include <windows.h>
 //#include <shlobj.h>
 //#include <objidl.h>
@@ -60,7 +61,7 @@ static LCID getLocaleID(int cat) {
  * Returns Windows codepage by Locale ID
  */
 
-static int getCodepage(LCID lcid) {
+static int getCodepageByID(LCID lcid) {
     int codepage = 0;
     char ret[16];
     if (ret == NULL) {
@@ -83,7 +84,7 @@ static int getCodepage(LCID lcid) {
 
 int getCodepage(int cat) {
     LCID lcid = getLocaleID(cat);
-    return getCodepage(lcid);
+    return getCodepageByID(lcid);
 }
 
 static char* getEncoding(LCID lcid) {
@@ -294,13 +295,13 @@ void loadConsoleCodepage() {
     _oem_cp = GetOEMCP();
 }
 
-void setConsoleCodepage(UINT cp, UINT out_cp) {
+void setConsoleCodepageAll(UINT cp, UINT out_cp) {
     SetConsoleCP(cp);
     SetConsoleOutputCP(out_cp);
 }
 
 void setConsoleCodepage(UINT cp) {
-    setConsoleCodepage(cp, cp);
+    setConsoleCodepageAll(cp, cp);
 }
 
 UINT convertDosToWinCodepage(UINT cp) {
@@ -521,7 +522,7 @@ void lib_locale_win_restore() {
         return;
     }
 
-    setConsoleCodepage(_cp, _out_cp);
+    setConsoleCodepageAll(_cp, _out_cp);
     if (debug) {
         printf("\n");
         printf("Restore         :\n");
