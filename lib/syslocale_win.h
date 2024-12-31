@@ -60,12 +60,11 @@ static LCID getLocaleID(int cat) {
 /*
  * Returns Windows codepage by Locale ID
  */
-
-static int getCodepageByID(LCID lcid) {
+static int getCodepageByLocaleID(LCID lcid) {
     int codepage = 0;
     char ret[16];
     if (ret == NULL) {
-        return NULL;
+        return 0;
     }
 
     if (lcid == 0) {
@@ -81,13 +80,12 @@ static int getCodepageByID(LCID lcid) {
 /*
  * Returns Windows codepage by locale category (LC_CTYPE, LC_MESSAGES)
  */
-
 int getCodepage(int cat) {
     LCID lcid = getLocaleID(cat);
-    return getCodepageByID(lcid);
+    return getCodepageByLocaleID(lcid);
 }
 
-static char* getEncoding(LCID lcid) {
+static char* getEncodingByLocaleID(LCID lcid) {
     int codepage = 0;
     char* ret = (char*) malloc(16);
     if (ret == NULL) {
@@ -203,7 +201,7 @@ static lib_locale_t* loadLocale(LCID lcid) {
     }
 
     /* encoding */
-    char* encoding = getEncoding(lcid);
+    char* encoding = getEncodingByLocaleID(lcid);
 
     lib_locale_t* locale = lib_sys_locale_new();
 
