@@ -15,9 +15,9 @@
 
 typedef struct {
 
-  int majorVersion = 0;
-  int minorVersion = 0;
-  int buildNumber = 0;
+  int majorVersion;
+  int minorVersion;
+  int buildNumber;
 
   boolean is_workstation;
   boolean is_64bit;
