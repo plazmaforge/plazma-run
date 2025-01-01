@@ -45,11 +45,15 @@ typedef struct run_ls_config {
 
 } run_ls_config;
 
-static const int DATE_PART_LEN = 10; // YYYY-MM-DD
-static const int TIME_PART_LEN = 8;  // HH:MM:SS
-//static const int TIME_BUF_LEN = DATE_PART_LEN + 1 + (config->use_time ? (TIME_PART_LEN + 1) : 0);
-//static const int TIME_BUF_LEN = DATE_PART_LEN + 1 + TIME_PART_LEN + 1; // (+1): With '\0'
-static const int TIME_BUF_LEN = 20;
+/* YYYY-MM-DD */
+#define DATE_PART_LEN 10
+
+/* HH:MM:SS */
+#define TIME_PART_LEN 8
+
+/* YYYY-MM-DD HH:MM:SS */
+/* 10 + 1 + 8 + 1      */ 
+#define TIME_BUF_LEN 20
 
 typedef struct run_ls_context {
     run_ls_config* config;
