@@ -174,6 +174,7 @@ static int _lib_dmp_dump_file(const char* file_name, size_t size, lib_dmp_config
     } 
   
     if (retval < 0) {
+        free(data);
         return -1;
     }
 
