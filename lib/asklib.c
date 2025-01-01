@@ -670,7 +670,7 @@ void lib_ask_find(const char* file_name, const char* input, size_t input_size, l
     }
 
     lib_ask_positions_t* positions = result->positions;
-    if (!positions) {
+    if (!positions || positions->size == 0) {
         free(data);
         lib_ask_result_free(result);
         return; // -1
