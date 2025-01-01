@@ -721,12 +721,12 @@ int main(int argc, char *argv[]) {
     bool is_human = false;    
     int format    = 0;
 
-    static struct option long_options[] = {
+    static lib_option long_options[] = {
           {"format", required_argument, 0, 'f'},
           {NULL,     0,                 0, 0 }
     };
 
-    while ((opt = getopt_long(argc, argv, "alhf:", long_options, &long_ind)) != -1) {
+    while ((opt = lib_getopt_long(argc, argv, "alhf:", long_options, &long_ind)) != -1) {
         switch (opt) {
         case 'a':
             is_all = true;

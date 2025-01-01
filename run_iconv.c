@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
     char* to_code   = NULL;
     bool opt_list   = false;
 
-    while ((opt = getopt(argc, argv, "f:t:l")) != -1) {
+    while ((opt = lib_getopt(argc, argv, "f:t:l")) != -1) {
         switch (opt) {
         case 'l':
             opt_list = true;

@@ -426,7 +426,7 @@ int main(int argc, char* argv[]) {
     int format = RUN_UNIMAP_FORMAT_TSV;
     bool use_comments = false;
 
-    while ((opt = getopt(argc, argv, "f:")) != -1) {
+    while ((opt = lib_getopt(argc, argv, "f:")) != -1) {
         switch (opt) {
         case 'f':
             format = _get_format(optarg);

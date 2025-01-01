@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
     int width = LIB_DMP_DEF_COL_COUNT;
     bool show_text = false; //DUMP_DEF_SHOW_TEXT;
 
-    while ((opt = getopt(argc, argv, "w:a")) != -1) {
+    while ((opt = lib_getopt(argc, argv, "w:a")) != -1) {
         switch (opt) {
         case 'w':
             if (optarg) {

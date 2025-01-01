@@ -11,17 +11,17 @@ char* optinput;
 
 static char *input = NULL;
 static int restopt = 0;
-static int init = 0;
+static int init    = 0;
 
-const char* find_short_option(const char* short_option, char c) {
+static const char* find_short_option(const char* short_option, char c) {
     if (short_option == NULL) {
         return NULL;
     }
     return strchr(short_option, c);
 }
 
-const struct option* find_long_option(const struct option* long_option, int* long_index, const char* name, int len)  {
-    const struct option* p = long_option;
+static const lib_option* find_long_option(const lib_option* long_option, int* long_index, const char* name, int len)  {
+    const lib_option* p = long_option;
     int i = *long_index;
 
     // search option in long_option list
@@ -37,7 +37,7 @@ const struct option* find_long_option(const struct option* long_option, int* lon
     return NULL;
 }
 
-int check_next_value(int argc, char* const argv[], int optind) {
+static int check_next_value(int argc, char* const argv[], int optind) {
     if (optind + 1 >= argc) {
         return 0;
     }
@@ -46,7 +46,7 @@ int check_next_value(int argc, char* const argv[], int optind) {
     return next[0] != '-';
 }
 
-int check_multi_short_option(const char* short_option, const char* input, int start, int end) {
+static int check_multi_short_option(const char* short_option, const char* input, int start, int end) {
     const char* opt;
     for (int i = start; i < end; i++) {
         opt = strchr(short_option, input[i]);
@@ -60,7 +60,7 @@ int check_multi_short_option(const char* short_option, const char* input, int st
     return 0;
 }
 
-void getopt_init() {    
+static void getopt_init() {    
     optinput = NULL;
 
     optind = 1;
@@ -72,7 +72,7 @@ void getopt_init() {
     restopt = 0;
 }
 
-int getopt_internal(int argc, char* const argv[], const char* short_option, const struct option* long_option, int* long_ind, int long_only) {
+static int getopt_internal(int argc, char* const argv[], const char* short_option, const lib_option* long_option, int* long_ind, int long_only) {
 
     if (argc <= 0 || argv == NULL /*|| optstr == NULL*/) {
         return -1;
@@ -241,7 +241,7 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
         } else {
 
             int index = 0;
-            const struct option* p = find_long_option(long_option, &index, name, len);
+            const lib_option* p = find_long_option(long_option, &index, name, len);
 
             if (p == NULL) {
                 if (print_error) {
@@ -367,14 +367,14 @@ int getopt_internal(int argc, char* const argv[], const char* short_option, cons
 
 }
 
-int getopt(int argc, char* const argv[], const char* short_option) {
+int lib_getopt(int argc, char* const argv[], const char* short_option) {
    return getopt_internal(argc, argv, short_option, NULL, NULL, 0);
 }
 
-int getopt_long(int argc, char* const argv[], const char* short_option, const option* long_option, int* long_ind) {
+int lib_getopt_long(int argc, char* const argv[], const char* short_option, const lib_option* long_option, int* long_ind) {
     return getopt_internal(argc, argv, short_option, long_option, long_ind, 0);
 }
 
-int getopt_long_only(int argc, char* const argv[], const char* short_option, const struct option* long_option, int* long_ind) {
+int lib_getopt_long_only(int argc, char* const argv[], const char* short_option, const lib_option* long_option, int* long_ind) {
     return getopt_internal(argc, argv, short_option, long_option, long_ind, 1);
 }

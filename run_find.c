@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
 
     int error = 0;
     int opt;
-    while ((opt = getopt(argc, argv, "t:s:")) != -1) {
+    while ((opt = lib_getopt(argc, argv, "t:s:")) != -1) {
         switch (opt) {
         case 't':
             type = optarg;

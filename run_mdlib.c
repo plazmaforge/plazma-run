@@ -102,7 +102,7 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
     char* data = NULL;
     size_t size = 0;
 
-    while ((opt = getopt(argc, argv, "tus:")) != -1) {
+    while ((opt = lib_getopt(argc, argv, "tus:")) != -1) {
         switch (opt) {
         case 't':
             /* Set title option */

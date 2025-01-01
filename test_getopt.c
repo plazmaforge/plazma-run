@@ -34,7 +34,7 @@ void short_getopt(int argc, char* argv[]) {
     // but we need use first char ':' in 'optstr' 
     //const char optstr[] = ":a::b:X";
     
-    while ((opt = getopt(argc, argv, optstr)) != -1) {
+    while ((opt = lib_getopt(argc, argv, optstr)) != -1) {
         switch (opt) {
         case 'a':
             printf("Option a has arg: %s\n", optarg ? optarg : "(none)");
@@ -78,7 +78,7 @@ while (1)
   {
       int option_index = 0;
 
-    //   static struct option long_options[] = 
+    //   static struct lib_option long_options[] = 
     //   {
     //       {"add",     required_argument, NULL,  1000 },
     //       {"append",  no_argument,       NULL,  1000 },
@@ -89,7 +89,7 @@ while (1)
     //       {NULL,      0,                 NULL,  0 }
     //   };
 
-    //   static struct option long_options[] = 
+    //   static struct lib_option long_options[] = 
     //   {
     //       {"add",     required_argument, NULL,  'A' },
     //       {"append",  no_argument,       NULL,  'P' },
@@ -100,7 +100,7 @@ while (1)
     //       {NULL,      0,                 NULL,  'X' }
     //   };
 
-    //   static struct option long_options[] = 
+    //   static struct lib_option long_options[] = 
     //   {
     //       {"add",     required_argument, 0,  'a' },
     //       {"append",  no_argument,       0,  'b' },
@@ -111,7 +111,7 @@ while (1)
     //       {NULL,      0,                 0,  0 }
     //   };
 
-      static struct option long_options[] = 
+      static struct lib_option long_options[] = 
       {
           {"add",     required_argument, 0,  1000 },
           {"append",  no_argument,       0,  2000 },
@@ -133,9 +133,9 @@ while (1)
     //       {NULL,      0,                 NULL,  0 }
     //   };
 
-      //c = getopt_long_only(argc, argv, "-:abc:d::", long_options, &option_index);
-      //c = getopt_long_only(argc, argv, "-:012", long_options, &option_index);
-      c = getopt_long_only(argc, argv, "", long_options, &option_index);
+      //c = lib_getopt_long_only(argc, argv, "-:abc:d::", long_options, &option_index);
+      //c = lib_getopt_long_only(argc, argv, "-:012", long_options, &option_index);
+      c = lib_getopt_long_only(argc, argv, "", long_options, &option_index);
       if (c == -1)
            break;
 

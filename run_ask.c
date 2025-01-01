@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
     bool find_first_only = false;
     bool ignore_case     = false;
 
-    while ((opt = getopt(argc, argv, "bil")) != -1) {
+    while ((opt = lib_getopt(argc, argv, "bil")) != -1) {
         switch (opt) {
         case 'b':
             bin_mode = true;
