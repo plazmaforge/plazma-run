@@ -1192,7 +1192,7 @@ char _file_type(char* path, struct stat Stat) {
 
 char lib_fs_file_get_file_type_char(lib_fs_file_t* file) {
     if (!file) {
-        return '\0';
+        return ' ';
     }
 
     int type = file->type;
@@ -1213,7 +1213,18 @@ char lib_fs_file_get_file_type_char(lib_fs_file_t* file) {
         return 'l';
     }
 
-    return '\0';
+    return ' ';
+}
+
+void lib_fs_init_mode(char* mode) {    
+    /*  len = 11 + 1  */
+    /*  0123456789    */
+    /* ' --------- ^' */
+
+    mode[0] = ' ';   /* type  */
+    memset(mode + 1, '-', 9);
+    mode[10] = ' '; /* access */
+    mode[11] = '\0';
 }
 
 char* lib_fs_file_add_attr(lib_fs_file_t* file, char* mode) {
@@ -1221,12 +1232,11 @@ char* lib_fs_file_add_attr(lib_fs_file_t* file, char* mode) {
         return NULL;
     }
     if (!file || !file->stat) {
-        for (int i = 0; i <= 9; i++) {
-            mode[i] = '-';
-        }
+        lib_fs_init_mode(mode);
         return mode;
     }
     mode[0] = lib_fs_file_get_file_type_char(file);
+    /* mode[1] - mode[9], mode[10] */
     return lib_fs_file_add_mode(file, mode);
 }
 
@@ -1235,20 +1245,23 @@ char* lib_fs_file_add_mode(lib_fs_file_t* file, char* mode) {
         return NULL;
     }
     if (!file || !file->stat) {
-        for (int i = 1; i <= 9; i++) {
-            mode[i] = '-';
-        }
+        lib_fs_init_mode(mode);
         return mode;
     }
 
     int st_mode = file->stat->st_mode;
 
+    /* User */
     mode[1] = st_mode & S_IRUSR ? 'r' : '-';
     mode[2] = st_mode & S_IWUSR ? 'w' : '-';
     mode[3] = st_mode & S_IXUSR ? 'x' : '-';
+
+    /* Group */
     mode[4] = st_mode & S_IRGRP ? 'r' : '-';
     mode[5] = st_mode & S_IWGRP ? 'w' : '-';
     mode[6] = st_mode & S_IXGRP ? 'x' : '-';
+
+    /* Other */
     mode[7] = st_mode & S_IROTH ? 'r' : '-';
     mode[8] = st_mode & S_IWOTH ? 'w' : '-';
     mode[9] = st_mode & S_IXOTH ? 'x' : '-';

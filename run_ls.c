@@ -10,7 +10,6 @@
 #include "fslib.h"
 #include "iodef.h"
 #include "fmtlib.h"
-#include "strlib.h"
 #include "syslib.h"
 
 int RUN_LS_FORMAT_DEF  = 0; // by default
@@ -33,7 +32,6 @@ typedef struct run_ls_config {
     //bool use_date;
     bool use_time;
     bool use_size;
-    bool use_size_first;
 
     /*
      -1: Not pretty format - bytes only
@@ -104,7 +102,6 @@ void run_ls_config_init(run_ls_config* config) {
     config->format         = RUN_LS_FORMAT_DEF;
     //
     run_ls_config_set_columns(config, true);
-    config->use_size_first = true;
     config->min_size_format = 1;
     //
     config->value_separator = " ";
@@ -153,28 +150,6 @@ static int _lib_len_counter_u64(uint64_t val) {
     return len;
 }
 
-static char* _lib_itoa(int val) {
-    if(val == 0) {
-        return lib_strdup("0");
-    }
-        
-    char* ret = lib_strnew(100);
-    int len = _lib_len_counter(val);
-
-    if (val < 0) {
-        len++;
-        ret[0] = '-';
-        val *= -1;
-    }
-
-    while (val != 0) {
-        ret[len - 1] = val % 10 + 48;
-        val = val / 10;
-        len--;
-    }
-    return ret;
-}
-
 ////
 
 static bool _is_heap(void* ptr) {
@@ -205,28 +180,13 @@ static int _get_format(char* val) {
     return 0;
 }
 
-/*
-static const lib_fmt_size_format_t* _get_size_format(run_ls_context* context, uint64_t size) {
-    int min_size_format = context->config->min_size_format;
-    if (min_size_format < 0) {
-        return NULL; // No format. It is not pretty format. Size in bytes only
-    }
-    int index = lib_fmt_get_size_format_index(size, min_size_format);
-    //return index >= 0 ? &(LIB_FMT_SIZE_FORMATS[index]) : NULL;
-
-    if (index < 0) {
-        return NULL;
-    }
-
-    lib_fmt_size_format_t format = lib_fmt_get_size_format(index);
-    return &format;
-}
-*/
-
 static void _get_size_format(run_ls_context* context, uint64_t size, lib_fmt_size_format_t* format) {
     int min_size_format = context->config->min_size_format;
     if (min_size_format < 0) {
-        return; // No format. It is not pretty format. Size in bytes only
+        // No format. It is not pretty format. Size in bytes only
+        format->factor = 0;
+        format->unit   = NULL;
+        return;
     }
     int index = lib_fmt_get_size_format_index(size, min_size_format);
 
@@ -286,7 +246,6 @@ static int _print_quote(run_ls_context* context) {
 }
 
 static int _print_value_separator(run_ls_context* context) {
-    //return printf(", ");
     return printf("%s", context->config->value_separator);
 }
 
@@ -307,11 +266,8 @@ static int _print_line_csv(run_ls_context* context, file_entry_t* entry) {
         if (has) {
             pos += _print_value_separator(context);
         }
-        char mode[11 + 1];
-        memset(mode, '-', 10);
-        mode[10] = ' ';
-        mode[11] = '\0';
-
+        char mode[LIB_FS_MODE_LEN + 1]; // +NUL
+        lib_fs_init_mode(mode);
         lib_fs_file_add_attr(file, mode);
         pos += _print_quote(context);
         pos += printf("%s", mode);
@@ -354,7 +310,7 @@ static int _print_line_csv(run_ls_context* context, file_entry_t* entry) {
     }
         
     /* Print Size    */
-    if (config->use_size & config->use_size_first) {
+    if (config->use_size) {
         if (has) {
             pos += _print_value_separator(context);
         }
@@ -392,6 +348,7 @@ static int _print_line_csv(run_ls_context* context, file_entry_t* entry) {
 }
 
 //// Print Line TSV ////
+
 static int _print_line_tsv(run_ls_context* context, file_entry_t* entry) {
     return _print_line_csv(context, entry);
 }
@@ -403,22 +360,16 @@ static int _print_line_fix(run_ls_context* context, file_entry_t* entry) {
     run_ls_config* config = context->config;
     lib_fs_file_t* file = entry->file;
 
-    int pos = 0;
+    int pos  = 0;
     bool has = false;
-
-    //char* name = entry->name;
-    //int name_len = entry->name_len;
 
     /* Print Mode      */
     if (config->use_mode) {
         if (has) {
             pos += _print_value_separator(context);
         }
-        char mode[11 + 1];
-        memset(mode, '-', 10);
-        mode[10] = ' ';
-        mode[11] = '\0';
-
+        char mode[LIB_FS_MODE_LEN + 1]; // +NUL
+        lib_fs_init_mode(mode);
         lib_fs_file_add_attr(file, mode);
         pos += printf("%s", mode);
         has = true;
@@ -455,7 +406,7 @@ static int _print_line_fix(run_ls_context* context, file_entry_t* entry) {
     }
         
     /* Print Size    */
-    if (config->use_size & config->use_size_first) {
+    if (config->use_size) {
         if (has) {
             pos += _print_value_separator(context);
         }
@@ -473,19 +424,6 @@ static int _print_line_fix(run_ls_context* context, file_entry_t* entry) {
         pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
         has = true;
     }
-
-    /* Print Size    */
-    //if (config->use_size & !config->use_size_first) {
-    //    uint64_t size = lib_fs_file_get_file_size(file);
-    //    pos += _print_size(context, size);
-    //}
-
-    // if (context->stat_pos < 0) {
-    //     context->stat_pos = context->pos;
-    //     if (context->stat_pos < 0) {
-    //         context->stat_pos = 0;
-    //     }
-    // }
 
     /* Print Name   */
     if (has) {
@@ -517,6 +455,7 @@ static int _print_line(run_ls_context* context, file_entry_t* entry) {
 }
 
 ////
+
 int run_ls(run_ls_context* context) {
 
     run_ls_config* config = context->config;
@@ -543,16 +482,6 @@ int run_ls(run_ls_context* context) {
 
     context->buf_size = 0; //lib_io_stdout_get_buf_size();
     //context->buf_size = lib_io_get_buf_page(buf_size);
-
-    //printf("buf size: %lu\n", context->buf_size);
-    //fflush(stdout);
-    //int max = 0;
-
-    //int err = 0;
-    //if ((err = fflush(stdout)) != 0) {
-    //   fprintf(stderr, "error-1: %d\n", err);
-    //   perror("fflush error\n");
-    //}
 
     file_entry_t* entry = NULL;
     file_entry_t* entries[file_count];
@@ -581,23 +510,14 @@ int run_ls(run_ls_context* context) {
         uint64_t size = lib_fs_file_get_file_size(file);
         int size_len = _lib_len_counter_u64(size);
 
-        //const lib_fmt_size_format_t* format = _get_size_format(context, size);
         lib_fmt_size_format_t format;
         _get_size_format(context, size, &format);
 
         if (format.unit) {
             uint64_t unit_size = _get_unit_isize(size, &format);
             int unit_size_len = _lib_len_counter_u64(unit_size);
-
-            //printf("name: %s\t, size: %llu, size_len: %d, unit_size: %llu, unit_size_len: %d\n"
-            //, entry->name, size, size_len, unit_size, unit_size_len);
-
             size_len = unit_size_len;
-        } else {
-            //printf("name: %s\t, size: %llu, size_len: %d\n"
-            //, entry->name, size, size_len);
         }
-        //printf(">>size_len: %d\n", size_len);
 
         if (entry->name_len > context->max_name_len) {
             context->max_name_len = entry->name_len;
@@ -642,60 +562,11 @@ int run_ls(run_ls_context* context) {
             }
         }
         
-        // if (config->format == RUN_LS_FORMAT_CSV) {
-        //     context->pos = _print_line_csv(context, entry);
-        // } else {
-        //     context->pos = _print_line_fix(context, entry);            
-        // }
-
         context->pos = _print_line(context, entry);
         context->total += context->pos;
         
-
         free(entry);
     }
-
-    //printf("\n\nmax: %i\n", max);
-
-    ////
-
-    /*
-    fflush(stdout);
-    int num = 0;
-    int maxcur = 0;
-    for (int i = 0; i < 10000; i++) {
-        int cur = 0;
-        int tot = 0;
-        if (num > buf_size) {
-            num = 0;
-            fflush(stdout);
-            cur = printf("%s\n", "FLUSH!");
-        }
-        cur += printf("\n\nnum: %i\n", num);
-        cur += printf("%i: Test Line\n", i + 1);
-        cur += printf("cur: %i\n", cur);
-        tot = num + cur;
-        cur += printf("tot: %i\n", tot);
-        num += cur;
-        if (cur > maxcur) {
-            maxcur = cur;
-        }        
-    }
-    fflush(stdout);
-    printf("\n\nmax: %i\n", maxcur);
-    */
-
-    ////
-    //err = 0;
-    //if ((err = fflush(stdout)) != 0 ) {
-    //   fprintf(stderr, "error-2: %d\n", err);
-    //   perror("fflush error\n");
-    //}
-
-    //fclose(stdout);
-    //fseek(stdout, 0, SEEK_SET);
-    //fflush(stdout);
-    //printf("\nTOTAL FLUSH (!)\n");
 
     lib_fs_files_free(files);                        
     free(dir_name);

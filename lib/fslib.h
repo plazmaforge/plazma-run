@@ -190,6 +190,9 @@ typedef struct lib_fs_file_data_t {
     size_t size;
 } lib_fs_file_data_t;
 
+#define LIB_FS_MODE_LEN    11
+#define LIB_FS_ACCESS_LEN   9
+
 /* C Style */
 
 /**
@@ -355,6 +358,8 @@ char lib_fs_file_get_file_type_char(lib_fs_file_t* file);
 char* lib_fs_file_get_uname(lib_fs_file_t* file);
 
 char* lib_fs_file_get_gname(lib_fs_file_t* file);
+
+void lib_fs_init_mode(char* mode);
 
 char* lib_fs_file_add_attr(lib_fs_file_t* file, char* mode);
 
