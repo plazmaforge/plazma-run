@@ -7,7 +7,7 @@
 #include "strlib.h"
 #include "asklib.h"
 
-static int lib_ask_get_digit_count(int n) {
+static int _lib_digit_count(int n) {
     if (n == 0) {
          return 1;
     }
@@ -20,51 +20,12 @@ static int lib_ask_get_digit_count(int n) {
     return count;
 }
 
-static int lib_ask_get_width(int value) {
-    int count = lib_ask_get_digit_count(value);
+static int _lib_get_width(int value) {
+    int count = _lib_digit_count(value);
     return (count > 4) ? 0 : count;
 }
 
-static void lib_ask_calc_width_index(const lib_ask_positions_t* positions, int* index_width) {
-    if (positions == NULL) {
-        return;
-    }
-    lib_ask_position_t* curr = positions->first;
-    int max_index = 0;
-    while (curr != NULL) {
-        if (curr->index > max_index) {
-            max_index = curr->index;
-        }
-        curr = curr->next;
-    }
-    *index_width = lib_ask_get_width(max_index);
-}
-
-static void lib_ask_calc_width_cell(const lib_ask_positions_t* positions, int* row_width, int* col_width) {
-    if (positions == NULL) {
-        return;
-    }
-    lib_ask_position_t* curr = positions->first;
-    int max_row = 0;
-    int max_col = 0;
-    while (curr != NULL) {
-        if (curr->row > max_row) {
-            max_row = curr->row;
-        }
-        if (curr->col > max_col) {
-            max_col = curr->col;
-        }
-        curr = curr->next;
-    }
-    *row_width = lib_ask_get_width(max_row);
-    *col_width = lib_ask_get_width(max_col);
-    if (*row_width == 0 || *col_width == 0) {
-      *row_width = 0;
-      *col_width = 0;
-    }
-}
-
-static int lib_ask_skip_line(const char* data, size_t data_size, size_t pos) {
+static int _lib_skip_line(const char* data, size_t data_size, size_t pos) {
     char c = data[pos];
     if (c == '\r') {
         if (pos + 1 < data_size && data[pos + 1] == '\n') {
@@ -82,7 +43,52 @@ static int lib_ask_skip_line(const char* data, size_t data_size, size_t pos) {
 
 ////
 
-static bool lib_ask_contains(const char* data, const char* input, int start, int size) {
+static void lib_ask_calc_width_index(const lib_ask_positions_t* positions, int* index_width) {
+    if (!positions) {
+        return;
+    }
+    lib_ask_position_t* curr = positions->first;
+    int max_index = 0;
+    while (curr != NULL) {
+        if (curr->index > max_index) {
+            max_index = curr->index;
+        }
+        curr = curr->next;
+    }
+    *index_width = _lib_get_width(max_index);
+}
+
+static void lib_ask_calc_width_cell(const lib_ask_positions_t* positions, int* row_width, int* col_width) {
+    if (!positions) {
+        return;
+    }
+    lib_ask_position_t* curr = positions->first;
+    int max_row = 0;
+    int max_col = 0;
+    while (curr != NULL) {
+        if (curr->row > max_row) {
+            max_row = curr->row;
+        }
+        if (curr->col > max_col) {
+            max_col = curr->col;
+        }
+        curr = curr->next;
+    }
+    *row_width = _lib_get_width(max_row);
+    *col_width = _lib_get_width(max_col);
+    if (*row_width == 0 || *col_width == 0) {
+      *row_width = 0;
+      *col_width = 0;
+    }
+}
+
+////
+
+static bool _lib_in(const char* data, const char* input, size_t start, size_t size) {
+    if (!data || !input || size == 0) {
+        return false;
+    }
+
     for (size_t i = 0; i < size; i++) {
         if (data[start + i] != input[i]) {
             return false;
@@ -91,7 +97,11 @@ static bool lib_ask_contains(const char* data, const char* input, int start, int
     return true;
 }
 
-static bool lib_ask_icontains(const char* data, const char* input, int start, int size) {
+static bool _lib_iin(const char* data, const char* input, size_t start, size_t size) {
+    if (!data || !input || size == 0) {
+        return false;
+    }
+
     for (size_t i = 0; i < size; i++) {
         if (tolower(data[start + i]) != tolower(input[i])) {
             return false;
@@ -232,7 +242,7 @@ lib_ask_result_t* lib_ask_find_bin(const char* data, size_t data_size, const cha
             return result;
         }
 
-        bool found = lib_ask_contains(data, input, pos, input_size);
+        bool found = _lib_in(data, input, pos, input_size);
 
         if (found) {
             lib_ask_position_t* position = lib_ask_position_new();
@@ -347,7 +357,7 @@ lib_ask_result_t* lib_ask_find_txt(const char* data, size_t data_size, const cha
 
         skip = 0;
         newline = false;
-        while ((skip = lib_ask_skip_line(data, data_size, pos)) > 0) {
+        while ((skip = _lib_skip_line(data, data_size, pos)) > 0) {
             
             if (curr != NULL && !newline) {
                 curr->end_row_index = pos;
@@ -370,7 +380,7 @@ lib_ask_result_t* lib_ask_find_txt(const char* data, size_t data_size, const cha
             col++;
         }
 
-        bool found = ignore_case ? lib_ask_icontains(data, input, pos, input_size) : lib_ask_contains(data, input, pos, input_size);
+        bool found = ignore_case ? _lib_iin(data, input, pos, input_size) : _lib_in(data, input, pos, input_size);
 
         if (found) {
             lib_ask_position_t* position = lib_ask_position_new();
@@ -475,8 +485,8 @@ void lib_ask_print_txt_position(const lib_ask_position_t* position, const char* 
 
     // Whitespace before underline
     if (width <= 0) {
-      int row_width = lib_ask_get_digit_count(position->row);
-      int col_width = lib_ask_get_digit_count(position->col);
+      int row_width = _lib_digit_count(position->row);
+      int col_width = _lib_digit_count(position->col);
 
       width = 5 + row_width + col_width;
     }
@@ -567,7 +577,7 @@ void lib_ask_print_bin_position(const lib_ask_position_t* position, const char* 
 
     // Whitespace before underline
     if (width <= 0) {
-      width = lib_ask_get_digit_count(position->index);
+      width = _lib_digit_count(position->index);
       width = 3 + width;
     }
 

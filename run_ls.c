@@ -121,9 +121,9 @@ void run_ls_context_init(run_ls_context* context) {
     context->buf_size = 0;
 }
 
-static int _lib_len_counter(int val) {
+static int _lib_digit_count(int val) {
     if (val == 0) {
-        return 0;
+        return 1;
     }
     long num = val;
     int len = 0;
@@ -137,9 +137,9 @@ static int _lib_len_counter(int val) {
     return len;
 }
 
-static int _lib_len_counter_u64(uint64_t val) {
+static int _lib_digit_count_u64(uint64_t val) {
     if (val == 0) {
-        return 0;
+        return 1;
     }
     uint64_t num = val;
     int len = 0;
@@ -503,19 +503,19 @@ int run_ls(run_ls_context* context) {
         entry->gname = lib_fs_file_get_gname(file);
 
         entry->name_len = entry->name ? strlen(entry->name) : 0;
-        entry->nlink_len = _lib_len_counter(entry->nlink);
+        entry->nlink_len = _lib_digit_count(entry->nlink);
         entry->uname_len = entry->uname ? strlen(entry->uname) : 0;
         entry->gname_len = entry->gname ? strlen(entry->gname) : 0;
 
         uint64_t size = lib_fs_file_get_file_size(file);
-        int size_len = _lib_len_counter_u64(size);
+        int size_len = _lib_digit_count_u64(size);
 
         lib_fmt_size_format_t format;
         _get_size_format(context, size, &format);
 
         if (format.unit) {
             uint64_t unit_size = _get_unit_isize(size, &format);
-            int unit_size_len = _lib_len_counter_u64(unit_size);
+            int unit_size_len = _lib_digit_count_u64(unit_size);
             size_len = unit_size_len;
         }
 
