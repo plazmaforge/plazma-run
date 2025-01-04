@@ -5,7 +5,7 @@
 #include "iolib.h"
 #include "dmplib.h"
 
-int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) {
+int lib_dmp_dump_bytes(lib_dmp_config_t* config,const char* data, size_t size) {
 
     #ifdef LIB_DEBUG
     fprintf(stderr, ">> dmp_dump_bytes: size=%lu\n", size);
@@ -150,7 +150,7 @@ int lib_dmp_dump_bytes(const char* data, size_t size, lib_dmp_config_t* config) 
 
 }
 
-static int _lib_dmp_dump_file(const char* file_name, size_t size, lib_dmp_config_t* config) {
+static int _lib_dmp_dump_file(lib_dmp_config_t* config, const char* file_name, size_t size) {
 
     #ifdef LIB_DEBUG
     fprintf(stderr, ">> dmp_dump_file: size=%lu\n", size);
@@ -178,19 +178,19 @@ static int _lib_dmp_dump_file(const char* file_name, size_t size, lib_dmp_config
         return -1;
     }
 
-    retval = lib_dmp_dump_bytes(data, data_size, config);
+    retval = lib_dmp_dump_bytes(config, data, data_size);
 
     free(data);
     return retval;
 }
 
-int lib_dmp_dump_file_all(const char* file_name, lib_dmp_config_t* config) {
-    return _lib_dmp_dump_file(file_name, 0, config);
+int lib_dmp_dump_file_all(lib_dmp_config_t* config, const char* file_name) {
+    return _lib_dmp_dump_file(config, file_name, 0);
 }
 
-int lib_dmp_dump_file(const char* file_name, size_t size, lib_dmp_config_t* config) {
+int lib_dmp_dump_file(lib_dmp_config_t* config, const char* file_name, size_t size) {
     if (size == 0) {
         return 0;
     }
-    return _lib_dmp_dump_file(file_name, size, config);
+    return _lib_dmp_dump_file(config, file_name, size);
 }

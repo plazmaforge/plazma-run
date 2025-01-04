@@ -7,6 +7,16 @@
 #include "dmplib.h"
 #include "iodef.h"
 
+int run_dump(lib_dmp_config_t* config, char* file_name) {
+   //lib_io_buf_init();
+   int retval = lib_dmp_dump_file_all(config, file_name);
+   if (retval < 0) {
+       fprintf(stderr, "%s: %s: No such file or directory\n", prog_name, file_name);
+       return 1;
+   }
+   return 0;
+}
+
 void usage() {
     fprintf(stderr, "Usage: run-dump [-w 16 | 32] [-a] file\n");
 }
@@ -68,17 +78,9 @@ int main(int argc, char* argv[]) {
 
     char* file_name = argv[optind];
 
-    lib_io_buf_init();
-
     lib_dmp_config_t config;
     config.col_count = width;
     config.show_text = show_text;
 
-    int retval = lib_dmp_dump_file_all(file_name, &config);
-    if (retval < 0) {
-        fprintf(stderr, "%s: %s: No such file or directory\n", prog_name, file_name);
-        return 1;
-    }
-
-    return 0;
+    return run_dump(&config, file_name);
 }
