@@ -41,15 +41,15 @@ typedef struct lib_ask_result_t {
 
 void lib_ask_config_init(lib_ask_config_t* config);
 
-void lib_ask_find(const char* file_name, const char* input, size_t input_size, lib_ask_config_t* config);
+int lib_ask_find(lib_ask_config_t* config, const char* file_name, const char* input, size_t input_size);
 
-lib_ask_result_t* lib_ask_find_data(const char* data, size_t data_size, const char* input, size_t input_size, lib_ask_config_t* config);
+lib_ask_result_t* lib_ask_find_data(lib_ask_config_t* config, const char* data, size_t data_size, const char* input, size_t input_size);
 
-lib_ask_result_t* lib_ask_find_bin(const char* data, size_t data_size, const char* input, size_t input_size, lib_ask_config_t* config);
+lib_ask_result_t* lib_ask_find_bin(lib_ask_config_t* config, const char* data, size_t data_size, const char* input, size_t input_size);
 
-lib_ask_result_t* lib_ask_find_txt(const char* data, size_t data_size, const char* input, size_t input_size, lib_ask_config_t* config);
+lib_ask_result_t* lib_ask_find_txt(lib_ask_config_t* config, const char* data, size_t data_size, const char* input, size_t input_size);
 
-void lib_ask_print_data(const lib_ask_result_t* result, const char* data, size_t data_size, size_t input_size, lib_ask_config_t* config);
+void lib_ask_print_data(lib_ask_config_t* config, const lib_ask_result_t* result, const char* data, size_t data_size, size_t input_size);
 
 void lib_ask_print_bin(const lib_ask_result_t* result, const char* data, size_t data_size, size_t input_size);
 
