@@ -12,35 +12,41 @@
 #include "fslib.h"
 #include "syslib.h"
 
-void print_file_path(const char* path) {
+static void _print_file_path(const char* path) {
+    if (!path) {
+        return;
+    }
     printf("%s\n", path);
 }
 
-void print_file(lib_fs_file_t* file) {
+static void _print_file(lib_fs_file_t* file) {
     if (!file) {
         return;
     }
     char* path = file->name ? lib_fs_get_real_path(file->name) : NULL;
-    print_file_path(path);
+    if (!path) {
+        return;
+    }
+    _print_file_path(path);
     free(path);
 }
 
-void find_by_pattern(const char* dir_name, const char* pattern) {
+static void _find_pattern(const char* dir_name, const char* pattern) {
 
     lib_fs_file_t** files = NULL;
     lib_fs_file_t* file = NULL;
-    int file_count = lib_fs_scandir(dir_name, pattern, &files, LIB_FS_SCANDIR_RECURSIVE, true);
+    int count = lib_fs_scandir(dir_name, pattern, &files, LIB_FS_SCANDIR_RECURSIVE, true);
 
-    printf("file_count: %d\n", file_count);
+    printf("count: %d\n", count);
 
-    if (file_count > 0) {
-        for (int i = 0; i < file_count; i++) {
+    if (count > 0) {
+        for (int i = 0; i < count; i++) {
             file = files[i];
             if (!file) {
                 // error
                 continue;
             }
-            print_file(file);
+            _print_file(file);
             //free(file);
             //fs_file_free(file);
         }
@@ -49,7 +55,7 @@ void find_by_pattern(const char* dir_name, const char* pattern) {
     lib_fs_files_free(files);
 }
 
-void find_by_arg(const char* arg) {
+static void _find_item(const char* arg) {
 
     char* file_name = lib_strdup_uq(arg);
     char* dir_name = NULL;
@@ -57,13 +63,13 @@ void find_by_arg(const char* arg) {
 
     bool doit = false;
 
-    int wildcard_index = lib_wc_get_wildcard_index(file_name);
+    int wldc_index = lib_wc_get_wildcard_index(file_name);
     int path_index = 0;
 
     //printf(">> file_name: %s\n", file_name);
     //printf(">> wildcard_index: %d\n", wildcard_index);
 
-    if (wildcard_index >= 0) {
+    if (wldc_index >= 0) {
         
         //printf(">> mode: wildcard\n");
 
@@ -73,7 +79,7 @@ void find_by_arg(const char* arg) {
         // file*
         // file?
 
-        path_index = lib_wc_get_wildcard_path_index(wildcard_index, file_name);
+        path_index = lib_wc_get_wildcard_path_index(wldc_index, file_name);
         if (path_index >= 0) {
 
             // dir1/
@@ -99,7 +105,7 @@ void find_by_arg(const char* arg) {
 
         char* path = lib_fs_get_real_path(file_name);
         if (path) {
-            print_file_path(path);
+            _print_file_path(path);
             free(path);
         } else {
             dir_name = lib_fs_get_dir_name(file_name);
@@ -127,7 +133,7 @@ void find_by_arg(const char* arg) {
 
     if (doit) {
         //printf(">> doit\n");
-        find_by_pattern(dir_name, pattern);
+        _find_pattern(dir_name, pattern);
     }
 
     if (file_name && path_index > 0) {
@@ -137,6 +143,19 @@ void find_by_arg(const char* arg) {
     free(dir_name);
     free(file_name);
 
+}
+
+int run_find(int argc, char* argv[]) {
+    lib_sys_locale_init();
+
+    ////
+    for (int i = 1; i < argc; i++) {
+        _find_item(argv[i]);
+    }
+    ////
+
+    lib_sys_locale_restore();
+    return 0;
 }
 
 void usage() {
@@ -152,60 +171,5 @@ int main(int argc, char* argv[]) {
     }
 
     prog_name = lib_arg_get_prog_name(argv);
-
-    /*
-    char* type = NULL;
-    char* size = NULL;
-
-    int error = 0;
-    int opt;
-    while ((opt = lib_getopt(argc, argv, "t:s:")) != -1) {
-        switch (opt) {
-        case 't':
-            type = optarg;
-            break;
-        case 's':
-            size = optarg;
-            break;
-        case '?':
-            error = 1;
-            break;
-        }
-    }
-
-    if (error) {
-        usage();
-        return 1;
-    }
-
-    if (argc - optind != min_arg) {
-        printf("%s: Incorrect argument count\n", prog_name);
-        usage();
-        return 1;
-    }
-                                        
-    char* input = lib_strdup_uq(argv[optind]);
-    char* file_name = lib_strdup_uq(argv[++optind]);
-
-    //printf("input: %s\n", input);
-    //printf("file : %s\n", file_name);
-
-    size_t input_size = strlen(input);
-    if (input_size == 0) {
-        //printf("Input is empty\n");
-        return 1;
-    }
-    */
-
-    lib_sys_locale_init();
-
-    //printf(">> argc: %d\n",argc);
-    for (int i = 1; i < argc; i++) {
-        //printf(">> arg[%i]: %s\n", i, argv[i]);
-        find_by_arg(argv[i]);
-    }
-
-    lib_sys_locale_restore();
-    return 0;
-
+    return run_find(argc, argv);
 }
