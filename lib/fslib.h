@@ -412,33 +412,4 @@ int lib_fs_close_dir(lib_fs_dir_t* dir);
 
 int lib_fs_scandir(const char* dir_name, const char* pattern, lib_fs_file_t*** files, int max_depth, int file_only);
 
-
-/* C++ Style - Migration Task */
-
-// /**
-//  * Build full file path 
-//  */
-// // [allocate]
-// char* getFilePath(const char* dirName, const char* fileName);
-
-// /**
-//  * Return real file path
-//  */
-// // [allocate]
-// char* getRealPath(const char* path);
-
-// std::string getCurrentFindPath();
-
-// bool isCurrentFindPath(const char* path);
-
-// ////
-
-// std::vector<std::string> getFiles(const char* dirName);
-
-// std::vector<std::string> getFiles(const char* dirName, const char* pattern);
-
-// void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files);
-
-// void scandir(const char* dirName, const char* pattern, std::vector<std::string>& files, int level);
-
 #endif // PLAZMA_LIB_FSLIB_H
