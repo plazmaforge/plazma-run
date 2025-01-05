@@ -172,8 +172,8 @@ static int _get_format(char* val) {
         return RUN_LS_FORMAT_TSV;
     //} else if (strcmp(optarg, "xml") == 0) {
     //    return RUN_LS_FORMAT_XML;
-    //} else if (strcmp(optarg, "json") == 0) {
-    //    return RUN_LS_FORMAT_JSON;
+    } else if (strcmp(optarg, "json") == 0) {
+        return RUN_LS_FORMAT_JSON;
     } else if (strcmp(optarg, "tab") == 0) {
         return RUN_LS_FORMAT_TAB;
     }
@@ -353,6 +353,120 @@ static int _print_line_tsv(run_ls_context* context, file_entry_t* entry) {
     return _print_line_csv(context, entry);
 }
 
+//// Print Line JSON ////
+
+static int _print_line_json(run_ls_context* context, file_entry_t* entry) {
+
+    run_ls_config* config = context->config;
+    lib_fs_file_t* file = entry->file;
+
+    int pos = 0;
+    bool has = false;
+
+    pos += printf("%s", "  {\n");
+
+    /* Print Mode      */
+    if (config->use_mode) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        pos += printf("%s", "    \"mode\": ");
+
+        char mode[LIB_FS_MODE_LEN + 1]; // +NUL
+        lib_fs_init_mode(mode);
+        lib_fs_file_add_attr(file, mode);
+        pos += _print_quote(context);
+        pos += printf("%s", mode);
+        pos += _print_quote(context);
+        has = true;
+    }
+        
+    /* Print NLink      */
+    if (config->use_nlink) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        pos += printf("%s", "    \"nlink\": ");
+
+        int nlink = entry->nlink;
+        pos += printf("%d", nlink);
+        has = true;
+    }
+
+    /* Print User Name  */
+    if (config->use_uname) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        pos += printf("%s", "    \"uname\": ");
+
+        char* uname = entry->uname;
+        pos += _print_quote(context);
+        pos += printf("%s", uname);
+        pos += _print_quote(context);
+        has = true;
+    }
+
+    /* Print Group Name */
+    if (config->use_uname) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        pos += printf("%s", "    \"gname\": ");
+
+        char* gname = entry->gname;
+        pos += _print_quote(context);
+        pos += printf("%s", gname);
+        pos += _print_quote(context);
+        has = true;
+    }
+        
+    /* Print Size    */
+    if (config->use_size) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        pos += printf("%s", "    \"size\": ");
+
+        uint64_t size = lib_fs_file_get_file_size(file);
+        pos += _print_size_txt(context, size);
+        has = true;
+    }
+
+    /* Print DateTime */
+    if (config->use_time) {
+        if (has) {
+            pos += _print_value_separator(context);
+        }
+        pos += printf("%s", "    \"time\": ");
+
+        time_t time = lib_fs_file_get_file_mtime(file);
+        pos += _print_quote(context);
+        pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
+        pos += _print_quote(context);
+        has = true;
+    }
+
+    /* Print Name   */
+    if (has) {
+        pos += _print_value_separator(context);
+    }
+    pos += printf("%s", "    \"name\": ");
+
+    char* name = entry->name;
+    pos += _print_quote(context);
+    pos += printf("%s", name);
+    pos += _print_quote(context);
+    free(name);
+
+    /* Print Line  */
+    //pos += _print_line_separator(context);
+
+    pos += printf("%s", "\n  }");
+
+    return pos;
+}
+
 //// Print Line FIX ////
 
 static int _print_line_fix(run_ls_context* context, file_entry_t* entry) {
@@ -447,8 +561,12 @@ static int _print_line(run_ls_context* context, file_entry_t* entry) {
 
     if (config->format == RUN_LS_FORMAT_CSV) {
         return _print_line_csv(context, entry);
-    } else if (config->format == RUN_LS_FORMAT_TSV) {
+    }
+    if (config->format == RUN_LS_FORMAT_TSV) {
         return _print_line_tsv(context, entry);
+    }
+    if (config->format == RUN_LS_FORMAT_JSON) {
+        return _print_line_json(context, entry);
     }
 
     return _print_line_fix(context, entry);;
@@ -544,6 +662,10 @@ int run_ls(run_ls_context* context) {
     //printf("max_gname_len : %d\n", context->max_gname_len);
     //printf("max_size_len : %d\n\n", context->max_size_len);
 
+    if (config->format == RUN_LS_FORMAT_JSON) {
+        printf("%s", "[\n");
+    }
+
     for (int i = 0; i < file_count; i++) {
 
         entry = entries[i];
@@ -561,11 +683,19 @@ int run_ls(run_ls_context* context) {
                 context->total = 0;
             }
         }
+
+        if (i > 0 && config->format == RUN_LS_FORMAT_JSON) {
+            printf("%s", ", \n");
+        }
         
         context->pos = _print_line(context, entry);
         context->total += context->pos;
         
         free(entry);
+    }
+
+    if (config->format == RUN_LS_FORMAT_JSON) {
+        printf("%s", "\n]\n");
     }
 
     lib_fs_files_free(files);                        
@@ -649,6 +779,8 @@ int main(int argc, char *argv[]) {
         config.value_separator = ",";
     } else if (config.format == RUN_LS_FORMAT_TSV) {
         config.value_separator = "\t";
+    } else if (config.format == RUN_LS_FORMAT_JSON) {
+        config.value_separator = ",\n";
     } else if (config.format == RUN_LS_FORMAT_TAB) {
         config.value_separator = " | ";
     }
