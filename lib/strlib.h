@@ -4,6 +4,45 @@
 #include <stdbool.h>
 #include <string.h>
 
+char* lib_strcat(char* dst, const char* src);
+
+char* lib_strcpy(char* dst, const char* src);
+
+//
+
+/**
+ * [allocate]
+ */
+char* lib_strdup(const char* src);
+
+/**
+ * [allocate]
+ */
+char* lib_strndup(const char* src, size_t size);
+
+/**
+ * [allocate]
+ */
+char* lib_strdup_qt(const char* src);
+
+/**
+ * [allocate]
+ * Quote char
+ */
+char* lib_strdup_qtc(const char* src, char quote);
+
+/**
+ * [allocate]
+ */
+char* lib_strdup_uq(const char* src);
+
+/**
+ * [allocate]
+ * Quote char
+ */
+char* lib_strdup_uqc(const char* src, char quote);
+
+//
 
 int lib_strcmp(const char* str1, const char* str2);
 
@@ -52,52 +91,27 @@ char* lib_strappn(int n, const char* str, ...);
 
 #define lib_strappv(...) lib_strapp(__VA_ARGS__, NULL)
 
-char* lib_strcat(char* dst, const char* src);
-
-char* lib_strcpy(char* dst, const char* src);
-
 size_t lib_strlen(const char* src);
 
-/**
- * [allocate]
- */
-char* lib_strdup(const char* src);
+//
 
-/**
- * [allocate]
- */
-char* lib_strndup(const char* src, size_t size);
-
-/**
- * [allocate]
- */
-char* lib_strdup_qt_opts(const char* src, char quote);
-
-/**
- * [allocate]
- */
-char* lib_strdup_qt(const char* src);
-
-/**
- * [allocate]
- */
-char* lib_strdup_uq(const char* src);
-
-bool lib_is_strn_qt_opts(const char* src, size_t size, char quote);
-
-bool lib_is_str_qt_opts(const char* src, char quote);
+bool lib_is_str_qt(const char* src);
 
 bool lib_is_strn_qt(const char* src, size_t size);
 
-bool lib_is_str_qt(const char* src);
+bool lib_is_str_qtc(const char* src, char quote);
+
+bool lib_is_strn_qtc(const char* src, size_t size, char quote);
+
+//
 
 int lib_stralen(/*const*/ char** array);
 
 void lib_strafree(char** array);
 
-void lib_replace_n(char* path, size_t len, char from, char to);
+void lib_strtr(char* str, char from, char to);
 
-void lib_replace(char* path, char from, char to);
+void lib_strntr(char* str, size_t len, char from, char to);
 
 char* lib_strchr_end(char* str, int c);
 

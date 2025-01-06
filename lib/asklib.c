@@ -553,7 +553,7 @@ void lib_ask_print_txt(const lib_ask_result_t* result, const char* data, size_t 
         width = row_width + col_width + 5;
 
         sprintf(format, "[_%id: _%id] ", row_width, col_width);
-        lib_replace_n(format, sizeof(format) / sizeof(char), '_', '%');
+        lib_strntr(format, sizeof(format) / sizeof(char), '_', '%');
     }
 
     while (curr) {
@@ -639,7 +639,7 @@ void lib_ask_print_bin(const lib_ask_result_t* result, const char* data, size_t 
         lib_ask_calc_width_index(positions, &index_width);
         width = index_width + 3;
         sprintf(format, "[_%id] ", index_width);
-        lib_replace_n(format, sizeof(format) / sizeof(char), '_', '%');
+        lib_strntr(format, sizeof(format) / sizeof(char), '_', '%');
     }
 
     while (curr) {
