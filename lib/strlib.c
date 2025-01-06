@@ -1,9 +1,146 @@
 #include <stdlib.h> /* malloc, free             */
 #include <stdarg.h> /* va_start, va_arg, va_end */
-//#include <stdio.h>
-//#include <string.h>
+#include <ctype.h>
 
 #include "strlib.h"
+
+int lib_strcmp(const char* str1, const char* str2) {
+  if (!str1 && !str2) {
+    return 0;
+  }
+  if (!str1) {
+    return -1;
+  }
+  if (!str2) {
+    return 1;
+  }
+  if (str1 == str2) {
+    return 0;
+  }
+  return strcmp(str1, str2);
+}
+
+int lib_strncmp(const char* str1, const char* str2, size_t size) {
+  if (!str1 && !str2) {
+    return 0;
+  }
+  if (!str1) {
+    return -1;
+  }
+  if (!str2) {
+    return 1;
+  }
+  if (str1 == str2) {
+    return 0;
+  }
+  return strncmp(str1, str2, size);
+}
+
+int lib_stricmp(const char* str1, const char* str2) {
+  if (!str1 && !str2) {
+    return 0;
+  }
+  if (!str1) {
+    return -1;
+  }
+  if (!str2) {
+    return 1;
+  }
+  if (str1 == str2) {
+    return 0;
+  }
+
+  /*
+  size_t len1 = strlen(str1);
+  size_t len2 = strlen(str2);
+  if (len1 < len2) {
+    return -1;
+  }
+  if (len2 < len1) {
+    return 1;
+  }
+  */
+
+  /*
+  for (size_t i = 0; i < len1; i++) {
+    c1 = tolower(str1[i]);
+    c2 = tolower(str2[i]);
+    if (c1 < c2) {
+      return -1;
+    }
+    if (c2 < c1) {
+      return 1;
+    }
+  }
+  */
+
+  char* s1 = (char*) str1;
+  char* s2 = (char*) str2;
+  int c1   = 0;
+  int c2   = 0;
+
+  while (true) {
+    if (*s1 == '\0') {
+      return (*s2 == '\0') ? 0 : -1;
+    }
+    if (*s2 == '\0') {
+      return (*s1 == '\0') ? 0 : 1;
+    }
+    c1 = tolower(*s1);
+    c2 = tolower(*s2);
+    if (c1 < c2) {
+      return -1;
+    }
+    if (c2 < c1) {
+      return 1;
+    }
+    s1++;
+    s2++;
+  }
+  return 0;
+}
+
+int lib_strnicmp(const char* str1, const char* str2, size_t size) {
+  if (!str1 && !str2) {
+    return 0;
+  }
+  if (!str1) {
+    return -1;
+  }
+  if (!str2) {
+    return 1;
+  }
+  if (str1 == str2) {
+    return 0;
+  }
+ 
+  char* s1 = (char*) str1;
+  char* s2 = (char*) str2;
+  int c1   = 0;
+  int c2   = 0;
+  size_t i = 0;
+
+  while (i < size) {
+    if (*s1 == '\0') {
+      return (*s2 == '\0') ? 0 : -1;
+    }
+    if (*s2 == '\0') {
+      return (*s1 == '\0') ? 0 : 1;
+    }
+    c1 = tolower(*s1);
+    c2 = tolower(*s2);
+    if (c1 < c2) {
+      return -1;
+    }
+    if (c2 < c1) {
+      return 1;
+    }
+    s1++;
+    s2++;
+    i++;    
+  }
+  return 0;
+}
 
 bool lib_stremp(const char* str) {
     return !str || str[0] == '\0';

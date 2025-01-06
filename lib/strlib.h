@@ -4,6 +4,15 @@
 #include <stdbool.h>
 #include <string.h>
 
+
+int lib_strcmp(const char* str1, const char* str2);
+
+int lib_strncmp(const char* str1, const char* str2, size_t size);
+
+int lib_stricmp(const char* str1, const char* str2);
+
+int lib_strnicmp(const char* str1, const char* str2, size_t size);
+
 /**
  * Return true if a str is empty 
  */
