@@ -239,6 +239,98 @@ void test_strnicmp() {
 
 }
 
+void test_strstr() {
+
+    printf("\n");
+    printf(">> strstr(\"abcdef\", \"cde\")\n");
+    printf("<< %s\n", strstr("abcdef", "cde"));
+
+    printf(">> strstr(\"abcdef\", \"def\")\n");
+    printf("<< %s\n", strstr("abcdef", "def"));
+
+    printf(">> strstr(\"abcdef\", \"xyz\")\n");
+    printf("<< %s\n", strstr("abcdef", "xyz"));
+
+    //
+
+    printf(">> lib_strstr(\"abcdef\", \"cde\")\n");
+    printf("<< %s\n", lib_strstr("abcdef", "cde"));
+
+    printf(">> lib_strstr(\"abcdef\", \"def\")\n");
+    printf("<< %s\n", lib_strstr("abcdef", "def"));
+
+    printf(">> lib_strstr(\"abcdef\", \"f\")\n");
+    printf("<< %s\n", lib_strstr("abcdef", "f"));
+
+    printf(">> lib_strstr(\"abcdef\", \"xyz\")\n");
+    printf("<< %s\n", lib_strstr("abcdef", "xyz"));
+
+    printf(">> lib_strstr(\"abcdef\", NULL)\n");
+    printf("<< %s\n", lib_strstr("abcdef", NULL));
+
+    printf(">> lib_strstr(NULL, \"cde\")\n");
+    printf("<< %s\n", lib_strstr(NULL, "cde"));
+
+    printf(">> lib_strstr(NULL, NULL)\n");
+    printf("<< %s\n", lib_strstr(NULL, NULL));
+
+}
+
+void test_strnstr() {
+
+    printf("\n");
+    printf(">> strnstr(\"abcdef\", \"cde\")\n");
+    printf("<< %s\n", strnstr("abcdef", "cde", 6));
+
+    printf(">> strnstr(\"abcdef\", \"def\", 6)\n");
+    printf("<< %s\n", strnstr("abcdef", "def", 6));
+
+    printf(">> strnstr(\"abcdef\", \"def\", 3)\n");
+    printf("<< %s\n", strnstr("abcdef", "def", 3));
+
+    printf(">> strnstr(\"abcdef\", \"bc\", 3)\n");
+    printf("<< %s\n", strnstr("abcdef", "bc", 3));
+
+    printf(">> strnstr(\"abcdef\", \"def\", 10)\n");
+    printf("<< %s\n", strnstr("abcdef", "def", 10));
+
+    printf(">> strnstr(\"abcdef\", \"xyz\", 6)\n");
+    printf("<< %s\n", strnstr("abcdef", "xyz", 6));
+
+    //
+
+    printf(">> lib_strnstr(\"abcdef\", \"cde\", 6)\n");
+    printf("<< %s\n", lib_strnstr("abcdef", "cde", 6));
+
+    printf(">> lib_strnstr(\"abcdef\", \"def\", 6)\n");
+    printf("<< %s\n", lib_strnstr("abcdef", "def", 6));
+
+    printf(">> lib_strnstr(\"abcdef\", \"def\", 3)\n");
+    printf("<< %s\n", lib_strnstr("abcdef", "def", 3));
+
+    printf(">> lib_strnstr(\"abcdef\", \"bc\", 3)\n");
+    printf("<< %s\n", lib_strnstr("abcdef", "bc", 3));
+
+    printf(">> lib_strnstr(\"abcdef\", \"def\", 10)\n");
+    printf("<< %s\n", lib_strnstr("abcdef", "def", 10));
+
+    printf(">> lib_strnstr(\"abcdef\", \"f\", 6)\n");
+    printf("<< %s\n", lib_strnstr("abcdef", "f", 6));
+
+    printf(">> lib_strnstr(\"abcdef\", \"xyz\", 6)\n");
+    printf("<< %s\n", lib_strnstr("abcdef", "xyz", 6));
+
+    printf(">> lib_strnstr(\"abcdef\", NULL, 6)\n");
+    printf("<< %s\n", lib_strnstr("abcdef", NULL, 6));
+
+    printf(">> lib_strnstr(NULL, \"cde\", 6)\n");
+    printf("<< %s\n", lib_strnstr(NULL, "cde", 6));
+
+    printf(">> lib_strnstr(NULL, NULL, 6)\n");
+    printf("<< %s\n", lib_strnstr(NULL, NULL, 6));
+
+}
+
 int main(int argc, char* argv[]) {
 
     test_strapp();
@@ -248,6 +340,9 @@ int main(int argc, char* argv[]) {
 
     test_stricmp();
     test_strnicmp();
+
+    test_strstr();
+    test_strnstr();
 
     return 0;
 }

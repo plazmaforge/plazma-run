@@ -44,6 +44,73 @@ char* lib_strcpy(char* dst, const char* src) {
   return strcpy(dst, src);
 }
 
+char* lib_strncpy(char* dst, const char* src, size_t len) {
+  if (!dst || !src) {
+    return dst;
+  }
+  return strncpy(dst, src, len);
+}
+
+//
+
+const char* lib_strstr(const char* str, const char* find) {
+  if (!str || !find) {
+    return NULL;
+  }
+  //return strstr(str, find);
+
+  char* s = (char*) str;
+  char* f;
+  size_t flen = strlen(find);
+
+  while (*s) {
+    f = (char*) find;
+    if (*s == *f) {
+      size_t j = 1;
+      while (*s == *f) {
+        if (j == flen) {
+          return (char*) (s - flen + 1);
+        }
+        s++;
+        f++;
+        j++;
+      }      
+    }
+    s++;
+  }
+  return NULL;
+}
+
+const char* lib_strnstr(const char* str, const char* find, size_t len) {
+  if (!str || !find) {
+    return NULL;
+  }
+  //return strnstr(str, find, len);
+
+  char* s = (char*) str;
+  char* f;
+  size_t flen = strlen(find);
+  size_t i = 0;
+
+  while (*s && i < len) {
+    f = (char*) find;
+    if (*s == *f) {
+      size_t j = 1;
+      while (*s == *f) {
+        if (j == flen) {
+          return (char*) (s - flen + 1);
+        }
+        s++;
+        f++;
+        j++;
+      }      
+    }
+    i++;
+    s++;
+  }
+  return NULL;  
+}
+
 //
 
 /**
@@ -55,14 +122,6 @@ char* lib_strdup(const char* src) {
   }
   size_t len = strlen(src);
   return _lib_strndup(src, len);
-
-  // char* dst = lib_strnew(len);
-  // if (!dst) {
-  //   return NULL;
-  // }    
-  // memcpy(dst, src, len);
-  // //dst[len] = '\0';
-  // return dst;
 }
 
 /**
@@ -72,17 +131,9 @@ char* lib_strndup(const char* src, size_t size) {
   if (!src) {
     return NULL;
   }
-  size_t len = strlen(src);
-  len = len < size ? len : size;
-  return _lib_strndup(src, len);
-
-  // char* dst = lib_strnew(len);
-  // if (!dst) {
-  //   return NULL;
-  // }    
-  // memcpy(dst, src, len);
-  // //dst[len] = '\0';
-  // return dst;
+  size_t _len = strlen(src);
+  _len = _len < size ? _len : size;
+  return _lib_strndup(src, _len);
 }
 
 /**
@@ -295,7 +346,7 @@ bool lib_stremp(const char* str) {
 }
 
 const char* lib_strsaf(const char* str) {
-    return str ? str : "";
+    return str ? str : LIB_STR_EMP;
 }
 
 /**
@@ -369,7 +420,7 @@ char* lib_strapp(const char* str, ...) {
   }
 
   if (len == 0) {
-    return lib_strdup("");
+    return lib_strdup(LIB_STR_EMP);
   }
 
   char* tmp = lib_strnew(len);
@@ -414,7 +465,7 @@ char* lib_strappn(int n, const char* str, ...) {
   }
 
   if (len == 0) {
-    return lib_strdup("");
+    return lib_strdup(LIB_STR_EMP);
   }
 
   char* tmp = lib_strnew(len);
@@ -455,7 +506,7 @@ char* __lib_straddv__(const char* str, ...) {
   }
 
   if (len == 0) {
-    return lib_strdup("");
+    return lib_strdup(LIB_STR_EMP);
   }
 
   char* tmp = lib_strnew(len);
@@ -498,7 +549,7 @@ char* __lib_straddn__(int n, const char* str, ...) {
   }
 
   if (len == 0) {
-    return lib_strdup("");
+    return lib_strdup(LIB_STR_EMP);
   }
 
   char* tmp = lib_strnew(len);

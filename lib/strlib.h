@@ -8,6 +8,12 @@ char* lib_strcat(char* dst, const char* src);
 
 char* lib_strcpy(char* dst, const char* src);
 
+char* lib_strncpy(char* dst, const char* src, size_t len);
+
+const char* lib_strstr(const char* str, const char* find);
+
+const char* lib_strnstr(const char* str, const char* find, size_t len);
+
 //
 
 /**
