@@ -4,80 +4,89 @@
 
 #include "strlib.h"
 
-void test_strapp() {
+void test_strjoin() {
 
-    //// strappv()
+    //// strjoin()
 
-    char* tmp = lib_strappv("abc", "-def", "-xyz", "-qwe");
-    printf(">> lib_strappv(\"abc\", \"-def\", \"-xyz\", \"-qwe\")\n");
-    printf("<< %s\n", tmp);
-    free(tmp);
+    char* str;
 
-    tmp = lib_strappv("abc", "-def", "-xyz");
+    str = lib_strjoin("abc", "-def", "-xyz", "-qwe");
+    printf(">> lib_strjoin(\"abc\", \"-def\", \"-xyz\", \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_strjoin("abc", "-def", "-xyz");
     printf("\n");
-    printf(">> lib_strappv(\"abc\", \"-def\", \"-xyz\")\n");
-    printf("<< %s\n", tmp);
-    free(tmp);
+    printf(">> lib_strjoin(\"abc\", \"-def\", \"-xyz\")\n");
+    printf("<< %s\n", str);
+    free(str);
 
-    tmp = lib_strappv("abc", "-def");
+    str = lib_strjoin("abc", "-def");
     printf("\n");
-    printf(">> lib_strappv(\"abc\", \"-def\")\n");
-    printf("<< %s\n", tmp);
-    free(tmp);
+    printf(">> lib_strjoin(\"abc\", \"-def\")\n");
+    printf("<< %s\n", str);
+    free(str);
 
-    tmp = lib_strappv("abc");
+    str = lib_strjoin("abc");
     printf("\n");
-    printf(">> lib_strappv(\"abc\")\n");
-    printf("<< %s\n", tmp);
-    free(tmp);
+    printf(">> lib_strjoin(\"abc\")\n");
+    printf("<< %s\n", str);
+    free(str);
 
-    tmp = lib_strappv("abc", "-def", "-xyz", NULL, "-qwe");
+    str = lib_strjoin("abc", "-def", "-xyz", NULL, "-qwe");
     printf("\n");
-    printf(">> lib_strappv(\"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
-    printf("<< %s\n", tmp);
-    free(tmp);
+    printf(">> lib_strjoin(\"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
 
-    //// strappn()
 
-    tmp = lib_strappn(5, "abc", "-def", "-xyz", NULL, "-qwe");
+}
+
+void test_strcjoin() {
+
+    //// strcjoin()
+
+    char* str;
+
+    str = lib_strcjoin(5, "abc", "-def", "-xyz", NULL, "-qwe");
     printf("\n");
-    printf(">> lib_strappn(5, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
-    printf("<< %s\n", tmp);
-    free(tmp);
+    printf(">> lib_strcjoin(5, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
 
-    tmp = lib_strappn(4, "abc", "-def", "-xyz", NULL, "-qwe");
+    str = lib_strcjoin(4, "abc", "-def", "-xyz", NULL, "-qwe");
     printf("\n");
-    printf(">> lib_strappn(4, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
-    printf("<< %s\n", tmp);
-    free(tmp);
+    printf(">> lib_strcjoin(4, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
 
-    tmp = lib_strappn(3, "abc", "-def", "-xyz", NULL, "-qwe");
+    str = lib_strcjoin(3, "abc", "-def", "-xyz", NULL, "-qwe");
     printf("\n");
-    printf(">> lib_strappn(3, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
-    printf("<< %s\n", tmp);
-    free(tmp);
+    printf(">> lib_strcjoin(3, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
 
-    tmp = lib_strappn(2, "abc", "-def", "-xyz", NULL, "-qwe");
+    str = lib_strcjoin(2, "abc", "-def", "-xyz", NULL, "-qwe");
     printf("\n");
-    printf(">> lib_strappn(2, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
-    printf("<< %s\n", tmp);
-    free(tmp);
+    printf(">> lib_strcjoin(2, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
 
-    tmp = lib_strappn(1, "abc", "-def", "-xyz", NULL, "-qwe");
+    str = lib_strcjoin(1, "abc", "-def", "-xyz", NULL, "-qwe");
     printf("\n");
-    printf(">> lib_strappn(1, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
-    printf("<< %s\n", tmp);
-    free(tmp);
+    printf(">> lib_strcjoin(1, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
 
-    tmp = lib_strappn(0, "abc", "-def", "-xyz", NULL, "-qwe");
+    str = lib_strcjoin(0, "abc", "-def", "-xyz", NULL, "-qwe");
     printf("\n");
-    printf(">> lib_strappn(0, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
-    printf("<< %s\n", tmp);
-    free(tmp);
+    printf(">> lib_strcjoin(0, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
 
-    // tmp = lib_strappn(-1, "abc", "-def", "-xyz", NULL, "-qwe");
-    // printf("strappn(-): %s\n", tmp);
-    // free(tmp);
+    // str = lib_strcjoin(-1, "abc", "-def", "-xyz", NULL, "-qwe");
+    // printf("strcjoin(-): %s\n", str);
+    // free(str);
 
 }
 
@@ -333,7 +342,8 @@ void test_strnstr() {
 
 int main(int argc, char* argv[]) {
 
-    test_strapp();
+    test_strjoin();
+    test_strcjoin();
 
     test_strcmp();
     test_strncmp();

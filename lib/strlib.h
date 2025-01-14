@@ -76,26 +76,24 @@ char* lib_strnew(size_t size);
 /**
  * [allocate]
  */
-char* lib_stradd(const char* str1, const char* str2);
+//char* lib_stradd(const char* str1, const char* str2);
 
-// /**
-//  * [allocate]
-//  */
-// char* lib_straddv_(const char* str1, const char* str2, const char* str3);
+//char* lib_strapp(const char* str1, ...);
 
-char* lib_strapp(const char* str1, ...);
+/**
+ * [allocate]
+ */
+char* lib_strcjoin(size_t count, const char* str, ...);
 
-char* lib_strappn(int n, const char* str, ...);
+/**
+ * [allocate]
+ */
+char* __lib_strjoin__(const char* str, ...);
 
-//char* __lib_straddv__(const char* str1, ...);
-
-//char* __lib_straddn__(int n, const char* str1, ...);
-
-//#define lib_straddv(...) __lib_straddv__(NULL, __VA_ARGS__, NULL)
-
-//#define lib_straddn(n, ...) __lib_straddn__(n, NULL, __VA_ARGS__, NULL)
-
-#define lib_strappv(...) lib_strapp(__VA_ARGS__, NULL)
+/**
+ * [allocate]
+ */
+#define lib_strjoin(...) __lib_strjoin__(__VA_ARGS__, NULL)
 
 size_t lib_strlen(const char* src);
 
