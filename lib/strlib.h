@@ -14,8 +14,6 @@ const char* lib_strstr(const char* str, const char* find);
 
 const char* lib_strnstr(const char* str, const char* find, size_t len);
 
-//
-
 /**
  * [allocate]
  */
@@ -76,14 +74,11 @@ char* lib_strnew(size_t size);
 /**
  * [allocate]
  */
-//char* lib_stradd(const char* str1, const char* str2);
-
-//char* lib_strapp(const char* str1, ...);
-
-/**
- * [allocate]
- */
 char* lib_strcjoin(size_t count, const char* str, ...);
+
+char* __lib_strcatv__(char* dst, const char* str, ...);
+
+char* __lib_strcpyv__(char* dst, const char* str, ...);
 
 /**
  * [allocate]
@@ -94,6 +89,10 @@ char* __lib_strjoin__(const char* str, ...);
  * [allocate]
  */
 #define lib_strjoin(...) __lib_strjoin__(__VA_ARGS__, NULL)
+
+#define lib_strcatv(dst, ...) __lib_strcatv__(dst, __VA_ARGS__, NULL)
+
+#define lib_strcpyv(dst, ...) __lib_strcpyv__(dst, __VA_ARGS__, NULL)
 
 size_t lib_strlen(const char* src);
 

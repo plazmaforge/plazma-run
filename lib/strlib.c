@@ -28,6 +28,44 @@ static char* _lib_strndup(const char* src, size_t size) {
   return dst;
 }
 
+/**
+ * Returns lenght of string arguments 
+ */
+static size_t _lib_vstrlen(const char* first, va_list args) {  
+  size_t len = 0;
+  const char* arg;
+  for (arg = first; arg != NULL; arg = va_arg(args, const char*)) {
+    len += strlen(arg);
+  }
+  return len;
+}
+
+/**
+ * Concatenates string arguments 
+ */
+static char* _lib_vstrcat(char* dst, const char* str, va_list args) {
+  size_t len = 0;
+  const char* arg;
+  for (arg = str; arg != NULL; arg = va_arg(args, const char*)) {
+    strcat(dst, arg);
+  }
+  return dst;
+}
+
+static char* _lib_vstrcpy(char *dst, const char *first, va_list args) {
+  size_t len = 0;
+  char *end = dst;
+  const char *arg;
+  for (arg = first; arg; arg = va_arg (args, const char*)) {
+    len = strlen(arg);
+    memcpy(end, arg, len);
+    //strcpy(end, arg);
+    end += len;
+  }
+  *end = '\0';
+  return dst;
+}
+
 ////
 
 char* lib_strcat(char* dst, const char* src) {
@@ -36,6 +74,8 @@ char* lib_strcat(char* dst, const char* src) {
   }
   return strcat(dst, src);
 }
+
+////
 
 char* lib_strcpy(char* dst, const char* src) {
   if (!dst || !src) {
@@ -362,31 +402,56 @@ char* lib_strnew(size_t size) {
   return str;
 }
 
-static size_t _lib_vstrcatlen(const char* str, va_list args) {  
-  size_t len = 0;
-  const char* arg;
-  for (arg = str; arg != NULL; arg = va_arg(args, const char*)) {
-    len += strlen(arg);
-  }
-  return len;
-}
+////
 
-static char* _lib_vstrcat(char* dst, const char* str, va_list args) {
-  size_t len = 0;
-  const char* arg;
-  for (arg = str; arg != NULL; arg = va_arg(args, const char*)) {
-    lib_strcat(dst, arg);
-  }
-  return dst;
-}
+char* __lib_strcatv__(char* dst, const char* str, ...) {
 
-char* __lib_strjoin__(const char* str, ...) {
+  if (!dst || !str) {
+    return dst;
+  }
 
   va_list args;  
   size_t len = 0;
 
   va_start(args, str);
-  len = _lib_vstrcatlen(str, args);
+  len = _lib_vstrlen(str, args);
+  va_end(args);
+
+  if (len == 0) {
+    return dst;
+  }
+
+  va_start(args, str);
+  _lib_vstrcat(dst, str, args);
+  va_end(args);
+
+  return dst;
+}
+
+char* __lib_strcpyv__(char* dst, const char* str, ...) {
+
+  if (!dst || !str) {
+    return dst;
+  }
+
+  va_list args;  
+  va_start(args, str);
+  _lib_vstrcpy(dst, str, args);
+  va_end(args);
+
+  return dst;
+}
+
+char* __lib_strjoin__(const char* str, ...) {
+  if (!str) {
+    return NULL;
+  }
+
+  va_list args;
+  size_t len = 0;
+
+  va_start(args, str);
+  len = _lib_vstrlen(str, args);
   va_end(args);
 
   if (len == 0) {
@@ -404,6 +469,8 @@ char* __lib_strjoin__(const char* str, ...) {
 
   return dst;
 }
+
+////
 
 char* lib_strcjoin(size_t count, const char* str, ...) {
   if (count == 0) {

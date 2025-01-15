@@ -90,6 +90,106 @@ void test_strcjoin() {
 
 }
 
+void test_strcatv() {
+
+    //// strcatv()
+
+    char* str;
+
+    str = lib_strnew(15);
+    str = lib_strcatv(str, "abc", "-def", "-xyz", "-qwe");
+    printf(">> lib_strcatv(str, \"abc\", \"-def\", \"-xyz\", \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_strnew(11);
+    str = lib_strcatv(str, "abc", "-def", "-xyz");
+    printf("\n");
+    printf(">> lib_strcatv(str, \"abc\", \"-def\", \"-xyz\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    ////
+
+    str = lib_strnew(15 + 4);
+    str = lib_strcpy(str, "123-");
+    str = lib_strcatv(str, "abc", "-def", "-xyz", "-qwe");
+    printf("\n");
+    printf(">> lib_strcpy(str, \"123-\")\n");
+    printf(">> lib_strcatv(str, \"abc\", \"-def\", \"-xyz\", \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_strnew(11 + 4);
+    str = lib_strcpy(str, "123-");
+    str = lib_strcatv(str, "abc", "-def", "-xyz");
+    printf("\n");
+    printf(">> lib_strcpy(str, \"123-\")\n");
+    printf(">> lib_strcatv(str, \"abc\", \"-def\", \"-xyz\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_strnew(15 + 4);
+    str = lib_strcpy(str, "123-");
+    str = lib_strcatv(str, "abc", "-def", "-xyz", NULL, "-qwe");
+    printf("\n");
+    printf(">> lib_strcpy(str, \"123-\")\n");
+    printf(">> lib_strcatv(str, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+}
+
+void test_strcpyv() {
+
+    //// strcpyv()
+
+    char* str;
+
+    str = lib_strnew(15);
+    str = lib_strcpyv(str, "abc", "-def", "-xyz", "-qwe");
+    printf(">> lib_strcpyv(str, \"abc\", \"-def\", \"-xyz\", \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_strnew(11);
+    str = lib_strcpyv(str, "abc", "-def", "-xyz");
+    printf("\n");
+    printf(">> lib_strcpyv(str, \"abc\", \"-def\", \"-xyz\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    ////
+
+    str = lib_strnew(15 + 4);
+    str = lib_strcpy(str, "123-");
+    str = lib_strcpyv(str, "abc", "-def", "-xyz", "-qwe");
+    printf("\n");
+    printf(">> lib_strcpy(str, \"123-\")\n");
+    printf(">> lib_strcpyv(str, \"abc\", \"-def\", \"-xyz\", \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_strnew(11 + 4);
+    str = lib_strcpy(str, "123-");
+    str = lib_strcpyv(str, "abc", "-def", "-xyz");
+    printf("\n");
+    printf(">> lib_strcpy(str, \"123-\")\n");
+    printf(">> lib_strcpyv(str, \"abc\", \"-def\", \"-xyz\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_strnew(15 + 4);
+    str = lib_strcpy(str, "123-");
+    str = lib_strcpyv(str, "abc", "-def", "-xyz", NULL, "-qwe");
+    printf("\n");
+    printf(">> lib_strcpy(str, \"123-\")\n");
+    printf(">> lib_strcpyv(str, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+}
+
 void test_strcmp() {
 
     char* a = "abc";
@@ -340,10 +440,41 @@ void test_strnstr() {
 
 }
 
+int test(const char* name) {
+    if (!name) {
+        fputs("Test name is empty\n", stderr);
+        return 1;
+    }
+
+    if (strcmp(name, "strjoin") == 0) {
+        test_strjoin();
+        return 0;
+    }
+    if (strcmp(name, "strcatv") == 0) {
+        test_strcatv();
+        return 0;
+    }
+    if (strcmp(name, "strcpyv") == 0) {
+        test_strcpyv();
+        return 0;
+    }
+
+    fprintf(stderr, "Test not found: %s\n", name);
+    return 1;
+
+}
+
 int main(int argc, char* argv[]) {
+
+    if (argc > 1) {
+        return test(argv[1]);
+    }
 
     test_strjoin();
     test_strcjoin();
+
+    test_strcatv();
+    test_strcpyv();
 
     test_strcmp();
     test_strncmp();
