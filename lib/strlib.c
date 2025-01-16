@@ -2,6 +2,8 @@
 #include <stdarg.h> /* va_start, va_arg, va_end */
 #include <ctype.h>
 
+#include <stdio.h>
+
 #include "strlib.h"
 
 #define LIB_STR_Q1  '\''
@@ -11,20 +13,20 @@
 #define LIB_STR_EMP ""
 #define LIB_STR_BLK " "
 
-static bool _lib_is_strn_qta(const char* src, size_t size) {
-  return lib_is_strn_qtc(src, size, LIB_STR_Q1) || lib_is_strn_qtc(src, size, LIB_STR_Q2);
+static bool _lib_is_strn_qta(const char* src, size_t num) {
+  return lib_is_strn_qtc(src, num, LIB_STR_Q1) || lib_is_strn_qtc(src, num, LIB_STR_Q2);
 }
 
 /**
  * [allocate]
  */
-static char* _lib_strndup(const char* src, size_t size) {
-  char* dst = lib_strnew(size);
+static char* _lib_strndup(const char* src, size_t num) {
+  char* dst = lib_strnew(num);
   if (!dst) {
     return NULL;
   }    
-  memcpy(dst, src, size);
-  //dst[size] = '\0';
+  memcpy(dst, src, num);
+  //dst[num] = '\0';
   return dst;
 }
 
@@ -75,6 +77,20 @@ char* lib_strcat(char* dst, const char* src) {
   return strcat(dst, src);
 }
 
+size_t lib_strlcat(char* dst, const char* src, size_t num) {
+  if (!dst || !src) {
+    return 0;
+  }
+  return strlcat(dst, src, num);
+}
+
+char* lib_strncat(char* dst, const char* src, size_t num) {
+  if (!dst || !src) {
+    return dst;
+  }
+  return strncat(dst, src, num);
+}
+
 ////
 
 char* lib_strcpy(char* dst, const char* src) {
@@ -84,11 +100,18 @@ char* lib_strcpy(char* dst, const char* src) {
   return strcpy(dst, src);
 }
 
-char* lib_strncpy(char* dst, const char* src, size_t len) {
+char* lib_strncpy(char* dst, const char* src, size_t num) {
   if (!dst || !src) {
     return dst;
   }
-  return strncpy(dst, src, len);
+  return strncpy(dst, src, num);
+}
+
+size_t lib_strlcpy(char* dst, const char* src, size_t num) {
+  if (!dst || !src) {
+    return 0;
+  }
+  return strlcpy(dst, src, num);
 }
 
 //
@@ -121,18 +144,18 @@ const char* lib_strstr(const char* str, const char* find) {
   return NULL;
 }
 
-const char* lib_strnstr(const char* str, const char* find, size_t len) {
+const char* lib_strnstr(const char* str, const char* find, size_t num) {
   if (!str || !find) {
     return NULL;
   }
-  //return strnstr(str, find, len);
+  //return strnstr(str, find, num);
 
   char* s = (char*) str;
   char* f;
   size_t flen = strlen(find);
   size_t i = 0;
 
-  while (*s && i < len) {
+  while (*s && i < num) {
     f = (char*) find;
     if (*s == *f) {
       size_t j = 1;
@@ -167,13 +190,13 @@ char* lib_strdup(const char* src) {
 /**
  * [allocate]
  */
-char* lib_strndup(const char* src, size_t size) {
+char* lib_strndup(const char* src, size_t num) {
   if (!src) {
     return NULL;
   }
-  size_t _len = strlen(src);
-  _len = _len < size ? _len : size;
-  return _lib_strndup(src, _len);
+  size_t len = strlen(src);
+  len = len < num ? len : num;
+  return _lib_strndup(src, len);
 }
 
 /**
@@ -259,7 +282,7 @@ int lib_strcmp(const char* str1, const char* str2) {
   return strcmp(str1, str2);
 }
 
-int lib_strncmp(const char* str1, const char* str2, size_t size) {
+int lib_strncmp(const char* str1, const char* str2, size_t num) {
   if (!str1 && !str2) {
     return 0;
   }
@@ -272,7 +295,7 @@ int lib_strncmp(const char* str1, const char* str2, size_t size) {
   if (str1 == str2) {
     return 0;
   }
-  return strncmp(str1, str2, size);
+  return strncmp(str1, str2, num);
 }
 
 int lib_stricmp(const char* str1, const char* str2) {
@@ -339,7 +362,7 @@ int lib_stricmp(const char* str1, const char* str2) {
   return 0;
 }
 
-int lib_strnicmp(const char* str1, const char* str2, size_t size) {
+int lib_strnicmp(const char* str1, const char* str2, size_t num) {
   if (!str1 && !str2) {
     return 0;
   }
@@ -359,7 +382,7 @@ int lib_strnicmp(const char* str1, const char* str2, size_t size) {
   int c2   = 0;
   size_t i = 0;
 
-  while (i < size) {
+  while (i < num) {
     if (*s1 == '\0') {
       return (*s2 == '\0') ? 0 : -1;
     }
@@ -530,7 +553,14 @@ const char* lib_strchr(const char* str, int c) {
   return strchr(str, c);
 }
 
-size_t lib_strind(const char* str, int c) {
+const char* lib_strrchr(const char* str, int c) {
+  if (!str) {
+    return NULL;
+  }
+  return strrchr(str, c);
+}
+
+size_t lib_stridx(const char* str, int c) {
   if (!str) {
     return -1;
   }
@@ -538,42 +568,49 @@ size_t lib_strind(const char* str, int c) {
   return (res) ? res - str : -1;
 }
 
-size_t lib_strlen(const char* src) {
-  if (!src) {
+size_t lib_strlen(const char* str) {
+  if (!str) {
     return 0;
   }
-  return strlen(src);
+  return strlen(str);
+}
+
+size_t lib_strnlen(const char* str, size_t num) {
+  if (!str) {
+    return 0;
+  }
+  return strnlen(str, num);
 }
 
 //
 
-bool lib_is_str_qt(const char* src) {
-  if (!src) {
+bool lib_is_str_qt(const char* str) {
+  if (!str) {
     return 0;
   }
-  return lib_is_strn_qt(src, strlen(src));
+  return lib_is_strn_qt(str, strlen(str));
 }
 
-bool lib_is_strn_qt(const char* src, size_t size) {
-  if (!src || size == 0) {
-    return 0;
-  }
-  return _lib_is_strn_qta(src, size);
-  //return lib_is_strn_qtc(src, size, LIB_STR_Q1) || lib_is_strn_qtc(src, size, LIB_STR_Q2);
-}
-
-bool lib_is_str_qtc(const char* src, char quote) {
-  if (!src) {
-    return 0;
-  }
-  return lib_is_strn_qtc(src, strlen(src), quote);
-}
-
-bool lib_is_strn_qtc(const char* src, size_t size, char quote) {
-  if (!src || size < 2) { // start, end
+bool lib_is_strn_qt(const char* str, size_t num) {
+  if (!str || num == 0) {
     return false;
   }
-  return src[0] == quote && src[size - 1] == quote;
+  return _lib_is_strn_qta(str, num);
+  //return lib_is_strn_qtc(str, num, LIB_STR_Q1) || lib_is_strn_qtc(str, num, LIB_STR_Q2);
+}
+
+bool lib_is_str_qtc(const char* str, char quote) {
+  if (!str) {
+    return false;
+  }
+  return lib_is_strn_qtc(str, strlen(str), quote);
+}
+
+bool lib_is_strn_qtc(const char* str, size_t num, char quote) {
+  if (!str || num < 2) { // start, end
+    return false;
+  }
+  return str[0] == quote && str[num - 1] == quote;
 }
 
 //
@@ -606,22 +643,23 @@ void lib_strafree(char** array) {
     free(array);
 }
 
-void lib_strtr(char* str, char from, char to) {
+char* lib_strtr(char* str, char from, char to) {
     if (!str) {
-        return;
+        return NULL;
     }
-    lib_strntr(str, lib_strlen(str), from, to);
+    return lib_strntr(str, lib_strlen(str), from, to);
 }
 
-void lib_strntr(char* str, size_t len, char from, char to) {
+char* lib_strntr(char* str, size_t num, char from, char to) {
     if (!str) {
-        return;
+        return NULL;
     }
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < num; i++) {
         if (str[i] == from) {
             str[i] = to;
         }
     }
+    return str;
 }
 
 char* lib_strchr_end(char* str, int c) {
@@ -632,3 +670,67 @@ char* lib_strchr_end(char* str, int c) {
 	for (val = str; *val && *val != c; ++val);
 	return val;
 }
+
+////
+
+char* lib_strlwr(char* str) {
+    if (!str) {
+        return NULL;
+    }
+    char* s = str;
+    while (*s) {
+      *s = tolower(*s);
+      s++;
+    }
+    return str;
+}
+
+char* lib_strupr(char* str) {
+    if (!str) {
+        return NULL;
+    }
+    char* s = str;
+    while (*s) {
+      *s = toupper(*s);
+      s++;
+    }
+    return str;
+}
+
+char* lib_strrev(char* str) {
+    if (!str) {
+        return NULL;
+    }
+    size_t len = strlen(str);
+    if (len < 2) {
+      return str;
+    }
+    size_t k = len / 2;
+    size_t i;
+    size_t j;
+    char c;
+    for (i = 0, j = len - 1; i < k; i++, j--) {
+      c = str[i];
+      str[i] = str[j];
+      str[j] = c;
+    }
+    return str;
+}
+
+char* lib_strsep(char** str, const char* delims) {
+    if (!str || !delims) {
+        return NULL;
+    }
+    return strsep(str, delims);
+}
+
+char* lib_strtok(char* str, const char* delims) {
+    // str can be NULL
+    if (!delims) {
+      return NULL;
+    }
+    return strtok(str, delims);
+}
+
+// strtok vs strsep
+// https://stackoverflow.com/questions/7218625/what-are-the-differences-between-strtok-and-strsep-in-c

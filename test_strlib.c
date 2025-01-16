@@ -440,6 +440,136 @@ void test_strnstr() {
 
 }
 
+void test_strlwr() {
+
+    //// strlwr()
+
+    char* str;
+
+    str = lib_strdup("aBcDef");
+    printf("\n");
+    printf(">> lib_strlwr(\"aBcDef\")\n");
+    printf("<< %s\n", lib_strlwr(str));
+    free(str);
+
+    str = lib_strdup("");
+    printf(">> lib_strlwr(\"\")\n");
+    printf("<< %s\n", lib_strlwr(str));
+    free(str);
+
+    printf(">> lib_strlwr(NULL)\n");
+    printf("<< %s\n", lib_strlwr(NULL));
+
+}
+
+void test_strupr() {
+
+    //// strupr()
+
+    char* str;
+
+    str = lib_strdup("aBcDef");
+    printf("\n");
+    printf(">> lib_strupr(\"aBcDef\")\n");
+    printf("<< %s\n", lib_strupr(str));
+    free(str);
+
+    str = lib_strdup("");
+    printf(">> lib_strupr(\"\")\n");
+    printf("<< %s\n", lib_strupr(str));
+    free(str);
+
+    printf(">> lib_strupr(NULL)\n");
+    printf("<< %s\n", lib_strupr(NULL));
+
+}
+
+void test_strrev() {
+
+    //// strrev()
+
+    char* str;
+
+    str = lib_strdup("aBcDef");
+    printf("\n");
+    printf(">> lib_strrev(\"aBcDef\")\n");
+    printf("<< %s\n", lib_strrev(str));
+    free(str);
+
+    str = lib_strdup("aB");
+    printf(">> lib_strrev(\"aB\")\n");
+    printf("<< %s\n", lib_strrev(str));
+    free(str);
+
+    str = lib_strdup("a");
+    printf(">> lib_strrev(\"a\")\n");
+    printf("<< %s\n", lib_strrev(str));
+    free(str);
+
+    str = lib_strdup("");
+    printf(">> lib_strrev(\"\")\n");
+    printf("<< %s\n", lib_strrev(str));
+    free(str);
+
+    printf(">> lib_strrev(NULL)\n");
+    printf("<< %s\n", lib_strrev(NULL));
+
+}
+
+void test_strtok() {
+
+    //// strtok()
+
+    char* str;
+    char* tok;
+
+    str = lib_strdup("This is test");
+
+    printf("\n");
+    printf(">> lib_strtok(\"This is test\", \" \")\n");
+    tok = lib_strtok(str, " ");
+    while (tok) {
+        printf("<< %s\n", tok);
+        tok = lib_strtok(NULL, " ");
+    }
+    free(str);
+
+    str = lib_strdup("Name,Unit;Value");
+    printf(">> lib_strtok(\"Name,Unit;Value\", \",;\")\n");
+    tok = lib_strtok(str, ",;");
+    while (tok) {
+        printf("<< %s\n", tok);
+        tok = lib_strtok(NULL, ",;");
+    }
+    free(str);
+
+}
+
+void test_strsep() {
+
+    //// strsep()
+
+    char* str;
+    char* tok;
+
+    str = lib_strdup("This is test");
+
+    printf("\n");
+    printf(">> lib_strsep(\"This is test\", \" \")\n");
+    while ((tok = lib_strsep(&str, " "))) {
+        printf("<< %s\n", tok);
+    } 
+    free(str);
+
+    str = lib_strdup("Name,Unit;Value");
+    printf(">> lib_strsep(\"Name,Unit;Value\", \",;\")\n");
+    while ((tok = lib_strsep(&str, ",;"))) {
+        printf("<< %s\n", tok);
+    } 
+    free(str);
+
+}
+
 int test(const char* name) {
     if (!name) {
         fputs("Test name is empty\n", stderr);
@@ -456,6 +586,14 @@ int test(const char* name) {
     }
     if (strcmp(name, "strcpyv") == 0) {
         test_strcpyv();
+        return 0;
+    }
+    if (strcmp(name, "strlwr") == 0) {
+        test_strlwr();
+        return 0;
+    }
+    if (strcmp(name, "strupr") == 0) {
+        test_strupr();
         return 0;
     }
 
@@ -484,6 +622,13 @@ int main(int argc, char* argv[]) {
 
     test_strstr();
     test_strnstr();
+
+    test_strlwr();
+    test_strupr();
+    test_strrev();
+
+    test_strtok();
+    test_strsep();
 
     return 0;
 }
