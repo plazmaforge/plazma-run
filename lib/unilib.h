@@ -17,32 +17,32 @@
  * 
  * Return new codepoint.
  */
-int lib_uni_to_case_codepoint(int mode, int cp);
+int lib_uni_to_case_code(int mode, int cp);
 
 /**
  * Convert a codepoint to lower case.
  * Return new codepoint.
  */
-int lib_uni_to_lower_codepoint(int cp);
+int lib_uni_to_lower_code(int cp);
 
 /**
  * Convert a codepoint to upper case
  * Return new codepoint.
  */
-int lib_uni_to_upper_codepoint(int cp);
+int lib_uni_to_upper_code(int cp);
 
 ////
 
-int lib_uni_to_case_codepoint(int mode, int cp) {
+int lib_uni_to_case_code(int mode, int cp) {
     if (mode == LIB_UNI_CASE_LOWER) {
-        return lib_uni_to_lower_codepoint(cp);
+        return lib_uni_to_lower_code(cp);
     } else if (mode == LIB_UNI_CASE_UPPER) {
-        return lib_uni_to_upper_codepoint(cp);
+        return lib_uni_to_upper_code(cp);
     }
     return cp; // No convertiong
 }
 
-int lib_uni_to_lower_codepoint(int cp) {
+int lib_uni_to_lower_code(int cp) {
     if (((0x0041 <= cp) && (0x005a >= cp)) ||
         ((0x00c0 <= cp) && (0x00d6 >= cp)) ||
         ((0x00d8 <= cp) && (0x00de >= cp)) ||
@@ -125,7 +125,7 @@ int lib_uni_to_lower_codepoint(int cp) {
     return cp;
 }
 
-int lib_uni_to_upper_codepoint(int cp) {
+int lib_uni_to_upper_code(int cp) {
     if (((0x0061 <= cp) && (0x007a >= cp)) ||
         ((0x00e0 <= cp) && (0x00f6 >= cp)) ||
         ((0x00f8 <= cp) && (0x00fe >= cp)) ||

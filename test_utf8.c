@@ -214,17 +214,17 @@ int main(int argc, char* argv[]) {
             int i3 = 0;
 
             //printf("u = %i, c = %c\n", u, c);
-            i1 = lib_utf8_get_byte_sequence_len_array(c);
-            i2 = lib_utf8_get_byte_sequence_len_strong(c);
-            i3 = lib_utf8_get_byte_sequence_len_range(c);
+            i1 = lib_utf8_byte_seq_len_array(c);
+            i2 = lib_utf8_byte_seq_len_strong(c);
+            i3 = lib_utf8_byte_seq_len_range(c);
             //if (i1 != i2 || i1 != i3 || i2 != i3) {
             //    printf("u = %i, len1 = %i, len2 = %i, len3 = %i\n", u, i1, i2, i3);
             //}
             val += i1;
 
-            //val += lib_utf8_get_byte_sequence_len_array(c);
-            //val += lib_utf8_get_byte_sequence_len_strong(c);
-            //val += lib_utf8_get_byte_sequence_len_range(c);
+            //val += lib_utf8_byte_seq_len_array(c);
+            //val += lib_utf8_byte_seq_len_strong(c);
+            //val += lib_utf8_byte_seq_len_range(c);
             //val += c;
         }
     //}

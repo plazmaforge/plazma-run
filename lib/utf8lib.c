@@ -21,7 +21,7 @@ Char. number range     |        UTF-8 octet sequence
 
 // https://tools.ietf.org/html/rfc3629
 
-static const int LIB_UTF8_SEQUENCE_LEN[256] = {
+static const int LIB_UTF8_SEQLEN[256] = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 0: 1: 0x00 - 0x0F */ /* 0x00 - 0x7F */
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 1: 1: 0x10 - 0x1F */
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 2: 1: 0x20 - 0x2F */
@@ -73,7 +73,7 @@ static const int LIB_UTF8_SEQUENCE_LEN[256] = {
 
 //// static
 
-static int _lib_utf8_to_codepoint(const char* str, int len);
+static int _lib_utf8_to_code(const char* str, int len);
 
 static int _lib_utf8_to_char(char* buf, int cp, int len);
 
@@ -103,7 +103,7 @@ int lib_uni_check_not_char(int c) {
     return 0;
 }
 
-int lib_uni_check_surrogate(int c) {
+int lib_uni_check_sur(int c) {
     if (c >= LIB_UNI_SUR_HIGH_START && c <= LIB_UNI_SUR_LOW_END) {
         return LIB_UNI_SUR_PAIR;
     }
@@ -120,8 +120,8 @@ bool lib_uni_is_char(int c) {
     return lib_uni_check_not_char(c) == 0;
 }
 
-bool lib_uni_is_surrogate(int c) {
-    return lib_uni_check_surrogate(c) != 0;
+bool lib_uni_is_sur(int c) {
+    return lib_uni_check_sur(c) != 0;
 }
 
 int lib_uni_is_not_ffff(int c) {
@@ -130,7 +130,7 @@ int lib_uni_is_not_ffff(int c) {
 
 //// utf8
 
-size_t lib_utf8_get_codepoint_sequence_len(int cp) {
+size_t lib_utf8_code_seq_len(int cp) {
     if (cp < 0) {
         return 0; /* error */
     }
@@ -172,15 +172,15 @@ size_t lib_utf8_get_codepoint_sequence_len(int cp) {
 // by array (strong)
 //  1 000 000:  1.497s
 // 10 000 000: 14.500s
-size_t lib_utf8_get_byte_sequence_len_array(char first) {
+size_t lib_utf8_byte_seq_len_array(char first) {
     unsigned char u = (unsigned char) first;
-    return LIB_UTF8_SEQUENCE_LEN[u];
+    return LIB_UTF8_SEQLEN[u];
 }
 
 // by range (strong)
 //  1 000 000:  1.043s
 // 10 000 000: 10.000s
-size_t lib_utf8_get_byte_sequence_len_strong(char first) {
+size_t lib_utf8_byte_seq_len_strong(char first) {
     unsigned char u = (unsigned char) first;
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
@@ -201,7 +201,7 @@ size_t lib_utf8_get_byte_sequence_len_strong(char first) {
 // by range
 //  1 000 000: 0.980s
 // 10 000 000: 9.500s
-size_t lib_utf8_get_byte_sequence_len_range(char first) {
+size_t lib_utf8_byte_seq_len_range(char first) {
     unsigned char u = (unsigned char) first;
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
@@ -221,7 +221,7 @@ size_t lib_utf8_get_byte_sequence_len_range(char first) {
     return 0;
 }
 
-size_t lib_utf8_get_byte_sequence_len_alt(char first) {
+size_t lib_utf8_byte_seq_len_alt(char first) {
     unsigned char u = (unsigned char) first;
     if (0xF0 == (0xF8 & u)) {
         return 4;
@@ -235,13 +235,13 @@ size_t lib_utf8_get_byte_sequence_len_alt(char first) {
 
 ////
 
-size_t lib_utf8_get_byte_sequence_len(char first) {
-    return lib_utf8_get_byte_sequence_len_array(first);
+size_t lib_utf8_byte_seq_len(char first) {
+    return lib_utf8_byte_seq_len_array(first);
 }
 
-int lib_utf8_get_codepoint(const char* str) {
+int lib_utf8_get_code(const char* str) {
     int cp;
-    lib_utf8_to_codepoint(str, &cp);
+    lib_utf8_to_code(str, &cp);
     return cp;
 }
 
@@ -256,7 +256,7 @@ int lib_utf8_to_char(char* buf, int cp) {
         return 0;
     }
 
-    size_t len = lib_utf8_get_codepoint_sequence_len(cp);
+    size_t len = lib_utf8_code_seq_len(cp);
     return _lib_utf8_to_char(buf, cp, len);
 }
 
@@ -264,7 +264,7 @@ size_t lib_utf8_get_char_len(const char* str) {
     if (!str || str[0] == '\0') {
         return 0;
     }
-    return lib_utf8_get_byte_sequence_len(str[0]);
+    return lib_utf8_byte_seq_len(str[0]);
 }
 
 /**
@@ -285,13 +285,13 @@ int lib_utf8_get_char_info(const char* str, int* cp, int* len) {
     }
 
     // Get sequence len of char by first byte 
-    *len = lib_utf8_get_byte_sequence_len(str[0]);
+    *len = lib_utf8_byte_seq_len(str[0]);
     if (*len == 0) {
         return -1;
     }
 
     // Convert UTF-8 char to codepoint
-    *cp = _lib_utf8_to_codepoint(str, *len);
+    *cp = _lib_utf8_to_code(str, *len);
     if (*cp < 0)  {
         return -1;
     }
@@ -299,7 +299,7 @@ int lib_utf8_get_char_info(const char* str, int* cp, int* len) {
     return 0;
 }
 
-int lib_utf8_to_codepoint(const char* str, int* cp) {
+int lib_utf8_to_code(const char* str, int* cp) {
 
     _reset_val(cp);
 
@@ -367,13 +367,13 @@ bool lib_utf8_strceq(const char* str1, const char* str2) {
     size_t i = 0;
     while (i < len1) {
 
-        l1 = lib_utf8_to_codepoint(s1, &cp1);
+        l1 = lib_utf8_to_code(s1, &cp1);
         if (l1 <= 0 || cp1 < 0) {
             // error
             return false;
         }
 
-        l2 = lib_utf8_to_codepoint(s2, &cp2);
+        l2 = lib_utf8_to_code(s2, &cp2);
         if (l2 <= 0 || cp2 < 0) {
             // error
             return false;
@@ -416,13 +416,13 @@ bool lib_utf8_strieq(const char* str1, const char* str2) {
     //size_t j = 0; // TODO
     while (i < len1 /*&& j < len2*/) {
 
-        l1 = lib_utf8_to_codepoint(s1, &cp1);
+        l1 = lib_utf8_to_code(s1, &cp1);
         if (l1 <= 0 || cp1 < 0) {
             // error
             return false;
         }
         
-        l2 = lib_utf8_to_codepoint(s2, &cp2);
+        l2 = lib_utf8_to_code(s2, &cp2);
         if (l2 <= 0 || cp2 < 0) {
             // error
             return false;
@@ -433,13 +433,13 @@ bool lib_utf8_strieq(const char* str1, const char* str2) {
             return false;
         }
         
-        cp1 = lib_utf8_to_case_codepoint(1, cp1);
+        cp1 = lib_utf8_to_case_code(1, cp1);
         if (cp1 < 0) {
             // error
             return false;
         }        
 
-        cp2 = lib_utf8_to_case_codepoint(1, cp2);
+        cp2 = lib_utf8_to_case_code(1, cp2);
         if (cp2 < 0) {
             // error
             return false;
@@ -478,14 +478,14 @@ const char* lib_utf8_strnext(const char* str) {
     }
 
     // Get sequence len of char by first byte 
-    size_t len = lib_utf8_get_byte_sequence_len(str[0]);
+    size_t len = lib_utf8_byte_seq_len(str[0]);
     if (len == 0) {
         // error
         return NULL;
     }
 
     // Convert UTF-8 char to codepoint
-    //int cp = _lib_utf8_to_codepoint(str, len);
+    //int cp = _lib_utf8_to_code(str, len);
     //if (cp < 0)  {
     //    // error
     //    return NULL;
@@ -611,7 +611,7 @@ char* lib_utf8_strrev(char* str) {
     size_t chl = 0;
     char* s = (char*) str;
     while (i < len) {
-        chl = lib_utf8_get_byte_sequence_len(*s);
+        chl = lib_utf8_byte_seq_len(*s);
         if (chl == 0) {
             chl = 1;
         }
@@ -675,7 +675,7 @@ int lib_utf8_encode(char* buf, int cp) {
 }
 
 int lib_utf8_decode(const char* str, int* cp) {
-    return lib_utf8_to_codepoint(str, cp);
+    return lib_utf8_to_code(str, cp);
 }
 
 //// str
@@ -864,7 +864,7 @@ int lib_utf8_get_char_n(const char* str, size_t num, char* buf, int index) {
         char c = *s;
 
         // Get lenght of UTF-8 char
-        size_t len = lib_utf8_get_byte_sequence_len(c);
+        size_t len = lib_utf8_byte_seq_len(c);
         if (len == 0) {
             // error: invalid sequence lenght
             return -1;
@@ -873,7 +873,7 @@ int lib_utf8_get_char_n(const char* str, size_t num, char* buf, int index) {
         if (k == index) {
 
             // Convert UTF-8 char to codepoint
-            cp = _lib_utf8_to_codepoint(s, len);
+            cp = _lib_utf8_to_code(s, len);
             if (cp < 0) {
                 // error: invalid codepoint
                 return -1;
@@ -914,14 +914,14 @@ const char* lib_utf8_get_char_next(const char* str, char* buf) {
 
 ///
 
-int lib_utf8_get_codepoint_count(const char* str) {
+int lib_utf8_get_code_count(const char* str) {
     if (!str) {
         return 0;
     }
-    return lib_utf8_get_codepoint_count_n(str, strlen(str));
+    return lib_utf8_get_code_count_n(str, strlen(str));
 }
 
-int lib_utf8_get_codepoint_count_n(const char* str, size_t num) {
+int lib_utf8_get_code_count_n(const char* str, size_t num) {
     if (!str || num == 0) {
         return 0;
     }
@@ -930,7 +930,7 @@ int lib_utf8_get_codepoint_count_n(const char* str, size_t num) {
     size_t count = 0;
     while (i < num) {
         char c = str[i];
-        size_t len = lib_utf8_get_byte_sequence_len(c);
+        size_t len = lib_utf8_byte_seq_len(c);
         //if (len == 0) {
         //    return -1;
         //}
@@ -949,7 +949,7 @@ int lib_utf8_get_first_byte_count_n(const char* str, size_t num, size_t char_num
     size_t count = 0;
     while (i < num) {
         char c = str[i];
-        size_t len = lib_utf8_get_byte_sequence_len(c);
+        size_t len = lib_utf8_byte_seq_len(c);
         if (len == 0) {
             return -1;
         }
@@ -980,7 +980,7 @@ int lib_utf8_get_byte_count(const char* str) {
  * Return count of UTF-8 chars or error (-1).
  */
 int lib_utf8_get_char_count(const char* str) {
-    return lib_utf8_get_codepoint_count(str);
+    return lib_utf8_get_code_count(str);
 }
 
 ////
@@ -1054,8 +1054,8 @@ int lib_utf8_to_case(int mode, char* str) {
 
 }
 
-int lib_utf8_to_case_codepoint(int mode, int cp) {
-    return lib_uni_to_case_codepoint(mode, cp);
+int lib_utf8_to_case_code(int mode, int cp) {
+    return lib_uni_to_case_code(mode, cp);
 }
 
 ////
@@ -1077,8 +1077,8 @@ int lib_utf8_to_case_char(int mode, const char* str, char* buf) {
  * Convert a codepoint to lower case.
  * Return new codepoint.
  */
-int lib_utf8_to_lower_codepoint(int cp) {
-    return lib_uni_to_lower_codepoint(cp);
+int lib_utf8_to_lower_code(int cp) {
+    return lib_uni_to_lower_code(cp);
 }
 
 ////
@@ -1095,8 +1095,8 @@ int lib_utf8_to_upper_char(const char* str, char* buf) {
  * Convert a codepoint to upper case
  * Return new codepoint.
  */
-int lib_utf8_to_upper_codepoint(int cp) {
-    return lib_uni_to_upper_codepoint(cp);
+int lib_utf8_to_upper_code(int cp) {
+    return lib_uni_to_upper_code(cp);
 }
 
 ////
@@ -1112,7 +1112,7 @@ bool lib_utf8_is_utf8_valid_n(const char* str, size_t num) {
     if (!str) {
         return true;
     }
-    int count = lib_utf8_get_codepoint_count_n(str, num);
+    int count = lib_utf8_get_code_count_n(str, num);
     return count >= 0;
 }
 
@@ -1131,7 +1131,7 @@ bool lib_utf8_is_utf_valid_n(const char* str, size_t num) {
     }
     return lib_utf8_is_utf8_valid(str);   
 
-    int count = lib_utf8_get_codepoint_count(str);
+    int count = lib_utf8_get_code_count(str);
     return count >= 0;
 }
 
@@ -1198,7 +1198,7 @@ const char* lib_utf8_to_bom_str(int bom) {
 /**
  * Convert UTF-8 char to the codepoint
  */
-int _lib_utf8_to_codepoint(const char* str, int len) {
+int _lib_utf8_to_code(const char* str, int len) {
 
     // Get first byte
     unsigned char c = (unsigned char) str[0];
@@ -1242,7 +1242,7 @@ int _lib_utf8_to_codepoint(const char* str, int len) {
         int r = ((0x0F & c) << 12) | ((0x3F & d) << 6) | (0x3F & e);
 
         // Check: surrogate
-        int err = lib_uni_check_surrogate(r);
+        int err = lib_uni_check_sur(r);
         if (err != 0) {
             return err;
         }
@@ -1341,7 +1341,7 @@ int _lib_utf8_to_char(char* buf, int cp, int len) {
         buf[3] = '\0';
 
         // Check: surrogate
-        int err =  lib_uni_check_surrogate(cp);
+        int err =  lib_uni_check_sur(cp);
         if (err != 0) {
             return err;
         }
@@ -1387,7 +1387,7 @@ int _lib_utf8_to_case_char(
 
     // Convert old codepoint to new codepoint
     // lower/upper case depends on the mode
-    *cp2 = lib_utf8_to_case_codepoint(mode, *cp1);
+    *cp2 = lib_utf8_to_case_code(mode, *cp1);
 
     // If new codepoint is not correct
     // then return error (-1)
@@ -1406,7 +1406,7 @@ int _lib_utf8_to_case_char(
     // (min size = 4 + 1)
     //*len2 = lib_utf8_to_char(buf, *cp2);
 
-    *len2 = lib_utf8_get_codepoint_sequence_len(*cp2);
+    *len2 = lib_utf8_code_seq_len(*cp2);
     if (buf) {
         // important: when len < 0 because 
         // it set special/invalid value to the buffer

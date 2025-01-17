@@ -271,7 +271,7 @@ int lib_enc_conv_to_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data, 
         }
 
         // Calculate sequence lenght of codepoint
-        seq_len = lib_utf8_get_codepoint_sequence_len(ucode);
+        seq_len = lib_utf8_code_seq_len(ucode);
         if (seq_len == 0) {
             // error
             #ifdef ERROR
@@ -329,7 +329,7 @@ int lib_enc_conv_to_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data, 
         }
 
         // Double check sequence lenght (?)
-        if (seq_len != lib_utf8_get_codepoint_sequence_len(ucode)) {
+        if (seq_len != lib_utf8_code_seq_len(ucode)) {
             // error
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: seq_len != cp_len\n");
@@ -403,7 +403,7 @@ int lib_enc_conv_from_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data
         c = *data;
 
         // Calculate sequence lenght of UTF-8 char
-        seq_len = lib_utf8_get_byte_sequence_len(c);
+        seq_len = lib_utf8_byte_seq_len(c);
         if (seq_len == 0) {
             // error
             #ifdef ERROR
@@ -452,7 +452,7 @@ int lib_enc_conv_from_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data
         c = *data;
 
         // Calculate sequence lenght of UTF-8 char
-        seq_len = lib_utf8_get_byte_sequence_len(c);
+        seq_len = lib_utf8_byte_seq_len(c);
         if (seq_len == 0) {
             // error
             #ifdef ERROR
@@ -463,7 +463,7 @@ int lib_enc_conv_from_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data
         }
 
         // Convert current UTF-8 char to codepoint
-        int cp_len = lib_utf8_to_codepoint(data, &ucode);
+        int cp_len = lib_utf8_to_code(data, &ucode);
         if (cp_len <= 0) {
             // error
             #ifdef ERROR
