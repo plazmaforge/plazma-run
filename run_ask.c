@@ -131,8 +131,8 @@ int main(int argc, char* argv[]) {
         return 0;
     }
                                         
-    char* input = lib_strdup_uq(argv[optind]);
-    char* file_name = lib_strdup_uq(argv[++optind]);
+    char* input = lib_strdupuq(argv[optind]);
+    char* file_name = lib_strdupuq(argv[++optind]);
 
     //printf("input: %s\n", input);
     //printf("file : %s\n", file_name);

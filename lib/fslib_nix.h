@@ -70,7 +70,7 @@ static int _lib_fs_is_dir(struct dirent* file) {
 }
 
 static void _lib_fs_normalize_slash(char* path, size_t len) {
-    lib_strntr(path, len, '\\', '/');
+    lib_strntrc(path, len, '\\', '/');
 }
 
 // void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {

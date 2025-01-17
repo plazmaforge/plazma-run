@@ -7,22 +7,91 @@
 #include "strlib.h"
 #include "wstrlib.h"
 
+
+/**
+ * [allocate]
+ */
+static wchar_t* _lib_wstrndup(const wchar_t* src, size_t num) {
+  wchar_t* dst = lib_wstrnew(num);
+  if (!dst) {
+    return NULL;
+  }    
+  memcpy(dst, src, num);
+  //dst[num] = '\0';
+  return dst;
+}
+
+// wstrnew
+
 /**
  * [allocate]
  */
 wchar_t* lib_wstrnew(size_t size) {
-  if (size < 0) {
+
+//   if (size < 0) {
+//     return NULL;
+//   }
+//   wchar_t* dst = (wchar_t*) malloc(sizeof(wchar_t) * size + 1);
+//   if (!dst) {
+//     return NULL;
+//   }
+//   for (int i = 0; i <= size; i++) {
+//     dst[i] = '\0';
+//   }    
+//   return dst;
+
+  size_t _size = size * sizeof(wchar_t) + 1;
+  wchar_t* str = (wchar_t*) malloc(_size);
+  if (!str) {
     return NULL;
   }
-  wchar_t* dst = (wchar_t*) malloc(sizeof(wchar_t) * size + 1);
-  if (!dst) {
-    return NULL;
-  }
-  for (int i = 0; i <= size; i++) {
-    dst[i] = '\0';
-  }    
-  return dst;
+  memset(str, 0, _size);
+  return str;
+
 }
+
+// wstrdup
+
+/**
+ * [allocate]
+ */
+wchar_t* lib_wstrdup(const wchar_t* src) {
+  if (!src) {
+    return NULL;
+  }
+  size_t len = wcslen(src);
+  return _lib_wstrndup(src, len);
+}
+
+/**
+ * [allocate]
+ */
+wchar_t* lib_wstrndup(const wchar_t* src, size_t num) {
+  if (!src) {
+    return NULL;
+  }
+  size_t len = wcslen(src);
+  len = len < num ? len : num;
+  return _lib_wstrndup(src, len);
+}
+
+// wstrlen
+
+size_t lib_wstrlen(const wchar_t* str) {
+  if (!str) {
+    return 0;
+  }
+  return wcslen(str);
+}
+
+size_t lib_wstrnlen(const wchar_t* str, size_t num) {
+  if (!str) {
+    return 0;
+  }
+  return wcsnlen(str, num);
+}
+
+//
 
 #ifdef _WIN32
 static wchar_t* lib_mbs_to_wcs_win(UINT cp, const char* str, int len) {

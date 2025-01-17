@@ -1,10 +1,42 @@
 #include <wchar.h>
 
+#define lib_wcslen(str) lib_wstrlen(str)
+
+#define lib_wcsnlen(str, num) lib_wstrnlen(str, num)
+
+#define lib_wcsnew(size) lib_wstrnew(size)
+
+#define lib_wcsdup(src) lib_wstrdup(src)
+
+#define lib_wcsndup(src, num) lib_wstrndup(src, num)
+
+// wstrlen
+
+size_t lib_wstrlen(const wchar_t* str);
+
+size_t lib_wstrnlen(const wchar_t* str, size_t num);
+
+// wstrnew
+
 /**
- * Creates new string with a lenght  
+ * Creates new wstring with a lenght
  * [allocate]
  */
 wchar_t* lib_wstrnew(size_t size);
+
+// wstrdup
+
+/**
+ * [allocate]
+ */
+wchar_t* lib_wstrdup(const wchar_t* src);
+
+/**
+ * [allocate]
+ */
+wchar_t* lib_wstrndup(const wchar_t* src, size_t num);
+
+////
 
 /**
  * Converts ANSII Chars to Wide Chars with a lenght

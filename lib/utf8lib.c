@@ -678,7 +678,39 @@ int lib_utf8_decode(const char* str, int* cp) {
     return lib_utf8_to_code(str, cp);
 }
 
-//// str
+//// std ////
+
+// strlen
+
+size_t lib_utf8_strlen(const char* str) {
+    int len = lib_utf8_get_char_count(str);
+    // For compatibility with std::strlen
+    return len < 0 ? 0 : len;
+}
+
+// strcpy
+
+char* lib_utf8_strcpy(char* dst, const char* src) {
+    if (!dst || !src) {
+        return dst;
+    }
+    return strcpy(dst, src);
+}
+
+char* lib_utf8_strncpy(char* dst, const char* src, size_t num) {
+    if (!dst || !src) {
+        return dst;
+    }
+
+    // Calculate count of first bytes by UTF-8 char numbers
+    int count = lib_utf8_get_first_byte_count(src, num);
+    if (count <= 0) {
+        return dst;
+    }
+    return strncpy(dst, src, count);
+}
+
+// strcat
 
 char* lib_utf8_strcat(char* dst, const char* src) {
     if (!dst || !src) {
@@ -699,6 +731,8 @@ char* lib_utf8_strncat(char* dst, const char* src, size_t num) {
     }
     return strncat(dst, src, count);
 }
+
+// strcmp
 
 int lib_utf8_strcmp(const char* str1, const char* str2) {
     if (!str1 && !str2) {
@@ -744,25 +778,7 @@ int lib_utf8_strncmp(const char* str1, const char* str2, size_t num) {
 
 }
 
-char* lib_utf8_strcpy(char* dst, const char* src) {
-    if (!dst || !src) {
-        return dst;
-    }
-    return strcpy(dst, src);
-}
-
-char* lib_utf8_strncpy(char* dst, const char* src, size_t num) {
-    if (!dst || !src) {
-        return dst;
-    }
-
-    // Calculate count of first bytes by UTF-8 char numbers
-    int count = lib_utf8_get_first_byte_count(src, num);
-    if (count <= 0) {
-        return dst;
-    }
-    return strncpy(dst, src, count);
-}
+// strchr
 
 char* lib_utf8_strchr(const char* str, int ch) {
     // TODO: Not implemented yet
@@ -773,6 +789,8 @@ char* lib_utf8_strrchr(const char* str, int ch) {
     // TODO: Not implemented yet
     return NULL;
 }
+
+// strstr
 
 const char* lib_utf8_strstr(const char* str1, const char* str2) {
     if (!str1) {
@@ -785,7 +803,7 @@ const char* lib_utf8_strstr(const char* str1, const char* str2) {
     return strstr(str1, str2);
 }
 
-// char* lib_utf8_strtok(char* str, const int* delims)
+// strtok
 
 char* lib_utf8_strtok(char* str, const char* delims) {
     if (!str || !delims) {
@@ -794,14 +812,6 @@ char* lib_utf8_strtok(char* str, const char* delims) {
     // TODO: What about UTF-8 char delims?
     // const int* delims
     return strtok(str, delims);
-}
-
-////
-
-size_t lib_utf8_strlen(const char* str) {
-    int len = lib_utf8_get_char_count(str);
-    // For compatibility with std::strlen
-    return len < 0 ? 0 : len;
 }
 
 ////

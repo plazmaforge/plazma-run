@@ -57,9 +57,9 @@ static void _find_pattern(const char* dir_name, const char* pattern) {
 
 static void _find_item(const char* arg) {
 
-    char* file_name = lib_strdup_uq(arg);
-    char* dir_name = NULL;
-    char* pattern = NULL;
+    char* file_name = lib_strdupuq(arg);
+    char* dir_name  = NULL;
+    char* pattern   = NULL;
 
     bool doit = false;
 

@@ -67,27 +67,53 @@ int lib_utf8_decode(const char* str, int* cp);
 
 //// str: std
 
-char* lib_utf8_strcat(char* dst, const char* src);
+// strlen
 
-char* lib_utf8_strncat(char* dst, const char* src, size_t num);
+/*
+ * Return lenght of UTF-8 string.
+ */
+size_t lib_utf8_strlen(const char* str);
 
-int lib_utf8_strcmp(const char* str1, const char* str2);
-
-int lib_utf8_strncmp(const char* str1, const char* str2, size_t num);
+// strcpy
 
 char* lib_utf8_strcpy(char* dst, const char* src);
 
 char* lib_utf8_strncpy(char* dst, const char* src, size_t num);
 
+// strcat
+
+char* lib_utf8_strcat(char* dst, const char* src);
+
+char* lib_utf8_strncat(char* dst, const char* src, size_t num);
+
+// strcmp
+
+int lib_utf8_strcmp(const char* str1, const char* str2);
+
+int lib_utf8_strncmp(const char* str1, const char* str2, size_t num);
+
+// strchr
+
 char* lib_utf8_strchr(const char* str, int ch);
 
 char* lib_utf8_strrchr(const char* str, int ch);
+
+// strstr
 
 const char* lib_utf8_strstr(const char* str1, const char* str2);
 
 // char* lib_utf8_strtok(char* str, const int* delims)
 
 char* lib_utf8_strtok(char* str, const char* delims);
+
+// strlwr/upr
+char* lib_utf8_strlwr(char* str);
+
+char* lib_utf8_strupr(char* str);
+
+// strrev
+
+char* lib_utf8_strrev(char* str);
 
 //// str: alt
 
@@ -108,18 +134,7 @@ const char* lib_utf8_strnext(const char* str);
 
 const char* lib_utf8_strprev(const char* str);
 
-char* lib_utf8_strlwr(char* str);
-
-char* lib_utf8_strupr(char* str);
-
-char* lib_utf8_strrev(char* str);
-
 //// str: std
-
-/*
- * Return lenght of UTF-8 string.
- */
-size_t lib_utf8_strlen(const char* str);
 
 /*
  * Copy UTF-8 char from src to dst
