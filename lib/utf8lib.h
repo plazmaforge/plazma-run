@@ -65,69 +65,6 @@ int lib_utf8_encode(char* buf, int cp);
  */
 int lib_utf8_decode(const char* str, int* cp);
 
-//// str: std
-
-// strlen
-
-/*
- * Return lenght of UTF-8 string.
- */
-size_t lib_utf8_strlen(const char* str);
-
-// strcpy
-
-char* lib_utf8_strcpy(char* dst, const char* src);
-
-char* lib_utf8_strncpy(char* dst, const char* src, size_t num);
-
-// strcat
-
-char* lib_utf8_strcat(char* dst, const char* src);
-
-char* lib_utf8_strncat(char* dst, const char* src, size_t num);
-
-// strcmp
-
-int lib_utf8_strcmp(const char* str1, const char* str2);
-
-int lib_utf8_strncmp(const char* str1, const char* str2, size_t num);
-
-// strchr
-
-char* lib_utf8_strchr(const char* str, int ch);
-
-char* lib_utf8_strrchr(const char* str, int ch);
-
-// strstr
-
-const char* lib_utf8_strstr(const char* str1, const char* str2);
-
-// char* lib_utf8_strtok(char* str, const int* delims)
-
-char* lib_utf8_strtok(char* str, const char* delims);
-
-// strlwr/upr
-char* lib_utf8_strlwr(char* str);
-
-char* lib_utf8_strupr(char* str);
-
-// strrev
-
-char* lib_utf8_strrev(char* str);
-
-//// str: alt
-
-bool lib_utf8_stremp(const char* str);
-
-// equals by byte
-bool lib_utf8_streq(const char* str1, const char* str2);
-
-// equals by codepoint
-bool lib_utf8_strceq(const char* str1, const char* str2);
-
-// equals by ignorte case codepoint
-bool lib_utf8_strieq(const char* str1, const char* str2);
-
 const char* lib_utf8_strlast(const char* str);
 
 const char* lib_utf8_strnext(const char* str);
@@ -299,5 +236,76 @@ int lib_utf8_get_bom_n(const char* str, size_t num);
  * Convert BOM type to a string representation.
  */
 const char* lib_utf8_to_bom_str(int bom);
+
+//// std: begin
+
+// strlen
+
+/*
+ * Return lenght of UTF-8 string.
+ */
+size_t lib_utf8_strlen(const char* str);
+
+size_t lib_utf8_strnlen(const char* str, size_t num);
+
+// strcpy
+
+char* lib_utf8_strcpy(char* dst, const char* src);
+
+char* lib_utf8_strncpy(char* dst, const char* src, size_t num);
+
+// strcat
+
+char* lib_utf8_strcat(char* dst, const char* src);
+
+char* lib_utf8_strncat(char* dst, const char* src, size_t num);
+
+// strcmp
+
+int lib_utf8_strcmp(const char* str1, const char* str2);
+
+int lib_utf8_strncmp(const char* str1, const char* str2, size_t num);
+
+// strchr
+
+char* lib_utf8_strchr(const char* str, int ch);
+
+char* lib_utf8_strrchr(const char* str, int ch);
+
+// strstr
+
+const char* lib_utf8_strstr(const char* str1, const char* str2);
+
+// strlwr/upr
+char* lib_utf8_strlwr(char* str);
+
+char* lib_utf8_strupr(char* str);
+
+// strrev
+
+char* lib_utf8_strrev(char* str);
+
+// strtok
+
+// char* lib_utf8_strtok(char* str, const int* delims)
+
+char* lib_utf8_strtok(char* str, const char* delims);
+
+//// std: end
+
+//// alt: begin
+
+bool lib_utf8_stremp(const char* str);
+
+// equals by byte
+bool lib_utf8_streq(const char* str1, const char* str2);
+
+// equals by codepoint
+bool lib_utf8_strceq(const char* str1, const char* str2);
+
+// equals by ignorte case codepoint
+bool lib_utf8_strieq(const char* str1, const char* str2);
+
+//// alt: end
 
 #endif // PLAZMA_LIB_UTF8LIB_H

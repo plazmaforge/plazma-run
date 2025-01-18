@@ -315,148 +315,7 @@ int lib_utf8_to_code(const char* str, int* cp) {
     return len;
 }
 
-//// str: alt
-
-bool lib_utf8_stremp(const char* str) {
-    return (!str || str[0] == '\0');
-}
-
-// equals by byte
-bool lib_utf8_streq(const char* str1, const char* str2) {
-    if (!str1 || !str2) {
-        return false;
-    }
-    size_t len1 = strlen(str1);
-    size_t len2 = strlen(str2);
-    if (len1 != len2) {
-        return false;
-    }
-    char* s1 = (char*) str1;
-    char* s2 = (char*) str2;
-
-    size_t i = 0;
-    while (i < len1) {
-        if (*s1 != *s2) {
-            return false;
-        }
-        s1++;
-        s2++;
-        i++;
-    }
-    return true;
-}
-
-// equals by codepoint
-bool lib_utf8_strceq(const char* str1, const char* str2) {
-    if (!str1 || !str2) {
-        return false;
-    }
-    size_t len1 = strlen(str1);
-    size_t len2 = strlen(str2);
-    if (len1 != len2) {
-        return false;
-    }
-    char* s1 = (char*) str1;
-    char* s2 = (char*) str2;
-
-    int cp1;
-    int l1;
-    int cp2;
-    int l2;
-
-    size_t i = 0;
-    while (i < len1) {
-
-        l1 = lib_utf8_to_code(s1, &cp1);
-        if (l1 <= 0 || cp1 < 0) {
-            // error
-            return false;
-        }
-
-        l2 = lib_utf8_to_code(s2, &cp2);
-        if (l2 <= 0 || cp2 < 0) {
-            // error
-            return false;
-        }
-
-        if (l1 != l2 || cp1 != cp2) {
-            return false;
-        }
-
-        s1 += l1;
-        s2 += l1;
-        i += l1;
-    }
-    return true;
-}
-
-// equals by ignorte case codepoint
-// what about unicode compare?
-bool lib_utf8_strieq(const char* str1, const char* str2) {
-    if (!str1 || !str2) {
-        return false;
-    }
-    size_t len1 = strlen(str1);
-    size_t len2 = strlen(str2);
-
-    // TODO: Why?
-    if (len1 != len2) {
-        return false;
-    }
-
-    char* s1 = (char*) str1;
-    char* s2 = (char*) str2;
-
-    int cp1;
-    int l1;
-    int cp2;
-    int l2;
-
-    size_t i = 0;
-    //size_t j = 0; // TODO
-    while (i < len1 /*&& j < len2*/) {
-
-        l1 = lib_utf8_to_code(s1, &cp1);
-        if (l1 <= 0 || cp1 < 0) {
-            // error
-            return false;
-        }
-        
-        l2 = lib_utf8_to_code(s2, &cp2);
-        if (l2 <= 0 || cp2 < 0) {
-            // error
-            return false;
-        }
-
-        // TODO: Why?
-        if (l1 != l2) {
-            return false;
-        }
-        
-        cp1 = lib_utf8_to_case_code(1, cp1);
-        if (cp1 < 0) {
-            // error
-            return false;
-        }        
-
-        cp2 = lib_utf8_to_case_code(1, cp2);
-        if (cp2 < 0) {
-            // error
-            return false;
-        }        
-
-        if (cp1 != cp2) {
-            return false;
-        }
-
-        s1 += l1;
-        s2 += l1;
-        //s2 += l2; // TODO
-        i += l1;
-        //j += l2;  // TODO
-    }
-    return true;
-}
+////
 
 const char* lib_utf8_strlast(const char* str) {
     if (!str) {
@@ -581,56 +440,6 @@ const char* lib_utf8_strprev(const char* str) {
     return 0;
 }
 
-char* lib_utf8_strlwr(char* str) {
-    // Ignore case error
-    lib_utf8_to_lower(str);
-    return str;
-}
-
-char* lib_utf8_strupr(char* str) {
-    // Ignore case error
-    lib_utf8_to_upper(str);
-    return str;
-}
-
-char* lib_utf8_strrev(char* str) {
-    if (!str || str[0] == '\0') {
-        return str;
-    }
-    size_t len = strlen(str);
-    //printf("\n");
-    //printf("!>> len: %lu\n", len);
-    if (len == 0) {
-        return str;
-    }
-    char tmp[len];
-    // char tmp[len + 1];
-    // tmp[len] = '\0';
-    size_t i = 0;
-    size_t pos = len - 1;
-    size_t chl = 0;
-    char* s = (char*) str;
-    while (i < len) {
-        chl = lib_utf8_byte_seq_len(*s);
-        if (chl == 0) {
-            chl = 1;
-        }
-        //printf("!>> chl: %lu\n", chl);
-        //printf("!>> pos: %lu\n", pos);
-        size_t j = pos;
-        for (size_t k = 0; k < chl; k++) {
-            size_t z = j - k;
-            tmp[z] = str[i + chl - k - 1];
-        }
-        s += chl;
-        i += chl;
-        pos -= chl; 
-    }
-    //printf("!>>%s", tmp);
-    memcpy(str, tmp, len);
-    return str;
-}
-
 const char* lib_utf8_iterate(const char* str, char* buf, int* cp, int* len) {
 
     _reset_var(cp, len);
@@ -677,144 +486,6 @@ int lib_utf8_encode(char* buf, int cp) {
 int lib_utf8_decode(const char* str, int* cp) {
     return lib_utf8_to_code(str, cp);
 }
-
-//// std ////
-
-// strlen
-
-size_t lib_utf8_strlen(const char* str) {
-    int len = lib_utf8_get_char_count(str);
-    // For compatibility with std::strlen
-    return len < 0 ? 0 : len;
-}
-
-// strcpy
-
-char* lib_utf8_strcpy(char* dst, const char* src) {
-    if (!dst || !src) {
-        return dst;
-    }
-    return strcpy(dst, src);
-}
-
-char* lib_utf8_strncpy(char* dst, const char* src, size_t num) {
-    if (!dst || !src) {
-        return dst;
-    }
-
-    // Calculate count of first bytes by UTF-8 char numbers
-    int count = lib_utf8_get_first_byte_count(src, num);
-    if (count <= 0) {
-        return dst;
-    }
-    return strncpy(dst, src, count);
-}
-
-// strcat
-
-char* lib_utf8_strcat(char* dst, const char* src) {
-    if (!dst || !src) {
-        return dst;
-    }
-    return strcat(dst, src);
-}
-
-char* lib_utf8_strncat(char* dst, const char* src, size_t num) {
-    if (!dst || !src || num == 0) {
-        return dst;
-    }
-
-    // Calculate count of first bytes by UTF-8 char numbers
-    size_t count = lib_utf8_get_first_byte_count(src, num);
-    if (count == 0) {
-        return dst;
-    }
-    return strncat(dst, src, count);
-}
-
-// strcmp
-
-int lib_utf8_strcmp(const char* str1, const char* str2) {
-    if (!str1 && !str2) {
-        return 0;
-    }
-    if (!str1) {
-        return -1;
-    }
-    if (!str2) {
-        return 1;
-    }
-    return strcmp(str1, str2);
-}
-
-int lib_utf8_strncmp(const char* str1, const char* str2, size_t num) {
-    if (!str1 && !str2) {
-        return 0;
-    }
-    if (!str1) {
-        return -1;
-    }
-    if (!str2) {
-        return 1;
-    }
-
-    // Calculate count of first bytes by UTF-8 char numbers
-    int count1 = lib_utf8_get_first_byte_count(str1, num);
-    int count2 = lib_utf8_get_first_byte_count(str2, num);
-
-    if (count1 < 0 || count2 < 0 || count1 < num || count2 < num) {
-        // error
-        return -100;
-    }
-
-    if (count1 < count2) {
-        return -1;
-    }
-    if (count1 > count2) {
-        return 1;
-    }
-
-    return strncmp(str1, str2, count1);
-
-}
-
-// strchr
-
-char* lib_utf8_strchr(const char* str, int ch) {
-    // TODO: Not implemented yet
-    return NULL;
-}
-
-char* lib_utf8_strrchr(const char* str, int ch) {
-    // TODO: Not implemented yet
-    return NULL;
-}
-
-// strstr
-
-const char* lib_utf8_strstr(const char* str1, const char* str2) {
-    if (!str1) {
-        return NULL;
-    }
-    if (!str2) {
-        // why? maybe str1
-        return NULL;
-    }
-    return strstr(str1, str2);
-}
-
-// strtok
-
-char* lib_utf8_strtok(char* str, const char* delims) {
-    if (!str || !delims) {
-        return NULL;
-    }
-    // TODO: What about UTF-8 char delims?
-    // const int* delims
-    return strtok(str, delims);
-}
-
-////
 
 /*
  * Copy UTF-8 char from src to dst
@@ -1455,7 +1126,364 @@ void _reset_buf(char* buf) {
     }    
 }
 
-////
+//// std: begin ////
+
+// strlen
+
+size_t lib_utf8_strlen(const char* str) {
+    int len = lib_utf8_get_char_count(str);
+    // For compatibility with std::strlen
+    return len < 0 ? 0 : len;
+}
+
+size_t lib_utf8_strnlen(const char* str, size_t num) {
+    // For compatibility with std::strnlen
+    // Calculate count of first bytes by UTF-8 char numbers
+    int len = lib_utf8_get_first_byte_count(str, num);
+    return len < 0 ? 0 : len;
+}
+
+// strcpy
+
+char* lib_utf8_strcpy(char* dst, const char* src) {
+    if (!dst || !src) {
+        return dst;
+    }
+    return strcpy(dst, src);
+}
+
+char* lib_utf8_strncpy(char* dst, const char* src, size_t num) {
+    if (!dst || !src) {
+        return dst;
+    }
+
+    // Calculate count of first bytes by UTF-8 char numbers
+    int count = lib_utf8_get_first_byte_count(src, num);
+    if (count <= 0) {
+        return dst;
+    }
+    return strncpy(dst, src, count);
+}
+
+// strcat
+
+char* lib_utf8_strcat(char* dst, const char* src) {
+    if (!dst || !src) {
+        return dst;
+    }
+    return strcat(dst, src);
+}
+
+char* lib_utf8_strncat(char* dst, const char* src, size_t num) {
+    if (!dst || !src || num == 0) {
+        return dst;
+    }
+
+    // Calculate count of first bytes by UTF-8 char numbers
+    int count = lib_utf8_get_first_byte_count(src, num);
+    if (count <= 0) {
+        return dst;
+    }
+    return strncat(dst, src, count);
+}
+
+// strcmp
+
+int lib_utf8_strcmp(const char* str1, const char* str2) {
+    if (!str1 && !str2) {
+        return 0;
+    }
+    if (!str1) {
+        return -1;
+    }
+    if (!str2) {
+        return 1;
+    }
+
+    // TODO: Stub
+    // Compare codepoints: char_next/char_iterate
+
+    return strcmp(str1, str2);
+}
+
+int lib_utf8_strncmp(const char* str1, const char* str2, size_t num) {
+    if (!str1 && !str2) {
+        return 0;
+    }
+    if (!str1) {
+        return -1;
+    }
+    if (!str2) {
+        return 1;
+    }
+
+    // TODO: Stub
+    // Compare codepoints: char_next/char_iterate
+
+    // Calculate count of first bytes by UTF-8 char numbers
+    int count1 = lib_utf8_get_first_byte_count(str1, num);
+    int count2 = lib_utf8_get_first_byte_count(str2, num);
+
+    if (count1 < 0 || count2 < 0 || count1 < num || count2 < num) {
+        // error
+        return -100;
+    }
+
+    if (count1 < count2) {
+        return -1;
+    }
+    if (count1 > count2) {
+        return 1;
+    }
+
+    return strncmp(str1, str2, count1);
+
+}
+
+// strchr
+
+char* lib_utf8_strchr(const char* str, int ch) {
+    // TODO: Not implemented yet
+    // Search by codepoint: char_next/char_iterate
+    return NULL;
+}
+
+char* lib_utf8_strrchr(const char* str, int ch) {
+    // TODO: Not implemented yet
+    // Search by codepoint: char_next/char_iterate
+    return NULL;
+}
+
+// strstr
+
+const char* lib_utf8_strstr(const char* str1, const char* str2) {
+    if (!str1) {
+        return NULL;
+    }
+    if (!str2) {
+        // why? maybe str1
+        return NULL;
+    }
+    // TODO: Stub
+    // Search by codepoint: char_next/char_iterate
+    return strstr(str1, str2);
+}
+
+// strlwr/upr
+
+char* lib_utf8_strlwr(char* str) {
+    // Ignore case error
+    lib_utf8_to_lower(str);
+    return str;
+}
+
+char* lib_utf8_strupr(char* str) {
+    // Ignore case error
+    lib_utf8_to_upper(str);
+    return str;
+}
+
+// strrev
+
+char* lib_utf8_strrev(char* str) {
+    if (!str || str[0] == '\0') {
+        return str;
+    }
+    size_t len = strlen(str);
+    //printf("\n");
+    //printf("!>> len: %lu\n", len);
+    if (len == 0) {
+        return str;
+    }
+    char tmp[len];
+    // char tmp[len + 1];
+    // tmp[len] = '\0';
+    size_t i = 0;
+    size_t pos = len - 1;
+    size_t chl = 0;
+    char* s = (char*) str;
+    while (i < len) {
+        chl = lib_utf8_byte_seq_len(*s);
+        if (chl == 0) {
+            chl = 1;
+        }
+        //printf("!>> chl: %lu\n", chl);
+        //printf("!>> pos: %lu\n", pos);
+        size_t j = pos;
+        for (size_t k = 0; k < chl; k++) {
+            size_t z = j - k;
+            tmp[z] = str[i + chl - k - 1];
+        }
+        s += chl;
+        i += chl;
+        pos -= chl; 
+    }
+    //printf("!>>%s", tmp);
+    memcpy(str, tmp, len);
+    return str;
+}
+
+// strtok
+
+char* lib_utf8_strtok(char* str, const char* delims) {
+    if (!str || !delims) {
+        return NULL;
+    }
+    // TODO: What about UTF-8 char delims?
+    // const int* delims
+
+    // TODO: Stub
+    // Tokenize by codepoint: char_next/char_iterate
+
+    return strtok(str, delims);
+}
+
+//// std: end   ////
+
+//// alt: begin ////
+
+bool lib_utf8_stremp(const char* str) {
+    return (!str || str[0] == '\0');
+}
+
+// equals by byte
+bool lib_utf8_streq(const char* str1, const char* str2) {
+    if (!str1 || !str2) {
+        return false;
+    }
+    size_t len1 = strlen(str1);
+    size_t len2 = strlen(str2);
+    if (len1 != len2) {
+        return false;
+    }
+    char* s1 = (char*) str1;
+    char* s2 = (char*) str2;
+
+    size_t i = 0;
+    while (i < len1) {
+        if (*s1 != *s2) {
+            return false;
+        }
+        s1++;
+        s2++;
+        i++;
+    }
+    return true;
+}
+
+// equals by codepoint
+bool lib_utf8_strceq(const char* str1, const char* str2) {
+    if (!str1 || !str2) {
+        return false;
+    }
+    size_t len1 = strlen(str1);
+    size_t len2 = strlen(str2);
+    if (len1 != len2) {
+        return false;
+    }
+    char* s1 = (char*) str1;
+    char* s2 = (char*) str2;
+
+    int cp1;
+    int l1;
+    int cp2;
+    int l2;
+
+    size_t i = 0;
+    while (i < len1) {
+
+        l1 = lib_utf8_to_code(s1, &cp1);
+        if (l1 <= 0 || cp1 < 0) {
+            // error
+            return false;
+        }
+
+        l2 = lib_utf8_to_code(s2, &cp2);
+        if (l2 <= 0 || cp2 < 0) {
+            // error
+            return false;
+        }
+
+        if (l1 != l2 || cp1 != cp2) {
+            return false;
+        }
+
+        s1 += l1;
+        s2 += l1;
+        i += l1;
+    }
+    return true;
+}
+
+// equals by ignorte case codepoint
+// what about unicode compare?
+bool lib_utf8_strieq(const char* str1, const char* str2) {
+    if (!str1 || !str2) {
+        return false;
+    }
+    size_t len1 = strlen(str1);
+    size_t len2 = strlen(str2);
+
+    // TODO: Why?
+    if (len1 != len2) {
+        return false;
+    }
+
+    char* s1 = (char*) str1;
+    char* s2 = (char*) str2;
+
+    int cp1;
+    int l1;
+    int cp2;
+    int l2;
+
+    size_t i = 0;
+    //size_t j = 0; // TODO
+    while (i < len1 /*&& j < len2*/) {
+
+        l1 = lib_utf8_to_code(s1, &cp1);
+        if (l1 <= 0 || cp1 < 0) {
+            // error
+            return false;
+        }
+        
+        l2 = lib_utf8_to_code(s2, &cp2);
+        if (l2 <= 0 || cp2 < 0) {
+            // error
+            return false;
+        }
+
+        // TODO: Why?
+        if (l1 != l2) {
+            return false;
+        }
+        
+        cp1 = lib_utf8_to_case_code(1, cp1);
+        if (cp1 < 0) {
+            // error
+            return false;
+        }        
+
+        cp2 = lib_utf8_to_case_code(1, cp2);
+        if (cp2 < 0) {
+            // error
+            return false;
+        }        
+
+        if (cp1 != cp2) {
+            return false;
+        }
+
+        s1 += l1;
+        s2 += l1;
+        //s2 += l2; // TODO
+        i += l1;
+        //j += l2;  // TODO
+    }
+    return true;
+}
+
+//// alt: end ////
 
 /*
 
