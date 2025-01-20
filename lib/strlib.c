@@ -235,11 +235,33 @@ char* lib_strncpy(char* dst, const char* src, size_t num) {
   return strncpy(dst, src, num);
 }
 
-size_t lib_strlcpy(char* dst, const char* src, size_t num) {
-  if (!dst || !src) {
+size_t lib_strlcpy(char* dst, const char* src, size_t dsize) {
+  if (!dst || !src || dsize == 0) {
     return 0;
   }
-  return strlcpy(dst, src, num);
+  //return strlcpy(dst, src, size);
+
+  const char *osrc = src;
+	size_t n = dsize;
+
+	/* Copy as many bytes as will fit. */
+	while (--n != 0) {
+		if ((*dst++ = *src++) == '\0') {
+      break;
+    }
+	}
+
+	//while (--n != 0 && (*dst++ = *src++) != '\0');
+
+	/* Not enough room in dst, add NUL and traverse rest of src. */
+	if (n == 0) {
+		if (dsize != 0) {
+      *dst = '\0';		/* NUL-terminate dst */
+    }
+		while (*src++);
+	}
+
+	return(src - osrc - 1);	/* count does not include NUL */  
 }
 
 char* lib_strcpyv_(char* dst, const char* str, ...) {
@@ -272,11 +294,39 @@ char* lib_strncat(char* dst, const char* src, size_t num) {
   return strncat(dst, src, num);
 }
 
-size_t lib_strlcat(char* dst, const char* src, size_t num) {
-  if (!dst || !src) {
+size_t lib_strlcat(char* dst, const char* src, size_t dsize) {
+  if (!dst || !src || dsize == 0) {
     return 0;
   }
-  return strlcat(dst, src, num);
+  //return strlcat(dst, src, dsize);
+
+  const char *odst = dst;
+	const char *osrc = src;
+	size_t n = dsize;
+	size_t dlen;
+
+	/* Find the end of dst and adjust bytes left but don't go past end. */
+	while (n-- != 0 && *dst != '\0') {
+    dst++;
+  }
+		
+	dlen = dst - odst;
+	n = dsize - dlen;
+
+	if (n-- == 0) {
+    return (dlen + strlen(src));
+  }
+
+	while (*src != '\0') {
+		if (n != 0) {
+			*dst++ = *src;
+			n--;
+		}
+		src++;
+	}
+	*dst = '\0';
+
+	return (dlen + (src - osrc));	/* count does not include NUL */
 }
 
 char* lib_strcatv_(char* dst, const char* str, ...) {
@@ -667,19 +717,46 @@ char* lib_strrev(char* str) {
     return str;
 }
 
-char* lib_strsep(char** str, const char* delims) {
-    if (!str || !delims) {
+char* lib_strsep(char** str, const char* delim) {
+    if (!str || !*str || !delim) {
         return NULL;
     }
-    return strsep(str, delims);
+    //return strsep(str, delim);
+
+    char *s = *str;
+    const char *spanp;
+    int c;
+    int sc;
+    char *tok;
+
+    //if ((s = *str) == NULL) {
+    //  return NULL;
+    //}
+
+    for (tok = s;;) {
+      c = *s++;
+      spanp = delim;
+      do {
+        if ((sc = *spanp++) == c) {
+          if (c == 0)
+            s = NULL;
+          else
+            s[-1] = 0;
+          *str = s;
+          return tok;
+        }
+      } while (sc != 0);
+    }
+
+    return NULL;
 }
 
-char* lib_strtok(char* str, const char* delims) {
+char* lib_strtok(char* str, const char* delim) {
     // str can be NULL
-    if (!delims) {
+    if (!delim) {
       return NULL;
     }
-    return strtok(str, delims);
+    return strtok(str, delim);
 }
 
 // strtrc
@@ -739,5 +816,10 @@ void lib_strafree(char** array) {
     free(array);
 }
 
+// https://github.com/openbsd/src/tree/master/lib/libc/string
+
 // strtok vs strsep
 // https://stackoverflow.com/questions/7218625/what-are-the-differences-between-strtok-and-strsep-in-c
+
+// https://habr.com/ru/articles/838116/
+// https://github.com/antirez/sds

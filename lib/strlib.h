@@ -4,6 +4,18 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define lib_strcasecmp(str1, str2) lib_stricmp(str1, str2)
+
+#define lib_strncasecmp(str1, str2) lib_strnicmp(str1, str2)
+
+#define lib_strcpyv(dst, ...) lib_strcpyv_(dst, __VA_ARGS__, NULL)
+
+#define lib_strcatv(dst, ...) lib_strcatv_(dst, __VA_ARGS__, NULL)
+
+/**
+ * [allocate]
+ */
+#define lib_strjoin(...) lib_strjoin_(__VA_ARGS__, NULL)
 
 // strlen
 
@@ -68,11 +80,9 @@ char* lib_strcpy(char* dst, const char* src);
 
 char* lib_strncpy(char* dst, const char* src, size_t num);
 
-size_t lib_strlcpy(char* dst, const char* src, size_t num);
+size_t lib_strlcpy(char* dst, const char* src, size_t dsize);
 
 char* lib_strcpyv_(char* dst, const char* str, ...);
-
-#define lib_strcpyv(dst, ...) lib_strcpyv_(dst, __VA_ARGS__, NULL)
 
 // strcat
 
@@ -80,11 +90,9 @@ char* lib_strcat(char* dst, const char* src);
 
 char* lib_strncat(char* dst, const char* src, size_t num);
 
-size_t lib_strlcat(char* dst, const char* src, size_t num);
+size_t lib_strlcat(char* dst, const char* src, size_t dsize);
 
 char* lib_strcatv_(char* dst, const char* str, ...);
-
-#define lib_strcatv(dst, ...) lib_strcatv_(dst, __VA_ARGS__, NULL)
 
 // strjoin
 
@@ -92,11 +100,6 @@ char* lib_strcatv_(char* dst, const char* str, ...);
  * [allocate]
  */
 char* lib_strjoin_(const char* str, ...);
-
-/**
- * [allocate]
- */
-#define lib_strjoin(...) lib_strjoin_(__VA_ARGS__, NULL)
 
 /**
  * [allocate]
@@ -143,9 +146,9 @@ char* lib_strupr(char* str);
 char* lib_strrev(char* str);
 
 // strstok/sep
-char* lib_strsep(char** str, const char* delims);
+char* lib_strsep(char** str, const char* delim);
 
-char* lib_strtok(char* str, const char* delims);
+char* lib_strtok(char* str, const char* delim);
 
 // strtrc
 

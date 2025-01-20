@@ -101,7 +101,7 @@ static int _lib_fs_is_dir(WIN32_FIND_DATAW file) {
 }
 
 static void _lib_fs_normalize_slash(char* path, size_t len) {
-    lib_strntr(path, len, '/', '\\');
+    lib_strntrc(path, len, '/', '\\');
 }
 
 // Convert directory name to WIN32 find path: add '\*'
