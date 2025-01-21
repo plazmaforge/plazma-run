@@ -1092,6 +1092,27 @@ char* lib_strsub(const char* str, size_t start, size_t len) {
 
 ////
 
+static char* _lib_strcpylwr(char* dst, const char* str) {
+  char* s = (char*) str;
+  char* d = dst;
+  while (*s) {
+      *d = tolower(*s);
+      s++;
+      d++;
+  }
+  return dst;
+}
+
+char* lib_strcpylwr(char* dst, const char* str) {
+  if (!dst) {
+    return NULL;
+  }
+  if (!str) {
+    return dst;
+  }
+  return _lib_strcpylwr(dst, str);
+}
+
 /**
  * Create new string and convert a string to lowercase.
  * 
@@ -1110,12 +1131,28 @@ char* lib_tostrlwr(const char* str) {
   if (len == 0) {
     return dst;
   }
-  char* s = dst;
+  return _lib_strcpylwr(dst, str);
+}
+
+static char* _lib_strcpyupr(char* dst, const char* str) {
+  char* s = (char*) str;
+  char* d = dst;
   while (*s) {
-      *s = tolower(*s);
+      *d = toupper(*s);
       s++;
+      d++;
   }
   return dst;
+}
+
+char* lib_strcpyupr(char* dst, const char* str) {
+  if (!dst) {
+    return NULL;
+  }
+  if (!str) {
+    return dst;
+  }
+  return _lib_strcpyupr(dst, str);
 }
 
 /**
@@ -1136,12 +1173,30 @@ char* lib_tostrupr(const char* str) {
   if (len == 0) {
     return dst;
   }
-  char* s = dst;
-  while (*s) {
-      *s = toupper(*s);
-      s++;
+  return _lib_strcpyupr(dst, str);
+}
+
+
+char* lib_strcpycase(char* dst, const char* str, int mode) {
+  if (!dst) {
+    return NULL;
   }
-  return dst;
+  if (!str) {
+    return dst;
+  }
+  
+  if (mode == 1) {
+    return lib_strcpylwr(dst, str);
+  }
+  if (mode == 2) {
+    return lib_strcpyupr(dst, str);
+  }
+  //if (mode == 3) {
+  //  return lib_strcpytit(dst, str);
+  //}
+
+  // No case - duplicate only
+  return lib_strcpy(dst, str);
 }
 
 /**
@@ -1150,7 +1205,7 @@ char* lib_tostrupr(const char* str) {
  * [alocate]
  */
 char* lib_tostrcase(const char* str, int mode) {
-    if (!str) {
+  if (!str) {
     return NULL;
   }
   if (mode == 1) {
@@ -1165,6 +1220,34 @@ char* lib_tostrcase(const char* str, int mode) {
 
   // No case - duplicate only
   return lib_strdup(str);
+}
+
+/**
+ * Calculate count of chars for this case mode 
+ */
+size_t lib_strcasecount(const char* str, int mode) {
+  if (!str) {
+    return 0;
+  }
+  if (mode == 1 || mode == 2 || mode == 3) {
+    return strlen(str);
+  }
+
+  // TODO: Not implemnted yet
+  return strlen(str);
+
+  /*
+  strcase.camelCase(string)      // "fooBar"
+  strcase.snakeCase(string)      // "foo_bar"
+  strcase.constantCase(string)   // "FOO_BAR"
+  strcase.classCase(string)      // "FooBar"
+  strcase.namespaceCase(string)  // "Foo.Bar"
+  strcase.titleCase(string)      // "Foo Bar"
+  strcase.paramCase(string)      // "foo-bar"
+  strcase.pathCase(string)       // "foo/bar"
+  strcase.dotCase(string)        // "foo.bar"
+  */
+
 }
 
 // https://github.com/tower-archive/strcase
