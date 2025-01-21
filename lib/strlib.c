@@ -824,6 +824,24 @@ char* lib_strtok(char* str, const char* delim) {
 
 // strtrc
 
+static char* _lib_strntrc(char* str, size_t num, char from, char to) {
+    // if (!str) {
+    //     return NULL;
+    // }
+    // if (num == 0) {
+    //   return str;
+    // }
+    if (from == to) {
+      return str;
+    }
+    for (size_t i = 0; i < num; i++) {
+        if (str[i] == from) {
+            str[i] = to;
+        }
+    }
+    return str;
+}
+
 char* lib_strtrc(char* str, char from, char to) {
     if (!str) {
         return NULL;
@@ -835,13 +853,49 @@ char* lib_strntrc(char* str, size_t num, char from, char to) {
     if (!str) {
         return NULL;
     }
-    if (from == to) {
+    if (num == 0) {
       return str;
     }
-    for (size_t i = 0; i < num; i++) {
-        if (str[i] == from) {
-            str[i] = to;
-        }
+    return _lib_strntrc(str, num, from, to);
+}
+
+//
+
+char* lib_strtrs(char* str, const char* from, const char* to) {
+    if (!str) {
+        return NULL;
+    }
+    return lib_strntrs(str, lib_strlen(str), from, to);
+}
+
+char* lib_strntrs(char* str, size_t num, const char* from, const char* to) {
+    if (!str) {
+        return NULL;
+    }
+    if (num == 0) {
+      return str;
+    }
+    size_t len = strlen(from);
+    size_t len2 = strlen(to);
+    if (len2 < len) {
+      len = len2;
+    }
+    if (len == 0) {
+      return str;
+    }
+
+    //bool diff = false;
+    //for (size_t i = 0; i < len; i++) {
+    //  if (from[i] != to[i]) {
+    //    diff = true;
+    //  }
+    //}
+    //if (!diff) {
+    //  return str;
+    //}
+
+    for (size_t i = 0; i < len; i++) {
+      _lib_strntrc(str, num, from[i], to[i]);
     }
     return str;
 }
@@ -881,6 +935,239 @@ void lib_strafree(char** array) {
     }
     free(array);
 }
+
+//
+
+bool lib_strstarts(const char* str, const char* val) {
+  if (!str || !val) {
+    return false;
+  }
+  size_t total = strlen(str);
+  if (total == 0) {
+    return false;
+  }
+  size_t len = strlen(val);
+  if (len == 0 || len > total) {
+    return false;
+  }
+  char* s = (char*) str;
+  char* v = (char*) val;
+  for (size_t i = 0; i < len; i++) {
+    if (*s != *v) {
+      return false;
+    }
+    s++;
+    v++;
+  }
+  return true;
+}
+
+bool lib_strends(const char* str, const char* val) {
+  if (!str || !val) {
+    return false;
+  }
+  size_t total = strlen(str);
+  if (total == 0) {
+    return false;
+  }
+  size_t len = strlen(val);
+  if (len == 0 || len > total) {
+    return false;
+  }
+  char* s = (char*) (str + (total - len));
+  char* v = (char*) val;
+  for (size_t i = 0; i < len; i++) {
+    if (*s != *v) {
+      return false;
+    }
+    s++;
+    v++;
+  }
+  return true;
+}
+
+//
+
+bool lib_stristarts(const char* str, const char* val) {
+  if (!str || !val) {
+    return false;
+  }
+  size_t total = strlen(str);
+  if (total == 0) {
+    return false;
+  }
+  size_t len = strlen(val);
+  if (len == 0 || len > total) {
+    return false;
+  }
+  char* s = (char*) str;
+  char* v = (char*) val;
+  for (size_t i = 0; i < len; i++) {
+    if (tolower(*s) != tolower(*v)) {
+      return false;
+    }
+    s++;
+    v++;
+  }
+  return true;
+}
+
+bool lib_striends(const char* str, const char* val) {
+  if (!str || !val) {
+    return false;
+  }
+  size_t total = strlen(str);
+  if (total == 0) {
+    return false;
+  }
+  size_t len = strlen(val);
+  if (len == 0 || len > total) {
+    return false;
+  }
+  char* s = (char*) (str + (total - len));
+  char* v = (char*) val;
+  for (size_t i = 0; i < len; i++) {
+    if (tolower(*s) != tolower(*v)) {
+      return false;
+    }
+    s++;
+    v++;
+  }
+  return true;
+}
+
+/**
+ * 
+ * [alocate]
+ */
+char* lib_strleft(const char* str, size_t len) {
+  if (!str || len == 0) {
+    return NULL;
+  }
+  size_t total = strlen(str);
+  if (total == 0) {
+    return NULL; // empty ?
+  }
+  if (len >= total) {
+    return lib_strdup(str);
+  }  
+  return lib_strndup(str, len);
+}
+
+/**
+ * 
+ * [alocate]
+ */
+char* lib_strright(const char* str, size_t len) {
+  if (!str || len == 0) {
+    return NULL;
+  }
+  size_t total = strlen(str);
+  if (total == 0) {
+    return NULL; // empty ?
+  }
+  if (len >= total) {
+    return lib_strdup(str);
+  }  
+  return lib_strndup(str + (total - len), len);
+}
+
+/**
+ * Return a substring of a string
+ * 
+ * [alocate]
+ */
+char* lib_strsub(const char* str, size_t start, size_t len) {
+  if (!str) {
+    return NULL;
+  }
+  size_t total = strlen(str);
+  if (total == 0 
+    || start > total - 1 
+    || start + len > total - 1) {
+    return NULL;  // empty ?
+  }
+  return lib_strndup(str + start, len);
+}
+
+////
+
+/**
+ * Create new string and convert a string to lowercase.
+ * 
+ * [alocate]
+ */
+char* lib_tostrlwr(const char* str) {
+  if (!str) {
+    return NULL;
+  }
+  
+  size_t len = strlen(str);  
+  char* dst = lib_strnew(len);
+  if (!dst) {
+    return NULL;
+  }
+  if (len == 0) {
+    return dst;
+  }
+  char* s = dst;
+  while (*s) {
+      *s = tolower(*s);
+      s++;
+  }
+  return dst;
+}
+
+/**
+ * Create new string and convert a string to uppercase.
+ * 
+ * [alocate]
+ */
+char* lib_tostrupr(const char* str) {
+  if (!str) {
+    return NULL;
+  }
+  
+  size_t len = strlen(str);  
+  char* dst = lib_strnew(len);
+  if (!dst) {
+    return NULL;
+  }
+  if (len == 0) {
+    return dst;
+  }
+  char* s = dst;
+  while (*s) {
+      *s = toupper(*s);
+      s++;
+  }
+  return dst;
+}
+
+/**
+ * Create new string and convert a string to case (lower/upper/title) by mode.
+ * 
+ * [alocate]
+ */
+char* lib_tostrcase(const char* str, int mode) {
+    if (!str) {
+    return NULL;
+  }
+  if (mode == 1) {
+    return lib_tostrlwr(str);
+  }
+  if (mode == 2) {
+    return lib_tostrupr(str);
+  }
+  //if (mode == 3) {
+  //  return lib_tostrtit(str);
+  //}
+
+  // No case - duplicate only
+  return lib_strdup(str);
+}
+
+// https://github.com/tower-archive/strcase
 
 // https://www.unix.com/man-page/posix/7posix/string.h
 // https://github.com/openbsd/src/tree/master/lib/libc/string

@@ -315,16 +315,26 @@ char* lib_strtok(char* str, const char* delim);
 // strtrc [ALT]
 
 /**
- * Transform a string 
+ * Transform a string by char
  */
 char* lib_strtrc(char* str, char from, char to);
 
 // strntrc [ALT]
 
 /**
- * Transform a string, up to a maximum length
+ * Transform a string by char, up to a maximum length
  */
 char* lib_strntrc(char* str, size_t num, char from, char to);
+
+/**
+ * Transform a string by chars
+ */
+char* lib_strtrs(char* str, const char* from, const char* to);
+
+/**
+ * Transform a string by chars, up to a maximum length
+ */
+char* lib_strntrs(char* str, size_t num, const char* from, const char* to);
 
 /**
  * Return safe implemantation of a string
@@ -336,5 +346,67 @@ const char* lib_strsaf(const char* str);
 int lib_stralen(/*const*/ char** array);
 
 void lib_strafree(char** array);
+
+////
+
+bool lib_strstarts(const char* str, const char* val);
+
+#define lib_hasstrpref(str, pref) lib_strstarts(str, pref)
+
+bool lib_strends(const char* str, const char* val);
+
+#define lib_hasstrsuff(str, suff) lib_strends(str, suff)
+
+bool lib_stristarts(const char* str, const char* val);
+
+#define lib_hasstripref(str, pref) lib_stristarts(str, pref)
+
+bool lib_striends(const char* str, const char* val);
+
+#define lib_hasstrisuff(str, suff) lib_striends(str, suff)
+
+/**
+ * Return left part of a string
+ * 
+ * [alocate]
+ */
+char* lib_strleft(const char* str, size_t len);
+
+/**
+ * Return right part of a string
+ * 
+ * [alocate]
+ */
+char* lib_strright(const char* str, size_t len);
+
+
+/**
+ * Return a substring of a string
+ * 
+ * [alocate]
+ */
+char* lib_strsub(const char* str, size_t start, size_t len);
+
+/**
+ * Create new string and convert a string to lowercase.
+ * 
+ * [alocate]
+ */
+char* lib_tostrlwr(const char* str);
+
+/**
+ * Create new string and convert a string to uppercase.
+ * 
+ * [alocate]
+ */
+char* lib_tostrupr(const char* str);
+
+
+/**
+ * Create new string and convert a string to case (lower/upper/title) by mode.
+ * 
+ * [alocate]
+ */
+char* lib_tostrcase(const char* str, int mode);
 
 #endif // PLAZMA_LIB_STRLIB_H
