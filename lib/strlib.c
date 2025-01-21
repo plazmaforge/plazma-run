@@ -525,6 +525,69 @@ const char* lib_strnstr(const char* str, const char* find, size_t num) {
   return NULL;  
 }
 
+/**
+ * Find one string inside another, ignoring case
+ */
+const char* lib_stristr(const char* str, const char* find) {
+  if (!str || !find) {
+    return NULL;
+  }
+
+  char* s = (char*) str;
+  char* f;
+  size_t flen = strlen(find);
+
+  while (*s) {
+    f = (char*) find;
+    if (tolower(*s) == tolower(*f)) {
+      size_t j = 1;
+      // TODO: Use do/while
+      while (tolower(*s) == tolower(*f)) {
+        if (j == flen) {
+          return (char*) (s - flen + 1);
+        }
+        s++;
+        f++;
+        j++;
+      }      
+    }
+    s++;
+  }
+  return NULL;
+}
+
+/**
+ * Find one string inside another, ignoring case, up to a maximum length
+ */
+const char* lib_strnistr(const char* str, const char* find, size_t num) {
+  if (!str || !find) {
+    return NULL;
+  }
+
+  char* s = (char*) str;
+  char* f;
+  size_t flen = strlen(find);
+  size_t i = 0;
+
+  while (*s && i < num) {
+    f = (char*) find;
+    if (tolower(*s) == tolower(*f)) {
+      size_t j = 1;
+      while (tolower(*s) == tolower(*f)) {
+        if (j == flen) {
+          return (char*) (s - flen + 1);
+        }
+        s++;
+        f++;
+        j++;
+      }      
+    }
+    i++;
+    s++;
+  }
+  return NULL;  
+}
+
 //
 
 bool lib_stremp(const char* str) {
@@ -772,6 +835,9 @@ char* lib_strntrc(char* str, size_t num, char from, char to) {
     if (!str) {
         return NULL;
     }
+    if (from == to) {
+      return str;
+    }
     for (size_t i = 0; i < num; i++) {
         if (str[i] == from) {
             str[i] = to;
@@ -818,6 +884,8 @@ void lib_strafree(char** array) {
 
 // https://www.unix.com/man-page/posix/7posix/string.h
 // https://github.com/openbsd/src/tree/master/lib/libc/string
+// https://www.qnx.com/developers/docs/7.1/#com.qnx.doc.neutrino.lib_ref/topic/s/stpncpy.html
+// https://www.rowleydownload.co.uk/arm/documentation/index.htm?https://www.rowleydownload.co.uk/arm/documentation/strncasestr.htm
 
 // strtok vs strsep
 // https://stackoverflow.com/questions/7218625/what-are-the-differences-between-strtok-and-strsep-in-c
