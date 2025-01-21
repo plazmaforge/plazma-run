@@ -387,24 +387,24 @@ void test_strstr() {
 
 void test_strnstr() {
 
-    printf("\n");
-    printf(">> strnstr(\"abcdef\", \"cde\")\n");
-    printf("<< %s\n", strnstr("abcdef", "cde", 6));
+    //printf("\n");
+    //printf(">> strnstr(\"abcdef\", \"cde\")\n");
+    //printf("<< %s\n", strnstr("abcdef", "cde", 6));
 
-    printf(">> strnstr(\"abcdef\", \"def\", 6)\n");
-    printf("<< %s\n", strnstr("abcdef", "def", 6));
+    //printf(">> strnstr(\"abcdef\", \"def\", 6)\n");
+    //printf("<< %s\n", strnstr("abcdef", "def", 6));
 
-    printf(">> strnstr(\"abcdef\", \"def\", 3)\n");
-    printf("<< %s\n", strnstr("abcdef", "def", 3));
+    //printf(">> strnstr(\"abcdef\", \"def\", 3)\n");
+    //printf("<< %s\n", strnstr("abcdef", "def", 3));
 
-    printf(">> strnstr(\"abcdef\", \"bc\", 3)\n");
-    printf("<< %s\n", strnstr("abcdef", "bc", 3));
+    //printf(">> strnstr(\"abcdef\", \"bc\", 3)\n");
+    //printf("<< %s\n", strnstr("abcdef", "bc", 3));
 
-    printf(">> strnstr(\"abcdef\", \"def\", 10)\n");
-    printf("<< %s\n", strnstr("abcdef", "def", 10));
+    //printf(">> strnstr(\"abcdef\", \"def\", 10)\n");
+    //printf("<< %s\n", strnstr("abcdef", "def", 10));
 
-    printf(">> strnstr(\"abcdef\", \"xyz\", 6)\n");
-    printf("<< %s\n", strnstr("abcdef", "xyz", 6));
+    //printf(">> strnstr(\"abcdef\", \"xyz\", 6)\n");
+    //printf("<< %s\n", strnstr("abcdef", "xyz", 6));
 
     //
 

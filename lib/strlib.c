@@ -816,6 +816,7 @@ void lib_strafree(char** array) {
     free(array);
 }
 
+// https://www.unix.com/man-page/posix/7posix/string.h
 // https://github.com/openbsd/src/tree/master/lib/libc/string
 
 // strtok vs strsep
