@@ -74,7 +74,7 @@ void _print_encodings() {
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-iconv -f fromcode -t tocode file\n");
+    fprintf(stderr, "Usage: run-iconv [-l] -f fromcode -t tocode file\n");
 }
 
 int main(int argc, char* argv[]) {
