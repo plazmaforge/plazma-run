@@ -1089,11 +1089,25 @@ char* lib_strsub(const char* str, size_t start, size_t len) {
   if (!str) {
     return NULL;
   }
-  size_t total = strlen(str);
-  if (total == 0 
-    || start > total - 1 
-    || start + len > total - 1) {
+  if (len == 0) {
+    // empty substring
     return NULL;  // empty ?
+  }
+
+  size_t total = strlen(str);
+  if (total == 0) {
+    // empty string
+    return NULL;  // empty ?
+  }
+
+  if (start > total - 1) {
+    // out of range
+    return NULL;  // empty ?
+  }
+
+  if (start + len > total) {
+    // big lenght: truncate
+    len = total - start;
   }
   return lib_strndup(str + start, len);
 }
