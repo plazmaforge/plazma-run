@@ -33,8 +33,10 @@ static int _print_result(lib_md_config_t* config, const char* title, unsigned ch
     return pos;
 }
 
-static const char* _strsaf(const char* value) {
-    return value ? value : "";
+// strlib::strsafe
+
+static const char* _strsafe(const char* str) {
+    return str ? str : "";
 }
 
 static const char* _get_mode_type(lib_md_config_t* config) {
@@ -42,7 +44,7 @@ static const char* _get_mode_type(lib_md_config_t* config) {
 }
 
 static const char* _get_mode_input(lib_md_config_t* config, const char* file_name, const char* data) {
-    return _strsaf(config->mode == RUN_MD_BY_STRING ? data : file_name);
+    return _strsafe(config->mode == RUN_MD_BY_STRING ? data : file_name);
 }
 
 static void _file_error(lib_md_config_t* config, const char* file_name) {

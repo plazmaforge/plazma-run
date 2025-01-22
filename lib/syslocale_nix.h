@@ -21,7 +21,7 @@ void lib_locale_nix_init() {
        printf("All LC Locale   : %s\n", lib_sys_get_locale(LC_ALL));
        printf("Std LC Locale   : %s\n", lib_sys_get_locale(LC_CTYPE));
        _locale_os = lib_sys_load_current_locale_os();
-       printf("Std OS Locale   : %s\n", _locale_os ? lib_strsaf(_locale_os->name) : "");
+       printf("Std OS Locale   : %s\n", _locale_os ? lib_strsafe(_locale_os->name) : "");
        lib_sys_print_locale(_locale_os);
 
        // We can't use 'setlocale(LC_CTYPE, _locale_os->name)'

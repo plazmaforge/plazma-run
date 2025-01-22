@@ -495,108 +495,108 @@ void lib_sys_print_sys_info() {
     printf("\n");
     
     // Version Info
-    printf("os.name          : %s\n", lib_strsaf(sys_info->os_name));
-    printf("os.version       : %s\n", lib_strsaf(sys_info->os_version));
+    printf("os.name          : %s\n", lib_strsafe(sys_info->os_name));
+    printf("os.version       : %s\n", lib_strsafe(sys_info->os_version));
     printf("os.major         : %d\n", sys_info->os_major_version);
     printf("os.minor         : %d\n", sys_info->os_minor_version);
     printf("os.build         : %d\n", sys_info->os_build_version);
 
     // CPU Info
-    printf("os.arch          : %s\n", lib_strsaf(sys_info->os_arch));
+    printf("os.arch          : %s\n", lib_strsafe(sys_info->os_arch));
     printf("os.arch.size     : %d\n", sys_info->os_arch_size);
     
-    printf("cpu.isalist      : %s\n", lib_strsaf(sys_info->cpu_isalist));
-    printf("cpu.endian       : %s\n", lib_strsaf(sys_info->cpu_endian));
+    printf("cpu.isalist      : %s\n", lib_strsafe(sys_info->cpu_isalist));
+    printf("cpu.endian       : %s\n", lib_strsafe(sys_info->cpu_endian));
     printf("cpu.count        : %d\n", sys_info->cpu_count);
 
     // FS Info
-    printf("file.separator   : %s\n", lib_strsaf(sys_info->file_separator));
-    //printf("line.separator   : %s\n", lib_strsaf(sys_info->line_separator));
-    printf("file.encoding    : %s\n", lib_strsaf(sys_info->encoding));
+    printf("file.separator   : %s\n", lib_strsafe(sys_info->file_separator));
+    //printf("line.separator   : %s\n", lib_strsafe(sys_info->line_separator));
+    printf("file.encoding    : %s\n", lib_strsafe(sys_info->encoding));
 
     // User Info
     printf("\n");
-    printf("user.name        : %s\n", lib_strsaf(sys_info->user_name));
-    printf("user.home        : %s\n", lib_strsaf(sys_info->user_home));
-    printf("user.dir         : %s\n", lib_strsaf(sys_info->user_dir));
-    printf("tmp.dir          : %s\n", lib_strsaf(sys_info->tmp_dir));
+    printf("user.name        : %s\n", lib_strsafe(sys_info->user_name));
+    printf("user.home        : %s\n", lib_strsafe(sys_info->user_home));
+    printf("user.dir         : %s\n", lib_strsafe(sys_info->user_dir));
+    printf("tmp.dir          : %s\n", lib_strsafe(sys_info->tmp_dir));
  
     printf("\n");
-    printf("user.locale      : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_locale : sys_info->display_locale)); 
-    printf("user.language    : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_language : sys_info->display_language));
-    printf("user.script      : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_script : sys_info->display_script));
-    printf("user.country     : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_country : sys_info->display_country));
-    printf("user.variant     : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_variant: sys_info->display_variant));
-    printf("user.encoding    : %s\n", lib_strsaf(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_encoding: sys_info->display_encoding));
+    printf("user.locale      : %s\n", lib_strsafe(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_locale : sys_info->display_locale)); 
+    printf("user.language    : %s\n", lib_strsafe(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_language : sys_info->display_language));
+    printf("user.script      : %s\n", lib_strsafe(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_script : sys_info->display_script));
+    printf("user.country     : %s\n", lib_strsafe(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_country : sys_info->display_country));
+    printf("user.variant     : %s\n", lib_strsafe(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_variant: sys_info->display_variant));
+    printf("user.encoding    : %s\n", lib_strsafe(sys_info->locale_type == LC_FORMAT_TYPE ? sys_info->format_encoding: sys_info->display_encoding));
 
     printf("\n");
-    printf("format.locale    : %s\n", lib_strsaf(sys_info->format_locale));
-    printf("format.language  : %s\n", lib_strsaf(sys_info->format_language));
-    printf("format.script    : %s\n", lib_strsaf(sys_info->format_script));
-    printf("format.country   : %s\n", lib_strsaf(sys_info->format_country));
-    printf("format.variant   : %s\n", lib_strsaf(sys_info->format_variant));
-    printf("format.encoding  : %s\n", lib_strsaf(sys_info->format_encoding));
+    printf("format.locale    : %s\n", lib_strsafe(sys_info->format_locale));
+    printf("format.language  : %s\n", lib_strsafe(sys_info->format_language));
+    printf("format.script    : %s\n", lib_strsafe(sys_info->format_script));
+    printf("format.country   : %s\n", lib_strsafe(sys_info->format_country));
+    printf("format.variant   : %s\n", lib_strsafe(sys_info->format_variant));
+    printf("format.encoding  : %s\n", lib_strsafe(sys_info->format_encoding));
 
     printf("\n");
-    printf("display.locale   : %s\n", lib_strsaf(sys_info->display_locale));    
-    printf("display.language : %s\n", lib_strsaf(sys_info->display_language));
-    printf("display.script   : %s\n", lib_strsaf(sys_info->display_script));
-    printf("display.country  : %s\n", lib_strsaf(sys_info->display_country));
-    printf("display.variant  : %s\n", lib_strsaf(sys_info->display_variant));
-    printf("display.encoding : %s\n", lib_strsaf(sys_info->display_encoding));
+    printf("display.locale   : %s\n", lib_strsafe(sys_info->display_locale));    
+    printf("display.language : %s\n", lib_strsafe(sys_info->display_language));
+    printf("display.script   : %s\n", lib_strsafe(sys_info->display_script));
+    printf("display.country  : %s\n", lib_strsafe(sys_info->display_country));
+    printf("display.variant  : %s\n", lib_strsafe(sys_info->display_variant));
+    printf("display.encoding : %s\n", lib_strsafe(sys_info->display_encoding));
 
     */
 
     printf("\n");
 
     // Version Info
-    printf("os.name          : %s\n", lib_strsaf(lib_sys_get_os_name()));
-    printf("os.version       : %s\n", lib_strsaf(lib_sys_get_os_version()));
+    printf("os.name          : %s\n", lib_strsafe(lib_sys_get_os_name()));
+    printf("os.version       : %s\n", lib_strsafe(lib_sys_get_os_version()));
     printf("os.major         : %d\n", lib_sys_get_os_major_version());
     printf("os.minor         : %d\n", lib_sys_get_os_minor_version());
     printf("os.build         : %d\n", lib_sys_get_os_build_version());
 
     // CPU Info
-    printf("os.arch          : %s\n", lib_strsaf(lib_sys_get_os_arch()));
+    printf("os.arch          : %s\n", lib_strsafe(lib_sys_get_os_arch()));
     printf("os.arch.size     : %d\n", lib_sys_get_os_arch_size());
-    printf("cpu.isalist      : %s\n", lib_strsaf(lib_sys_get_cpu_isalist()));
-    printf("cpu.endian       : %s\n", lib_strsaf(lib_sys_get_cpu_endian()));
+    printf("cpu.isalist      : %s\n", lib_strsafe(lib_sys_get_cpu_isalist()));
+    printf("cpu.endian       : %s\n", lib_strsafe(lib_sys_get_cpu_endian()));
     printf("cpu.count        : %d\n", lib_sys_get_cpu_count());
 
     // FS Info
-    printf("file.separator   : %s\n", lib_strsaf(lib_sys_get_file_separator()));
-    //printf("line.separator   : %s\n", lib_strsaf(lib_sys_get_line_separator()));
-    printf("file.encoding    : %s\n", lib_strsaf(lib_sys_get_file_encoding()));
+    printf("file.separator   : %s\n", lib_strsafe(lib_sys_get_file_separator()));
+    //printf("line.separator   : %s\n", lib_strsafe(lib_sys_get_line_separator()));
+    printf("file.encoding    : %s\n", lib_strsafe(lib_sys_get_file_encoding()));
 
     // User Info
     printf("\n");
-    printf("user.name        : %s\n", lib_strsaf(lib_sys_get_user_name()));
-    printf("user.home        : %s\n", lib_strsaf(lib_sys_get_user_home()));
-    printf("user.dir         : %s\n", lib_strsaf(lib_sys_get_user_dir()));
-    printf("tmp.dir          : %s\n", lib_strsaf(lib_sys_get_tmp_dir()));
+    printf("user.name        : %s\n", lib_strsafe(lib_sys_get_user_name()));
+    printf("user.home        : %s\n", lib_strsafe(lib_sys_get_user_home()));
+    printf("user.dir         : %s\n", lib_strsafe(lib_sys_get_user_dir()));
+    printf("tmp.dir          : %s\n", lib_strsafe(lib_sys_get_tmp_dir()));
 
     printf("\n");
-    printf("user.locale      : %s\n", lib_strsaf(lib_sys_get_locale_name())); 
-    printf("user.language    : %s\n", lib_strsaf(lib_sys_get_locale_language()));
-    printf("user.script      : %s\n", lib_strsaf(lib_sys_get_locale_script()));
-    printf("user.country     : %s\n", lib_strsaf(lib_sys_get_locale_country()));
-    printf("user.variant     : %s\n", lib_strsaf(lib_sys_get_locale_variant()));
-    printf("user.encoding    : %s\n", lib_strsaf(lib_sys_get_locale_encoding()));
+    printf("user.locale      : %s\n", lib_strsafe(lib_sys_get_locale_name())); 
+    printf("user.language    : %s\n", lib_strsafe(lib_sys_get_locale_language()));
+    printf("user.script      : %s\n", lib_strsafe(lib_sys_get_locale_script()));
+    printf("user.country     : %s\n", lib_strsafe(lib_sys_get_locale_country()));
+    printf("user.variant     : %s\n", lib_strsafe(lib_sys_get_locale_variant()));
+    printf("user.encoding    : %s\n", lib_strsafe(lib_sys_get_locale_encoding()));
 
     printf("\n");
-    printf("format.locale    : %s\n", lib_strsaf(lib_sys_get_format_locale_name()));
-    printf("format.language  : %s\n", lib_strsaf(lib_sys_get_format_locale_language()));
-    printf("format.script    : %s\n", lib_strsaf(lib_sys_get_format_locale_script()));
-    printf("format.country   : %s\n", lib_strsaf(lib_sys_get_format_locale_country()));
-    printf("format.variant   : %s\n", lib_strsaf(lib_sys_get_format_locale_variant()));
-    printf("format.encoding  : %s\n", lib_strsaf(lib_sys_get_format_locale_encoding()));
+    printf("format.locale    : %s\n", lib_strsafe(lib_sys_get_format_locale_name()));
+    printf("format.language  : %s\n", lib_strsafe(lib_sys_get_format_locale_language()));
+    printf("format.script    : %s\n", lib_strsafe(lib_sys_get_format_locale_script()));
+    printf("format.country   : %s\n", lib_strsafe(lib_sys_get_format_locale_country()));
+    printf("format.variant   : %s\n", lib_strsafe(lib_sys_get_format_locale_variant()));
+    printf("format.encoding  : %s\n", lib_strsafe(lib_sys_get_format_locale_encoding()));
 
     printf("\n");
-    printf("display.locale   : %s\n", lib_strsaf(lib_sys_get_display_locale_name()));
-    printf("display.language : %s\n", lib_strsaf(lib_sys_get_display_locale_language()));
-    printf("display.script   : %s\n", lib_strsaf(lib_sys_get_display_locale_script()));
-    printf("display.country  : %s\n", lib_strsaf(lib_sys_get_display_locale_country()));
-    printf("display.variant  : %s\n", lib_strsaf(lib_sys_get_display_locale_variant()));
-    printf("display.encoding : %s\n", lib_strsaf(lib_sys_get_display_locale_encoding()));
+    printf("display.locale   : %s\n", lib_strsafe(lib_sys_get_display_locale_name()));
+    printf("display.language : %s\n", lib_strsafe(lib_sys_get_display_locale_language()));
+    printf("display.script   : %s\n", lib_strsafe(lib_sys_get_display_locale_script()));
+    printf("display.country  : %s\n", lib_strsafe(lib_sys_get_display_locale_country()));
+    printf("display.variant  : %s\n", lib_strsafe(lib_sys_get_display_locale_variant()));
+    printf("display.encoding : %s\n", lib_strsafe(lib_sys_get_display_locale_encoding()));
 
 }

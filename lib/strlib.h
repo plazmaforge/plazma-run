@@ -15,7 +15,7 @@ size_t lib_strnlen(const char* str, size_t num);
 // strnew [ALT]
 
 /**
- * Create a string
+ * Create new string by size
  * 
  * [allocate]
  */
@@ -339,27 +339,48 @@ char* lib_strntrs(char* str, size_t num, const char* from, const char* to);
 /**
  * Return safe implemantation of a string
  */
-const char* lib_strsaf(const char* str);
+const char* lib_strsafe(const char* str);
+
+// strarrnew [ALT]
+
+/**
+ * Create new NULL-terminated string array
+ */
+char** lib_strarrnew(size_t size);
 
 // stralen
 
-int lib_stralen(/*const*/ char** array);
+/**
+ * Return lenght of NULL-terminated string array
+ */
+size_t lib_strarrlen(/*const*/ char** arr);
 
-void lib_strafree(char** array);
+/**
+ * Free NULL-terminated string array
+ */
+void lib_strarrfree(char** arr);
 
 ////
+
+// strstarts [ALT]
 
 bool lib_strstarts(const char* str, const char* val);
 
 #define lib_hasstrpref(str, pref) lib_strstarts(str, pref)
 
+// strends [ALT]
+
 bool lib_strends(const char* str, const char* val);
 
 #define lib_hasstrsuff(str, suff) lib_strends(str, suff)
 
+// stristarts [ALT]
+
 bool lib_stristarts(const char* str, const char* val);
 
 #define lib_hasstripref(str, pref) lib_stristarts(str, pref)
+
+// striends [ALT]
 
 bool lib_striends(const char* str, const char* val);
 

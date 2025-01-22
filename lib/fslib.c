@@ -1745,7 +1745,7 @@ int lib_fs_scandir(const char* dir_name, const char* pattern, lib_fs_file_t*** f
     }
 
     char** patterns = lib_path_split_path(pattern); // split pattern by level
-    int pattern_count = lib_stralen(patterns);
+    int pattern_count = lib_strarrlen(patterns);
 
     //printf(">>pattern_count : %d\n", pattern_count);
     //printf(">>scandir       : %s\n", dir_name);
@@ -1759,7 +1759,7 @@ int lib_fs_scandir(const char* dir_name, const char* pattern, lib_fs_file_t*** f
 
     lib_fs_scandir_internal(dir_name, /*(const char**)*/ patterns, pattern_count, files, &file_count, 0, max_depth, file_only);
 
-    lib_strafree(patterns);
+    lib_strarrfree(patterns);
 
     if (files && file_count > 0) {
         //qsort(*files, file_count, sizeof(struct fs_file_t*), lib_fs_file_sort_by_alpha);

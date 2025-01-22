@@ -203,13 +203,13 @@ void lib_sys_print_locale(lib_locale_t* locale) {
         printf("Locale: NULL\n");
         return;
     }
-    // We use 'strsaf' because if the value is NULL we have the result: '(null)'
+    // We use 'strsafe' because if the value is NULL we have the result: '(null)'
     if (locale->name) {
-        printf("Locale.name     : %s\n", lib_strsaf(locale->name));
+        printf("Locale.name     : %s\n", lib_strsafe(locale->name));
     }    
-    printf("Locale.language : %s\n", lib_strsaf(locale->language));
-    printf("Locale.script   : %s\n", lib_strsaf(locale->script));
-    printf("Locale.country  : %s\n", lib_strsaf(locale->country));
-    printf("Locale.variant  : %s\n", lib_strsaf(locale->variant));
-    printf("Locale.encoding : %s\n", lib_strsaf(locale->encoding));
+    printf("Locale.language : %s\n", lib_strsafe(locale->language));
+    printf("Locale.script   : %s\n", lib_strsafe(locale->script));
+    printf("Locale.country  : %s\n", lib_strsafe(locale->country));
+    printf("Locale.variant  : %s\n", lib_strsafe(locale->variant));
+    printf("Locale.encoding : %s\n", lib_strsafe(locale->encoding));
 }

@@ -900,40 +900,48 @@ char* lib_strntrs(char* str, size_t num, const char* from, const char* to) {
     return str;
 }
 
-// strsaf
+// strsafe
 
-const char* lib_strsaf(const char* str) {
+const char* lib_strsafe(const char* str) {
     return str ? str : LIB_STR_EMP;
 }
 
 // stralen
 
-int lib_stralen(/*const*/ char** array) {
-    if (!array) {
+char** lib_strarrnew(size_t size) {
+    char** arr = (char**) malloc(size + 1);
+    if (!arr) {
+      return NULL;
+    }
+    arr[size] = NULL;
+    return arr;
+}
+
+size_t lib_strarrlen(/*const*/ char** arr) {
+    if (!arr) {
         return 0;
     }
     /*const*/ char* e = NULL;
-    /*const*/ char** elements = array;
-    int count = 0;
-    while ((e = *elements) != NULL) {
-        count++;
-        elements++;
+    /*const*/ char** a = arr;
+    size_t len = 0;
+    while ((e = *a) != NULL) {
+        len++;
+        a++;
     }
-    return count;
+    return len;
 }
 
-void lib_strafree(char** array) {
-    if (!array) {
+void lib_strarrfree(char** arr) {
+    if (!arr) {
         return;
     }
     char* e = NULL;
-    char** elements = array;
-    int count = 0;
-    while ((e = *elements) != NULL) {
+    char** a = arr;
+    while ((e = *a) != NULL) {
         free(e);
-        elements++;
+        a++;
     }
-    free(array);
+    free(arr);
 }
 
 //
