@@ -4,6 +4,34 @@
 
 #include "strlib.h"
 
+#define _btoa(x) ((x) ? "true" : "false")
+
+void test_strlen() {
+
+    //// strlen()
+
+    char* str;
+
+    printf("\n");
+    printf(">> lib_strlen(\"abc\")\n");
+    printf("<< %lu\n", lib_strlen("abc"));
+
+    printf(">> lib_strlen(\" \")\n");
+    printf("<< %lu\n", lib_strlen(" "));
+
+    printf(">> lib_strlen(\"\")\n");
+    printf("<< %lu\n", lib_strlen(""));
+
+    printf(">> lib_strlen(NULL)\n");
+    printf("<< %lu\n", lib_strlen(NULL));
+
+    str = lib_strdup("abcdef");
+    printf(">> lib_strlen(\"abcdef\")\n");
+    printf("<< %lu\n", lib_strlen(str));
+    free(str);
+
+}
+
 void test_strjoin() {
 
     //// strjoin()
@@ -11,34 +39,30 @@ void test_strjoin() {
     char* str;
 
     str = lib_strjoin("abc", "-def", "-xyz", "-qwe");
+    printf("\n");
     printf(">> lib_strjoin(\"abc\", \"-def\", \"-xyz\", \"-qwe\")\n");
     printf("<< %s\n", str);
     free(str);
 
     str = lib_strjoin("abc", "-def", "-xyz");
-    printf("\n");
     printf(">> lib_strjoin(\"abc\", \"-def\", \"-xyz\")\n");
     printf("<< %s\n", str);
     free(str);
 
     str = lib_strjoin("abc", "-def");
-    printf("\n");
     printf(">> lib_strjoin(\"abc\", \"-def\")\n");
     printf("<< %s\n", str);
     free(str);
 
     str = lib_strjoin("abc");
-    printf("\n");
     printf(">> lib_strjoin(\"abc\")\n");
     printf("<< %s\n", str);
     free(str);
 
     str = lib_strjoin("abc", "-def", "-xyz", NULL, "-qwe");
-    printf("\n");
     printf(">> lib_strjoin(\"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
     printf("<< %s\n", str);
     free(str);
-
 
 }
 
@@ -55,38 +79,29 @@ void test_strcjoin() {
     free(str);
 
     str = lib_strcjoin(4, "abc", "-def", "-xyz", NULL, "-qwe");
-    printf("\n");
     printf(">> lib_strcjoin(4, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
     printf("<< %s\n", str);
     free(str);
 
     str = lib_strcjoin(3, "abc", "-def", "-xyz", NULL, "-qwe");
-    printf("\n");
     printf(">> lib_strcjoin(3, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
     printf("<< %s\n", str);
     free(str);
 
     str = lib_strcjoin(2, "abc", "-def", "-xyz", NULL, "-qwe");
-    printf("\n");
     printf(">> lib_strcjoin(2, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
     printf("<< %s\n", str);
     free(str);
 
     str = lib_strcjoin(1, "abc", "-def", "-xyz", NULL, "-qwe");
-    printf("\n");
     printf(">> lib_strcjoin(1, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
     printf("<< %s\n", str);
     free(str);
 
     str = lib_strcjoin(0, "abc", "-def", "-xyz", NULL, "-qwe");
-    printf("\n");
     printf(">> lib_strcjoin(0, \"abc\", \"-def\", \"-xyz\", NULL, \"-qwe\")\n");
     printf("<< %s\n", str);
     free(str);
-
-    // str = lib_strcjoin(-1, "abc", "-def", "-xyz", NULL, "-qwe");
-    // printf("strcjoin(-): %s\n", str);
-    // free(str);
 
 }
 
@@ -98,13 +113,13 @@ void test_strcatv() {
 
     str = lib_strnew(15);
     str = lib_strcatv(str, "abc", "-def", "-xyz", "-qwe");
+    printf("\n");
     printf(">> lib_strcatv(str, \"abc\", \"-def\", \"-xyz\", \"-qwe\")\n");
     printf("<< %s\n", str);
     free(str);
 
     str = lib_strnew(11);
     str = lib_strcatv(str, "abc", "-def", "-xyz");
-    printf("\n");
     printf(">> lib_strcatv(str, \"abc\", \"-def\", \"-xyz\")\n");
     printf("<< %s\n", str);
     free(str);
@@ -148,13 +163,13 @@ void test_strcpyv() {
 
     str = lib_strnew(15);
     str = lib_strcpyv(str, "abc", "-def", "-xyz", "-qwe");
+    printf("\n");
     printf(">> lib_strcpyv(str, \"abc\", \"-def\", \"-xyz\", \"-qwe\")\n");
     printf("<< %s\n", str);
     free(str);
 
     str = lib_strnew(11);
     str = lib_strcpyv(str, "abc", "-def", "-xyz");
-    printf("\n");
     printf(">> lib_strcpyv(str, \"abc\", \"-def\", \"-xyz\")\n");
     printf("<< %s\n", str);
     free(str);
@@ -570,12 +585,133 @@ void test_strsep() {
 
 }
 
+void test_strtrc() {
+
+    //// strtrc()
+
+    char* str;
+
+    str = lib_strdup("Hello world");
+    printf("\n");
+    printf(">> lib_strtrc(\"Hello world\", 'l', 'x')\n");
+    printf("<< %s\n", lib_strtrc(str, 'l', 'x'));
+    free(str);
+
+    str = lib_strdup("Hello world");
+    printf(">> lib_strtrc(\"Hello world\", ' ', '-')\n");
+    printf("<< %s\n", lib_strtrc(str, ' ', '-'));
+    free(str);
+
+    printf(">> lib_strtrc(NULL, ' ', '-')\n");
+    printf("<< %s\n", lib_strtrc(NULL, ' ', '-'));
+
+}
+
+void test_strtrs() {
+
+    //// strtrs()
+
+    char* str;
+
+    str = lib_strdup("Hello world");
+    printf("\n");
+    printf(">> lib_strtrs(\"Hello world\", \"l\", \"x\")\n");
+    printf("<< %s\n", lib_strtrs(str, "l", "x"));
+    free(str);
+
+    str = lib_strdup("Hello world");
+    printf(">> lib_strtrs(\"Hello world\", \"ol\", \"yx\")\n");
+    printf("<< %s\n", lib_strtrs(str, "ol", "yx"));
+    free(str);
+
+    str = lib_strdup("Hello world");
+    printf(">> lib_strtrs(\"Hello world\", \"ol\", \"y\")\n");
+    printf("<< %s\n", lib_strtrs(str, "ol", "y"));
+    free(str);
+
+    str = lib_strdup("Hello world");
+    printf(">> lib_strtrs(\"Hello world\", \"o\", \"yx\")\n");
+    printf("<< %s\n", lib_strtrs(str, "o", "yx"));
+    free(str);
+
+    printf(">> lib_strtrs(NULL, \"ol\", \"yx\")\n");
+    printf("<< %s\n", lib_strtrs(NULL, "ol", "yx"));
+
+    printf(">> lib_strtrs(NULL, NULL, \"yx\")\n");
+    printf("<< %s\n", lib_strtrs(NULL, NULL, "yx"));
+
+    printf(">> lib_strtrs(NULL, NULL, NULL)\n");
+    printf("<< %s\n", lib_strtrs(NULL, NULL, NULL));
+
+}
+
+void test_strstarts() {
+
+    //// strstarts()
+
+    printf("\n");
+    printf(">> lib_strstarts(\"Hello world\", \"world\")\n");
+    printf("<< %s\n", _btoa(lib_strstarts("Hello world", "world")));
+
+    printf(">> lib_strstarts(\"Hello world\", \"Hello\")\n");
+    printf("<< %s\n", _btoa(lib_strstarts("Hello world", "Hello")));
+
+    printf(">> lib_strstarts(\"Hello world\", \"\")\n");
+    printf("<< %s\n", _btoa(lib_strstarts("Hello world", "")));
+
+    printf(">> lib_strstarts(\"\", \"Hello\")\n");
+    printf("<< %s\n", _btoa(lib_strstarts("", "Hello")));
+
+    printf(">> lib_strstarts(\"\", \"\")\n");
+    printf("<< %s\n", _btoa(lib_strstarts("", "")));
+
+    printf(">> lib_strstarts(\"Hello world\", NULL)\n");
+    printf("<< %s\n", _btoa(lib_strstarts("Hello world", NULL)));
+
+    printf(">> lib_strstarts(NULL, NULL)\n");
+    printf("<< %s\n", _btoa(lib_strstarts(NULL, NULL)));
+
+}
+
+
+void test_strends() {
+
+    //// strends()
+
+    printf("\n");
+    printf(">> lib_strends(\"Hello world\", \"world\")\n");
+    printf("<< %s\n", _btoa(lib_strends("Hello world", "world")));
+
+    printf(">> lib_strends(\"Hello world\", \"Hello\")\n");
+    printf("<< %s\n", _btoa(lib_strends("Hello world", "Hello")));
+
+    printf(">> lib_strends(\"Hello world\", \"\")\n");
+    printf("<< %s\n", _btoa(lib_strends("Hello world", "")));
+
+    printf(">> lib_strends(\"\", \"Hello\")\n");
+    printf("<< %s\n", _btoa(lib_strends("", "Hello")));
+
+    printf(">> lib_strends(\"\", \"\")\n");
+    printf("<< %s\n", _btoa(lib_strends("", "")));
+
+    printf(">> lib_strends(\"Hello world\", NULL)\n");
+    printf("<< %s\n", _btoa(lib_strends("Hello world", NULL)));
+
+    printf(">> lib_strends(NULL, NULL)\n");
+    printf("<< %s\n", _btoa(lib_strends(NULL, NULL)));
+
+}
+
 int test(const char* name) {
     if (!name) {
         fputs("Test name is empty\n", stderr);
         return 1;
     }
 
+    if (strcmp(name, "strlen") == 0) {
+        test_strlen();
+        return 0;
+    }
     if (strcmp(name, "strjoin") == 0) {
         test_strjoin();
         return 0;
@@ -596,6 +732,22 @@ int test(const char* name) {
         test_strupr();
         return 0;
     }
+    if (strcmp(name, "strrev") == 0) {
+        test_strrev();
+        return 0;
+    }
+    if (strcmp(name, "strtrc") == 0) {
+        test_strtrc();
+        return 0;
+    }
+    if (strcmp(name, "strtrs") == 0) {
+        test_strtrs();
+        return 0;
+    }
+    if (strcmp(name, "strstarts") == 0) {
+        test_strstarts();
+        return 0;
+    }
 
     fprintf(stderr, "Test not found: %s\n", name);
     return 1;
@@ -607,6 +759,8 @@ int main(int argc, char* argv[]) {
     if (argc > 1) {
         return test(argv[1]);
     }
+
+    test_strlen();
 
     test_strjoin();
     test_strcjoin();
@@ -629,6 +783,12 @@ int main(int argc, char* argv[]) {
 
     test_strtok();
     test_strsep();
+
+    test_strtrc();
+    test_strtrs();
+
+    test_strstarts();
+    test_strends();
 
     return 0;
 }
