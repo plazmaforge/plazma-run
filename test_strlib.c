@@ -461,8 +461,23 @@ void test_strlwr() {
 
     char* str;
 
-    str = lib_strdup("aBcDef");
+    str = lib_strdup("a");
     printf("\n");
+    printf(">> lib_strlwr(\"a\")\n");
+    printf("<< %s\n", lib_strlwr(str));
+    free(str);
+
+    str = lib_strdup("A");
+    printf(">> lib_strlwr(\"A\")\n");
+    printf("<< %s\n", lib_strlwr(str));
+    free(str);
+
+    str = lib_strdup("aB");
+    printf(">> lib_strlwr(\"aB\")\n");
+    printf("<< %s\n", lib_strlwr(str));
+    free(str);
+
+    str = lib_strdup("aBcDef");
     printf(">> lib_strlwr(\"aBcDef\")\n");
     printf("<< %s\n", lib_strlwr(str));
     free(str);
@@ -477,14 +492,68 @@ void test_strlwr() {
 
 }
 
+void test_tostrlwr() {
+
+    //// tostrlwr()
+
+    char* str;
+
+    str = lib_tostrlwr("a");
+    printf("\n");
+    printf(">> lib_tostrlwr(\"a\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_tostrlwr("A");
+    printf(">> lib_tostrlwr(\"A\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_tostrlwr("aB");
+    printf(">> lib_tostrlwr(\"aB\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_tostrlwr("aBcDef");
+    printf(">> lib_tostrlwr(\"aBcDef\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_tostrlwr("");
+    printf(">> lib_tostrlwr(\"\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_tostrlwr(NULL);
+    printf(">> lib_tostrlwr(NULL)\n");
+    printf("<< %s\n", str);
+    free(str);
+
+}
+
 void test_strupr() {
 
     //// strupr()
 
     char* str;
 
-    str = lib_strdup("aBcDef");
+    str = lib_strdup("a");
     printf("\n");
+    printf(">> lib_strupr(\"a\")\n");
+    printf("<< %s\n", lib_strupr(str));
+    free(str);
+
+    str = lib_strdup("A");
+    printf(">> lib_strupr(\"A\")\n");
+    printf("<< %s\n", lib_strupr(str));
+    free(str);
+
+    str = lib_strdup("aB");
+    printf(">> lib_strupr(\"aB\")\n");
+    printf("<< %s\n", lib_strupr(str));
+    free(str);
+
+    str = lib_strdup("aBcDef");
     printf(">> lib_strupr(\"aBcDef\")\n");
     printf("<< %s\n", lib_strupr(str));
     free(str);
@@ -499,15 +568,54 @@ void test_strupr() {
 
 }
 
+void test_tostrupr() {
+
+    //// tostrupr()
+
+    char* str;
+
+    str = lib_tostrupr("a");
+    printf("\n");
+    printf(">> lib_tostrupr(\"a\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_tostrupr("A");
+    printf(">> lib_tostrupr(\"A\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_tostrupr("aB");
+    printf(">> lib_tostrupr(\"aB\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_tostrupr("aBcDef");
+    printf(">> lib_tostrupr(\"aBcDef\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_tostrupr("");
+    printf(">> lib_tostrupr(\"\")\n");
+    printf("<< %s\n", str);
+    free(str);
+
+    str = lib_tostrupr(NULL);
+    printf(">> lib_tostrupr(NULL)\n");
+    printf("<< %s\n", str);
+    free(str);
+
+}
+
 void test_strrev() {
 
     //// strrev()
 
     char* str;
 
-    str = lib_strdup("aBcDef");
+    str = lib_strdup("a");
     printf("\n");
-    printf(">> lib_strrev(\"aBcDef\")\n");
+    printf(">> lib_strrev(\"a\")\n");
     printf("<< %s\n", lib_strrev(str));
     free(str);
 
@@ -516,8 +624,8 @@ void test_strrev() {
     printf("<< %s\n", lib_strrev(str));
     free(str);
 
-    str = lib_strdup("a");
-    printf(">> lib_strrev(\"a\")\n");
+    str = lib_strdup("aBcDef");
+    printf(">> lib_strrev(\"aBcDef\")\n");
     printf("<< %s\n", lib_strrev(str));
     free(str);
 
@@ -650,11 +758,21 @@ void test_strstarts() {
     //// strstarts()
 
     printf("\n");
-    printf(">> lib_strstarts(\"Hello world\", \"world\")\n");
-    printf("<< %s\n", _btoa(lib_strstarts("Hello world", "world")));
+    printf(">> lib_strstarts(\"Hello world\", \"H\")\n");
+    printf("<< %s\n", _btoa(lib_strstarts("Hello world", "H")));
+
+    printf(">> lib_strstarts(\"Hello world\", \"He\")\n");
+    printf("<< %s\n", _btoa(lib_strstarts("Hello world", "He")));
 
     printf(">> lib_strstarts(\"Hello world\", \"Hello\")\n");
     printf("<< %s\n", _btoa(lib_strstarts("Hello world", "Hello")));
+
+    //
+
+    printf(">> lib_strstarts(\"Hello world\", \"world\")\n");
+    printf("<< %s\n", _btoa(lib_strstarts("Hello world", "world")));
+
+    //
 
     printf(">> lib_strstarts(\"Hello world\", \"\")\n");
     printf("<< %s\n", _btoa(lib_strstarts("Hello world", "")));
@@ -668,8 +786,67 @@ void test_strstarts() {
     printf(">> lib_strstarts(\"Hello world\", NULL)\n");
     printf("<< %s\n", _btoa(lib_strstarts("Hello world", NULL)));
 
+    printf(">> lib_strstarts(NULL, \"Hello world\")\n");
+    printf("<< %s\n", _btoa(lib_strstarts(NULL, "Hello world")));
+
     printf(">> lib_strstarts(NULL, NULL)\n");
     printf("<< %s\n", _btoa(lib_strstarts(NULL, NULL)));
+
+}
+
+void test_stristarts() {
+
+    //// stristarts()
+
+    printf("\n");
+    printf(">> lib_stristarts(\"Hello world\", \"H\")\n");
+    printf("<< %s\n", _btoa(lib_stristarts("Hello world", "H")));
+
+    printf(">> lib_stristarts(\"Hello world\", \"h\")\n");
+    printf("<< %s\n", _btoa(lib_stristarts("Hello world", "h")));
+
+    //
+
+    printf(">> lib_stristarts(\"Hello world\", \"He\")\n");
+    printf("<< %s\n", _btoa(lib_stristarts("Hello world", "He")));
+
+    printf(">> lib_stristarts(\"Hello world\", \"hE\")\n");
+    printf("<< %s\n", _btoa(lib_stristarts("Hello world", "hE")));
+
+    //
+
+    printf(">> lib_stristarts(\"Hello world\", \"Hello\")\n");
+    printf("<< %s\n", _btoa(lib_stristarts("Hello world", "Hello")));
+
+    //
+
+    printf(">> lib_stristarts(\"Hello world\", \"HeLlO\")\n");
+    printf("<< %s\n", _btoa(lib_stristarts("Hello world", "HeLlO")));
+
+    //
+
+    printf(">> lib_stristarts(\"Hello world\", \"world\")\n");
+    printf("<< %s\n", _btoa(lib_stristarts("Hello world", "world")));
+
+    //
+
+    printf(">> lib_stristarts(\"Hello world\", \"\")\n");
+    printf("<< %s\n", _btoa(lib_stristarts("Hello world", "")));
+
+    printf(">> lib_stristarts(\"\", \"Hello\")\n");
+    printf("<< %s\n", _btoa(lib_stristarts("", "Hello")));
+
+    printf(">> lib_stristarts(\"\", \"\")\n");
+    printf("<< %s\n", _btoa(lib_stristarts("", "")));
+
+    printf(">> lib_stristarts(\"Hello world\", NULL)\n");
+    printf("<< %s\n", _btoa(lib_stristarts("Hello world", NULL)));
+
+    printf(">> lib_stristarts(NULL, \"Hello world\")\n");
+    printf("<< %s\n", _btoa(lib_stristarts(NULL, "Hello world")));
+
+    printf(">> lib_stristarts(NULL, NULL)\n");
+    printf("<< %s\n", _btoa(lib_stristarts(NULL, NULL)));
 
 }
 
@@ -679,11 +856,21 @@ void test_strends() {
     //// strends()
 
     printf("\n");
+    printf(">> lib_strends(\"Hello world\", \"d\")\n");
+    printf("<< %s\n", _btoa(lib_strends("Hello world", "d")));
+
+    printf(">> lib_strends(\"Hello world\", \"ld\")\n");
+    printf("<< %s\n", _btoa(lib_strends("Hello world", "ld")));
+
     printf(">> lib_strends(\"Hello world\", \"world\")\n");
     printf("<< %s\n", _btoa(lib_strends("Hello world", "world")));
 
+    //
+
     printf(">> lib_strends(\"Hello world\", \"Hello\")\n");
     printf("<< %s\n", _btoa(lib_strends("Hello world", "Hello")));
+
+    //
 
     printf(">> lib_strends(\"Hello world\", \"\")\n");
     printf("<< %s\n", _btoa(lib_strends("Hello world", "")));
@@ -697,8 +884,267 @@ void test_strends() {
     printf(">> lib_strends(\"Hello world\", NULL)\n");
     printf("<< %s\n", _btoa(lib_strends("Hello world", NULL)));
 
+    printf(">> lib_strends(NULL, \"Hello world\")\n");
+    printf("<< %s\n", _btoa(lib_strends(NULL, "Hello world")));
+
     printf(">> lib_strends(NULL, NULL)\n");
     printf("<< %s\n", _btoa(lib_strends(NULL, NULL)));
+
+}
+
+void test_striends() {
+
+    //// striends()
+
+    printf("\n");
+    printf(">> lib_striends(\"Hello world\", \"d\")\n");
+    printf("<< %s\n", _btoa(lib_striends("Hello world", "d")));
+
+    printf(">> lib_striends(\"Hello world\", \"D\")\n");
+    printf("<< %s\n", _btoa(lib_striends("Hello world", "D")));
+
+    //
+
+    printf(">> lib_striends(\"Hello world\", \"ld\")\n");
+    printf("<< %s\n", _btoa(lib_striends("Hello world", "ld")));
+
+    printf(">> lib_striends(\"Hello world\", \"Ld\")\n");
+    printf("<< %s\n", _btoa(lib_striends("Hello world", "Ld")));
+
+    //
+
+    printf(">> lib_striends(\"Hello world\", \"world\")\n");
+    printf("<< %s\n", _btoa(lib_striends("Hello world", "world")));
+
+    //
+
+    printf(">> lib_striends(\"Hello world\", \"Hello\")\n");
+    printf("<< %s\n", _btoa(lib_striends("Hello world", "Hello")));
+
+    //
+
+    printf(">> lib_striends(\"Hello world\", \"\")\n");
+    printf("<< %s\n", _btoa(lib_striends("Hello world", "")));
+
+    printf(">> lib_striends(\"\", \"Hello\")\n");
+    printf("<< %s\n", _btoa(lib_striends("", "Hello")));
+
+    printf(">> lib_striends(\"\", \"\")\n");
+    printf("<< %s\n", _btoa(lib_striends("", "")));
+
+    printf(">> lib_striends(\"Hello world\", NULL)\n");
+    printf("<< %s\n", _btoa(lib_striends("Hello world", NULL)));
+
+    printf(">> lib_striends(NULL, \"Hello world\")\n");
+    printf("<< %s\n", _btoa(lib_striends(NULL, "Hello world")));
+
+    printf(">> lib_striends(NULL, NULL)\n");
+    printf("<< %s\n", _btoa(lib_striends(NULL, NULL)));
+
+}
+
+void test_strleft() {
+
+    //// strleft()
+
+    printf("\n");
+    printf(">> lib_strleft(\"Hello\", 1)\n");
+    printf("<< %s\n", lib_strleft("Hello", 1));
+
+    printf(">> lib_strleft(\"Hello\", 2)\n");
+    printf("<< %s\n", lib_strleft("Hello", 2));
+
+    printf(">> lib_strleft(\"Hello\", 3)\n");
+    printf("<< %s\n", lib_strleft("Hello", 3));
+
+    printf(">> lib_strleft(\"Hello\", 4)\n");
+    printf("<< %s\n", lib_strleft("Hello", 4));
+
+    printf(">> lib_strleft(\"Hello\", 5)\n");
+    printf("<< %s\n", lib_strleft("Hello", 5));
+
+    printf(">> lib_strleft(\"Hello\", 6)\n");
+    printf("<< %s\n", lib_strleft("Hello", 6));
+
+    printf(">> lib_strleft(\"Hello\", 100)\n");
+    printf("<< %s\n", lib_strleft("Hello", 100));
+
+    printf(">> lib_strleft(\"Hello\", 0)\n");
+    printf("<< %s\n", lib_strleft("Hello", 0));
+
+    printf(">> lib_strleft(NULL, 0)\n");
+    printf("<< %s\n", lib_strleft(NULL, 0));
+
+    printf(">> lib_strleft(NULL, 1)\n");
+    printf("<< %s\n", lib_strleft(NULL, 1));
+
+    printf(">> lib_strleft(NULL, 2)\n");
+    printf("<< %s\n", lib_strleft(NULL, 2));
+
+}
+
+void test_strright() {
+
+    //// strright()
+
+    printf("\n");
+    printf(">> lib_strright(\"Hello\", 1)\n");
+    printf("<< %s\n", lib_strright("Hello", 1));
+
+    printf(">> lib_strright(\"Hello\", 2)\n");
+    printf("<< %s\n", lib_strright("Hello", 2));
+
+    printf(">> lib_strright(\"Hello\", 3)\n");
+    printf("<< %s\n", lib_strright("Hello", 3));
+
+    printf(">> lib_strright(\"Hello\", 4)\n");
+    printf("<< %s\n", lib_strright("Hello", 4));
+
+    printf(">> lib_strright(\"Hello\", 5)\n");
+    printf("<< %s\n", lib_strright("Hello", 5));
+
+    printf(">> lib_strright(\"Hello\", 6)\n");
+    printf("<< %s\n", lib_strright("Hello", 6));
+
+    printf(">> lib_strright(\"Hello\", 100)\n");
+    printf("<< %s\n", lib_strright("Hello", 100));
+
+    printf(">> lib_strright(\"Hello\", 0)\n");
+    printf("<< %s\n", lib_strright("Hello", 0));
+
+    printf(">> lib_strright(NULL, 0)\n");
+    printf("<< %s\n", lib_strright(NULL, 0));
+
+    printf(">> lib_strright(NULL, 1)\n");
+    printf("<< %s\n", lib_strright(NULL, 1));
+
+    printf(">> lib_strright(NULL, 2)\n");
+    printf("<< %s\n", lib_strright(NULL, 2));
+
+}
+
+
+void test_strsub() {
+
+    //// strsub()
+
+    printf("\n");
+    printf(">> lib_strsub(\"Hello\", 0, 1)\n");
+    printf("<< %s\n", lib_strsub("Hello", 0, 1));
+
+    printf(">> lib_strsub(\"Hello\", 0, 2)\n");
+    printf("<< %s\n", lib_strsub("Hello", 0, 2));
+
+    printf(">> lib_strsub(\"Hello\", 0, 3)\n");
+    printf("<< %s\n", lib_strsub("Hello", 0, 3));
+
+    printf(">> lib_strsub(\"Hello\", 0, 4)\n");
+    printf("<< %s\n", lib_strsub("Hello", 0, 4));
+
+    printf(">> lib_strsub(\"Hello\", 0, 5)\n");
+    printf("<< %s\n", lib_strsub("Hello", 0, 5));
+
+    printf(">> lib_strsub(\"Hello\", 0, 6)\n");
+    printf("<< %s\n", lib_strsub("Hello", 0, 6));
+
+    printf(">> lib_strsub(\"Hello\", 0, 7)\n");
+    printf("<< %s\n", lib_strsub("Hello", 0, 7));
+
+    //
+
+    printf("\n");
+    printf(">> lib_strsub(\"Hello\", 1, 1)\n");
+    printf("<< %s\n", lib_strsub("Hello", 1, 1));
+
+    printf(">> lib_strsub(\"Hello\", 1, 2)\n");
+    printf("<< %s\n", lib_strsub("Hello", 1, 2));
+
+    printf(">> lib_strsub(\"Hello\", 1, 3)\n");
+    printf("<< %s\n", lib_strsub("Hello", 1, 3));
+
+    printf(">> lib_strsub(\"Hello\", 1, 4)\n");
+    printf("<< %s\n", lib_strsub("Hello", 1, 4));
+
+    printf(">> lib_strsub(\"Hello\", 1, 5)\n");
+    printf("<< %s\n", lib_strsub("Hello", 1, 5));
+
+    //
+
+    printf("\n");
+    printf(">> lib_strsub(\"Hello\", 2, 1)\n");
+    printf("<< %s\n", lib_strsub("Hello", 2, 1));
+
+    printf(">> lib_strsub(\"Hello\", 2, 2)\n");
+    printf("<< %s\n", lib_strsub("Hello", 2, 2));
+
+    printf(">> lib_strsub(\"Hello\", 2, 3)\n");
+    printf("<< %s\n", lib_strsub("Hello", 2, 3));
+
+    printf(">> lib_strsub(\"Hello\", 2, 4)\n");
+    printf("<< %s\n", lib_strsub("Hello", 2, 4));
+
+    printf(">> lib_strsub(\"Hello\", 2, 5)\n");
+    printf("<< %s\n", lib_strsub("Hello", 2, 5));
+
+    //
+
+    printf("\n");
+    printf(">> lib_strsub(\"Hello\", 0, 0)\n");
+    printf("<< %s\n", lib_strsub("Hello", 0, 0));
+
+    printf(">> lib_strsub(\"Hello\", 1, 0)\n");
+    printf("<< %s\n", lib_strsub("Hello", 1, 0));
+
+    printf(">> lib_strsub(\"Hello\", 2, 0)\n");
+    printf("<< %s\n", lib_strsub("Hello", 2, 0));
+
+    printf(">> lib_strsub(\"Hello\", 3, 0)\n");
+    printf("<< %s\n", lib_strsub("Hello", 3, 0));
+
+    printf(">> lib_strsub(\"Hello\", 4, 0)\n");
+    printf("<< %s\n", lib_strsub("Hello", 4, 0));
+
+    printf(">> lib_strsub(\"Hello\", 5, 0)\n");
+    printf("<< %s\n", lib_strsub("Hello", 5, 0));
+
+    //
+
+    printf("\n");
+    printf(">> lib_strsub(\"Hello\", 4, 1)\n");
+    printf("<< %s\n", lib_strsub("Hello", 4, 1));
+
+    printf(">> lib_strsub(\"Hello\", 4, 2)\n");
+    printf("<< %s\n", lib_strsub("Hello", 4, 2));
+
+    //
+
+    printf("\n");
+    printf(">> lib_strsub(\"Hello\", 5, 1)\n");
+    printf("<< %s\n", lib_strsub("Hello", 5, 1));
+
+    printf(">> lib_strsub(\"Hello\", 5, 2)\n");
+    printf("<< %s\n", lib_strsub("Hello", 5, 2));
+
+    //
+
+    printf("\n");
+    printf(">> lib_strsub(NULL, 0, 0)\n");
+    printf("<< %s\n", lib_strsub(NULL, 0, 0));
+
+    printf(">> lib_strsub(NULL, 0, 1)\n");
+    printf("<< %s\n", lib_strsub(NULL, 0, 1));
+
+    printf(">> lib_strsub(NULL, 1, 0)\n");
+    printf("<< %s\n", lib_strsub(NULL, 1, 0));
+
+    printf(">> lib_strsub(NULL, 1, 1)\n");
+    printf("<< %s\n", lib_strsub(NULL, 1, 1));
+
+    printf(">> lib_strsub(NULL, 1, 2)\n");
+    printf("<< %s\n", lib_strsub(NULL, 1, 2));
+
+    printf(">> lib_strsub(NULL, 2, 2)\n");
+    printf("<< %s\n", lib_strsub(NULL, 2, 2));
 
 }
 
@@ -736,6 +1182,16 @@ int test(const char* name) {
         test_strrev();
         return 0;
     }
+
+    if (strcmp(name, "tostrlwr") == 0) {
+        test_tostrlwr();
+        return 0;
+    }
+    if (strcmp(name, "tostrupr") == 0) {
+        test_tostrupr();
+        return 0;
+    }
+
     if (strcmp(name, "strtrc") == 0) {
         test_strtrc();
         return 0;
@@ -746,6 +1202,30 @@ int test(const char* name) {
     }
     if (strcmp(name, "strstarts") == 0) {
         test_strstarts();
+        return 0;
+    }
+    if (strcmp(name, "stristarts") == 0) {
+        test_stristarts();
+        return 0;
+    }
+    if (strcmp(name, "strends") == 0) {
+        test_strends();
+        return 0;
+    }     
+    if (strcmp(name, "striends") == 0) {
+        test_striends();
+        return 0;
+    }     
+    if (strcmp(name, "strleft") == 0) {
+        test_strleft();
+        return 0;
+    }
+    if (strcmp(name, "strright") == 0) {
+        test_strright();
+        return 0;
+    }
+   if (strcmp(name, "strsub") == 0) {
+        test_strsub();
         return 0;
     }
 
@@ -781,6 +1261,9 @@ int main(int argc, char* argv[]) {
     test_strupr();
     test_strrev();
 
+    test_tostrlwr();
+    test_tostrupr();
+
     test_strtok();
     test_strsep();
 
@@ -788,7 +1271,13 @@ int main(int argc, char* argv[]) {
     test_strtrs();
 
     test_strstarts();
+    test_stristarts();
     test_strends();
+    test_striends();
+
+    test_strleft();
+    test_strright();
+    test_strsub();
 
     return 0;
 }
