@@ -3,19 +3,22 @@
 
 #include "wclib.h"
 
-static bool lib_wc_is_path_separator(char ch) {
+/**
+ * Return true if a char is cross-platform path separator: '/', '\\' 
+ */
+static bool lib_wc_is_separator(char ch) {
     return ch  == '\\' || ch == '/';
 }
 
-bool lib_wc_is_wildcard_char(char ch) {
+bool lib_wc_is_char(char ch) {
     return (ch == '*' || ch == '?' || ch == '[' || ch == ']');
 }
 
-int lib_wc_is_wildcard_pattern(const char* pattern) {
-    return lib_wc_get_wildcard_index(pattern) != -1;
+int lib_wc_is_pattern(const char* pattern) {
+    return lib_wc_get_start_index(pattern) != -1;
 }
 
-int lib_wc_get_wildcard_index(const char* pattern) {
+int lib_wc_get_start_index(const char* pattern) {
     if (pattern == NULL) {
         return -1;
     }
@@ -24,7 +27,7 @@ int lib_wc_get_wildcard_index(const char* pattern) {
         return -1;
     }
     for (int i = 0; i < len; i++) {
-        if (lib_wc_is_wildcard_char(pattern[i])) {
+        if (lib_wc_is_char(pattern[i])) {
             return i;
         }
     }
@@ -32,26 +35,26 @@ int lib_wc_get_wildcard_index(const char* pattern) {
 }
 
 // ../a/name*.text - > 4 -> '/'
-int lib_wc_get_wildcard_path_index_by_pattern(const char* pattern, const char* file_name) {
+int lib_wc_get_path_index_by_pattern(const char* pattern, const char* file_name) {
     if (pattern == NULL || file_name == NULL) {
         return -1;
     }
-    int wildcard_index = lib_wc_get_wildcard_index(pattern);
-    if (wildcard_index < 0) {
+    int start_index = lib_wc_get_start_index(pattern);
+    if (start_index < 0) {
         return -1;
     }
-    return lib_wc_get_wildcard_path_index(wildcard_index, file_name);
+    return lib_wc_get_path_index(start_index, file_name);
 }
 
-int lib_wc_get_wildcard_path_index(int wildcard_index, const char* file_name) {
+int lib_wc_get_path_index(int start_index, const char* file_name) {
     if (file_name == NULL) {
         return -1;
     }
-    int i = wildcard_index;
+    int i = start_index;
     // go from end to start
     bool found = false;
     while (i >= 0) {
-        if (lib_wc_is_path_separator(file_name[i])) {
+        if (lib_wc_is_separator(file_name[i])) {
             found = true;
             break;
         }

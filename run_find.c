@@ -63,13 +63,14 @@ static void _find_item(const char* arg) {
 
     bool doit = false;
 
-    int wldc_index = lib_wc_get_wildcard_index(file_name);
+    // Get wildcard start index
+    int start_index = lib_wc_get_start_index(file_name);
     int path_index = 0;
 
-    //printf(">> file_name: %s\n", file_name);
-    //printf(">> wildcard_index: %d\n", wildcard_index);
+    //printf(">> file_name  : %s\n", file_name);
+    //printf(">> start_index: %d\n", start_index);
 
-    if (wldc_index >= 0) {
+    if (start_index >= 0) {
         
         //printf(">> mode: wildcard\n");
 
@@ -79,7 +80,7 @@ static void _find_item(const char* arg) {
         // file*
         // file?
 
-        path_index = lib_wc_get_wildcard_path_index(wldc_index, file_name);
+        path_index = lib_wc_get_path_index(start_index, file_name);
         if (path_index >= 0) {
 
             // dir1/
