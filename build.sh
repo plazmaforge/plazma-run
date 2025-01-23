@@ -130,8 +130,8 @@ $CC $LDFLAGS getopt.o iolib.o unimap.o utf8lib.o encdef.o enclib.o run_iconv.o -
 
 $CC $LDFLAGS run_ctype.o -o run-ctype
 
-$CC $LDFLAGS getopt.o run_basename.o -o run-basename
-$CC $LDFLAGS getopt.o run_dirname.o -o run-dirname
+$CC $LDFLAGS getopt.o pathlib.o run_basename.o -o run-basename
+$CC $LDFLAGS getopt.o pathlib.o run_dirname.o -o run-dirname
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo

@@ -5,87 +5,17 @@
 
 #include "getopt.h"
 #include "arglib.h"
+#include "pathlib.h"
 
 static bool _lib_stremp(char* str) {
     return (!str || *str == '\0');
-}
-
-static char* _lib_dir_name(char* name) {
-    if (!name) {
-        return NULL;
-    }
-    size_t len = strlen(name);
-    if (len == 0) {
-        return name;
-    }
-
-    //fprintf(stderr, ">> len   : %lu\n", len);
-
-    // skip slashes and stop at first char or out side
-    ssize_t i = len - 1;
-    while (i >= 0 && (name[i] == '/' || name[i] == '\\')) {
-        i--;
-    }
-
-    //fprintf(stderr, ">> last  : %ld\n", i);
-
-    if (i == -1) {
-        //fprintf(stderr, ">> return[1] '/'\n");
-
-        // out side: all chars are slashes, for example
-        // '/',  '\\',  '////', '\\\\', '////\\\\' , '\\\\////'
-
-        name[0] = '/'; // TODO: What about WIN?
-        name[1] = '\0';
-        return name;
-    }
-
-    // skip chars and stop at first slashe or out side
-    ssize_t j = i;
-    while (i >= 0 && (name[i] != '/' && name[i] != '\\')) {
-        i--;
-    }
-
-    if (i == -1) {
-        //fprintf(stderr, ">> return[2] '.'\n");
-
-        // out side: for example
-        // 'abc/',  'abc\\',  'abc////', 'abc\\\\', 'abc////\\\\' , 'abc\\\\////'
-
-        name[0] = '.'; // TODO: What about WIN?
-        name[1] = '\0';
-        return name;
-    }
-
-    // skip separators and stop at first char or out side
-    while (i >= 0 && (name[i] == '/' || name[i] == '\\')) {
-        i--;
-    }
-
-    if (i == -1) {
-        //fprintf(stderr, ">> return[3] '/'\n");
-
-        // out side: for example
-        // '/abc/',  '\\abc\\',  '////abc////', '\\\\abc\\\\', '////\\\\abc////\\\\' , '\\\\////abc\\\\////'
-
-        name[0] = '/'; // TODO: What about WIN?
-        name[1] = '\0';
-        return name;
-    }
-
-    char* base = name;
-
-    base[i + 1] = '\0'; // truncate    
-    //fprintf(stderr, ">> base  : %s\n", base);
-
-    return base;
 }
 
 int run_dirname(char* path) {
     if (_lib_stremp(path)) {
         return 1;
     }
-    char* name = (char*) _lib_dir_name(path);
+    char* name = lib_path_parent(path);
     //if (_lib_stremp(name)) {
     //    return 1;
     //}

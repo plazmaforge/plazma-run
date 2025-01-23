@@ -40,10 +40,10 @@ char* lib_fs_get_file_path(const char* dir_name, const char* file_name) {
     int file_len = lib_strlen(file_name);
     int sep_len = 0;
 
-    if (lib_path_is_path_separator(dir_name[dir_len - 1])) { // cross-platform separator
+    if (lib_path_is_separator(dir_name[dir_len - 1])) { // cross-platform separator
         sep_len++;
     }
-    if (lib_path_is_path_separator(file_name[0])) {          // cross-platform separator
+    if (lib_path_is_separator(file_name[0])) {          // cross-platform separator
         sep_len++;
     }
     if (sep_len == 2) {
@@ -1744,7 +1744,7 @@ int lib_fs_scandir(const char* dir_name, const char* pattern, lib_fs_file_t*** f
         return -1;
     }
 
-    char** patterns = lib_path_split_path(pattern); // split pattern by level
+    char** patterns = lib_path_split(pattern); // split pattern by level
     int pattern_count = lib_strarrlen(patterns);
 
     //printf(">>pattern_count : %d\n", pattern_count);

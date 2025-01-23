@@ -5,6 +5,7 @@
 
 #include "getopt.h"
 #include "arglib.h"
+#include "pathlib.h"
 
 static bool _lib_stremp(char* str) {
     return (!str || *str == '\0');
@@ -35,72 +36,11 @@ static char* _lib_strrdel(char* str, char* sub) {
     return str;
 }
 
-static char* _lib_base_name0(char* name) {
-    if (!name) {
-        return NULL;
-    }
-    char* base  = strrchr(name, '/');   /* NIX */
-    char* base2 = strrchr(name, '\\');  /* WIN */
-    if (base2 > base) {
-        base = base2;
-    }
-    base = base ? (base + 1): name;
-    return base;
-}
-
-static char* _lib_base_name(char* name) {
-    if (!name) {
-        return NULL;
-    }
-    size_t len = strlen(name);
-    if (len == 0) {
-        return name;
-    }
-
-    //fprintf(stderr, ">> len   : %lu\n", len);
-
-    long i = len - 1;
-    while (i >= 0 && (name[i] == '/' || name[i] == '\\')) {
-        i--;
-    }
-
-    //fprintf(stderr, ">> last  : %ld\n", i);
-
-    if (i == -1) {
-        //fprintf(stderr, ">> return <empty>\n");
-        name[0] = '\0';
-        return name;
-    }
-
-    long j = i;
-    while (i >= 0 && (name[i] != '/' && name[i] != '\\')) {
-        i--;
-    }
-
-    char* base = name;
-    
-    //fprintf(stderr, ">> first : %ld\n", i);
-
-    if (j > 0 && j < len - 1) {
-        //fprintf(stderr, ">> trunc : %ld\n", j);
-        base[j + 1] = '\0'; // truncate
-    }
-
-    if (i >= 0) {
-        //fprintf(stderr, ">> offset: %ld\n", i + 1);
-        base = base + i + 1; // offset
-    }
-
-    //fprintf(stderr, ">> base  : %s\n", base);
-
-    return base;
-}
-
 int run_basename(char* path, char* suffix) {
     if (_lib_stremp(path)) {
         return 1;
     }
-    char* name = (char*) _lib_base_name(path);
+    char* name = lib_path_base(path);
     if (_lib_stremp(name)) {
         return 1;
     }
