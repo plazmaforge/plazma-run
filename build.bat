@@ -78,6 +78,7 @@ rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 %CC% %CFLAGS% run_ctype.c -o run_ctype.o
 
 %CC% %CFLAGS% run_basename.c -o run_basename.o
+%CC% %CFLAGS% run_dirname.c -o run_dirname.o
 
 %CC% %CFLAGS% test_getopt.c -o test_getopt.o
 %CC% %CFLAGS% test_echo.c -o test_echo.o
@@ -120,6 +121,7 @@ rem link
 %CC% %LDFLAGS% run_ctype.o -o run-ctype.exe
 
 %CC% %LDFLAGS% getopt.o run_basename.o -o run-basename.exe
+%CC% %LDFLAGS% getopt.o run_dirname.o -o run-dirname.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
