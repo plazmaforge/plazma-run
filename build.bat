@@ -122,6 +122,7 @@ rem link
 
 %CC% %LDFLAGS% getopt.o pathlib.o run_basename.o -o run-basename.exe
 %CC% %LDFLAGS% getopt.o pathlib.o run_dirname.o -o run-dirname.exe
+%CC% %LDFLAGS% getopt.o strlib.o wclib.o pathlib.o fslib.o run_realpath.o -o run-realpath.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
