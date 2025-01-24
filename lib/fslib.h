@@ -48,11 +48,11 @@
 #define LIB_FS_WHT          14
 
 typedef enum {
-  LIB_FS_FILE_CHECK_IS_REGULAR    = 1 << 0,
-  LIB_FS_FILE_CHECK_IS_SYMLINK    = 1 << 1,
-  LIB_FS_FILE_CHECK_IS_DIR        = 1 << 2,
-  LIB_FS_FILE_CHECK_IS_EXECUTABLE = 1 << 3,
-  LIB_FS_FILE_CHECK_EXISTS        = 1 << 4
+  LIB_FS_FILE_CHECK_IS_REG   = 1 << 0,
+  LIB_FS_FILE_CHECK_IS_LNK   = 1 << 1,
+  LIB_FS_FILE_CHECK_IS_DIR   = 1 << 2,
+  LIB_FS_FILE_CHECK_IS_EXEC  = 1 << 3,
+  LIB_FS_FILE_CHECK_EXISTS   = 1 << 4
 } lib_fs_file_check_t;
 
 #define LIB_FS_SCANDIR_FLAT       -1 // Scandir flat mode (only one level)
@@ -263,49 +263,60 @@ int lib_fs_is_drive_path(const char* path);
 
 int lib_fs_is_absolute_path(const char* path);
 
-int lib_fs_exists(const char* file_name);
-
-int lib_fs_is_regular(const char* file_name);
-
-int lib_fs_is_dir(const char* file_name);
-
-int lib_fs_is_executable(const char* file_name);
-
-int lib_fs_file_check(const char* file_name, lib_fs_file_check_t check);
-
 /**
  * Return base file name
  * 
  * [allocate]
  */
-char* lib_fs_get_base_name(const char* file_name);
+char* lib_fs_get_base_name(const char* path);
 
 /**
  * Return directory name
  * 
  * [allocate]
  */
-char* lib_fs_get_dir_name (const char* file_name);
+char* lib_fs_get_dir_name (const char* path);
 
 /**
  * Return base file name (alias lib_fs_get_base_name)
  * 
  * [allocate]
  */
-char* lib_fs_get_file_name(const char* file_name);
+char* lib_fs_get_file_name(const char* path);
 
 /**
  * Return file extension
  * 
  * [allocate]
  */
-char* lib_fs_get_file_ext(const char* file_name);
+char* lib_fs_get_file_ext(const char* path);
 
 /**
  * Find file extension (without allocation)
  * 
  */
-const char* lib_fs_find_file_ext(const char* file_name);
+const char* lib_fs_find_file_ext(const char* path);
+
+const char* lib_fs_skip_dir_separators(const char* path);
+
+const char* lib_fs_skip_nondir_separators(const char* path);
+
+const char* lib_fs_skip_root(const char* path);
+
+//// fs-check
+
+bool lib_fs_exists(const char* file_name);
+
+bool lib_fs_is_regular(const char* file_name);
+
+bool lib_fs_is_dir(const char* file_name);
+
+bool lib_fs_is_executable(const char* file_name);
+
+bool lib_fs_file_check(const char* file_name, lib_fs_file_check_t check);
+
+
+//// fs-cmd
 
 /* POSIX Style                */
 
@@ -349,15 +360,17 @@ int lib_fs_stat(const char* path, lib_fs_stat_t* buf);
 
 lib_fs_file_t* lib_fs_get_file(const char* file_name);
 
-const char* lib_fs_file_get_file_name(lib_fs_file_t* file);
+const char* lib_fs_file_get_name(lib_fs_file_t* file);
 
-int lib_fs_file_get_file_type(lib_fs_file_t* file);
+int lib_fs_file_get_type(lib_fs_file_t* file);
 
-char lib_fs_file_get_file_type_char(lib_fs_file_t* file);
+char lib_fs_file_get_type_char(lib_fs_file_t* file);
 
 char* lib_fs_file_get_uname(lib_fs_file_t* file);
 
 char* lib_fs_file_get_gname(lib_fs_file_t* file);
+
+//
 
 void lib_fs_init_mode(char* mode);
 
@@ -369,19 +382,21 @@ char lib_fs_file_get_mode_access(lib_fs_file_t* file);
 
 char lib_fs_get_mode_access(const char* path);
 
-uint64_t lib_fs_file_get_file_size(lib_fs_file_t* file);
+//
 
-int lib_fs_file_get_file_mode(lib_fs_file_t* file);
+uint64_t lib_fs_file_get_size(lib_fs_file_t* file);
 
-long lib_fs_file_get_file_atime(lib_fs_file_t* file);
+int lib_fs_file_get_mode(lib_fs_file_t* file);
 
-long lib_fs_file_get_file_mtime(lib_fs_file_t* file);
+long lib_fs_file_get_atime(lib_fs_file_t* file);
 
-long lib_fs_file_get_file_ctime(lib_fs_file_t* file);
+long lib_fs_file_get_mtime(lib_fs_file_t* file);
+
+long lib_fs_file_get_ctime(lib_fs_file_t* file);
 
 int lib_fs_file_is_dir(lib_fs_file_t* file);
 
-int lib_fs_file_get_file_type_by_mode(int mode);
+int lib_fs_file_get_type_by_mode(int mode);
 
 ////
 
