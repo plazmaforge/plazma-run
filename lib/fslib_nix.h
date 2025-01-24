@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <fnmatch.h>
-#include <limits.h>    /* PATH_MAX            */
+//#include <limits.h>    /* PATH_MAX            */
 #include <pwd.h>       /* getpwuid: passwd    */
 #include <grp.h>       /* getgrgid: group     */
 #include <sys/xattr.h> /* listxattr           */
@@ -20,45 +20,49 @@ static int lib_fs_match_file_internal(const char* pattern, const char* name);
 static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode);
 
 // [allocate]
-char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name) {
-    return lib_fs_get_file_path(dir_name, file_name); // nothing to do 
-}
+//char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name) {
+//    return lib_fs_get_file_path(dir_name, file_name); // nothing to do 
+//}
 
 // [allocate]
-char* lib_fs_get_real_path(const char* path) {
-    if (!path) {
-        return NULL;
-    }
-    char buf[PATH_MAX];
-    if (realpath(path, buf) != buf) {
-        return NULL;
-    }
-    return strdup(buf);
-}
+// char* lib_fs_get_real_path(const char* path) {
+//     if (!path) {
+//         return NULL;
+//     }
+//     char buf[PATH_MAX];
+//     if (realpath(path, buf) != buf) {
+//         return NULL;
+//     }
+//     return strdup(buf);
+// }
 
-// [allocate]
-char* lib_fs_get_current_dir() {
-  /* Current directory */
-  char buf[PATH_MAX];
-  //errno = 0;
-  if (getcwd(buf, sizeof(buf)) == NULL) {
-       return NULL;
-  } else {
-       return strdup(buf);
-  }
-  return NULL;
-}
+// // [allocate]
+// char* lib_fs_get_current_dir() {
+//   /* Current directory */
+//   char buf[PATH_MAX];
+//   //errno = 0;
+//   if (getcwd(buf, sizeof(buf)) == NULL) {
+//        return NULL;
+//   } else {
+//        return strdup(buf);
+//   }
+//   return NULL;
+// }
 
-const char* lib_fs_get_current_find_path() {
-    return ".";
-}
+// const char* lib_fs_get_current_find_path() {
+//     return ".";
+// }
 
-int lib_fs_is_current_find_path(const char* path) {
-    if (!path) {
-        return 0;
-    }
-    return path[0] == '.';
-}
+// int lib_fs_is_current_find_path(const char* path) {
+//     if (!path) {
+//         return 0;
+//     }
+//     return path[0] == '.';
+// }
+
+// static void _lib_fs_normalize_slash(char* path, size_t len) {
+//     lib_strntrc(path, len, '\\', '/');
+// }
 
 ////
 
@@ -68,60 +72,6 @@ static int _lib_fs_is_dir(struct dirent* file) {
     }
     return file->d_type == DT_DIR;
 }
-
-static void _lib_fs_normalize_slash(char* path, size_t len) {
-    lib_strntrc(path, len, '\\', '/');
-}
-
-// void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
-
-//     struct dirent* file;
-//     DIR* dir = opendir(dirName);
-//     if (dir == NULL) {
-//         fprintf(stderr, "Directory not found: %s\n", dirName);
-//         return;
-//     }
-
-//     errno = 0;
-//     while ((file = readdir(dir)) != NULL) {
-
-//         char* fileName = file->d_name;
-
-//         //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
-//         if (pattern == NULL || fs_match_file_internal(level_pattern, fileName)) {
-
-//             int mode = 0; // 0 - notning, 1 - file, 2 - dir
-//             if (!_fs_is_dir(file)) {
-//                 // We add the file from last pattern level only
-//                 mode = (level == 0 || level == total_level - 1) ? 1 : 0;
-//             } else {
-//                 // Recursive if max_depth != -1
-//                 mode = max_depth >= 0 ? 2 : 0;
-//             }
-
-//             if (mode == 0) {
-//                 continue; // notning
-//             }
-
-//             char* fullName = fs_get_file_path(dirName, fileName);
-
-//             //printf("match:fullName: %s\n", fullName);
-//             //printf("match: [%s] %s, %s, %s\n", (mode == 2 ? "D" : " "), fullName, dirName, fileName);
-
-//             if (mode == 1) {
-//                 files.push_back(fullName);
-//             } else if (mode == 2) {
-//                 scandir(fullName, pattern, files, level + 1);
-//             }
-
-//             free(fullName);
-//         }
-//     }
-//     if (errno != 0) {
-//         // TODO: stderr: error
-//     }
-//     closedir(dir);
-// }
 
 ////
 

@@ -10,80 +10,82 @@
 #else
 //#include <utime.h>
 //#include <sys/unistd.h>
-#include <unistd.h>
+#include <unistd.h>  /* geuid, chdir, rmdir, access */
+
 #include "fslib_nix.h"
 #endif
 
 #include "strlib.h"
 #include "wclib.h"
+#include "pathlib.h"
 #include "fslib.h"
 
 #define LIB_FS_BUF_SIZE 4096 // For file copy
 
-/* C Style */
-
 // [allocate]
-char* lib_fs_get_file_path(const char* dir_name, const char* file_name) {
-    if (!dir_name && !file_name) {
-        return NULL;
-    }
-    if (lib_stremp(dir_name)) {
-        return lib_strdup(file_name);
-    }
+// char* lib_fs_get_file_path(const char* dir_name, const char* file_name) {
+//     if (!dir_name && !file_name) {
+//         return NULL;
+//     }
+//     if (lib_stremp(dir_name)) {
+//         return lib_strdup(file_name);
+//     }
 
-    // TODO: Ups...May be NULL: No file name
-    if (lib_stremp(file_name)) {
-        return lib_strdup(dir_name);
-    }
+//     // TODO: Ups...May be NULL: No file name
+//     if (lib_stremp(file_name)) {
+//         return lib_strdup(dir_name);
+//     }
 
-    int dir_len = lib_strlen(dir_name);
-    int file_len = lib_strlen(file_name);
-    int sep_len = 0;
+//     int dir_len = lib_strlen(dir_name);
+//     int file_len = lib_strlen(file_name);
+//     int sep_len = 0;
 
-    if (lib_path_is_separator(dir_name[dir_len - 1])) { // cross-platform separator
-        sep_len++;
-    }
-    if (lib_path_is_separator(file_name[0])) {          // cross-platform separator
-        sep_len++;
-    }
-    if (sep_len == 2) {
-        sep_len = -1; // erase 1 position
-    } else if (sep_len == 1) {
-        sep_len = 0;  // nothing
-    } else {
-        sep_len = 1;  // add 1 position between dir and file
-    }
+//     if (lib_path_is_separator(dir_name[dir_len - 1])) { // cross-platform separator
+//         sep_len++;
+//     }
+//     if (lib_path_is_separator(file_name[0])) {          // cross-platform separator
+//         sep_len++;
+//     }
+//     if (sep_len == 2) {
+//         sep_len = -1; // erase 1 position
+//     } else if (sep_len == 1) {
+//         sep_len = 0;  // nothing
+//     } else {
+//         sep_len = 1;  // add 1 position between dir and file
+//     }
 
-    int len = dir_len + sep_len + file_len;
+//     int len = dir_len + sep_len + file_len;
 
-    char* path = lib_strnew(len);
-    strcpy(path, dir_name);
-    if (sep_len == 1) {
-        path[dir_len] = LIB_FS_DIR_SEPARATOR;
-        path[dir_len + 1] = '\0'; // ???: Maybe for next strcat
-    }
-    // shift file_name if erase 1 position
-    strcat(path, sep_len == -1 ? file_name + 1 : file_name);
-    path[len] = '\0';
+//     char* path = lib_strnew(len);
+//     strcpy(path, dir_name);
+//     if (sep_len == 1) {
+//         path[dir_len] = LIB_FS_DIR_SEPARATOR;
+//         path[dir_len + 1] = '\0'; // ???: Maybe for next strcat
+//     }
+//     // shift file_name if erase 1 position
+//     strcat(path, sep_len == -1 ? file_name + 1 : file_name);
+//     path[len] = '\0';
 
-    return path;
-}
+//     return path;
+// }
 
-char* lib_fs_get_normalize_slash(char* path) {
-    if (!path) {
-        return NULL;
-    }
-    char* npath = lib_strdup(path);
-    _lib_fs_normalize_slash(npath, lib_strlen(npath));
-    return npath;
-}
+// char* lib_fs_get_normalize_slash(char* path) {
+//     if (!path) {
+//         return NULL;
+//     }
+//     char* npath = lib_strdup(path);
+//     _lib_fs_normalize_slash(npath, lib_strlen(npath));
+//     return npath;
+// }
 
-void lib_fs_normalize_slash(char* path) {
-    if (!path) {
-        return;
-    }
-    _lib_fs_normalize_slash(path, lib_strlen(path));
-}
+// void lib_fs_normalize_slash(char* path) {
+//     if (!path) {
+//         return;
+//     }
+//     _lib_fs_normalize_slash(path, lib_strlen(path));
+// }
+
+//// fs-math ////
 
 int lib_fs_match_file(const char* name, const char* pattern) {
     return lib_wc_match_file(name, pattern);

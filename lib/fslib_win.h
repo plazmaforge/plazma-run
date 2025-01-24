@@ -6,11 +6,11 @@
 //#define UNICODE
 //#endif
 
-#ifdef UNICODE
-#if _WIN32_WINNT >= 0x0600
-#define WIN32_FILE_API_NEW
-#endif
-#endif
+// #ifdef UNICODE
+// #if _WIN32_WINNT >= 0x0600
+// #define WIN32_FILE_API_NEW
+// #endif
+// #endif
 
 #include <windows.h>
 #include <errno.h>
@@ -37,62 +37,62 @@ static int lib_fs_match_file_internal(const char* pattern, const char* name);
 
 static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode);
 
-static wchar_t* getRealPathW(const wchar_t* wpath);
+//static wchar_t* getRealPathW(const wchar_t* wpath);
 
-static wchar_t* getCurrentDirW();
+//static wchar_t* getCurrentDirW();
 
 static wchar_t* getUserNameW();
 
 // [allocate]
-char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name) { 
-    if (lib_fs_is_current_find_path(dir_name)) {
-        return strdup(file_name);                     // [allocate]
-    } else {
-        return lib_fs_get_file_path(dir_name, file_name); // [allocate]
-    }
-}
+// char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name) { 
+//     if (lib_fs_is_current_find_path(dir_name)) {
+//         return strdup(file_name);                     // [allocate]
+//     } else {
+//         return lib_fs_get_file_path(dir_name, file_name); // [allocate]
+//     }
+// }
 
 // [allocate]
-char* lib_fs_get_real_path(const char* path) {
-    if (!path) {
-        return NULL;
-    }
-    wchar_t* wpath = lib_mbs_to_wcs(path);
-    if (!wpath) {
-        return NULL;
-    }
-    wchar_t* wreal_path = getRealPathW(wpath);
-    free(wpath);
-    if (!wreal_path) {
-        return NULL;
-    }
-    char* real_path = lib_wcs_to_mbs(wreal_path);
-    free(wreal_path);
+// char* lib_fs_get_real_path(const char* path) {
+//     if (!path) {
+//         return NULL;
+//     }
+//     wchar_t* wpath = lib_mbs_to_wcs(path);
+//     if (!wpath) {
+//         return NULL;
+//     }
+//     wchar_t* wreal_path = getRealPathW(wpath);
+//     free(wpath);
+//     if (!wreal_path) {
+//         return NULL;
+//     }
+//     char* real_path = lib_wcs_to_mbs(wreal_path);
+//     free(wreal_path);
 
-    return real_path;
-}
+//     return real_path;
+// }
 
 // [allocate]
-char* lib_fs_get_current_dir() {
-    wchar_t* wcurrent_dir = getCurrentDirW();
-    if (!wcurrent_dir) {
-        return NULL;
-    }
-    char* current_dir = lib_wcs_to_mbs(wcurrent_dir);
-    free(wcurrent_dir);
-    return current_dir;
-}
+// char* lib_fs_get_current_dir() {
+//     wchar_t* wcurrent_dir = getCurrentDirW();
+//     if (!wcurrent_dir) {
+//         return NULL;
+//     }
+//     char* current_dir = lib_wcs_to_mbs(wcurrent_dir);
+//     free(wcurrent_dir);
+//     return current_dir;
+// }
 
-const char* lib_fs_get_current_find_path() {
-    return "./*"; // Why not '.\*'?
-}
+// const char* lib_fs_get_current_find_path() {
+//     return "./*"; // Why not '.\*'?
+// }
 
-int lib_fs_is_current_find_path(const char* path) {
-    if (!path) {
-        return 0;
-    }
-    return strcmp(path, "./*") == 0; // Why not '.\*'?
-}
+// int lib_fs_is_current_find_path(const char* path) {
+//     if (!path) {
+//         return 0;
+//     }
+//     return strcmp(path, "./*") == 0; // Why not '.\*'?
+// }
 
 ////
 
@@ -152,82 +152,85 @@ static char* lib_fs_get_find_path(const char* dir_name) {
     return path;
 }
 
-#ifdef WIN32_FILE_API_NEW
+// #ifdef WIN32_FILE_API_NEW
 
 // [allocate]
-static wchar_t* getRealPathW(HANDLE handle) {
-    if (handle == NULL) {
-        return NULL;
-    }
-    DWORD size = GetFinalPathNameByHandleW(handle, NULL, 0, VOLUME_NAME_DOS);
-    if (size == 0) {
-        SetLastError(ERROR_INVALID_HANDLE);
-        return NULL;
-    }    
-    wchar_t* wpath = (wchar_t*) malloc(sizeof(wchar_t) * size);
-    size = GetFinalPathNameByHandleW(handle, wpath, size, VOLUME_NAME_DOS);
-    if (size == 0) {
-        free(wpath);
-        SetLastError(ERROR_INVALID_HANDLE);
-        return NULL;
-    }
-    return wpath;
-}
+// static wchar_t* getRealPathW(HANDLE handle) {
+//     if (handle == NULL) {
+//         return NULL;
+//     }
+//     DWORD size = GetFinalPathNameByHandleW(handle, NULL, 0, VOLUME_NAME_DOS);
+//     if (size == 0) {
+//         SetLastError(ERROR_INVALID_HANDLE);
+//         return NULL;
+//     }    
+//     wchar_t* wpath = (wchar_t*) malloc(sizeof(wchar_t) * size);
+//     size = GetFinalPathNameByHandleW(handle, wpath, size, VOLUME_NAME_DOS);
+//     if (size == 0) {
+//         free(wpath);
+//         SetLastError(ERROR_INVALID_HANDLE);
+//         return NULL;
+//     }
+//     return wpath;
+// }
 
 // [allocate]
-static wchar_t* getRealPathW(const wchar_t* wpath) {
-    if (wpath == NULL) {
-        return NULL;
-    }
-    HANDLE handle = CreateFileW(wpath,
-                       0,
-                       0,
-                       NULL,
-                       OPEN_EXISTING,
-                       FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS,
-                       NULL);
-    if (handle == INVALID_HANDLE_VALUE) {
-        //GetLastError();
-        return NULL;
-    }    
-    return getRealPathW(handle);
-}
+// static wchar_t* getRealPathW(const wchar_t* wpath) {
+//     if (wpath == NULL) {
+//         return NULL;
+//     }
+//     HANDLE handle = CreateFileW(wpath,
+//                        0,
+//                        0,
+//                        NULL,
+//                        OPEN_EXISTING,
+//                        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS,
+//                        NULL);
+//     if (handle == INVALID_HANDLE_VALUE) {
+//         //GetLastError();
+//         return NULL;
+//     }    
+//     return getRealPathW(handle);
+// }
 
-#else
+// #else
 
 // [allocate]
-static wchar_t* getRealPathW(const wchar_t* wpath) {
-    if(wpath == NULL) {
-        return NULL;
-    }
-    uint32_t size = GetFullPathNameW(wpath, 0, NULL, NULL);
-    if(size == 0) {
-        return NULL;
-    }
+// static wchar_t* getRealPathW(const wchar_t* wpath) {
+//     if(wpath == NULL) {
+//         return NULL;
+//     }
+//     uint32_t size = GetFullPathNameW(wpath, 0, NULL, NULL);
+//     if(size == 0) {
+//         return NULL;
+//     }
 
-    //PWSTR buf = (PWSTR)_alloca((4 + size) * sizeof(WCHAR));
-    //buf[0] = L'\\', buf[1] = L'\\',  buf[2] = L'?', buf[3] = L'\\';
-    //size = GetFullPathName(wpath, size, buf + 4, NULL);
+//     //PWSTR buf = (PWSTR)_alloca((4 + size) * sizeof(WCHAR));
+//     //buf[0] = L'\\', buf[1] = L'\\',  buf[2] = L'?', buf[3] = L'\\';
+//     //size = GetFullPathName(wpath, size, buf + 4, NULL);
 
-    wchar_t buf[size];
+//     wchar_t buf[size];
 
-    size = GetFullPathNameW(wpath, size, buf, NULL);
-    if (size == 0) {
-       return NULL; 
-    }
-    return _wcsdup(buf);
-}
+//     size = GetFullPathNameW(wpath, size, buf, NULL);
+//     if (size == 0) {
+//        return NULL; 
+//     }
+//     return _wcsdup(buf);
+// }
 
-static wchar_t* getCurrentDirW() {
-    /* Current directory */
-    WCHAR buf[MAX_PATH];
-    if (GetCurrentDirectoryW(sizeof(buf) / sizeof(WCHAR), buf) != 0) {
-      return _wcsdup(buf);
-    }
-    return NULL;
-}
+// static wchar_t* getCurrentDirW() {
+//     /* Current directory */
+//     WCHAR buf[MAX_PATH];
+//     if (GetCurrentDirectoryW(sizeof(buf) / sizeof(WCHAR), buf) != 0) {
+//       return _wcsdup(buf);
+//     }
+//     return NULL;
+// }
 
-#endif
+// #endif
+
+
+
 
 // https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
 

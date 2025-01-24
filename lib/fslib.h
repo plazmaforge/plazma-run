@@ -3,34 +3,34 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-//#include <string.h>
 #include <sys/stat.h>
 
-#include "pathlib.h"
+#include "fspath.h"
+//#include "pathlib.h"
 
 #ifdef _WIN32
 
 #include <windows.h>
 
 /* Stuff missing in std vc6 api */
-#ifndef INVALID_FILE_ATTRIBUTES
-#define INVALID_FILE_ATTRIBUTES -1
-#endif
-#ifndef FILE_ATTRIBUTE_DEVICE
-#define FILE_ATTRIBUTE_DEVICE 64
-#endif
+//#ifndef INVALID_FILE_ATTRIBUTES
+//#define INVALID_FILE_ATTRIBUTES -1
+//#endif
+//#ifndef FILE_ATTRIBUTE_DEVICE
+//#define FILE_ATTRIBUTE_DEVICE 64
+//#endif
 
-#define LIB_FS_DIR_SEPARATOR '\\'
-#define LIB_FS_DIR_SEPARATOR_STR "\\"
-#define LIB_FS_IS_DIR_SEPARATOR(c) ((c) == LIB_FS_DIR_SEPARATOR || (c) == '/')
+//#define LIB_FS_DIR_SEPARATOR '\\'
+//#define LIB_FS_DIR_SEPARATOR_STR "\\"
+//#define LIB_FS_IS_DIR_SEPARATOR(c) ((c) == LIB_FS_DIR_SEPARATOR || (c) == '/')
 
 #else
 
 #include <dirent.h>
 
-#define LIB_FS_DIR_SEPARATOR '/'
-#define LIB_FS_DIR_SEPARATOR_STR "/"
-#define LIB_FS_IS_DIR_SEPARATOR(c) ((c) == LIB_FS_DIR_SEPARATOR)
+//#define LIB_FS_DIR_SEPARATOR '/'
+//#define LIB_FS_DIR_SEPARATOR_STR "/"
+//#define LIB_FS_IS_DIR_SEPARATOR(c) ((c) == LIB_FS_DIR_SEPARATOR)
 
 #endif
 
@@ -193,54 +193,52 @@ typedef struct lib_fs_file_data_t {
 #define LIB_FS_MODE_LEN    11
 #define LIB_FS_ACCESS_LEN   9
 
-/* C Style */
-
 /**
  * Build full file path
  * 
  * [allocate]
  */
-char* lib_fs_get_file_path(const char* dir_name, const char* file_name);
+//char* lib_fs_get_file_path(const char* dir_name, const char* file_name);
 
 /**
  * Return normalize full file path
  * 
  * [allocate]
  */
-char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name);
+//char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name);
 
 /**
  * Return normalize slash file path
  * 
  * [allocate]
  */
-char* lib_fs_get_normalize_slash(char* path);
+//char* lib_fs_get_normalize_slash(char* path);
 
 /**
  * Normalize slash file path
  */
-void lib_fs_normalize_slash(char* path);
+//void lib_fs_normalize_slash(char* path);
 
 /**
  * Return real file path
  * 
  * [allocate]
  */
-char* lib_fs_get_real_path(const char* path);
+//char* lib_fs_get_real_path(const char* path);
 
 /**
  * Return current directory
  * 
  * [allocate]
  */
-char* lib_fs_get_current_dir();
+//char* lib_fs_get_current_dir();
 
 /**
  * Return current find path
  * - Unix    : '.'
  * - Windows : './ *'
  */
-const char* lib_fs_get_current_find_path();
+//const char* lib_fs_get_current_find_path();
 
 
 /**
@@ -248,7 +246,9 @@ const char* lib_fs_get_current_find_path();
  * - Unix    : '.'
  * - Windows : './ *'
  */
-int lib_fs_is_current_find_path(const char* path);
+//int lib_fs_is_current_find_path(const char* path);
+
+////
 
 /**
  * Return true if a file name is matched by a pattern

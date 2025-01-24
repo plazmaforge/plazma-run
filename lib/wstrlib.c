@@ -1,12 +1,24 @@
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
-#include "strlib.h"
 #include "wstrlib.h"
 
+/**
+ * [allocate]
+ */
+static char* lib_strnew(size_t size) {
+  size_t _size = size * sizeof(char) + 1;
+  char* str = (char*) malloc(_size);
+  if (!str) {
+    return NULL;
+  }
+  memset(str, 0, _size);
+  return str;
+}
 
 /**
  * [allocate]
@@ -27,19 +39,6 @@ static wchar_t* _lib_wstrndup(const wchar_t* src, size_t num) {
  * [allocate]
  */
 wchar_t* lib_wstrnew(size_t size) {
-
-//   if (size < 0) {
-//     return NULL;
-//   }
-//   wchar_t* dst = (wchar_t*) malloc(sizeof(wchar_t) * size + 1);
-//   if (!dst) {
-//     return NULL;
-//   }
-//   for (int i = 0; i <= size; i++) {
-//     dst[i] = '\0';
-//   }    
-//   return dst;
-
   size_t _size = size * sizeof(wchar_t) + 1;
   wchar_t* str = (wchar_t*) malloc(_size);
   if (!str) {

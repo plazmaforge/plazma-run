@@ -825,12 +825,6 @@ char* lib_strtok(char* str, const char* delim) {
 // strtrc
 
 static char* _lib_strntrc(char* str, size_t num, char from, char to) {
-    // if (!str) {
-    //     return NULL;
-    // }
-    // if (num == 0) {
-    //   return str;
-    // }
     if (from == to) {
       return str;
     }
