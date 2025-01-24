@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "getopt.h"
-#include "arglib.h"
+#include "clilib.h"
 #include "pathlib.h"
 
 static bool _lib_stremp(char* str) {
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    prog_name = lib_arg_prog_name(argv);
+    prog_name = lib_cli_prog_name(argv);
     int error = 0;
     int opt;
 

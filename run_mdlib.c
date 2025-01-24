@@ -2,7 +2,7 @@
 #include <errno.h>
 
 #include "getopt.h"
-#include "arglib.h"
+#include "clilib.h"
 #include "iolib.h"
 
 #include "run_mdlib.h"
@@ -87,7 +87,7 @@ void run_md_usage(lib_md_config_t* config) {
 
 int run_md(lib_md_config_t* config, int argc, char* argv[]) {
 
-    prog_name = lib_arg_prog_name(argv);
+    prog_name = lib_cli_prog_name(argv);
 
     if (argc < 2) {
         run_md_usage(config);

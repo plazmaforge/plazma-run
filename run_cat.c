@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <locale.h>
 
-#include "arglib.h"
+#include "clilib.h"
 #include "iolib.h"
 #include "wstrlib.h"
 #include "syslib.h"
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    prog_name = lib_arg_prog_name(argv);
+    prog_name = lib_cli_prog_name(argv);
 
     int file_count = argc - 1;
 

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "arglib.h"
+#include "clilib.h"
 #include "socketlib.h"
 #include "iodef.h"
 #include "nflib.h"
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    prog_name = lib_arg_prog_name(argv);
+    prog_name = lib_cli_prog_name(argv);
 
     const char* url = argv[1];
 

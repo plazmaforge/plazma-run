@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 #include "getopt.h"
-#include "arglib.h"
+#include "clilib.h"
 #include "syslib.h"
 
 void run_echo(int argc, char* argv[], int start, bool trailing) {
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    prog_name = lib_arg_prog_name(argv);
+    prog_name = lib_cli_prog_name(argv);
     int error = 0;
     int opt;
 

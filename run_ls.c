@@ -6,7 +6,7 @@
 #include <locale.h>
 
 #include "getopt.h"
-#include "arglib.h"
+#include "clilib.h"
 #include "fslib.h"
 #include "iodef.h"
 #include "fmtlib.h"
@@ -840,7 +840,7 @@ void usage() {
 
 int main(int argc, char *argv[]) {
 
-    prog_name = lib_arg_prog_name(argv);
+    prog_name = lib_cli_prog_name(argv);
     int error = 0;
     int opt;
     int long_ind;

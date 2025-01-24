@@ -5,7 +5,7 @@
 #include <ctype.h>
 
 #include "getopt.h"
-#include "arglib.h"
+#include "clilib.h"
 
 int RUN_UNIMAP_FORMAT_SPC   = 0;
 int RUN_UNIMAP_FORMAT_CSV   = 1;
@@ -418,7 +418,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    prog_name = lib_arg_prog_name(argv);
+    prog_name = lib_cli_prog_name(argv);
     int error = 0;
     int opt;
 

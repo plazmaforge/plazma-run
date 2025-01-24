@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "getopt.h"
-#include "arglib.h"
+#include "clilib.h"
 #include "iolib.h"
 
 static int _check_byte(char b) {
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    prog_name = lib_arg_prog_name(argv);
+    prog_name = lib_cli_prog_name(argv);
 
     const char* file_name = argv[1];
     
