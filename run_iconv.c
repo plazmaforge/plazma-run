@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    prog_name = lib_arg_get_prog_name(argv);
+    prog_name = lib_arg_prog_name(argv);
     int error = 0;
     int opt;
 

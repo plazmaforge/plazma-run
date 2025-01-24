@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    prog_name = lib_arg_get_prog_name(argv);
+    prog_name = lib_arg_prog_name(argv);
 
     const char* file_name = argv[1];
     

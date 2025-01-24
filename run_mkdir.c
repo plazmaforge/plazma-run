@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    prog_name = lib_arg_get_prog_name(argv);
+    prog_name = lib_arg_prog_name(argv);
 
     char* dir_name = argv[1];
     int retval = lib_fs_create_dir(dir_name);
