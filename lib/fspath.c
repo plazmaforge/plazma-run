@@ -22,8 +22,6 @@
 #include <unistd.h>    /* getcwd    */
 #endif
 
-//#include "strlib.h"   /* strnew, strdup, stremp */
-//#include "pathlib.h"  /* is_separator */
 #include "fspath.h"
 
 static void _lib_fs_normalize_slash(char* path, size_t len);
@@ -388,3 +386,280 @@ bool lib_fs_is_current_find_path(const char* path) {
 
 #endif
 
+///////////////////////////////////////////////////////////
+
+/* General Functions          */
+
+#ifdef _WIN32
+int lib_fs_is_drive_path(const char* path) {
+    if (!path) {
+        return 0;
+    }
+    /* first [3] chars: 'X:\' */
+    return (isalpha (path[0]) 
+      && path[1] == ':' 
+      && LIB_FS_IS_DIR_SEPARATOR(path[2]));
+}
+
+int lib_fs_starts_drive_path(const char* path) {
+    if (!path) {
+        return 0;
+    }
+    /* first [2] chars: 'X:' */
+    return (isalpha (path[0]) && path[1] == ':'); 
+}
+
+int lib_fs_is_unc_path(const char* path) {
+    /* 
+      first [2] chars: '\\'  
+      and check next non-dir separator char 
+    */
+    return (LIB_FS_IS_DIR_SEPARATOR(path[0]) &&
+        LIB_FS_IS_DIR_SEPARATOR(path[1]) &&
+        path[2] &&
+        !LIB_FS_IS_DIR_SEPARATOR(path[2]));
+}
+
+#endif
+
+int lib_fs_is_absolute_path(const char* path) {
+    if (!path) {
+        return 0;
+    }
+
+    if (LIB_FS_IS_DIR_SEPARATOR(path[0])) {
+        return 1;
+    }
+
+#ifdef _WIN32
+    /* Recognize drive letter on native Windows */
+    return lib_fs_is_drive_path(path);
+#endif
+
+    return 0;
+}
+
+// [allocate]
+char* lib_fs_get_base_name(const char* path) {
+
+    if (!path) {
+        return NULL;
+    }
+
+    if (path[0] == '\0') {
+        // return lib_strdup (".");                  // TODO: (?)
+        return NULL;
+    }
+
+    ssize_t base;
+    ssize_t last_nonslash;
+    size_t len;
+    char* retval;
+
+    last_nonslash = strlen(path) - 1;
+
+    while (last_nonslash >= 0 && LIB_FS_IS_DIR_SEPARATOR(path[last_nonslash]))
+        last_nonslash--;
+
+    if (last_nonslash == -1)
+        /* string only containing slashes */
+        // return lib_strdup(LIB_FS_DIR_SEPARATOR_STR); // TODO: (?)
+        return NULL;
+
+#ifdef _WIN32
+    if (last_nonslash == 1 && lib_fs_starts_drive_path(path))
+        /* string only containing slashes and a drive */
+        // return lib_strdup(LIB_FS_DIR_SEPARATOR_STR); // TODO: (?)
+        return NULL;
+#endif
+    base = last_nonslash;
+
+    while (base >= 0 && !LIB_FS_IS_DIR_SEPARATOR(path[base]))
+        base--;
+
+#ifdef _WIN32
+    if (base == -1 && lib_fs_starts_drive_path(path))
+        base = 1;
+#endif
+
+    len = last_nonslash - base;
+    retval = lib_strnew(len);
+    memcpy(retval, path + (base + 1), len);
+    retval[len] = '\0';
+
+    return retval;
+}
+
+// [allocate]
+char* lib_fs_get_dir_name(const char* path) {
+
+    char* base;
+    size_t len;
+
+    if (!path) {
+        return NULL;
+    }
+
+    base = (char*) strrchr(path, LIB_FS_DIR_SEPARATOR);
+
+#ifdef _WIN32
+    char* q;
+    q = (char*) strrchr(path, '/');
+    if (base == NULL || (q != NULL && q > base))
+        base = q;
+#endif
+
+    if (!base) {
+#ifdef _WIN32
+        if (lib_fs_starts_drive_path(path)) {
+            char drive_colon_dot[4];
+
+            drive_colon_dot[0] = path[0];
+            drive_colon_dot[1] = ':';
+            drive_colon_dot[2] = '.';
+            drive_colon_dot[3] = '\0';
+
+            return lib_strdup(drive_colon_dot);
+        }
+#endif
+        return lib_strdup(".");
+    }
+
+    /* skip next dir separartors: right-to-left */
+    while (base > path && LIB_FS_IS_DIR_SEPARATOR(*base))
+        base--;
+
+#ifdef _WIN32
+    
+    if (base == path + 1 && lib_fs_starts_drive_path(path))
+        base++;
+    else if (lib_fs_is_unc_path(path) && base >= path + 2) {
+
+        /* \\server\share  -> \\server\share\ */
+        /* \\server\share\ -> \\server\share\ */
+
+        const char *p = path + 2;
+
+        while (*p && !LIB_FS_IS_DIR_SEPARATOR(*p))
+            p++;
+
+        if (p == base + 1) {
+
+            /* \\server\share -> \\server\share\ */
+
+            len = strlen(path) + 1;
+            base = lib_strnew(len);
+            strcpy(base, path);
+            base[len - 1] = LIB_FS_DIR_SEPARATOR;
+            base[len] = '\0';
+            return base;
+        }
+
+        if (LIB_FS_IS_DIR_SEPARATOR(*p)) {
+
+            /* \\server\share\ -> \\server\share\ */
+
+            p++;
+
+            while (*p && !LIB_FS_IS_DIR_SEPARATOR(*p))
+                p++;
+
+            if (p == base + 1)
+                base++;
+        }
+    }
+#endif
+
+    len = 1 + base - path;
+    base = lib_strnew(len);
+    memmove(base, path, len);
+    base[len] = '\0';
+
+    return base;
+}
+
+// [allocate]
+char* lib_fs_get_file_name(const char* path) {
+    return lib_fs_get_base_name(path);
+}
+
+// [allocate]
+char* lib_fs_get_file_ext(const char* path) {
+    if (!path) {
+        return NULL;
+    }
+    const char* file_ext = lib_fs_find_file_ext(path);
+    return lib_strdup(file_ext);
+}
+
+const char* lib_fs_find_file_ext(const char* path) {
+    if (!path) {
+        return NULL;
+    }
+    return strrchr(path, '.');
+}
+
+/**
+ * Skips dir separators and returns a pointer to the first non-dir separator char 
+ */
+const char* lib_fs_skip_dir_separators(const char* path) {
+    if (!path) {
+        return NULL;
+    }
+    while (LIB_FS_IS_DIR_SEPARATOR(path[0]))
+        path++;
+    return path;
+}
+
+/**
+ * Skips non-dir separators and returns a pointer to the first dir separator char 
+ */
+const char* lib_fs_skip_nondir_separators(const char* path) {
+    if (!path) {
+        return NULL;
+    }
+    while (path[0] && !LIB_FS_IS_DIR_SEPARATOR(path[0]))
+        path++;
+    return path;
+}
+
+const char* lib_fs_skip_root(const char* path) {
+    if (!path) {
+        return NULL;
+    }
+#ifdef _WIN32
+
+    /* Skip \\server\share or //server/share */
+    if (lib_fs_is_unc_path(path)) {
+
+        const char* p = strchr(path + 2, LIB_FS_DIR_SEPARATOR);
+        const char* q = strchr(path + 2, '/');
+
+        if (p == NULL || (q != NULL && q < p))
+            p = q;
+
+        if (p && p > path + 2 && p[1]) {
+            path = p + 1;
+            path = lib_fs_skip_nondir_separators(path);
+
+            /* Possibly skip a backslash after the share name */
+            path = lib_fs_skip_dir_separators(path);
+            return (char*) path;
+        }
+    }
+#endif
+
+    /* Skip initial slashes */
+    if (LIB_FS_IS_DIR_SEPARATOR(path[0])) {
+        path = lib_fs_skip_dir_separators(path);
+        return (char*) path;
+    }
+
+#ifdef _WIN32
+    /* Skip X:\ */
+    if (lib_fs_is_drive_path(path))
+        return (char*) path + 3;
+#endif
+
+    return NULL;
+}

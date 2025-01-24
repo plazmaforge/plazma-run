@@ -6,7 +6,6 @@
 #include <errno.h>
 #include <dirent.h>
 #include <fnmatch.h>
-//#include <limits.h>    /* PATH_MAX            */
 #include <pwd.h>       /* getpwuid: passwd    */
 #include <grp.h>       /* getgrgid: group     */
 #include <sys/xattr.h> /* listxattr           */
@@ -18,51 +17,6 @@
 static int lib_fs_match_file_internal(const char* pattern, const char* name);
 
 static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode);
-
-// [allocate]
-//char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name) {
-//    return lib_fs_get_file_path(dir_name, file_name); // nothing to do 
-//}
-
-// [allocate]
-// char* lib_fs_get_real_path(const char* path) {
-//     if (!path) {
-//         return NULL;
-//     }
-//     char buf[PATH_MAX];
-//     if (realpath(path, buf) != buf) {
-//         return NULL;
-//     }
-//     return strdup(buf);
-// }
-
-// // [allocate]
-// char* lib_fs_get_current_dir() {
-//   /* Current directory */
-//   char buf[PATH_MAX];
-//   //errno = 0;
-//   if (getcwd(buf, sizeof(buf)) == NULL) {
-//        return NULL;
-//   } else {
-//        return strdup(buf);
-//   }
-//   return NULL;
-// }
-
-// const char* lib_fs_get_current_find_path() {
-//     return ".";
-// }
-
-// int lib_fs_is_current_find_path(const char* path) {
-//     if (!path) {
-//         return 0;
-//     }
-//     return path[0] == '.';
-// }
-
-// static void _lib_fs_normalize_slash(char* path, size_t len) {
-//     lib_strntrc(path, len, '\\', '/');
-// }
 
 ////
 

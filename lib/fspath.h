@@ -62,4 +62,55 @@ const char* lib_fs_get_current_find_path();
  */
 bool lib_fs_is_current_find_path(const char* path);
 
+////
+
+/* General Functions          */
+
+#ifdef _WIN32
+int lib_fs_is_drive_path(const char* path);
+#endif
+
+int lib_fs_is_absolute_path(const char* path);
+
+/**
+ * Return base file name
+ * 
+ * [allocate]
+ */
+char* lib_fs_get_base_name(const char* path);
+
+/**
+ * Return directory name
+ * 
+ * [allocate]
+ */
+char* lib_fs_get_dir_name (const char* path);
+
+/**
+ * Return base file name (alias lib_fs_get_base_name)
+ * 
+ * [allocate]
+ */
+char* lib_fs_get_file_name(const char* path);
+
+/**
+ * Return file extension
+ * 
+ * [allocate]
+ */
+char* lib_fs_get_file_ext(const char* path);
+
+/**
+ * Find file extension (without allocation)
+ * 
+ */
+const char* lib_fs_find_file_ext(const char* path);
+
+const char* lib_fs_skip_dir_separators(const char* path);
+
+const char* lib_fs_skip_nondir_separators(const char* path);
+
+const char* lib_fs_skip_root(const char* path);
+
+
 #endif // PLAZMA_LIB_FSPATH_H

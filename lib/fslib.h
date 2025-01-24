@@ -6,31 +6,14 @@
 #include <sys/stat.h>
 
 #include "fspath.h"
-//#include "pathlib.h"
 
 #ifdef _WIN32
 
 #include <windows.h>
 
-/* Stuff missing in std vc6 api */
-//#ifndef INVALID_FILE_ATTRIBUTES
-//#define INVALID_FILE_ATTRIBUTES -1
-//#endif
-//#ifndef FILE_ATTRIBUTE_DEVICE
-//#define FILE_ATTRIBUTE_DEVICE 64
-//#endif
-
-//#define LIB_FS_DIR_SEPARATOR '\\'
-//#define LIB_FS_DIR_SEPARATOR_STR "\\"
-//#define LIB_FS_IS_DIR_SEPARATOR(c) ((c) == LIB_FS_DIR_SEPARATOR || (c) == '/')
-
 #else
 
 #include <dirent.h>
-
-//#define LIB_FS_DIR_SEPARATOR '/'
-//#define LIB_FS_DIR_SEPARATOR_STR "/"
-//#define LIB_FS_IS_DIR_SEPARATOR(c) ((c) == LIB_FS_DIR_SEPARATOR)
 
 #endif
 
@@ -193,115 +176,11 @@ typedef struct lib_fs_file_data_t {
 #define LIB_FS_MODE_LEN    11
 #define LIB_FS_ACCESS_LEN   9
 
-/**
- * Build full file path
- * 
- * [allocate]
- */
-//char* lib_fs_get_file_path(const char* dir_name, const char* file_name);
-
-/**
- * Return normalize full file path
- * 
- * [allocate]
- */
-//char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name);
-
-/**
- * Return normalize slash file path
- * 
- * [allocate]
- */
-//char* lib_fs_get_normalize_slash(char* path);
-
-/**
- * Normalize slash file path
- */
-//void lib_fs_normalize_slash(char* path);
-
-/**
- * Return real file path
- * 
- * [allocate]
- */
-//char* lib_fs_get_real_path(const char* path);
-
-/**
- * Return current directory
- * 
- * [allocate]
- */
-//char* lib_fs_get_current_dir();
-
-/**
- * Return current find path
- * - Unix    : '.'
- * - Windows : './ *'
- */
-//const char* lib_fs_get_current_find_path();
-
-
-/**
- * Return true if a path is current find path
- * - Unix    : '.'
- * - Windows : './ *'
- */
-//int lib_fs_is_current_find_path(const char* path);
-
-////
 
 /**
  * Return true if a file name is matched by a pattern
  */
 int lib_fs_match_file(const char* name, const char* pattern);
-
-/* General Functions          */
-
-#ifdef _WIN32
-int lib_fs_is_drive_path(const char* path);
-#endif
-
-int lib_fs_is_absolute_path(const char* path);
-
-/**
- * Return base file name
- * 
- * [allocate]
- */
-char* lib_fs_get_base_name(const char* path);
-
-/**
- * Return directory name
- * 
- * [allocate]
- */
-char* lib_fs_get_dir_name (const char* path);
-
-/**
- * Return base file name (alias lib_fs_get_base_name)
- * 
- * [allocate]
- */
-char* lib_fs_get_file_name(const char* path);
-
-/**
- * Return file extension
- * 
- * [allocate]
- */
-char* lib_fs_get_file_ext(const char* path);
-
-/**
- * Find file extension (without allocation)
- * 
- */
-const char* lib_fs_find_file_ext(const char* path);
-
-const char* lib_fs_skip_dir_separators(const char* path);
-
-const char* lib_fs_skip_nondir_separators(const char* path);
-
-const char* lib_fs_skip_root(const char* path);
 
 //// fs-check
 
@@ -314,7 +193,6 @@ bool lib_fs_is_dir(const char* file_name);
 bool lib_fs_is_executable(const char* file_name);
 
 bool lib_fs_file_check(const char* file_name, lib_fs_file_check_t check);
-
 
 //// fs-cmd
 
@@ -352,11 +230,11 @@ int lib_fs_remove_file(const char* path);
 
 int lib_fs_remove_dir(const char* path);
 
-////
+//// fs-stat
 
 int lib_fs_stat(const char* path, lib_fs_stat_t* buf);
 
-////
+//// fs-file
 
 lib_fs_file_t* lib_fs_get_file(const char* file_name);
 
@@ -410,7 +288,7 @@ int lib_fs_files_init(lib_fs_file_t*** files, size_t size);
 
 int lib_fs_files_reinit(lib_fs_file_t*** files, size_t size);
 
-////
+//// fs-dirent
 
 int lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent);
 
@@ -423,7 +301,7 @@ lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir);
 
 int lib_fs_close_dir(lib_fs_dir_t* dir);
 
-////
+//// fs-scan
 
 int lib_fs_scandir(const char* dir_name, const char* pattern, lib_fs_file_t*** files, int max_depth, int file_only);
 

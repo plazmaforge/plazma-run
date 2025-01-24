@@ -2,15 +2,6 @@
 #define PLAZMA_LIB_FSLIB_WIN_H
 
 #ifdef _WIN32
-//#ifndef UNICODE
-//#define UNICODE
-//#endif
-
-// #ifdef UNICODE
-// #if _WIN32_WINNT >= 0x0600
-// #define WIN32_FILE_API_NEW
-// #endif
-// #endif
 
 #include <windows.h>
 #include <errno.h>
@@ -22,7 +13,6 @@
 
 //#include <fileapi.h>
 //#include <aclapi.h>
-//#include <io.h>
 
 //#include <winioctl.h>
 //#include <direct.h>
@@ -37,62 +27,7 @@ static int lib_fs_match_file_internal(const char* pattern, const char* name);
 
 static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode);
 
-//static wchar_t* getRealPathW(const wchar_t* wpath);
-
-//static wchar_t* getCurrentDirW();
-
 static wchar_t* getUserNameW();
-
-// [allocate]
-// char* lib_fs_get_normalize_path(const char* dir_name, const char* file_name) { 
-//     if (lib_fs_is_current_find_path(dir_name)) {
-//         return strdup(file_name);                     // [allocate]
-//     } else {
-//         return lib_fs_get_file_path(dir_name, file_name); // [allocate]
-//     }
-// }
-
-// [allocate]
-// char* lib_fs_get_real_path(const char* path) {
-//     if (!path) {
-//         return NULL;
-//     }
-//     wchar_t* wpath = lib_mbs_to_wcs(path);
-//     if (!wpath) {
-//         return NULL;
-//     }
-//     wchar_t* wreal_path = getRealPathW(wpath);
-//     free(wpath);
-//     if (!wreal_path) {
-//         return NULL;
-//     }
-//     char* real_path = lib_wcs_to_mbs(wreal_path);
-//     free(wreal_path);
-
-//     return real_path;
-// }
-
-// [allocate]
-// char* lib_fs_get_current_dir() {
-//     wchar_t* wcurrent_dir = getCurrentDirW();
-//     if (!wcurrent_dir) {
-//         return NULL;
-//     }
-//     char* current_dir = lib_wcs_to_mbs(wcurrent_dir);
-//     free(wcurrent_dir);
-//     return current_dir;
-// }
-
-// const char* lib_fs_get_current_find_path() {
-//     return "./*"; // Why not '.\*'?
-// }
-
-// int lib_fs_is_current_find_path(const char* path) {
-//     if (!path) {
-//         return 0;
-//     }
-//     return strcmp(path, "./*") == 0; // Why not '.\*'?
-// }
 
 ////
 
@@ -151,148 +86,6 @@ static char* lib_fs_get_find_path(const char* dir_name) {
             
     return path;
 }
-
-// #ifdef WIN32_FILE_API_NEW
-
-// [allocate]
-// static wchar_t* getRealPathW(HANDLE handle) {
-//     if (handle == NULL) {
-//         return NULL;
-//     }
-//     DWORD size = GetFinalPathNameByHandleW(handle, NULL, 0, VOLUME_NAME_DOS);
-//     if (size == 0) {
-//         SetLastError(ERROR_INVALID_HANDLE);
-//         return NULL;
-//     }    
-//     wchar_t* wpath = (wchar_t*) malloc(sizeof(wchar_t) * size);
-//     size = GetFinalPathNameByHandleW(handle, wpath, size, VOLUME_NAME_DOS);
-//     if (size == 0) {
-//         free(wpath);
-//         SetLastError(ERROR_INVALID_HANDLE);
-//         return NULL;
-//     }
-//     return wpath;
-// }
-
-// [allocate]
-// static wchar_t* getRealPathW(const wchar_t* wpath) {
-//     if (wpath == NULL) {
-//         return NULL;
-//     }
-//     HANDLE handle = CreateFileW(wpath,
-//                        0,
-//                        0,
-//                        NULL,
-//                        OPEN_EXISTING,
-//                        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS,
-//                        NULL);
-//     if (handle == INVALID_HANDLE_VALUE) {
-//         //GetLastError();
-//         return NULL;
-//     }    
-//     return getRealPathW(handle);
-// }
-
-// #else
-
-// [allocate]
-// static wchar_t* getRealPathW(const wchar_t* wpath) {
-//     if(wpath == NULL) {
-//         return NULL;
-//     }
-//     uint32_t size = GetFullPathNameW(wpath, 0, NULL, NULL);
-//     if(size == 0) {
-//         return NULL;
-//     }
-
-//     //PWSTR buf = (PWSTR)_alloca((4 + size) * sizeof(WCHAR));
-//     //buf[0] = L'\\', buf[1] = L'\\',  buf[2] = L'?', buf[3] = L'\\';
-//     //size = GetFullPathName(wpath, size, buf + 4, NULL);
-
-//     wchar_t buf[size];
-
-//     size = GetFullPathNameW(wpath, size, buf, NULL);
-//     if (size == 0) {
-//        return NULL; 
-//     }
-//     return _wcsdup(buf);
-// }
-
-// static wchar_t* getCurrentDirW() {
-//     /* Current directory */
-//     WCHAR buf[MAX_PATH];
-//     if (GetCurrentDirectoryW(sizeof(buf) / sizeof(WCHAR), buf) != 0) {
-//       return _wcsdup(buf);
-//     }
-//     return NULL;
-// }
-
-// #endif
-
-
-
-
-// https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
-
-// void scandir_internal(const char* dirName, const char* pattern, std::vector<std::string>& files, int level, int max_depth, int total_level, char* level_pattern) {
-
-//     char* path = fs_get_find_path(dirName); // convert 'dirName' to WIN32 find path: add '\*'
-//     wchar_t* wpath = lib_mbs_to_wcs(path);
-//     //printf("path    : '%s'\n", path);
-
-//     WIN32_FIND_DATAW file;
-//     HANDLE dir = FindFirstFileW(wpath, &file);
-//     if (dir == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
-//         fprintf(stderr, "Directory not found: %s\n", dirName);
-//         return;
-//     }
-                                                                                         
-//     while (FindNextFileW(dir, &file) != 0) {
-
-//         wchar_t* wfileName = file.cFileName;
-//         char* fileName = lib_wcs_to_mbs(wfileName); // [allocate]
-
-//         //printf("try [%d] %s, %s, :: %s\n", level, dirName, fileName, level_pattern);
-//         if (pattern == NULL || fs_match_file_internal(level_pattern, fileName)) {
-
-//             int mode = 0; // 0 - notning, 1 - file, 2 - dir
-//             if (!_fs_is_dir(file)) {
-//                 // We add the file from last pattern level only
-//                 mode = (level == 0 || level == total_level - 1) ? 1 : 0;
-//             } else {
-//                 // Recursive if max_depth != -1
-//                 mode = max_depth >= 0 ? 2 : 0;
-//             }
-
-//             if (mode == 0) {
-//                 continue; // notning
-//             }
-
-//             char* fullName = NULL;
-//             if (fs_is_current_find_path(dirName)) {
-//                fullName = strdup(fileName);
-//             } else {
-//                fullName = fs_get_file_path(dirName, fileName); // [allocate]
-//             }
-            
-//             //printf("match:fullName: %s\n", fullName);
-//             //printf("match: [%s] %s, %s, %s\n", (mode == 2 ? "D" : " "), fullName, dirName, fileName);
-
-//             if (mode == 1) {
-//                 files.push_back(fullName);
-//             } else if (mode == 2) {
-//                 scandir(fullName, pattern, files, level + 1);
-//             }
-
-//             free(fullName);
-//         }
-
-//         free(fileName);
-//     }
-
-//     free(path);
-//     free(wpath);
-// }
 
 ////
 
@@ -516,5 +309,7 @@ char lib_fs_get_mode_access(const char* path) {
 }
 
 #endif
+
+// https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
 
 #endif // PLAZMA_LIB_FSLIB_WIN_H
