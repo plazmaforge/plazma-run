@@ -115,7 +115,7 @@ rem link
 %CC% %LDFLAGS% getopt.o common.o memlib.o iolib.o run_mdlib.o sha512.o run_sha512.o -o run-sha512.exe
 
 %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_hex2dat.o -o run-hex2dat.exe
-%CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
+rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 
 %CC% %LDFLAGS% getopt.o iolib.o run_unimap.o -o run-unimap.exe
 %CC% %LDFLAGS% getopt.o iolib.o unimap.o utf8lib.o encdef.o enclib.o run_iconv.o -o run-iconv.exe
@@ -124,8 +124,8 @@ rem link
 
 %CC% %LDFLAGS% getopt.o pathlib.o run_basename.o -o run-basename.exe
 %CC% %LDFLAGS% getopt.o pathlib.o run_dirname.o -o run-dirname.exe
-%CC% %LDFLAGS% getopt.o strlib.o wclib.o pathlib.o fslib.o run_realpath.o -o run-realpath.exe
-%CC% %LDFLAGS% getopt.o strlib.o wclib.o pathlib.o fslib.o run_pwd.o -o run-pwd.exe
+%CC% %LDFLAGS% getopt.o strlib.o wstrlib.o wclib.o pathlib.o fslib.o run_realpath.o -o run-realpath.exe
+%CC% %LDFLAGS% getopt.o strlib.o wstrlib.o wclib.o pathlib.o fslib.o run_pwd.o -o run-pwd.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
