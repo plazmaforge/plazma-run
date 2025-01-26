@@ -35,4 +35,18 @@
 
 #endif
 
+
+/*
+ * File types
+ */
+#define LIB_FS_UNKNOWN       0
+#define LIB_FS_FIFO          1
+#define LIB_FS_CHR           2
+#define LIB_FS_DIR           4
+#define LIB_FS_BLK           6
+#define LIB_FS_REG           8
+#define LIB_FS_LNK          10
+#define LIB_FS_SOCK         12
+#define LIB_FS_WHT          14
+
 #endif // PLAZMA_LIB_FSDEF_H

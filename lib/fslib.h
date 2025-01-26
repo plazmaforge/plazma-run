@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 
+#include "fsdirent.h"
 #include "fspath.h"
 
 #ifdef _WIN32
@@ -13,22 +14,22 @@
 
 #else
 
-#include <dirent.h>
+//#include <dirent.h>
 
 #endif
 
 /*
  * File types
  */
-#define LIB_FS_UNKNOWN       0
-#define LIB_FS_FIFO          1
-#define LIB_FS_CHR           2
-#define LIB_FS_DIR           4
-#define LIB_FS_BLK           6
-#define LIB_FS_REG           8
-#define LIB_FS_LNK          10
-#define LIB_FS_SOCK         12
-#define LIB_FS_WHT          14
+// #define LIB_FS_UNKNOWN       0
+// #define LIB_FS_FIFO          1
+// #define LIB_FS_CHR           2
+// #define LIB_FS_DIR           4
+// #define LIB_FS_BLK           6
+// #define LIB_FS_REG           8
+// #define LIB_FS_LNK          10
+// #define LIB_FS_SOCK         12
+// #define LIB_FS_WHT          14
 
 typedef enum {
   LIB_FS_FILE_CHECK_IS_REG   = 1 << 0,
@@ -78,6 +79,7 @@ typedef struct _BY_HANDLE_FILE_INFORMATION {
   DWORD    nFileIndexLow;
 } BY_HANDLE_FILE_INFORMATION, *PBY_HANDLE_FILE_INFORMATION, *LPBY_HANDLE_FILE_INFORMATION;
 */
+
 /* File Info (stat)   */
 typedef BY_HANDLE_FILE_INFORMATION lib_fs_file_info_t;
 
@@ -98,17 +100,18 @@ typedef struct _WIN32_FIND_DATAW {
   WORD     wFinderFlags;  // Obsolete. Do not use
 } WIN32_FIND_DATAW, *PWIN32_FIND_DATAW, *LPWIN32_FIND_DATAW;
 */
-/* Directory entry    */
-typedef struct lib_fs_dirent_t {
-    int type; // OS Indepentent
-    char* name;
-    WIN32_FIND_DATAW fd;
-} lib_fs_dirent_t;
 
-typedef struct lib_fs_dir_t {
-    void* ptr;
-    lib_fs_dirent_t* dirent;
-} lib_fs_dir_t;
+/* Directory entry    */
+// typedef struct lib_fs_dirent_t {
+//     int type; // OS Indepentent
+//     char* name;
+//     WIN32_FIND_DATAW fd;
+// } lib_fs_dirent_t;
+
+// typedef struct lib_fs_dir_t {
+//     void* ptr;
+//     lib_fs_dirent_t* dirent;
+// } lib_fs_dir_t;
 
 #else
 
@@ -134,6 +137,7 @@ typedef struct stat {
     blksize_t   st_blksize;     // Preferred I/O block size for object.
 }
 */
+
 /* File Info          */
 //#define lib_fs_file_info_t struct stat;
 typedef struct stat lib_fs_file_info_t;
@@ -147,17 +151,18 @@ struct dirent {
     char           d_name[NAME_MAX]; // filename
 };
 */
-/* Directory entry    */
-typedef struct lib_fs_dirent_t {
-    int type; // OS Indepentent
-    char* name;
-    struct dirent* fd;
-} lib_fs_dirent_t;
 
-typedef struct lib_fs_dir_t {
-    DIR* ptr;
-    lib_fs_dirent_t* dirent;
-} lib_fs_dir_t;
+// /* Directory entry    */
+// typedef struct lib_fs_dirent_t {
+//     int type; // OS Indepentent
+//     char* name;
+//     struct dirent* fd;
+// } lib_fs_dirent_t;
+
+// typedef struct lib_fs_dir_t {
+//     DIR* ptr;
+//     lib_fs_dirent_t* dirent;
+// } lib_fs_dir_t;
 
 #endif
 
@@ -186,11 +191,11 @@ int lib_fs_match_file(const char* name, const char* pattern);
 
 bool lib_fs_exists(const char* file_name);
 
-bool lib_fs_is_regular(const char* file_name);
+bool lib_fs_is_reg(const char* file_name);
 
 bool lib_fs_is_dir(const char* file_name);
 
-bool lib_fs_is_executable(const char* file_name);
+bool lib_fs_is_exec(const char* file_name);
 
 bool lib_fs_file_check(const char* file_name, lib_fs_file_check_t check);
 
@@ -290,16 +295,16 @@ int lib_fs_files_reinit(lib_fs_file_t*** files, size_t size);
 
 //// fs-dirent
 
-int lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent);
+// int lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent);
 
-int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent);
+// int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent);
 
-// [allocate]
-lib_fs_dir_t* lib_fs_open_dir(const char* dir_name);
+// // [allocate]
+// lib_fs_dir_t* lib_fs_open_dir(const char* dir_name);
 
-lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir);
+// lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir);
 
-int lib_fs_close_dir(lib_fs_dir_t* dir);
+// int lib_fs_close_dir(lib_fs_dir_t* dir);
 
 //// fs-scan
 

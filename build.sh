@@ -21,9 +21,12 @@ $CC $CFLAGS lib/pathlib.c -o pathlib.o
 $CC $CFLAGS lib/wclib.c -o wclib.o
 
 $CC $CFLAGS lib/fspath.c -o fspath.o
+$CC $CFLAGS lib/fsdirent.c -o fsdirent.o
 $CC $CFLAGS lib/fslib.c -o fslib.o
+
 $CC $CFLAGS lib/iodef.c -o iodef.o
 $CC $CFLAGS lib/iolib.c -o iolib.o
+
 $CC $CFLAGS lib/dmplib.c -o dmplib.o
 $CC $CFLAGS lib/fmtlib.c -o fmtlib.o
 $CC $CFLAGS lib/socketlib.c -o socketlib.o
@@ -107,15 +110,15 @@ $CC $LDFLAGS getopt.o strlib.o syslocale.o syslocale_os.o syslib.o run_echo.o -o
 $CC $LDFLAGS getopt.o iodef.o iolib.o dmplib.o run_dump.o -o run-dump
 $CC $LDFLAGS iodef.o iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_cat.o -o run-cat
 $CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o syscpu.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_sysinfo.o -o run-sysinfo
-$CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_find.o -o run-find
-$CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_ask.o -o run-ask
-$CC $LDFLAGS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fslib.o iodef.o fmtlib.o syslocale.o syslocale_os.o syslib.o run_ls.o -o run-ls
+$CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_find.o -o run-find
+$CC $LDFLAGS $OBJS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_ask.o -o run-ask
+$CC $LDFLAGS getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o iodef.o fmtlib.o syslocale.o syslocale_os.o syslib.o run_ls.o -o run-ls
 
-$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fspath.o fslib.o syslocale.o syslocale_os.o syslib.o run_mkdir.o -o run-mkdir
-$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fspath.o fslib.o syslocale.o syslocale_os.o syslib.o run_rmdir.o -o run-rmdir
-$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fspath.o fslib.o syslocale.o syslocale_os.o syslib.o run_mv.o -o run-mv
-$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fspath.o fslib.o syslocale.o syslocale_os.o syslib.o run_rm.o -o run-rm
-$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fspath.o fslib.o syslocale.o syslocale_os.o syslib.o run_cp.o -o run-cp
+$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o syslocale.o syslocale_os.o syslib.o run_mkdir.o -o run-mkdir
+$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o syslocale.o syslocale_os.o syslib.o run_rmdir.o -o run-rmdir
+$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o syslocale.o syslocale_os.o syslib.o run_mv.o -o run-mv
+$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o syslocale.o syslocale_os.o syslib.o run_rm.o -o run-rm
+$CC $LDFLAGS strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o syslocale.o syslocale_os.o syslib.o run_cp.o -o run-cp
 
 $CC $LDFLAGS common.o debug.o iodef.o strlib.o socketlib.o nflib.o run_get.o -o run-get
 

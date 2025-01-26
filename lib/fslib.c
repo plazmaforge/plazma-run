@@ -80,7 +80,7 @@ bool lib_fs_exists(const char* file_name) {
     return lib_fs_file_check(file_name, LIB_FS_FILE_CHECK_EXISTS);
 }
 
-bool lib_fs_is_regular(const char* file_name) {
+bool lib_fs_is_reg(const char* file_name) {
     return lib_fs_file_check(file_name, LIB_FS_FILE_CHECK_IS_REG);
 }
 
@@ -88,7 +88,7 @@ bool lib_fs_is_dir(const char* file_name) {
     return lib_fs_file_check(file_name, LIB_FS_FILE_CHECK_IS_DIR);
 }
 
-bool lib_fs_is_executable(const char* file_name) {
+bool lib_fs_is_exec(const char* file_name) {
     return lib_fs_file_check(file_name, LIB_FS_FILE_CHECK_IS_EXEC);
 }
 
