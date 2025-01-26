@@ -2,8 +2,14 @@
 #define PLAZMA_LIB_FSDIRENT_H
 
 #ifdef _WIN32
-
 #include <windows.h>
+#else
+#include <dirent.h>
+#endif
+
+#include "fsdef.h"
+
+#ifdef _WIN32
 
 /* Directory pointer  */
 //typedef HANDLE lib_fs_dir_t;
@@ -37,8 +43,6 @@ typedef struct lib_fs_dir_t {
 
 #else
 
-#include <dirent.h>
-
 /*
 struct dirent {
     ino_t          d_ino;       // Inode number
@@ -61,6 +65,8 @@ typedef struct lib_fs_dir_t {
     lib_fs_dirent_t* dirent;
 } lib_fs_dir_t;
 
+#endif
+
 //// fs-dirent
 
 bool lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent);
@@ -73,7 +79,5 @@ lib_fs_dir_t* lib_fs_open_dir(const char* dir_name);
 lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir);
 
 int lib_fs_close_dir(lib_fs_dir_t* dir);
-
-#endif
 
 #endif // PLAZMA_LIB_FSDIRENT_H
