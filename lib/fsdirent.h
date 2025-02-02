@@ -41,6 +41,31 @@ typedef struct lib_fs_dir_t {
     lib_fs_dirent_t* dirent;
 } lib_fs_dir_t;
 
+
+//////////////////////////////////////////////////////////////////////////
+
+/* Maximum length of file name */
+#if !defined(PATH_MAX)
+#define PATH_MAX MAX_PATH
+#endif
+
+typedef struct dirent  {
+    uint64_t  d_ino;            /* File number of entry */
+    uint64_t  d_off;            /* Seek offset (optional, used by servers) */
+    uint16_t  d_reclen;         /* Length of this record */
+    uint16_t  d_namlen;         /* Length of string in d_name */
+    uint8_t   d_type;           /* File type, see below */
+    //char      d_name[PATH_MAX]; /* Entry name (up to PATH_MAX bytes) */
+    char*      d_name;
+} /*dirent*/;
+
+typedef struct DIR {    
+    HANDLE handle;
+    WIN32_FIND_DATAW data;
+    wchar_t* wpath;
+	struct dirent ent;
+} DIR;
+
 #else
 
 /*
@@ -66,6 +91,20 @@ typedef struct lib_fs_dir_t {
 } lib_fs_dir_t;
 
 #endif
+
+#ifdef _WIN32
+#else
+#endif
+
+//// fs-psx
+
+struct dirent* lib_readdir(DIR* dir);
+
+DIR* lib_opendir(const char *dirname);
+
+int lib_closedir(DIR* dir);
+
+////////////////////////////////////////////////////////////
 
 //// fs-dirent
 

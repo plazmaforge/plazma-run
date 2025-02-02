@@ -1449,3 +1449,6 @@ int lib_fs_scandir(const char* dir_name, const char* pattern, lib_fs_file_t*** f
     
     return file_count;
 }
+
+// https://github.com/tronkko/dirent/tree/master
+// https://github.com/tronkko/dirent/blob/master/examples/scandir.c

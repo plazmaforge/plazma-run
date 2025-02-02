@@ -16,6 +16,8 @@
 
 #include "fsdirent.h"
 
+//// fs-psx: begin
+
 #ifdef _WIN32
 
 static void _lib_fs_normalize_slash(char* path, size_t len) {
@@ -24,12 +26,12 @@ static void _lib_fs_normalize_slash(char* path, size_t len) {
 
 // Convert directory name to WIN32 find path: add '\*'
 // [allocate]
-static char* lib_fs_get_find_path(const char* dir_name) {
+static char* _find_path(const char* dir_name) {
     if (dir_name == NULL) {
         return NULL;
     }
 
-    //printf("get_find_path: input: %s\n", dir_name);
+    //printf("_find_path: input: %s\n", dir_name);
 
     int len = strlen(dir_name);
     int add = 0;
@@ -65,10 +67,128 @@ static char* lib_fs_get_find_path(const char* dir_name) {
     
     path[len + 1] = '\0';
 
-    //printf("get_find_path: output: %s\n", path);
+    //printf("_find_path: output: %s\n", path);
             
     return path;
 }
+
+static int _get_type(WIN32_FIND_DATAW data) {
+    DWORD attr = data.dwFileAttributes;
+    if ( attr & FILE_ATTRIBUTE_REPARSE_POINT) {
+        return LIB_FS_LNK;
+    }
+    if ( attr & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) {
+        return LIB_FS_DIR;
+    }
+    return LIB_FS_REG;
+}
+
+static dirent* _readdir(DIR* dir) {
+
+    if (FindNextFileW(dir->handle, &dir->data) == 0) {
+        return NULL;
+    }
+
+    dirent* entry = &dir->ent;
+
+	entry->d_ino = 0;
+    entry->d_off = 0; /* Not implemented */
+	entry->d_reclen = sizeof(struct dirent);
+    entry->d_type = _get_type(dir->data);
+    entry->d_name = lib_wcs_to_mbs(dir->data.cFileName); // [allocate]
+    entry->d_namlen = entry->d_name ? strlen(entry->d_name) : 0;
+
+    return entry;
+}
+
+static DIR* _opendir(const char* dirname) {
+
+    char* path = lib_fs_get_find_path(dirname); // convert 'dirname' to WIN32 find path: add '\*'
+    wchar_t* wpath = lib_mbs_to_wcs(path);
+
+    //printf("path    : '%s'\n", path);
+
+    WIN32_FIND_DATAW data;
+    HANDLE handle = FindFirstFileW(wpath, &data);
+
+    if (handle == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
+        // error
+        //fprintf(stderr, "Directory not found: %s\n", dirname);
+        free(path);
+        free(wpath);
+        return NULL;
+    }
+
+    DIR* dir = (DIR*) malloc(sizeof(DIR));
+    if (!dir) {
+        // error
+        free(path);
+        free(wpath);
+        FindClose(handle);
+        return NULL;
+    }
+
+    dir->handle = handle;
+    dir->data   = data;
+    dir->wpath  = wpath;
+
+    free(path);
+    //free(wpath);
+
+    return dir;
+}
+
+int _closedir(DIR* dir) {
+    if (handle != INVALID_HANDLE_VALUE) {
+        FindClose(dir->handle);
+    }    
+    free(dir->wpath);
+    free(dir);
+    return 0;
+}
+
+#endif
+
+struct dirent* lib_readdir(DIR* dir) {
+    if (!dir) {
+        // error
+        return NULL;
+    }
+    #ifdef _WIN32
+    return _readdir(dir)
+    #else
+    return readdir(dir);
+    #endif
+}
+
+DIR* lib_opendir(const char* dirname) {
+    if (!dirname) {
+        // error
+        return NULL;
+    }
+    #ifdef _WIN32
+    return _opendir(dirname)
+    #else
+    return opendir(dirname);
+    #endif
+}
+
+int lib_closedir(DIR* dir) {
+    if (!dir) {
+        // error
+        return 0;
+    }
+    #ifdef _WIN32
+    return _closedir(dir)
+    #else
+    return closedir(dir);
+    #endif
+}
+
+//// fs-psx: end
+
+#ifdef _WIN32
+
 
 ////
 
@@ -113,6 +233,8 @@ lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {
 
     if (_dir == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
         //fprintf(stderr, "Directory not found: %s\n", dir_name);
+        free(path);
+        free(wpath);            
         return NULL;
     }
 
@@ -126,6 +248,9 @@ lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {
 
     dir->ptr = _dir;
     dir->dirent = NULL;
+
+    free(path);
+    free(wpath);    
     return dir;
 }
 
