@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 //#include <stdio.h>
 
 #ifdef _WIN32
@@ -89,7 +90,7 @@ static dirent* _readdir(DIR* dir) {
         return NULL;
     }
 
-    dirent* entry = &dir->ent;
+    struct dirent* entry = &dir->ent;
 
 	entry->d_ino = 0;
     entry->d_off = 0; /* Not implemented */
