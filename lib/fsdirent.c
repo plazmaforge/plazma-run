@@ -140,7 +140,7 @@ static DIR* _opendir(const char* dirname) {
 }
 
 int _closedir(DIR* dir) {
-    if (handle != INVALID_HANDLE_VALUE) {
+    if (dir->handle != INVALID_HANDLE_VALUE) {
         FindClose(dir->handle);
     }    
     free(dir->wpath);
@@ -156,7 +156,7 @@ struct dirent* lib_readdir(DIR* dir) {
         return NULL;
     }
     #ifdef _WIN32
-    return _readdir(dir)
+    return _readdir(dir);
     #else
     return readdir(dir);
     #endif
@@ -168,7 +168,7 @@ DIR* lib_opendir(const char* dirname) {
         return NULL;
     }
     #ifdef _WIN32
-    return _opendir(dirname)
+    return _opendir(dirname);
     #else
     return opendir(dirname);
     #endif
@@ -180,7 +180,7 @@ int lib_closedir(DIR* dir) {
         return 0;
     }
     #ifdef _WIN32
-    return _closedir(dir)
+    return _closedir(dir);
     #else
     return closedir(dir);
     #endif
