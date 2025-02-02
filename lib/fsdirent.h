@@ -26,19 +26,6 @@ typedef struct _BY_HANDLE_FILE_INFORMATION {
 } BY_HANDLE_FILE_INFORMATION, *PBY_HANDLE_FILE_INFORMATION, *LPBY_HANDLE_FILE_INFORMATION;
 */
 
-/* Directory entry    */
-// typedef struct lib_fs_dirent_t {
-//     int type; // OS Indepentent
-//     char* name;
-//     WIN32_FIND_DATAW fd;
-// } lib_fs_dirent_t;
-
-// typedef struct lib_fs_dir_t {
-//     void* ptr;
-//     lib_fs_dirent_t* dirent;
-// } lib_fs_dir_t;
-
-
 //////////////////////////////////////////////////////////////////////////
 
 /* Maximum length of file name */
@@ -75,45 +62,16 @@ struct dirent {
 };
 */
 
-/* Directory entry    */
-// typedef struct lib_fs_dirent_t {
-//     int type; // OS Indepentent
-//     char* name;
-//     struct dirent* fd;
-// } lib_fs_dirent_t;
-
-// typedef struct lib_fs_dir_t {
-//     DIR* ptr;
-//     lib_fs_dirent_t* dirent;
-// } lib_fs_dir_t;
-
 #endif
-
-// #ifdef _WIN32
-// #else
-// #endif
 
 //// fs-psx
 
 struct dirent* lib_readdir(DIR* dir);
 
+void lib_rewinddir(DIR* dir);
+
 DIR* lib_opendir(const char *dirname);
 
 int lib_closedir(DIR* dir);
-
-////////////////////////////////////////////////////////////
-
-//// fs-dirent
-
-// bool lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent);
-
-// int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent);
-
-// [allocate]
-// lib_fs_dir_t* lib_fs_open_dir(const char* dir_name);
-
-// lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir);
-
-// int lib_fs_close_dir(lib_fs_dir_t* dir);
 
 #endif // PLAZMA_LIB_FSDIRENT_H

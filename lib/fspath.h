@@ -112,5 +112,4 @@ const char* lib_fs_skip_nondir_separators(const char* path);
 
 const char* lib_fs_skip_root(const char* path);
 
-
 #endif // PLAZMA_LIB_FSPATH_H

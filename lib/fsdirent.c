@@ -84,9 +84,37 @@ static int _get_type(WIN32_FIND_DATAW data) {
     return LIB_FS_REG;
 }
 
+static WIN32_FIND_DATAW* _dirent_first(DIR* dir) {
+    /* Open directory and retrieve the first entry */
+
+    //dir->handle = FindFirstFileExW(
+    //    dir->wpath, FindExInfoStandard, &dir->data,
+    //    FindExSearchNameMatch, NULL, 0);
+
+    dir->handle = FindFirstFileW(dir->wpath, &dir->data);
+    if (dir->handle == INVALID_HANDLE_VALUE) {
+        // error
+        return NULL;
+    }
+
+	return &dirp->data;
+}
+
+static WIN32_FIND_DATAW* _dirent_next(DIR* dir) {
+    if (FindNextFileW(dir->handle, &dir->data) == 0) {
+        return NULL;
+    }
+    return &dir->data;
+}
+
 static struct dirent* _readdir(DIR* dir) {
 
-    if (FindNextFileW(dir->handle, &dir->data) == 0) {
+    //if (FindNextFileW(dir->handle, &dir->data) == 0) {
+    //    return NULL;
+    //}
+
+    WIN32_FIND_DATAW* data = _dirent_next(dir);
+    if (data == NULL) {
         return NULL;
     }
 
@@ -95,48 +123,78 @@ static struct dirent* _readdir(DIR* dir) {
 	entry->d_ino = 0;
     entry->d_off = 0; /* Not implemented */
 	entry->d_reclen = sizeof(struct dirent);
-    entry->d_type = _get_type(dir->data);
-    entry->d_name = lib_wcs_to_mbs(dir->data.cFileName); // [allocate]
+    entry->d_type = _get_type(*data);
+    entry->d_name = lib_wcs_to_mbs(data->cFileName); // [allocate]
     entry->d_namlen = entry->d_name ? strlen(entry->d_name) : 0;
 
     return entry;
 }
 
+static void _rewinddir(DIR* dir) {
+    /* Check directory pointer */
+    if (!dir || dir->handle == INVALID_HANDLE_VALUE || !dir->wpath)
+      return;
+
+    /* Release existing search handle */
+    FindClose(dirp->handle);
+
+    /* Open new search handle */
+    _dirent_first(dir);
+}
+
 static DIR* _opendir(const char* dirname) {
 
     char* path = _find_path(dirname); // convert 'dirname' to WIN32 find path: add '\*'
+    if (!path) {
+        return NULL;
+    }
+
     wchar_t* wpath = lib_mbs_to_wcs(path);
-
-    //printf("path    : '%s'\n", path);
-
-    WIN32_FIND_DATAW data;
-    HANDLE handle = FindFirstFileW(wpath, &data);
-
-    if (handle == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
-        // error
-        //fprintf(stderr, "Directory not found: %s\n", dirname);
-        free(path);
-        free(wpath);
+    free(path);
+    if (!wpath) {
         return NULL;
     }
 
     DIR* dir = (DIR*) malloc(sizeof(DIR));
     if (!dir) {
-        // error
-        free(path);
         free(wpath);
-        FindClose(handle);
+        return NULL;
+    }
+    dir->handle = INVALID_HANDLE_VALUE;
+    dir->wpath = wpath;
+
+    //printf("path    : '%s'\n", path);
+
+    //WIN32_FIND_DATAW data;
+    //HANDLE handle = FindFirstFileW(wpath, &data);
+
+    //if (handle == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
+    if (!_dirent_first(dir)) {
+        // error
+        //fprintf(stderr, "Directory not found: %s\n", dirname);
+        _closedir(dir);
+        //free(path);
+        //free(wpath);
         return NULL;
     }
 
-    dir->handle = handle;
-    dir->data   = data;
-    dir->wpath  = wpath;
-
-    free(path);
-    //free(wpath);
-
     return dir;
+
+    //DIR* dir = (DIR*) malloc(sizeof(DIR));
+    //if (!dir) {
+    //    // error
+    //    free(path);
+    //    free(wpath);
+    //    FindClose(handle);
+    //    return NULL;
+    //}
+
+    //dir->handle = handle;
+    //dir->data   = data;
+    //dir->wpath  = wpath;
+
+    //free(path);
+    //free(wpath);
 }
 
 int _closedir(DIR* dir) {
@@ -159,6 +217,18 @@ struct dirent* lib_readdir(DIR* dir) {
     return _readdir(dir);
     #else
     return readdir(dir);
+    #endif
+}
+
+void lib_rewinddir(DIR* dir) {
+    if (!dir) {
+        // error
+        return;
+    }
+    #ifdef _WIN32
+    return _rewinddir(dir);
+    #else
+    return rewinddir(dir);
     #endif
 }
 
@@ -188,198 +258,4 @@ int lib_closedir(DIR* dir) {
 
 //// fs-psx: end
 
-#ifdef _WIN32
-
-////
-
-// static bool _lib_fs_is_dir(WIN32_FIND_DATAW file) {
-//     //return file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
-//     return file.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE);
-// }
-
-// bool lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent) {
-//     if (!dirent) {
-//         return 0;
-//     }
-//     return dirent->fd.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE);
-// }
-
-// int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent) {
-//     if (!dirent) {
-//         return 0;
-//     }
-//     if (dirent->fd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
-//         return LIB_FS_LNK;
-//     }
-//     if (dirent->fd.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) {
-//         return LIB_FS_DIR;
-//     }
-//     return LIB_FS_REG;
-// }
-
-// [allocate]
-// lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {
-//     if (!dir_name) {
-//         return NULL;
-//     }
-
-//     char* path = _find_path(dir_name); // convert 'dir_name' to WIN32 find path: add '\*'
-//     wchar_t* wpath = lib_mbs_to_wcs(path);
-
-//     //printf("path    : '%s'\n", path);
-
-//     WIN32_FIND_DATAW _file;
-//     HANDLE _dir = FindFirstFileW(wpath, &_file);
-
-//     if (_dir == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
-//         //fprintf(stderr, "Directory not found: %s\n", dir_name);
-//         free(path);
-//         free(wpath);            
-//         return NULL;
-//     }
-
-//     lib_fs_dir_t* dir = (lib_fs_dir_t*) malloc(sizeof(lib_fs_dir_t));
-//     if (!dir) {
-//         free(path);
-//         free(wpath);
-//         FindClose(_dir);
-//         return NULL;
-//     }
-
-//     dir->ptr = _dir;
-//     dir->dirent = NULL;
-
-//     free(path);
-//     free(wpath);    
-//     return dir;
-// }
-
-// [allocate]
-// lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir) {
-
-//     if (!dir) {
-//         return NULL;
-//     }
-
-//     if (!dir->dirent) {
-//         dir->dirent = (lib_fs_dirent_t*) malloc(sizeof(lib_fs_dirent_t));
-//     } else {
-//        if (dir->dirent->name) {
-//            free(dir->dirent->name);                            // [free]
-//        }
-//     }  
-
-//     if (!dir->dirent) {
-//         return NULL;
-//     }
-
-//     dir->dirent->type = 0;
-//     dir->dirent->name = NULL;
-
-//     if (FindNextFileW(dir->ptr, &dir->dirent->fd) == 0) {
-//         return NULL;
-//     }
-
-//     //dir->dirent->fd = fd;
-//     dir->dirent->type = lib_fs_get_dirent_type(dir->dirent);
-//     dir->dirent->name = lib_wcs_to_mbs(dir->dirent->fd.cFileName); // [allocate]
-
-//     return dir->dirent;
-// }
-
-// int lib_fs_close_dir(lib_fs_dir_t* dir) {
-//     if (!dir) {
-//         return 0;
-//     }
-//     FindClose(dir->ptr);
-//     free(dir->dirent->name);
-//     // free(dir->dirent)  // ???
-//     //dir->dirent = NULL; // ???
-//     free(dir);
-//     return 0;
-// }
-
-#else
-
-// static inline bool _lib_fs_is_dir_type(int type) {
-//     return type == DT_DIR;
-// }
-
-// static bool _lib_fs_is_dir(struct dirent* file) {
-//     if (file == NULL) {
-//         return false;
-//     }
-//     //return file->d_type == DT_DIR;
-//     return _lib_fs_is_dir_type(file->d_type);
-// }
-
-// bool lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent) {
-//     if (!dirent) {
-//         return 0;
-//     }
-//     //return dirent->fd->d_type == DT_DIR;
-//     return _lib_fs_is_dir_type(dirent->fd->d_type);
-// }
-
-// int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent) {
-//     if (!dirent) {
-//         return 0;
-//     }
-//     return dirent->fd->d_type;
-// }
-
-// [allocate]
-// lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {
-//     if (!dir_name) {
-//         return NULL;
-//     }
-//     DIR* _dir = opendir(dir_name);
-//     if (!_dir) {
-//         //fprintf(stderr, "Directory not found: %s\n", dir_name);
-//         return NULL;
-//     }
-//     lib_fs_dir_t* dir = (lib_fs_dir_t*) malloc(sizeof(lib_fs_dir_t));
-//     if (!dir) {
-//         closedir(_dir);
-//         return NULL;
-//     }
-//     dir->ptr = _dir;
-//     dir->dirent = NULL;
-//     return dir;
-// }
-
-// [allocate]
-// lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir) {
-//     if (!dir) {
-//         return NULL;
-//     }
-//     struct dirent* fd = readdir(dir->ptr);
-//     if (!fd) {
-//         return NULL;
-//     }
-//     if (!dir->dirent) {
-//         dir->dirent = (lib_fs_dirent_t*) malloc(sizeof(lib_fs_dirent_t));
-//         dir->dirent->type = 0;
-//         dir->dirent->name = NULL;
-//     }
-//     if (!dir->dirent) {
-//         return NULL;
-//     }
-//     dir->dirent->fd = fd;
-//     dir->dirent->type = lib_fs_get_dirent_type(dir->dirent);
-//     dir->dirent->name = fd->d_name;
-//     return dir->dirent;
-// }
-
-// int lib_fs_close_dir(lib_fs_dir_t* dir) {
-//     if (!dir) {
-//         return 0;
-//     }
-//     int result = closedir(dir->ptr);
-//     // free(dir->dirent) // ???
-//     dir->dirent = NULL;
-//     free(dir);
-//     return result;
-// }
-
-#endif
+// https://github.com/tronkko/dirent/blob/master/include/dirent.h
