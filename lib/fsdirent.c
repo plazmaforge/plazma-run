@@ -84,7 +84,7 @@ static int _get_type(WIN32_FIND_DATAW data) {
     return LIB_FS_REG;
 }
 
-static dirent* _readdir(DIR* dir) {
+static struct dirent* _readdir(DIR* dir) {
 
     if (FindNextFileW(dir->handle, &dir->data) == 0) {
         return NULL;
@@ -104,7 +104,7 @@ static dirent* _readdir(DIR* dir) {
 
 static DIR* _opendir(const char* dirname) {
 
-    char* path = lib_fs_get_find_path(dirname); // convert 'dirname' to WIN32 find path: add '\*'
+    char* path = _find_path(dirname); // convert 'dirname' to WIN32 find path: add '\*'
     wchar_t* wpath = lib_mbs_to_wcs(path);
 
     //printf("path    : '%s'\n", path);
@@ -224,7 +224,7 @@ lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {
         return NULL;
     }
 
-    char* path = lib_fs_get_find_path(dir_name); // convert 'dir_name' to WIN32 find path: add '\*'
+    char* path = _find_path(dir_name); // convert 'dir_name' to WIN32 find path: add '\*'
     wchar_t* wpath = lib_mbs_to_wcs(path);
 
     //printf("path    : '%s'\n", path);

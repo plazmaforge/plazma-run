@@ -49,7 +49,7 @@ typedef struct lib_fs_dir_t {
 #define PATH_MAX MAX_PATH
 #endif
 
-typedef struct dirent  {
+struct dirent  {
     uint64_t  d_ino;            /* File number of entry */
     uint64_t  d_off;            /* Seek offset (optional, used by servers) */
     uint16_t  d_reclen;         /* Length of this record */
@@ -57,7 +57,7 @@ typedef struct dirent  {
     uint8_t   d_type;           /* File type, see below */
     //char      d_name[PATH_MAX]; /* Entry name (up to PATH_MAX bytes) */
     char*      d_name;
-} /*dirent*/;
+};
 
 typedef struct DIR {    
     HANDLE handle;
