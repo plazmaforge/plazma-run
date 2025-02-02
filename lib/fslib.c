@@ -1143,13 +1143,15 @@ int lib_fs_is_ignore_file(const char* file_name) {
 
 int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pattern_count, lib_fs_file_t*** files, int* file_count, int level, int max_depth, int file_only) {
 
-    lib_fs_dir_t* dir = lib_fs_open_dir(dir_name);
+    //lib_fs_dir_t* dir = lib_fs_open_dir(dir_name);
+    DIR* dir = lib_opendir(dir_name);
     if (!dir) {
         return -1;
     }
 
-    lib_fs_dirent_t* dirent;
     //errno = 0;
+    //lib_fs_dirent_t* dirent;
+    struct dirent* dirent;
     const char* pattern = NULL;
 
     // BUG (!) 
@@ -1169,15 +1171,16 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
     bool use_force_pattern = true; // optional
     bool is_force_pattern = use_force_pattern && pattern && pattern_count == 1;
 
-    while ((dirent = lib_fs_read_dir(dir)) != NULL) {
+    //while ((dirent = lib_fs_read_dir(dir)) != NULL) {
+    while ((dirent = lib_readdir(dir)) != NULL) {
 
-        char* file_name = dirent->name;
-        int file_type = lib_fs_get_dirent_type(dirent);                       // dirent type (!)
+        char* file_name = dirent->d_name;
+        int file_type = dirent->d_type; // lib_fs_get_dirent_type(dirent);                       // dirent type (!)
         int is_recursive_ignore = lib_fs_is_recursive_ignore_file(file_name); // ., ..
         int is_ignore = lib_fs_is_ignore_file(file_name);                     // .git, .svn
         int is_force_ignore = is_recursive_ignore || is_ignore;
         int is_match = is_ignore ? 0 : (pattern == NULL || lib_fs_match_file_internal(pattern, file_name));
-        int is_dir_ = lib_fs_is_dirent_dir(dirent);                           // dirent type (!)
+        int is_dir_ = dirent->d_type == LIB_FS_DIR; // lib_fs_is_dirent_dir(dirent);                           // dirent type (!)
 
         if (!is_match && is_dir_ && is_force_pattern && !is_force_ignore) {
             is_match = 1;
@@ -1225,7 +1228,8 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
                     if (lib_fs_files_reinit(files, size) != 0) {                        
                         free(full_name);
                         lib_fs_files_free(*files);
-                        lib_fs_close_dir(dir);
+                        //lib_fs_close_dir(dir);
+                        lib_closedir(dir);
                         return -1;
                     }
                 }
@@ -1278,7 +1282,8 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
         // TODO: stderr: error
     //}
 
-    lib_fs_close_dir(dir);
+    //lib_fs_close_dir(dir);
+    lib_closedir(dir);
     return 0;
 }
 
