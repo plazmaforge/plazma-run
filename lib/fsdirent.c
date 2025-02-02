@@ -21,6 +21,20 @@
 
 #ifdef _WIN32
 
+static DIR* _opendir(const char* dirname);
+
+static int _closedir(DIR* dir);
+
+static struct dirent* _readdir(DIR* dir);
+
+static void _rewinddir(DIR* dir);
+
+static WIN32_FIND_DATAW* _dirent_first(DIR* dir);
+
+static WIN32_FIND_DATAW* _dirent_next(DIR* dir);
+
+////
+
 static void _lib_fs_normalize_slash(char* path, size_t len) {
     lib_strntrc(path, len, '/', '\\');
 }
@@ -97,7 +111,7 @@ static WIN32_FIND_DATAW* _dirent_first(DIR* dir) {
         return NULL;
     }
 
-	return &dirp->data;
+	return &dir->data;
 }
 
 static WIN32_FIND_DATAW* _dirent_next(DIR* dir) {
@@ -136,7 +150,7 @@ static void _rewinddir(DIR* dir) {
       return;
 
     /* Release existing search handle */
-    FindClose(dirp->handle);
+    FindClose(dir->handle);
 
     /* Open new search handle */
     _dirent_first(dir);
@@ -197,7 +211,7 @@ static DIR* _opendir(const char* dirname) {
     //free(wpath);
 }
 
-int _closedir(DIR* dir) {
+static int _closedir(DIR* dir) {
     if (dir->handle != INVALID_HANDLE_VALUE) {
         FindClose(dir->handle);
     }    
