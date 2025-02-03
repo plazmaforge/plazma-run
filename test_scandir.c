@@ -15,6 +15,21 @@ void usage() {
     printf("Usage: test-scandir <dirname>\n");
 }
 
+static int _digitnum(int value) {
+    if (value == 0) {
+        return 1;
+    }
+    if (value < 0) {
+        value *= -1;
+    }
+    int count = 0;
+    while (value != 0) {
+        value /= 10;
+        count++;
+    }
+    return count;
+}
+
 int test_scandir(const char* dirname) {
     if (!dirname) {
         dirname = ".";
@@ -32,19 +47,15 @@ int test_scandir(const char* dirname) {
         return 1;
     }
 
+    int num_len = _digitnum(size);
     printf("total  : %d\n", size);
     for (int i = 0; i < size; i++) {
         struct dirent* ent = list[i];
-        printf("%d: %s %s\n", (i + 1), (ent->d_type == LIB_FS_DIR ? "[D]" : "   "), ent->d_name);
+        printf("%*d: %s %s\n", num_len, (i + 1), (ent->d_type == LIB_FS_DIR ? "[D]" : "   "), ent->d_name);
 
     }
-
     lib_dirents_free(list, size);
-
-
     return 0;
-
-
 }
 
 int main(int argc, char* argv[]) {
