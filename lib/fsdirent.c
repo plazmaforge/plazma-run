@@ -443,8 +443,8 @@ int lib_scandir(
 	int (*filter)(const struct dirent*),
 	int (*compare)(const struct dirent**, const struct dirent**)) {
 
-    //return _scandir(dirname, list, filter, compare);
-    return scandir(dirname, list, filter, compare);
+    return _scandir(dirname, list, filter, compare);
+    //return scandir(dirname, list, filter, compare);
 
 }
 
