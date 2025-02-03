@@ -139,4 +139,4 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 %CC% %LDFLAGS% encdef.o test_enc.o -o test-enc.exe
 %CC% %LDFLAGS% strlib.o test_strlib.o -o test-strlib.exe
 %CC% %LDFLAGS% test_buf.o -o test-buf.exe
-%CC% %LDFLAGS% fsdirent.o test_scandir.o -o test-scandir.exe
+%CC% %LDFLAGS% strlib.o wstrlib.o fsdirent.o test_scandir.o -o test-scandir.exe
