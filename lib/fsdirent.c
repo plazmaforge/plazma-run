@@ -350,7 +350,7 @@ static int _scandir(
 	int result;
 
 	/* Open directory stream */
-	DIR *dir = opendir(dirname);
+	DIR *dir = lib_opendir(dirname);
 	if (!dir) {
 		/* Cannot open directory */
 		return /*Error*/ -1;
@@ -374,7 +374,7 @@ static int _scandir(
 
 		/* Read directory entry to temporary area */
 		struct dirent *entry;
-		if (readdir_r(dir, tmp, &entry) != /*OK*/0)
+		if (lib_readdir_r(dir, tmp, &entry) != /*OK*/0)
 			goto exit_failure;
 
 		/* Stop if we already read the last directory entry */
@@ -433,7 +433,7 @@ exit_status:
 	free(tmp);
 
 	/* Close directory stream */
-	closedir(dir);
+	lib_closedir(dir);
 	return result;
 
 }
