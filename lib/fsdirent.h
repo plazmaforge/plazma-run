@@ -76,4 +76,21 @@ int lib_readdir_r(DIR *dir, struct dirent *entry, struct dirent **result);
 
 void lib_rewinddir(DIR* dir);
 
+struct dirent* lib_dirent_new();
+
+void lib_dirent_free(struct dirent* entry);
+
+void lib_dirents_free(struct dirent** entries, size_t size);
+
+/* Alphabetical sorting */
+int lib_alphasort(const struct dirent **a, const struct dirent **b);
+
+/* Directory priority alphabetical sorting */
+int lib_dalphasort(const struct dirent **a, const struct dirent **b);
+
+int lib_scandir(
+	const char *dirname, struct dirent ***namelist,
+	int (*filter)(const struct dirent*),
+	int (*compare)(const struct dirent**, const struct dirent**));
+
 #endif // PLAZMA_LIB_FSDIRENT_H

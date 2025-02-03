@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
-//#include <stdio.h>
+#include <string.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -10,7 +10,6 @@
 
 #include "strlib.h"
 #include "wstrlib.h"
-
 #else
 #include <dirent.h>
 #endif
@@ -130,28 +129,6 @@ static struct dirent* _readdir(DIR* dir) {
 
 	/* Return pointer to statically allocated directory entry */
 	return entry;
-
-    // struct dirent* entry = &dir->ent;
-	// entry->d_ino = 0;
-    // entry->d_off = -1; /* Not implemented */
-
-    // WIN32_FIND_DATAW* data = _dirent_next(dir);
-    // if (data == NULL) {
-
-	//     entry->d_reclen = 0;
-    //     entry->d_type = 0;
-    //     entry->d_name = NULL;
-    //     entry->d_namlen = 1;
-
-    //     return NULL;
-    // }
-
-	// entry->d_reclen = sizeof(struct dirent);
-    // entry->d_type = _get_type(*data);
-    // entry->d_name = lib_wcs_to_mbs(data->cFileName); // [allocate]
-    // entry->d_namlen = entry->d_name ? strlen(entry->d_name) : 0;
-
-    return entry;
 }
 
 static int _readdir_r(DIR *dir, struct dirent *entry, struct dirent **result) {
@@ -309,6 +286,166 @@ int lib_closedir(DIR* dir) {
     #else
     return closedir(dir);
     #endif
+}
+
+struct dirent* lib_dirent_new() {
+    return (struct dirent*) malloc(sizeof(struct dirent));
+}
+
+void lib_dirent_free(struct dirent* entry) {
+    if (!entry) {
+        return;
+    }
+
+    #ifdef _WIN32
+    free(entry->d_name);
+    entry->d_name = NULL;
+    #endif
+
+    free(entry);
+}
+
+void lib_dirents_free(struct dirent** entries, size_t size) {
+    if (!entries) {
+        return;
+    }
+
+	for (size_t i = 0; i < size; i++) {
+		lib_dirent_free(entries[i]);
+	}
+}
+
+/* Alphabetical sorting */
+int lib_alphasort(const struct dirent **a, const struct dirent **b) {
+    // if (!a && !b) {
+    //     return 0;
+    // } else if (!a) {
+    //     return -1;
+    // } else if (!b) {
+    //     return 1;
+    // }
+	return strcoll((*a)->d_name, (*b)->d_name);
+}
+
+/* Alphabetical sorting */
+int lib_dalphasort(const struct dirent **a, const struct dirent **b) {
+    if ((*a)->d_type == LIB_FS_DIR && (*b)->d_type == LIB_FS_DIR) {
+        return lib_alphasort(a, b);
+    }
+    if ((*a)->d_type != LIB_FS_DIR) {
+        return 1;
+    }
+    if ((*b)->d_type != LIB_FS_DIR) {
+        return -1;
+    }
+    return 0;
+}
+
+/* Scan directory for entries */
+static int _scandir(
+	const char *dirname, struct dirent ***list,
+	int (*filter)(const struct dirent*),
+	int (*compare)(const struct dirent**, const struct dirent**)) {
+        
+	int result;
+
+	/* Open directory stream */
+	DIR *dir = opendir(dirname);
+	if (!dir) {
+		/* Cannot open directory */
+		return /*Error*/ -1;
+	}
+
+	/* Read directory entries to memory */
+	struct dirent *tmp = NULL;
+	struct dirent **files = NULL;
+	size_t size = 0;
+	size_t allocated = 0;
+
+	while (1) {
+
+		/* Allocate room for a temporary directory entry */
+		if (!tmp) {
+			//tmp = (struct dirent*) malloc(sizeof(struct dirent));
+            tmp = lib_dirent_new();
+			if (!tmp)
+				goto exit_failure;
+		}
+
+		/* Read directory entry to temporary area */
+		struct dirent *entry;
+		if (readdir_r(dir, tmp, &entry) != /*OK*/0)
+			goto exit_failure;
+
+		/* Stop if we already read the last directory entry */
+		if (entry == NULL)
+			goto exit_success;
+
+		/* Determine whether to include the entry in results */
+		if (filter && !filter(tmp))
+			continue;
+
+		/* Enlarge pointer table to make room for another pointer */
+		if (size >= allocated) {
+
+			/* Compute number of entries in the new table */
+			size_t num_entries = size * 2 + 16;
+
+			/* Allocate new pointer table or enlarge existing */
+			void *p = realloc(files, sizeof(void*) * num_entries);
+			if (!p)
+				goto exit_failure;
+
+			/* Got the memory */
+			files = (struct dirent**) p;
+			allocated = num_entries;
+		}
+
+		/* Store the temporary entry to ptr table */
+		files[size++] = tmp;
+		tmp = NULL;
+	}
+
+exit_failure:
+    lib_dirents_free(files, size);
+	files = NULL;
+
+	/* Exit with error code */
+	result = /*error*/ -1;
+	goto exit_status;
+
+exit_success:
+	/* Sort directory entries */
+	if (size > 1 && compare) {
+		qsort(files, size, sizeof(void*),
+			(int (*) (const void*, const void*)) compare);
+	}
+
+	/* Pass pointer table to caller */
+	if (list)
+		*list = files;
+
+	/* Return the number of directory entries read */
+	result = (int) size;
+
+exit_status:
+	/* Release temporary directory entry, if we had one */
+	free(tmp);
+
+	/* Close directory stream */
+	closedir(dir);
+	return result;
+
+}
+
+int lib_scandir(
+	const char *dirname, struct dirent ***list,
+	int (*filter)(const struct dirent*),
+	int (*compare)(const struct dirent**, const struct dirent**)) {
+
+    //return _scandir(dirname, list, filter, compare);
+    return scandir(dirname, list, filter, compare);
+
 }
 
 //// fs-psx: end

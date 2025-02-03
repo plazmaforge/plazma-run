@@ -103,6 +103,7 @@ $CC $CFLAGS test_utf8.c -o test_utf8.o
 $CC $CFLAGS test_enc.c -o test_enc.o
 $CC $CFLAGS test_strlib.c -o test_strlib.o
 $CC $CFLAGS test_buf.c -o test_buf.o
+$CC $CFLAGS test_scandir.c -o test_scandir.o
 
 # link
 ###########
@@ -148,3 +149,4 @@ $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o utf8
 $CC $LDFLAGS encdef.o test_enc.o -o test-enc
 $CC $LDFLAGS strlib.o test_strlib.o -o test-strlib
 $CC $LDFLAGS test_buf.o -o test-buf
+$CC $LDFLAGS fsdirent.o test_scandir.o -o test-scandir
