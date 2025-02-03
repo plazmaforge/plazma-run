@@ -27,6 +27,8 @@ static int _closedir(DIR* dir);
 
 static struct dirent* _readdir(DIR* dir);
 
+static int _readdir_r(DIR *dir, struct dirent *entry, struct dirent **result);
+
 static void _rewinddir(DIR* dir);
 
 static WIN32_FIND_DATAW* _dirent_first(DIR* dir);
@@ -123,25 +125,74 @@ static WIN32_FIND_DATAW* _dirent_next(DIR* dir) {
 
 static struct dirent* _readdir(DIR* dir) {
 
-    //if (FindNextFileW(dir->handle, &dir->data) == 0) {
-    //    return NULL;
-    //}
+	struct dirent* entry;
+	readdir_r(dirp, &dirp->ent, &entry);
+
+	/* Return pointer to statically allocated directory entry */
+	return entry;
+
+    // struct dirent* entry = &dir->ent;
+	// entry->d_ino = 0;
+    // entry->d_off = -1; /* Not implemented */
+
+    // WIN32_FIND_DATAW* data = _dirent_next(dir);
+    // if (data == NULL) {
+
+	//     entry->d_reclen = 0;
+    //     entry->d_type = 0;
+    //     entry->d_name = NULL;
+    //     entry->d_namlen = 1;
+
+    //     return NULL;
+    // }
+
+	// entry->d_reclen = sizeof(struct dirent);
+    // entry->d_type = _get_type(*data);
+    // entry->d_name = lib_wcs_to_mbs(data->cFileName); // [allocate]
+    // entry->d_namlen = entry->d_name ? strlen(entry->d_name) : 0;
+
+    return entry;
+}
+
+static int _readdir_r(DIR *dir, struct dirent *entry, struct dirent **result) {
+
+    //struct dirent* entry = &dir->ent;
+	entry->d_ino = 0;
+    entry->d_off = -1; /* Not implemented */
 
     WIN32_FIND_DATAW* data = _dirent_next(dir);
-    if (data == NULL) {
-        return NULL;
+    if (!data) {
+
+	    //entry->d_reclen = 0;
+        //entry->d_type = 0;
+        //entry->d_name = NULL;
+        //entry->d_namlen = 1;
+
+		*result = NULL;
+		return 0;
+    }
+    char* name = lib_wcs_to_mbs(data->cFileName); // [allocate]
+    if (!name) {
+        name = lib_wcs_to_mbs(datap->cAlternateFileName); // [allocate]
     }
 
-    struct dirent* entry = &dir->ent;
+    if (!name) {
+        entry->d_reclen = 0;
+        entry->d_type = 0;
+        entry->d_name = NULL; // ?
+        entry->d_namlen = 0;
 
-	entry->d_ino = 0;
-    entry->d_off = 0; /* Not implemented */
+	    *result = entry;
+	    return 0;
+    }
+
 	entry->d_reclen = sizeof(struct dirent);
     entry->d_type = _get_type(*data);
     entry->d_name = lib_wcs_to_mbs(data->cFileName); // [allocate]
     entry->d_namlen = entry->d_name ? strlen(entry->d_name) : 0;
 
-    return entry;
+	*result = entry;
+	return 0;
 }
 
 static void _rewinddir(DIR* dir) {
@@ -179,36 +230,15 @@ static DIR* _opendir(const char* dirname) {
 
     //printf("path    : '%s'\n", path);
 
-    //WIN32_FIND_DATAW data;
-    //HANDLE handle = FindFirstFileW(wpath, &data);
-
     //if (handle == INVALID_HANDLE_VALUE /*&& GetLastError() != ERROR_FILE_NOT_FOUND*/) {
     if (!_dirent_first(dir)) {
         // error
         //fprintf(stderr, "Directory not found: %s\n", dirname);
         _closedir(dir);
-        //free(path);
-        //free(wpath);
         return NULL;
     }
 
     return dir;
-
-    //DIR* dir = (DIR*) malloc(sizeof(DIR));
-    //if (!dir) {
-    //    // error
-    //    free(path);
-    //    free(wpath);
-    //    FindClose(handle);
-    //    return NULL;
-    //}
-
-    //dir->handle = handle;
-    //dir->data   = data;
-    //dir->wpath  = wpath;
-
-    //free(path);
-    //free(wpath);
 }
 
 static int _closedir(DIR* dir) {
@@ -234,6 +264,17 @@ struct dirent* lib_readdir(DIR* dir) {
     #endif
 }
 
+int lib_readdir_r(DIR *dir, struct dirent *entry, struct dirent **result) {
+    if (!dir || !entry || !result) {
+        // error
+        return -1;
+    }
+    #ifdef _WIN32
+    return _readdir_r(dir, entry, result);
+    #else
+    return readdir_r(dir, entry, result);
+    #endif
+}
 void lib_rewinddir(DIR* dir) {
     if (!dir) {
         // error

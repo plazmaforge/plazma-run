@@ -66,12 +66,14 @@ struct dirent {
 
 //// fs-psx
 
-struct dirent* lib_readdir(DIR* dir);
-
-void lib_rewinddir(DIR* dir);
-
 DIR* lib_opendir(const char *dirname);
 
 int lib_closedir(DIR* dir);
+
+struct dirent* lib_readdir(DIR* dir);
+
+int lib_readdir_r(DIR *dir, struct dirent *entry, struct dirent **result);
+
+void lib_rewinddir(DIR* dir);
 
 #endif // PLAZMA_LIB_FSDIRENT_H
