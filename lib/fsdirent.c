@@ -126,7 +126,7 @@ static WIN32_FIND_DATAW* _dirent_next(DIR* dir) {
 static struct dirent* _readdir(DIR* dir) {
 
 	struct dirent* entry;
-	readdir_r(dirp, &dirp->ent, &entry);
+	readdir_r(dir, &dir->ent, &entry);
 
 	/* Return pointer to statically allocated directory entry */
 	return entry;
@@ -173,7 +173,7 @@ static int _readdir_r(DIR *dir, struct dirent *entry, struct dirent **result) {
     }
     char* name = lib_wcs_to_mbs(data->cFileName); // [allocate]
     if (!name) {
-        name = lib_wcs_to_mbs(datap->cAlternateFileName); // [allocate]
+        name = lib_wcs_to_mbs(data->cAlternateFileName); // [allocate]
     }
 
     if (!name) {
