@@ -450,4 +450,11 @@ int lib_scandir(
 
 //// fs-psx: end
 
+// https://github.com/tronkko/dirent/tree/master
 // https://github.com/tronkko/dirent/blob/master/include/dirent.h
+// https://github.com/tronkko/dirent/blob/master/examples/scandir.c
+
+// https://github.com/win32ports/dirent_h/blob/master/dirent.h
+
+// PATH_MAX
+// https://habr.com/ru/companies/pvs-studio/articles/684636/

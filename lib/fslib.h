@@ -49,9 +49,6 @@ typedef struct stat lib_fs_stat_t;
 /* File descriptor    */
 typedef HANDLE lib_fs_fd_t;
 
-/* Directory pointer  */
-//typedef HANDLE lib_fs_dir_t;
-
 /*
 typedef struct _BY_HANDLE_FILE_INFORMATION {
   DWORD    dwFileAttributes;
@@ -88,25 +85,11 @@ typedef struct _WIN32_FIND_DATAW {
 } WIN32_FIND_DATAW, *PWIN32_FIND_DATAW, *LPWIN32_FIND_DATAW;
 */
 
-/* Directory entry    */
-// typedef struct lib_fs_dirent_t {
-//     int type; // OS Indepentent
-//     char* name;
-//     WIN32_FIND_DATAW fd;
-// } lib_fs_dirent_t;
-
-// typedef struct lib_fs_dir_t {
-//     void* ptr;
-//     lib_fs_dirent_t* dirent;
-// } lib_fs_dir_t;
-
 #else
 
 /* File descriptor    */
 typedef int lib_fs_fd_t;     
 
-/* Directory pointer  */
-//typedef DIR lib_fs_dir_t;
 /*
 typedef struct stat {
     ino_t       st_ino;         // File serial number.
@@ -128,28 +111,6 @@ typedef struct stat {
 /* File Info          */
 //#define lib_fs_file_info_t struct stat;
 typedef struct stat lib_fs_file_info_t;
-
-/*
-struct dirent {
-    ino_t          d_ino;       // Inode number
-    off_t          d_off;       // Offset to the next dirent
-    unsigned short d_reclen;    // Length of this record
-    unsigned char  d_type;      // Type of file; not supported by all file system types
-    char           d_name[NAME_MAX]; // filename
-};
-*/
-
-// /* Directory entry    */
-// typedef struct lib_fs_dirent_t {
-//     int type; // OS Indepentent
-//     char* name;
-//     struct dirent* fd;
-// } lib_fs_dirent_t;
-
-// typedef struct lib_fs_dir_t {
-//     DIR* ptr;
-//     lib_fs_dirent_t* dirent;
-// } lib_fs_dir_t;
 
 #endif
 
@@ -279,19 +240,6 @@ void lib_fs_files_free(lib_fs_file_t** files);
 int lib_fs_files_init(lib_fs_file_t*** files, size_t size);
 
 int lib_fs_files_reinit(lib_fs_file_t*** files, size_t size);
-
-//// fs-dirent
-
-// int lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent);
-
-// int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent);
-
-// // [allocate]
-// lib_fs_dir_t* lib_fs_open_dir(const char* dir_name);
-
-// lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir);
-
-// int lib_fs_close_dir(lib_fs_dir_t* dir);
 
 //// fs-scan
 
