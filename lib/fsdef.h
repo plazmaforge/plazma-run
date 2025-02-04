@@ -49,4 +49,28 @@
 #define LIB_FS_SOCK         12
 #define LIB_FS_WHT          14
 
+#ifdef _WIN32
+
+typedef uint32_t      id_t;          /* pid_t, uid_t, or gid_t*/
+typedef int32_t       pid_t;         /* Process and group IDs */
+typedef uint32_t      gid_t;         /* Process and group IDs */
+typedef uint32_t      uid_t;         /* User IDs */
+
+typedef uint64_t      ino_t;         /* Used for inodes */
+typedef int32_t       dev_t;         /* dev_t */
+typedef uint16_t      mode_t;        /* Some file attributes */
+
+typedef int64_t       off_t;         /* Used for file sizes */
+typedef uint16_t      nlink_t;       /* Link count */
+typedef int64_t       blkcnt_t;      /* Total blocks */
+typedef int32_t       blksize_t;     /* Preferred block size */
+typedef unsigned int  fsblkcnt_t;    /* Used by statvfs and fstatvfs */
+typedef unsigned int  fsfilcnt_t;    /* Used by statvfs and fstatvfs */
+
+typedef uint32_t      sigset_t;      /* Signal set */
+typedef int32_t       suseconds_t;   /* Microseconds */
+typedef uint32_t      useconds_t;    /* Microseconds */
+
+#endif
+
 #endif // PLAZMA_LIB_FSDEF_H

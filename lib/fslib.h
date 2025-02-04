@@ -38,8 +38,10 @@ typedef enum {
 
 #if (defined(__MINGW64_VERSION_MAJOR) || defined(_MSC_VER)) && !defined(_WIN64)
 typedef struct _stat32 lib_fs_stat_t;
+typedef struct _stat32 stat;
 #elif defined(__MINGW64_VERSION_MAJOR) && defined(_WIN64)
 typedef struct _stat64 lib_fs_stat_t;
+typedef struct _stat64 stat;
 #else
 typedef struct stat lib_fs_stat_t;
 #endif
@@ -113,6 +115,27 @@ typedef struct stat {
 typedef struct stat lib_fs_file_info_t;
 
 #endif
+
+////
+
+typedef struct lib_file_t {
+    uint8_t     type;        // File type
+    char*       path;        // File path
+
+    ino_t       ino;         // File serial number.
+    off_t       size;        // File size in bytes.
+    dev_t       dev;         // ID of the device containing the file.
+    dev_t       rdev;        // Device ID.
+    uid_t       uid;         // User ID of file.
+    gid_t       gid;         // Group ID of file.
+    time_t      mtime;       // Time of last data modification.
+    time_t      atime;       // Time when file data was last accessed.
+    time_t      ctime;       // Time of last file status change.
+    mode_t      mode;        // File types and permissions.
+    nlink_t     nlink;       // Number of hard links to the file.
+    blkcnt_t    blocks;      // Blocks allocated for a file.
+    blksize_t   blksize;     // Preferred I/O block size for object.    
+} lib_file_t;
 
 typedef struct lib_fs_file_t {
   int type;
