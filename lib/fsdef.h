@@ -60,7 +60,7 @@ typedef uint32_t      uid_t;         /* User IDs */
 //typedef int32_t       dev_t;         /* dev_t */
 typedef uint16_t      mode_t;        /* Some file attributes */
 
-typedef int64_t       off_t;         /* Used for file sizes */
+//typedef int64_t       off_t;         /* Used for file sizes */
 typedef uint16_t      nlink_t;       /* Link count */
 typedef int64_t       blkcnt_t;      /* Total blocks */
 typedef int32_t       blksize_t;     /* Preferred block size */
