@@ -219,13 +219,13 @@ uint64_t lib_fs_file_get_size(lib_fs_file_t* file);
 
 int lib_fs_file_get_mode(lib_fs_file_t* file);
 
-long lib_fs_file_get_atime(lib_fs_file_t* file);
+time_t lib_fs_file_get_atime(lib_fs_file_t* file);
 
-long lib_fs_file_get_mtime(lib_fs_file_t* file);
+time_t lib_fs_file_get_mtime(lib_fs_file_t* file);
 
-long lib_fs_file_get_ctime(lib_fs_file_t* file);
+time_t lib_fs_file_get_ctime(lib_fs_file_t* file);
 
-int lib_fs_file_is_dir(lib_fs_file_t* file);
+bool lib_fs_file_is_dir(lib_fs_file_t* file);
 
 int lib_fs_file_get_type_by_mode(int mode);
 

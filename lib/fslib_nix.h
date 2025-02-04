@@ -4,7 +4,6 @@
 #if defined __unix__ || defined __linux__ || (defined __APPLE__ && defined __MACH__)
 
 #include <errno.h>
-//#include <dirent.h>
 
 #include <fnmatch.h>
 #include <pwd.h>       /* getpwuid: passwd    */
@@ -18,85 +17,6 @@
 static int lib_fs_match_file_internal(const char* pattern, const char* name);
 
 static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode);
-
-////
-
-//// fs-dirent
-
-// static int _lib_fs_is_dir(struct dirent* file) {
-//     if (file == NULL) {
-//         return false;
-//     }
-//     return file->d_type == DT_DIR;
-// }
-
-// int lib_fs_is_dirent_dir(lib_fs_dirent_t* dirent) {
-//     if (!dirent) {
-//         return 0;
-//     }
-//     return dirent->fd->d_type == DT_DIR;
-// }
-
-// int lib_fs_get_dirent_type(lib_fs_dirent_t* dirent) {
-//     if (!dirent) {
-//         return 0;
-//     }
-//     return dirent->fd->d_type;
-// }
-
-// // [allocate]
-// lib_fs_dir_t* lib_fs_open_dir(const char* dir_name) {
-//     if (!dir_name) {
-//         return NULL;
-//     }
-//     DIR* _dir = opendir(dir_name);
-//     if (!_dir) {
-//         fprintf(stderr, "Directory not found: %s\n", dir_name);
-//         return NULL;
-//     }
-//     lib_fs_dir_t* dir = (lib_fs_dir_t*) malloc(sizeof(lib_fs_dir_t));
-//     if (!dir) {
-//         closedir(_dir);
-//         return NULL;
-//     }
-//     dir->ptr = _dir;
-//     dir->dirent = NULL;
-//     return dir;
-// }
-
-// // [allocate]
-// lib_fs_dirent_t* lib_fs_read_dir(lib_fs_dir_t* dir) {
-//     if (!dir) {
-//         return NULL;
-//     }
-//     struct dirent* fd = readdir(dir->ptr);
-//     if (!fd) {
-//         return NULL;
-//     }
-//     if (!dir->dirent) {
-//         dir->dirent = (lib_fs_dirent_t*) malloc(sizeof(lib_fs_dirent_t));
-//         dir->dirent->type = 0;
-//         dir->dirent->name = NULL;
-//     }
-//     if (!dir->dirent) {
-//         return NULL;
-//     }
-//     dir->dirent->fd = fd;
-//     dir->dirent->type = lib_fs_get_dirent_type(dir->dirent);
-//     dir->dirent->name = fd->d_name;
-//     return dir->dirent;
-// }
-
-// int lib_fs_close_dir(lib_fs_dir_t* dir) {
-//     if (!dir) {
-//         return 0;
-//     }
-//     int result = closedir(dir->ptr);
-//     // free(dir->dirent) // ???
-//     dir->dirent = NULL;
-//     free(dir);
-//     return result;
-// }
 
 ////
 

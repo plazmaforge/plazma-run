@@ -965,7 +965,7 @@ int lib_fs_file_get_mode(lib_fs_file_t* file) {
     return file->stat->st_mode;
 }
 
-static long _lib_fs_file_get_time(lib_fs_file_t* file, int index) {
+static time_t _lib_fs_file_get_time(lib_fs_file_t* file, int index) {
 
     if (!file || !file->stat) {
         return 0;
@@ -1002,19 +1002,19 @@ static long _lib_fs_file_get_time(lib_fs_file_t* file, int index) {
 
 }
 
-long lib_fs_file_get_atime(lib_fs_file_t* file) {
+time_t lib_fs_file_get_atime(lib_fs_file_t* file) {
     return _lib_fs_file_get_time(file, 1);
 }
 
-long lib_fs_file_get_mtime(lib_fs_file_t* file) {
+time_t lib_fs_file_get_mtime(lib_fs_file_t* file) {
     return _lib_fs_file_get_time(file, 2);
 }
 
-long lib_fs_file_get_ctime(lib_fs_file_t* file) {
+time_t lib_fs_file_get_ctime(lib_fs_file_t* file) {
     return _lib_fs_file_get_time(file, 3);
 }
 
-int lib_fs_file_is_dir(lib_fs_file_t* file) {
+bool lib_fs_file_is_dir(lib_fs_file_t* file) {
     if (!file) {
         return 0;
     }
@@ -1457,3 +1457,5 @@ int lib_fs_scandir(const char* dir_name, const char* pattern, lib_fs_file_t*** f
 
 // https://github.com/tronkko/dirent/tree/master
 // https://github.com/tronkko/dirent/blob/master/examples/scandir.c
+
+// https://github.com/Quintus/pathie-cpp/blob/master/src/path.cpp
