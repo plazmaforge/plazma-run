@@ -118,25 +118,36 @@ typedef struct stat lib_fs_file_info_t;
 
 #endif
 
+//////////////////////////////////////////////////////////////////////////////////
 ////
+//// File Size Max (int64_t) = 9,223,372,036,854,775,807 bytes = 8 EB (exabytes)
+//// C (int64_t)             = Java (long)
+////
+//////////////////////////////////////////////////////////////////////////////////
+
+typedef uint32_t fid_t;
+typedef uint64_t fino_t;
+
+typedef int64_t  fsize_t;
+typedef int32_t  bsize_t;
 
 typedef struct lib_file_t {
-    uint8_t     type;        // File type
-    char*       path;        // File path
+    int                  type;        // File type
+    char*                path;        // File path
 
-    ino_t       ino;         // File serial number.
-    off_t       size;        // File size in bytes.
-    dev_t       dev;         // ID of the device containing the file.
-    dev_t       rdev;        // Device ID.
-    uid_t       uid;         // User ID of file.
-    gid_t       gid;         // Group ID of file.
-    time_t      mtime;       // Time of last data modification.
-    time_t      atime;       // Time when file data was last accessed.
-    time_t      ctime;       // Time of last file status change.
-    mode_t      mode;        // File types and permissions.
-    nlink_t     nlink;       // Number of hard links to the file.
-    blkcnt_t    blocks;      // Blocks allocated for a file.
-    blksize_t   blksize;     // Preferred I/O block size for object.    
+    fino_t               ino;         // File serial number.
+    fsize_t /*uint32_t*/ size;        // File size in bytes.
+    int     /*int32_t*/  dev;         // ID of the device containing the file.
+    int     /*int32_t*/  rdev;        // Device ID.
+    fid_t   /*uint32_t*/ uid;         // User ID of file.
+    fid_t   /*uint32_t*/ gid;         // Group ID of file.
+    time_t               mtime;       // Time of last data modification.
+    time_t               atime;       // Time when file data was last accessed.
+    time_t               ctime;       // Time of last file status change.
+    int     /*uint16_t*/ mode;        // File types and permissions.
+    int     /*uint16_t*/ nlink;       // Number of hard links to the file.
+    fsize_t /*int64_t*/  blocks;      // Blocks allocated for a file.
+    bsize_t /*int32_t*/  blksize;     // Preferred I/O block size for object.
 } lib_file_t;
 
 typedef struct lib_fs_file_t {
