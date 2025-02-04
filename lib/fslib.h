@@ -37,10 +37,10 @@ typedef enum {
 } lib_fs_file_sort_t;
 
 #if (defined(__MINGW64_VERSION_MAJOR) || defined(_MSC_VER)) && !defined(_WIN64)
-typedef struct _stat32 lib_fs_stat_t;
+//typedef struct _stat32 lib_fs_stat_t;
 //typedef struct _stat32 stat;
 #elif defined(__MINGW64_VERSION_MAJOR) && defined(_WIN64)
-typedef struct _stat64 lib_fs_stat_t;
+//typedef struct _stat64 lib_fs_stat_t;
 //typedef struct _stat64 stat;
 #else
 //typedef struct stat lib_fs_stat_t;
