@@ -420,7 +420,7 @@ bool lib_fs_file_check(const char* file_name, lib_file_check_t check) {
     }
 
     if (check & LIB_FILE_CHECK_EXEC) {
-        return _lib_fs_is_executable(file_name);
+        return _lib_fs_is_exec(file_name);
     }
 
     return 0;
@@ -592,7 +592,7 @@ int _lib_fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFOR
         buf->st_mode |= S_IWUSR | S_IWGRP | S_IWOTH;
 
     if (!S_ISDIR(buf->st_mode)) {
-        if (_lib_fs_is_wexecutable(wfile_name))
+        if (_lib_fs_is_wexec(wfile_name))
             buf->st_mode |= S_IXUSR | S_IXGRP | S_IXOTH;
     }
 
