@@ -42,9 +42,9 @@ int _find_pattern(lib_ask_config_t* config, char* file_name, char* input, size_t
     //printf("file : %s\n", file_name);
 
     char* pattern = file_name;
-    lib_fs_file_t** files = NULL;
-    lib_fs_file_t* file = NULL;
-    int count = lib_fs_scandir(dir_name, pattern, &files, LIB_FS_SCANDIR_RECURSIVE, true);
+    lib_file_t** files = NULL;
+    lib_file_t* file = NULL;
+    int count = lib_fs_scandir(dir_name, pattern, &files, LIB_SCANDIR_RECURSIVE, true);
     if (count <= 0) {
         lib_fs_files_free(files);
         free(dir_name);

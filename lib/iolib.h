@@ -8,10 +8,6 @@ int lib_io_read_all_bytes(const char* file_name, char** data, size_t* size);
 
 int lib_io_read_bytes(const char* file_name, char** data, size_t size, size_t* out_size);
 
-//int lib_io_read_all_bytes(const char* file_name, char** data);
-
-//int lib_io_read_bytes(const char* file_name, char** data, size_t size);
-
 int lib_io_write_all_bytes(const char* file_name, char* data, size_t size, size_t* out_size);
 
 int lib_io_write_bytes(const char* file_name, char* data, size_t size, size_t* out_size);

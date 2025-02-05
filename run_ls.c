@@ -72,7 +72,7 @@ typedef struct run_ls_context {
 } run_ls_context;
 
 typedef struct file_entry_t {
-    lib_fs_file_t* file;
+    lib_file_t* file;
     char* path;
     char* name;
     int nlink;
@@ -256,7 +256,7 @@ static int _print_line_separator(run_ls_context* context) {
 static int _print_line_csv(run_ls_context* context, file_entry_t* entry) {
 
     run_ls_config* config = context->config;
-    lib_fs_file_t* file = entry->file;
+    lib_file_t* file = entry->file;
 
     int pos = 0;
     bool has = false;
@@ -358,7 +358,7 @@ static int _print_line_tsv(run_ls_context* context, file_entry_t* entry) {
 static int _print_line_json(run_ls_context* context, file_entry_t* entry) {
 
     run_ls_config* config = context->config;
-    lib_fs_file_t* file = entry->file;
+    lib_file_t* file = entry->file;
 
     int pos = 0;
     bool has = false;
@@ -472,7 +472,7 @@ static int _print_line_json(run_ls_context* context, file_entry_t* entry) {
 static int _print_line_xml(run_ls_context* context, file_entry_t* entry) {
 
     run_ls_config* config = context->config;
-    lib_fs_file_t* file = entry->file;
+    lib_file_t* file = entry->file;
 
     int pos = 0;
     bool has = false;
@@ -589,7 +589,7 @@ static int _print_line_xml(run_ls_context* context, file_entry_t* entry) {
 static int _print_line_fix(run_ls_context* context, file_entry_t* entry) {
 
     run_ls_config* config = context->config;
-    lib_fs_file_t* file = entry->file;
+    lib_file_t* file = entry->file;
 
     int pos  = 0;
     bool has = false;
@@ -701,9 +701,9 @@ int run_ls(run_ls_context* context) {
     //printf("Current Dir: %s\n", dir_name);
 
     char* pattern = NULL;
-    lib_fs_file_t** files = NULL;
-    lib_fs_file_t* file = NULL;
-    int file_count = lib_fs_scandir(dir_name, pattern, &files, LIB_FS_SCANDIR_FLAT, false);
+    lib_file_t** files = NULL;
+    lib_file_t* file = NULL;
+    int file_count = lib_fs_scandir(dir_name, pattern, &files, LIB_SCANDIR_FLAT, false);
 
     if (file_count <= 0) {
         lib_fs_files_free(files);

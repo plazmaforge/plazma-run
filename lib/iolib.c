@@ -132,7 +132,7 @@ static long _file_size(const char* file_name, FILE* file) {
   return size;
 }
 
-static void _lib_io_file_data_init(lib_fs_file_data_t* file_data) {
+static void _lib_io_file_data_init(lib_file_data_t* file_data) {
   if (!file_data) {
     return;
   }
@@ -140,8 +140,8 @@ static void _lib_io_file_data_init(lib_fs_file_data_t* file_data) {
   file_data->size = 0;
 }
 
-static lib_fs_file_data_t* _lib_io_file_data_new() {
-  lib_fs_file_data_t* file_data = (lib_fs_file_data_t*) malloc(sizeof(lib_fs_file_data_t));
+static lib_file_data_t* _lib_io_file_data_new() {
+  lib_file_data_t* file_data = (lib_file_data_t*) malloc(sizeof(lib_file_data_t));
   if (!file_data) {
     return NULL;
   }
@@ -149,8 +149,8 @@ static lib_fs_file_data_t* _lib_io_file_data_new() {
   return file_data;
 }
 
-static lib_fs_file_data_t** _lib_io_file_list_new(size_t size) {
-  return (lib_fs_file_data_t**) calloc(size, sizeof(lib_fs_file_data_t*));
+static lib_file_data_t** _lib_io_file_list_new(size_t size) {
+  return (lib_file_data_t**) calloc(size, sizeof(lib_file_data_t*));
 }
 
 ////
@@ -366,21 +366,6 @@ int lib_io_read_bytes(const char* file_name, char** data, size_t size, size_t* o
   return _lib_io_read(&mode, file_name, data, size, out_size);
 }
 
-/*
-int lib_io_read_all_bytes(const char* file_name, char** data) {
-  lib_io_mode_t mode;
-  _init_mode(&mode);
-  mode.read_all = true; // for load all data 
-  return _lib_io_read(&mode, file_name, data, 0, NULL);
-}
-
-int lib_io_read_bytes(const char* file_name, char** data, size_t size) {
-  lib_io_mode_t mode;
-  _init_mode(&mode);
-  return _lib_io_read(&mode, file_name, data, size, NULL);
-}
-*/
-
 ////
 
 int lib_io_write_all_bytes(const char* file_name, char* data, size_t size, size_t* out_size) {
@@ -397,7 +382,8 @@ int lib_io_write_bytes(const char* file_name, char* data, size_t size, size_t* o
 
 ////
 
-void lib_fs_file_data_free(lib_fs_file_data_t* file_data) {
+// [fslib]
+void lib_fs_file_data_free(lib_file_data_t* file_data) {
     if (!file_data) {
         return;
     }
@@ -405,7 +391,7 @@ void lib_fs_file_data_free(lib_fs_file_data_t* file_data) {
     free(file_data);
 }
 
-void lib_fs_file_data_list_free(lib_fs_file_data_t** file_list, int file_count) {
+void lib_fs_file_data_list_free(lib_file_data_t** file_list, int file_count) {
     if (!file_list) {
         return;
     }
@@ -439,13 +425,13 @@ int lib_io_read_cat_bytes(const char** file_names, size_t file_count, char** dat
         return 0;
     }
 
-    lib_fs_file_data_t** file_list = _lib_io_file_list_new(file_count);
+    lib_file_data_t** file_list = _lib_io_file_list_new(file_count);
     if (!file_list) {
         // error: mem
         return -1;
     }
 
-    lib_fs_file_data_t* file_data = NULL;
+    lib_file_data_t* file_data = NULL;
     const char* file_name = NULL;
     size_t total_size = 0;
 

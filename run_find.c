@@ -19,7 +19,7 @@ static void _print_file_path(const char* path) {
     printf("%s\n", path);
 }
 
-static void _print_file(lib_fs_file_t* file) {
+static void _print_file(lib_file_t* file) {
     if (!file) {
         return;
     }
@@ -33,9 +33,9 @@ static void _print_file(lib_fs_file_t* file) {
 
 static void _find_pattern(const char* dir_name, const char* pattern) {
 
-    lib_fs_file_t** files = NULL;
-    lib_fs_file_t* file = NULL;
-    int count = lib_fs_scandir(dir_name, pattern, &files, LIB_FS_SCANDIR_RECURSIVE, true);
+    lib_file_t** files = NULL;
+    lib_file_t* file = NULL;
+    int count = lib_fs_scandir(dir_name, pattern, &files, LIB_SCANDIR_RECURSIVE, true);
 
     printf("count: %d\n", count);
 

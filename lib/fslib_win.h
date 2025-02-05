@@ -93,7 +93,7 @@ static char* getUserName() {
 static char* _uname = NULL;
 static char* _gname = NULL;
 
-char* lib_fs_file_get_uname(lib_fs_file_t* file) {
+char* lib_fs_file_get_uname(lib_file_t* file) {
     if (_uname) {
         return _uname;
     }
@@ -104,7 +104,7 @@ char* lib_fs_file_get_uname(lib_fs_file_t* file) {
     return _uname;
 }
 
-char* lib_fs_file_get_gname(lib_fs_file_t* file) {    
+char* lib_fs_file_get_gname(lib_file_t* file) {    
     if (_gname) {
         return _gname;
     }

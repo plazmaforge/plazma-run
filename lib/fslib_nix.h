@@ -48,14 +48,14 @@ static char* lib_fs_get_gname_by_id(gid_t gid) {
     return g ? g->gr_name : NULL;
 }
 
-char* lib_fs_file_get_uname(lib_fs_file_t* file) {
+char* lib_fs_file_get_uname(lib_file_t* file) {
     if (!file || !file->stat) {
         return NULL;
     }
     return lib_fs_get_uname_by_id(file->stat->st_uid);
 }
 
-char* lib_fs_file_get_gname(lib_fs_file_t* file) {    
+char* lib_fs_file_get_gname(lib_file_t* file) {    
     if (!file || !file->stat) {
         return NULL;
     }
