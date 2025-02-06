@@ -1,8 +1,8 @@
 #include <string.h>
-#include <stdlib.h>
+//#include <stdlib.h>
+//#include <stdint.h>
 #include <stdio.h>
 
-//#include <stdint.h>
 
 #ifdef _WIN32
 #include <sys/utime.h>
@@ -29,48 +29,6 @@ int lib_fs_match_file(const char* name, const char* pattern) {
 }
 
 ////////////////////
-
-#ifdef _WIN32
-static int to_errno_win(DWORD error_code) {
-  switch (error_code) {
-    case ERROR_ACCESS_DENIED:
-      return EACCES;
-      break;
-    case ERROR_ALREADY_EXISTS:
-    case ERROR_FILE_EXISTS:
-      return EEXIST;
-    case ERROR_FILE_NOT_FOUND:
-      return ENOENT;
-      break;
-    case ERROR_INVALID_FUNCTION:
-      return EFAULT;
-      break;
-    case ERROR_INVALID_HANDLE:
-      return EBADF;
-      break;
-    case ERROR_INVALID_PARAMETER:
-      return EINVAL;
-      break;
-    case ERROR_LOCK_VIOLATION:
-    case ERROR_SHARING_VIOLATION:
-      return EACCES;
-      break;
-    case ERROR_NOT_ENOUGH_MEMORY:
-    case ERROR_OUTOFMEMORY:
-      return ENOMEM;
-      break;
-    case ERROR_NOT_SAME_DEVICE:
-      return EXDEV;
-      break;
-    case ERROR_PATH_NOT_FOUND:
-      return ENOENT; /* or ELOOP, or ENAMETOOLONG */
-      break;
-    default:
-      return EIO;
-      break;
-    }
-}
-#endif
 
 ////
 
@@ -605,93 +563,16 @@ int _lib_fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFOR
     return 0;
 }
 
-int _lib_fs_wstat(const wchar_t* wfile_name, lib_stat_t* buf) {
-
-    if (!wfile_name || !buf) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    BY_HANDLE_FILE_INFORMATION handle_info;
-    //FILE_STANDARD_INFO std_info;
-
-    DWORD attributes;
-    DWORD open_flags;
-    DWORD error_code;
-    HANDLE file_handle;
-    BOOL success;
-
-    //int is_symlink = 0;
-    int is_directory = 0;
-
-    attributes = GetFileAttributesW(wfile_name);
-
-    if (attributes == INVALID_FILE_ATTRIBUTES) {
-        error_code = GetLastError();
-        errno = to_errno_win(error_code);
-        return -1;
-    }
-
-    //is_symlink = (attributes & FILE_ATTRIBUTE_REPARSE_POINT) == FILE_ATTRIBUTE_REPARSE_POINT;
-    is_directory = (attributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY;
-
-    open_flags = FILE_ATTRIBUTE_NORMAL;
-
-    // if (for_symlink && is_symlink)
-    //  open_flags |= FILE_FLAG_OPEN_REPARSE_POINT;
-
-    if (is_directory)
-        open_flags |= FILE_FLAG_BACKUP_SEMANTICS;
-
-    file_handle = CreateFileW(wfile_name, FILE_READ_ATTRIBUTES | FILE_READ_EA,
-                              FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                              NULL, OPEN_EXISTING,
-                              open_flags,
-                              NULL);
-
-    if (file_handle == INVALID_HANDLE_VALUE) {
-        error_code = GetLastError();
-        errno = to_errno_win(error_code);
-        return -1;
-    }
-
-    success = GetFileInformationByHandle(file_handle, &handle_info);
-    
-    if (!success) {
-        error_code = GetLastError();
-        errno = to_errno_win(error_code);
-        CloseHandle(file_handle);
-        return -1;
-    }
-
-    int retval = _lib_fs_fill_stat_info(wfile_name, &handle_info, buf);
-
-    CloseHandle(file_handle);
-
-    return retval;
-
-}
-
-int _lib_fs_stat(const char* file_name, lib_stat_t* buf) {
-    wchar_t *wfile_name = lib_mbs_to_wcs(file_name);
-    if (!wfile_name) {
-        errno = EINVAL;
-        return -1;
-    }
-    int retval = _lib_fs_wstat(wfile_name, buf);
-    free(wfile_name);
-    return retval;
-}
 
 #endif
 
-int lib_fs_stat(const char* path, lib_stat_t* buf) {
-    #ifdef _WIN32
-    return _lib_fs_stat(path, buf);
-    #else
-    return stat(path, buf);
-    #endif
-}
+// int lib_fs_stat(const char* path, lib_stat_t* buf) {
+//     #ifdef _WIN32
+//     return _lib_fs_stat(path, buf);
+//     #else
+//     return stat(path, buf);
+//     #endif
+// }
 
 ////////////////////////////////
 
@@ -786,7 +667,7 @@ int lib_fs_remove_dir(const char* path) {
     return lib_fs_rmdir(path);
 }
 
-////////
+// fs-stat
 
 lib_stat_t* lib_fs_stat_new() {
     lib_stat_t* stat = (lib_stat_t*) malloc(sizeof(lib_stat_t));
@@ -795,6 +676,8 @@ lib_stat_t* lib_fs_stat_new() {
     }
     return stat;
 }
+
+// fs-file
 
 lib_file_t* lib_fs_get_file(const char* file_name) {
     if (!file_name) {

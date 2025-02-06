@@ -1,7 +1,7 @@
 #ifndef PLAZMA_LIB_FSPATH_H
 #define PLAZMA_LIB_FSPATH_H
 
-#include <stdbool.h>
+//#include <stdbool.h>
 
 #include "fsdef.h"
 

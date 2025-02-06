@@ -16,6 +16,7 @@ rem compile
 
 %CC% %CFLAGS% lib/fspath.c -o fspath.o
 %CC% %CFLAGS% lib/fsdirent.c -o fsdirent.o
+%CC% %CFLAGS% lib/fsfile.c -o fsfile.o
 %CC% %CFLAGS% lib/fslib.c -o fslib.o
 
 %CC% %CFLAGS% lib/iodef.c -o iodef.o
@@ -101,15 +102,15 @@ rem link
 %CC% %LDFLAGS% getopt.o iodef.o iolib.o dmplib.o run_dump.o -o run-dump.exe
 %CC% %LDFLAGS% iodef.o iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o run_cat.o -o run-cat.exe
 %CC% %LDFLAGS% getopt.o strlib.o wstrlib.o syscpu.o sysos.o sysuser.o syslocale.o syslocale_os.o sysinfo.o syslib.o run_sysinfo.o -o run-sysinfo.exe %LIBS%
-%CC% %LDFLAGS% getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_find.o -o run-find.exe %LIBS%
-%CC% %LDFLAGS% getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_ask.o -o run-ask.exe %LIBS%
-%CC% %LDFLAGS% getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o iodef.o fmtlib.o syslocale.o syslocale_os.o syslib.o run_ls.o -o run-ls.exe
+%CC% %LDFLAGS% getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fsfile.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_find.o -o run-find.exe %LIBS%
+%CC% %LDFLAGS% getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fsfile.o fslib.o iolib.o asklib.o syslocale.o syslocale_os.o syslib.o run_ask.o -o run-ask.exe %LIBS%
+%CC% %LDFLAGS% getopt.o strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fsfile.o fslib.o iodef.o fmtlib.o syslocale.o syslocale_os.o syslib.o run_ls.o -o run-ls.exe
 
-%CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o syslocale.o syslocale_os.o syslib.o run_mkdir.o -o run-mkdir.exe
-%CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o syslocale.o syslocale_os.o syslib.o run_rmdir.o -o run-rmdir.exe
-%CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o syslocale.o syslocale_os.o syslib.o run_mv.o -o run-mv.exe
-%CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o syslocale.o syslocale_os.o syslib.o run_rm.o -o run-rm.exe
-%CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fslib.o syslocale.o syslocale_os.o syslib.o run_cp.o -o run-cp.exe
+%CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fsfile.o fslib.o syslocale.o syslocale_os.o syslib.o run_mkdir.o -o run-mkdir.exe
+%CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fsfile.o fslib.o syslocale.o syslocale_os.o syslib.o run_rmdir.o -o run-rmdir.exe
+%CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fsfile.o fslib.o syslocale.o syslocale_os.o syslib.o run_mv.o -o run-mv.exe
+%CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fsfile.o fslib.o syslocale.o syslocale_os.o syslib.o run_rm.o -o run-rm.exe
+%CC% %LDFLAGS% strlib.o wstrlib.o pathlib.o wclib.o fspath.o fsdirent.o fsfile.o fslib.o syslocale.o syslocale_os.o syslib.o run_cp.o -o run-cp.exe
 
 %CC% %LDFLAGS% common.o debug.o iodef.o strlib.o socketlib.o nflib.o run_get.o -o run-get.exe %LIBS%
 
