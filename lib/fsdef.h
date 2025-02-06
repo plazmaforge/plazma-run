@@ -53,15 +53,4 @@
 #define LIB_FS_SOCK         12
 #define LIB_FS_WHT          14
 
-#ifdef _WIN32
-
-/* File descriptor    */
-typedef HANDLE lib_fd_t;
-#else
-
-/* File descriptor    */
-typedef int lib_fd_t;     
-
-#endif
-
 #endif // PLAZMA_LIB_FSDEF_H

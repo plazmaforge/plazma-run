@@ -1,8 +1,6 @@
 #ifndef PLAZMA_LIB_FSLIB_H
 #define PLAZMA_LIB_FSLIB_H
 
-//#include <stdint.h>
-//#include <stdbool.h>
 #include <sys/stat.h>
 
 #include "fspath.h"

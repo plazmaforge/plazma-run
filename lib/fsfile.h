@@ -23,6 +23,8 @@ typedef struct stat lib_stat_t;
 
 #ifdef _WIN32
 #include <windows.h>
+#include <errno.h>
+
 #include "strlib.h"
 #include "wstrlib.h"
 
@@ -173,6 +175,18 @@ static int to_errno_win(DWORD error_code) {
       break;
     }
 }
+#endif
+
+
+#ifdef _WIN32
+
+/* File descriptor    */
+typedef HANDLE lib_fd_t;
+#else
+
+/* File descriptor    */
+typedef int lib_fd_t;     
+
 #endif
 
 //// fs-stat
