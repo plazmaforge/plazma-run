@@ -7,10 +7,6 @@
 #include "fsdirent.h"
 #include "fsfile.h"
 
-//#ifdef _WIN32
-//#include <windows.h>
-//#endif
-
 typedef enum {
   LIB_FILE_CHECK_REG   = 1 << 0,
   LIB_FILE_CHECK_LNK   = 1 << 1,

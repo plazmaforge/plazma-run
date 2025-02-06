@@ -10,9 +10,6 @@
 #endif
 #endif
 
-//#include <windows.h>
-//#include <errno.h>
-//#include <wchar.h>
 #include <io.h>
 
 #include "wstrlib.h"
