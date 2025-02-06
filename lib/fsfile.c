@@ -9,7 +9,74 @@
 
 #ifdef _WIN32
 
-int _lib_fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATION* handle_info, lib_stat_t* buf) {
+static const wchar_t* _lib_fs_wfind_file_ext(const wchar_t* wfile_name) {
+    if (!wfile_name) {
+        return 0;
+    }
+
+    const wchar_t* name = wfile_name;
+    const wchar_t* dot = NULL;
+
+    do {
+        wchar_t* last_dot = wcschr(name, L'.');
+        if (last_dot == NULL)
+            break;
+
+        dot = last_dot;
+        name = &last_dot[1];
+    } while (1);
+
+    return dot;
+}
+
+static int _lib_fs_is_wexec(const wchar_t* wfile_name) {
+    if (!wfile_name) {
+        return 0;
+    }
+    const wchar_t* wfile_ext = _lib_fs_wfind_file_ext(wfile_name);
+    if (!wfile_ext) {
+        return 0;
+    }
+    return (wcsicmp(wfile_ext, L".exe") == 0 ||
+            wcsicmp(wfile_ext, L".com") == 0 ||
+            wcsicmp(wfile_ext, L".bat") == 0 ||
+            wcsicmp(wfile_ext, L".cmd") == 0);
+}
+
+/*
+ * https://support.microsoft.com/en-ca/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
+ *
+ * FT = UT * 10000000 + 116444736000000000.
+ * 
+ * UT = (FT - 116444736000000000) / 10000000.
+ * 
+ * Converts FILETIME to unix epoch time in form
+ * of a signed 64-bit integer (can be negative).
+ *
+ */
+
+static int64_t _lib_fs_ftime_to_utime(const FILETIME *ft/*, int32_t* nsec*/) {
+
+  int64_t result;
+
+  /* 1 unit of FILETIME is 100ns */
+  const int64_t hundreds_of_usec_per_sec = 10000000;
+
+  /* The difference between January 1, 1601 UTC (FILETIME epoch) and UNIX epoch
+   * in hundreds of nanoseconds.
+   */
+  const int64_t filetime_unix_epoch_offset = 116444736000000000;
+
+  result = ((int64_t) ft->dwLowDateTime) | (((int64_t) ft->dwHighDateTime) << 32);
+  result -= filetime_unix_epoch_offset;
+
+  //if (nsec)
+  //  *nsec = (result % hundreds_of_usec_per_sec) * 100;
+
+  return result / hundreds_of_usec_per_sec;
+}
+
+static int _lib_fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATION* handle_info, lib_stat_t* buf) {
 
     if (!wfile_name || !handle_info || !buf) {
         errno = EINVAL;
