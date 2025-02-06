@@ -9,6 +9,50 @@
 
 #ifdef _WIN32
 
+int _lib_fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATION* handle_info, lib_stat_t* buf) {
+
+    if (!wfile_name || !handle_info || !buf) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    buf->st_ino = 0;
+    buf->st_mode = 0;
+    buf->st_uid = 0;
+    buf->st_gid = 0;
+
+    if (handle_info->dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) {
+        buf->st_mode |= S_IFDIR | S_IXUSR | S_IXGRP | S_IXOTH;
+    } else if (handle_info->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+        buf->st_mode |= S_IFLNK;
+    } else {
+        buf->st_mode |= S_IFREG;
+    }
+
+    /* S_IFCHR - unsupported */
+    /* S_IFIFO - unsupported */
+    /* S_IFBLK - unsupported */
+
+    /* MS stat() behaviour,  */
+    buf->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
+
+    if ((handle_info->dwFileAttributes & FILE_ATTRIBUTE_READONLY) != FILE_ATTRIBUTE_READONLY)
+        buf->st_mode |= S_IWUSR | S_IWGRP | S_IWOTH;
+
+    if (!S_ISDIR(buf->st_mode)) {
+        if (_lib_fs_is_wexec(wfile_name))
+            buf->st_mode |= S_IXUSR | S_IXGRP | S_IXOTH;
+    }
+
+    buf->st_nlink = handle_info->nNumberOfLinks;
+    buf->st_size = (((uint64_t) handle_info->nFileSizeHigh) << 32) | handle_info->nFileSizeLow;
+    buf->st_ctime = _lib_fs_ftime_to_utime(&handle_info->ftCreationTime);
+    buf->st_mtime = _lib_fs_ftime_to_utime(&handle_info->ftLastWriteTime);
+    buf->st_atime = _lib_fs_ftime_to_utime(&handle_info->ftLastAccessTime);
+
+    return 0;
+}
+
 int _lib_fs_wstat(const wchar_t* wfile_name, lib_stat_t* buf) {
 
     if (!wfile_name || !buf) {
