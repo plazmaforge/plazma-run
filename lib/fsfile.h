@@ -139,90 +139,45 @@ typedef struct lib_file_data_t {
 
 // errno
 
-static int to_errno_win(DWORD error_code) {
-  switch (error_code) {
-    case ERROR_ACCESS_DENIED:
-      return EACCES;
-      break;
-    case ERROR_ALREADY_EXISTS:
-    case ERROR_FILE_EXISTS:
-      return EEXIST;
-    case ERROR_FILE_NOT_FOUND:
-      return ENOENT;
-      break;
-    case ERROR_INVALID_FUNCTION:
-      return EFAULT;
-      break;
-    case ERROR_INVALID_HANDLE:
-      return EBADF;
-      break;
-    case ERROR_INVALID_PARAMETER:
-      return EINVAL;
-      break;
-    case ERROR_LOCK_VIOLATION:
-    case ERROR_SHARING_VIOLATION:
-      return EACCES;
-      break;
-    case ERROR_NOT_ENOUGH_MEMORY:
-    case ERROR_OUTOFMEMORY:
-      return ENOMEM;
-      break;
-    case ERROR_NOT_SAME_DEVICE:
-      return EXDEV;
-      break;
-    case ERROR_PATH_NOT_FOUND:
-      return ENOENT; /* or ELOOP, or ENAMETOOLONG */
-      break;
-    default:
-      return EIO;
-      break;
-    }
-}
-
-
-#ifndef S_ISLNK
-#  ifdef _S_ISLNK
-#    define S_ISLNK(m) _S_ISLNK(m)
-#  else
-#    ifdef _S_IFLNK
-#      define S_ISLNK(m) ((m & S_IFMT) == _S_IFLNK)
-#    else
-#      ifdef S_IFLNK
-#	     define S_ISLNK(m) ((m & S_IFMT) == S_IFLNK)
-#      else
-#        define _S_IFLNK 0x1200
-#        define S_IFLNK _S_IFLNK
-#	     define S_ISLNK(m) ((m & S_IFMT) == S_IFLNK)
-#      endif
-#    endif
-#  endif
-#endif
-
-#  ifdef _MSC_VER
-#    ifndef S_IXUSR
-#      define _S_IRUSR _S_IREAD
-#      define _S_IWUSR _S_IWRITE
-#      define _S_IXUSR _S_IEXEC
-#      define S_IRUSR _S_IRUSR
-#      define S_IWUSR _S_IWUSR
-#      define S_IXUSR _S_IXUSR
-#      define S_IRGRP (S_IRUSR >> 3)
-#      define S_IWGRP (S_IWUSR >> 3)
-#      define S_IXGRP (S_IXUSR >> 3)
-#      define S_IROTH (S_IRGRP >> 3)
-#      define S_IWOTH (S_IWGRP >> 3)
-#      define S_IXOTH (S_IXGRP >> 3)
-#    endif
-#    ifndef S_ISDIR
-#      define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
-#    endif
-#    ifndef S_ISREG
-#      define S_ISREG(m) (((m) & _S_IFMT) == _S_IFREG)
-#    endif
-#    ifndef S_ISLNK
-#      define S_ISLNK(m) (((m) & _S_IFMT) == _S_IFLNK)
-#    endif
-#  endif
+// static int to_errno_win(DWORD error_code) {
+//   switch (error_code) {
+//     case ERROR_ACCESS_DENIED:
+//       return EACCES;
+//       break;
+//     case ERROR_ALREADY_EXISTS:
+//     case ERROR_FILE_EXISTS:
+//       return EEXIST;
+//     case ERROR_FILE_NOT_FOUND:
+//       return ENOENT;
+//       break;
+//     case ERROR_INVALID_FUNCTION:
+//       return EFAULT;
+//       break;
+//     case ERROR_INVALID_HANDLE:
+//       return EBADF;
+//       break;
+//     case ERROR_INVALID_PARAMETER:
+//       return EINVAL;
+//       break;
+//     case ERROR_LOCK_VIOLATION:
+//     case ERROR_SHARING_VIOLATION:
+//       return EACCES;
+//       break;
+//     case ERROR_NOT_ENOUGH_MEMORY:
+//     case ERROR_OUTOFMEMORY:
+//       return ENOMEM;
+//       break;
+//     case ERROR_NOT_SAME_DEVICE:
+//       return EXDEV;
+//       break;
+//     case ERROR_PATH_NOT_FOUND:
+//       return ENOENT; /* or ELOOP, or ENAMETOOLONG */
+//       break;
+//     default:
+//       return EIO;
+//       break;
+//     }
+// }
 
 
 #endif
