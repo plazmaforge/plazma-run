@@ -23,11 +23,6 @@ typedef struct stat lib_stat_t;
 
 #ifdef _WIN32
 
-//#include <windows.h>
-//#include <errno.h>
-//#include "strlib.h"
-//#include "wstrlib.h"
-
 /*
 typedef struct _BY_HANDLE_FILE_INFORMATION {
   DWORD    dwFileAttributes;
@@ -133,54 +128,6 @@ typedef struct lib_file_data_t {
     char* data;
     size_t size;
 } lib_file_data_t;
-
-
-#ifdef _WIN32
-
-// errno
-
-// static int to_errno_win(DWORD error_code) {
-//   switch (error_code) {
-//     case ERROR_ACCESS_DENIED:
-//       return EACCES;
-//       break;
-//     case ERROR_ALREADY_EXISTS:
-//     case ERROR_FILE_EXISTS:
-//       return EEXIST;
-//     case ERROR_FILE_NOT_FOUND:
-//       return ENOENT;
-//       break;
-//     case ERROR_INVALID_FUNCTION:
-//       return EFAULT;
-//       break;
-//     case ERROR_INVALID_HANDLE:
-//       return EBADF;
-//       break;
-//     case ERROR_INVALID_PARAMETER:
-//       return EINVAL;
-//       break;
-//     case ERROR_LOCK_VIOLATION:
-//     case ERROR_SHARING_VIOLATION:
-//       return EACCES;
-//       break;
-//     case ERROR_NOT_ENOUGH_MEMORY:
-//     case ERROR_OUTOFMEMORY:
-//       return ENOMEM;
-//       break;
-//     case ERROR_NOT_SAME_DEVICE:
-//       return EXDEV;
-//       break;
-//     case ERROR_PATH_NOT_FOUND:
-//       return ENOENT; /* or ELOOP, or ENAMETOOLONG */
-//       break;
-//     default:
-//       return EIO;
-//       break;
-//     }
-// }
-
-
-#endif
 
 
 #ifdef _WIN32

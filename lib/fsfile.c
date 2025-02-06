@@ -2,7 +2,7 @@
 #include "strlib.h"
 
 #ifdef _WIN32
-#include <windows.h>
+//#include <windows.h>
 #include "strlib.h"
 #include "wstrlib.h"
 #else

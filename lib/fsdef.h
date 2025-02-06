@@ -8,9 +8,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
-//#include <string.h>
-//#include "strlib.h"
-//#include "wstrlib.h"
+#include <wchar.h>
 #endif
 
 #define LIB_FS_DIR_SEPARATOR_NIX '/'
@@ -104,6 +102,7 @@
 #  endif
 
 
+// errno
 
 static int to_errno_win(DWORD error_code) {
   switch (error_code) {
@@ -144,7 +143,6 @@ static int to_errno_win(DWORD error_code) {
       break;
     }
 }
-
 
 #endif
 

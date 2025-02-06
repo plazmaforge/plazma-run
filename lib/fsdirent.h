@@ -2,7 +2,7 @@
 #define PLAZMA_LIB_FSDIRENT_H
 
 #ifdef _WIN32
-#include <windows.h>
+//#include <windows.h>
 #else
 #include <dirent.h>
 #endif
