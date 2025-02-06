@@ -127,18 +127,6 @@ bool lib_fs_file_is_dir(lib_file_t* file);
 
 int lib_fs_file_get_type_by_mode(int mode);
 
-////
-
-lib_file_t* lib_fs_file_new();
-
-void lib_fs_file_free(lib_file_t* file);
-
-void lib_fs_files_free(lib_file_t** files);
-
-int lib_fs_files_init(lib_file_t*** files, size_t size);
-
-int lib_fs_files_reinit(lib_file_t*** files, size_t size);
-
 //// fs-scan
 
 int lib_fs_scandir(const char* dir_name, const char* pattern, lib_file_t*** files, int max_depth, int file_only);
