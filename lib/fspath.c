@@ -660,3 +660,57 @@ const char* lib_fs_skip_root(const char* path) {
 
     return NULL;
 }
+
+////
+
+#ifdef _WIN32
+
+const wchar_t* lib_fs_wfind_file_ext(const wchar_t* wpath) {
+    if (!wpath) {
+        return 0;
+    }
+
+    const wchar_t* name = wpath;
+    const wchar_t* dot = NULL;
+
+    do {
+        wchar_t* last_dot = wcschr(name, L'.');
+        if (last_dot == NULL)
+            break;
+
+        dot = last_dot;
+        name = &last_dot[1];
+    } while (1);
+
+    return dot;
+}
+
+bool lib_fs_is_wexec_ext(const wchar_t* wpath) {
+    if (!wpath) {
+        return false;
+    }
+    const wchar_t* wext = lib_fs_wfind_file_ext(wpath);
+    if (!wext) {
+        return false;
+    }
+    return (wcsicmp(wext, L".exe") == 0 ||
+            wcsicmp(wext, L".com") == 0 ||
+            wcsicmp(wext, L".bat") == 0 ||
+            wcsicmp(wext, L".cmd") == 0);
+}
+
+bool lib_fs_is_exec_ext(const char* path) {
+    if (!path) {
+        return false;
+    }
+    const char* ext = lib_fs_find_file_ext(path);
+    if (!ext) {
+        return false;
+    }        
+    return (_stricmp(ext, ".exe") == 0 ||
+            _stricmp(ext, ".cmd") == 0 ||
+            _stricmp(ext, ".bat") == 0 ||
+            _stricmp(ext, ".com") == 0);
+}
+
+#endif

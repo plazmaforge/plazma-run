@@ -35,15 +35,15 @@ int lib_fs_match_file(const char* name, const char* pattern);
 
 //// fs-check
 
-bool lib_fs_exists(const char* file_name);
+bool lib_fs_exists(const char* path);
 
-bool lib_fs_is_reg(const char* file_name);
+bool lib_fs_is_reg(const char* path);
 
-bool lib_fs_is_dir(const char* file_name);
+bool lib_fs_is_dir(const char* path);
 
-bool lib_fs_is_exec(const char* file_name);
+bool lib_fs_is_exec(const char* path);
 
-bool lib_fs_file_check(const char* file_name, lib_file_check_t check);
+bool lib_fs_file_check(const char* path, lib_file_check_t check);
 
 //// fs-cmd
 

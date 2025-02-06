@@ -10,39 +10,43 @@
 
 #ifdef _WIN32
 
-static const wchar_t* _lib_fs_wfind_file_ext(const wchar_t* wfile_name) {
-    if (!wfile_name) {
-        return 0;
-    }
+// static const wchar_t* _lib_fs_wfind_ext(const wchar_t* wpath) {
+//     if (!wpath) {
+//         return 0;
+//     }
 
-    const wchar_t* name = wfile_name;
-    const wchar_t* dot = NULL;
+//     const wchar_t* name = wpath;
+//     const wchar_t* dot = NULL;
 
-    do {
-        wchar_t* last_dot = wcschr(name, L'.');
-        if (last_dot == NULL)
-            break;
+//     do {
+//         wchar_t* last_dot = wcschr(name, L'.');
+//         if (last_dot == NULL)
+//             break;
 
-        dot = last_dot;
-        name = &last_dot[1];
-    } while (1);
+//         dot = last_dot;
+//         name = &last_dot[1];
+//     } while (1);
 
-    return dot;
-}
+//     return dot;
+// }
 
-static int _lib_fs_is_wexec(const wchar_t* wfile_name) {
-    if (!wfile_name) {
-        return 0;
-    }
-    const wchar_t* wfile_ext = _lib_fs_wfind_file_ext(wfile_name);
-    if (!wfile_ext) {
-        return 0;
-    }
-    return (wcsicmp(wfile_ext, L".exe") == 0 ||
-            wcsicmp(wfile_ext, L".com") == 0 ||
-            wcsicmp(wfile_ext, L".bat") == 0 ||
-            wcsicmp(wfile_ext, L".cmd") == 0);
-}
+// static bool _lib_fs_is_wexec_ext(const wchar_t* wpath) {
+//     if (!wpath) {
+//         return 0;
+//     }
+//     const wchar_t* wext = _lib_fs_wfind_ext(wpath);
+//     if (!wext) {
+//         return 0;
+//     }
+//     return (wcsicmp(wext, L".exe") == 0 ||
+//             wcsicmp(wext, L".com") == 0 ||
+//             wcsicmp(wext, L".bat") == 0 ||
+//             wcsicmp(wext, L".cmd") == 0);
+// }
+
+// static bool _lib_fs_is_wexec(const wchar_t* wpath) {
+//     return lib_fs_is_wexec_ext(wpath);
+// }
 
 /*
  * https://support.microsoft.com/en-ca/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
@@ -108,7 +112,7 @@ static int _lib_fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FIL
         buf->st_mode |= S_IWUSR | S_IWGRP | S_IWOTH;
 
     if (!S_ISDIR(buf->st_mode)) {
-        if (_lib_fs_is_wexec(wfile_name))
+        if (lib_fs_is_wexec_ext(wfile_name))
             buf->st_mode |= S_IXUSR | S_IXGRP | S_IXOTH;
     }
 

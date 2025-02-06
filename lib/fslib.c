@@ -25,29 +25,23 @@ int lib_fs_match_file(const char* name, const char* pattern) {
     return lib_wc_match_file(name, pattern);
 }
 
-////////////////////
+//// fs-check
 
-////
-
-//// fs-check: begin ////
-
-bool lib_fs_exists(const char* file_name) {
-    return lib_fs_file_check(file_name, LIB_FILE_CHECK_EXISTS);
+bool lib_fs_exists(const char* path) {
+    return lib_fs_file_check(path, LIB_FILE_CHECK_EXISTS);
 }
 
-bool lib_fs_is_reg(const char* file_name) {
-    return lib_fs_file_check(file_name, LIB_FILE_CHECK_REG);
+bool lib_fs_is_reg(const char* path) {
+    return lib_fs_file_check(path, LIB_FILE_CHECK_REG);
 }
 
-bool lib_fs_is_dir(const char* file_name) {
-    return lib_fs_file_check(file_name, LIB_FILE_CHECK_DIR);
+bool lib_fs_is_dir(const char* path) {
+    return lib_fs_file_check(path, LIB_FILE_CHECK_DIR);
 }
 
-bool lib_fs_is_exec(const char* file_name) {
-    return lib_fs_file_check(file_name, LIB_FILE_CHECK_EXEC);
+bool lib_fs_is_exec(const char* path) {
+    return lib_fs_file_check(path, LIB_FILE_CHECK_EXEC);
 }
-
-//// fs-check: end   ////
 
 //// fs-cmd ////
 
@@ -285,57 +279,59 @@ int lib_fs_rmdir(const char* path) {
 #endif
 }
 
-////////////////////////////////
+// fs-check
 
-#ifdef _WIN32
+// #ifdef _WIN32
 
-const wchar_t* _lib_fs_wfind_file_ext(const wchar_t* wfile_name) {
-    if (!wfile_name) {
-        return 0;
-    }
+// const wchar_t* _lib_fs_wfind_file_ext(const wchar_t* wpath) {
+//     if (!wpath) {
+//         return 0;
+//     }
 
-    const wchar_t* name = wfile_name;
-    const wchar_t* dot = NULL;
+//     const wchar_t* name = wpath;
+//     const wchar_t* dot = NULL;
 
-    do {
-        wchar_t* last_dot = wcschr(name, L'.');
-        if (last_dot == NULL)
-            break;
+//     do {
+//         wchar_t* last_dot = wcschr(name, L'.');
+//         if (last_dot == NULL)
+//             break;
 
-        dot = last_dot;
-        name = &last_dot[1];
-    } while (1);
+//         dot = last_dot;
+//         name = &last_dot[1];
+//     } while (1);
 
-    return dot;
-}
+//     return dot;
+// }
 
-int _lib_fs_is_wexec(const wchar_t* wfile_name) {
-    if (!wfile_name) {
-        return 0;
-    }
-    const wchar_t* wfile_ext = _lib_fs_wfind_file_ext(wfile_name);
-    if (!wfile_ext) {
-        return 0;
-    }
-    return (wcsicmp(wfile_ext, L".exe") == 0 ||
-            wcsicmp(wfile_ext, L".com") == 0 ||
-            wcsicmp(wfile_ext, L".bat") == 0 ||
-            wcsicmp(wfile_ext, L".cmd") == 0);
-}
+// static bool _lib_fs_is_wexec(const wchar_t* wpath) {
+//     if (!wpath) {
+//         return 0;
+//     }
+//     const wchar_t* wext = _lib_fs_wfind_file_ext(wpath);
+//     if (!wext) {
+//         return 0;
+//     }
+//     return (wcsicmp(wext, L".exe") == 0 ||
+//             wcsicmp(wext, L".com") == 0 ||
+//             wcsicmp(wext, L".bat") == 0 ||
+//             wcsicmp(wext, L".cmd") == 0);
+// }
 
-int _lib_fs_is_exec(const char* file_name) {
-    if (!file_name) {
-        return 0;
-    }
-    const char* file_ext = lib_fs_find_file_ext(file_name);
-    if (!file_ext)
-        return 0;
-    return (_stricmp(file_ext, ".exe") == 0 ||
-            _stricmp(file_ext, ".cmd") == 0 ||
-            _stricmp(file_ext, ".bat") == 0 ||
-            _stricmp(file_ext, ".com") == 0);
-}
-#endif
+// static bool _lib_fs_is_exec(const char* path) {
+//     if (!path) {
+//         return false;
+//     }
+//     const char* ext = lib_fs_find_file_ext(path);
+//     if (!ext)
+//         return 0;
+//     return (_stricmp(ext, ".exe") == 0 ||
+//             _stricmp(ext, ".cmd") == 0 ||
+//             _stricmp(ext, ".bat") == 0 ||
+//             _stricmp(ext, ".com") == 0);
+// }
+
+// #endif
+
 
 bool lib_fs_file_check(const char* file_name, lib_file_check_t check) {
     if (!file_name) {
@@ -375,7 +371,7 @@ bool lib_fs_file_check(const char* file_name, lib_file_check_t check) {
     }
 
     if (check & LIB_FILE_CHECK_EXEC) {
-        return _lib_fs_is_exec(file_name);
+        return lib_fs_is_exec_ext(file_name);
     }
 
     return 0;

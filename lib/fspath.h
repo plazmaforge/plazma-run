@@ -110,4 +110,15 @@ const char* lib_fs_skip_nondir_separators(const char* path);
 
 const char* lib_fs_skip_root(const char* path);
 
+
+#ifdef _WIN32
+
+const wchar_t* lib_fs_wfind_file_ext(const wchar_t* wpath);
+
+bool lib_fs_is_wexec_ext(const wchar_t* wpath);
+
+bool lib_fs_is_exec_ext(const char* path);
+
+#endif
+
 #endif // PLAZMA_LIB_FSPATH_H
