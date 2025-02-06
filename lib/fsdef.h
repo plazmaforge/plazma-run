@@ -8,9 +8,9 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#include <string.h>
-#include "strlib.h"
-#include "wstrlib.h"
+//#include <string.h>
+//#include "strlib.h"
+//#include "wstrlib.h"
 #endif
 
 #define LIB_FS_DIR_SEPARATOR_NIX '/'
