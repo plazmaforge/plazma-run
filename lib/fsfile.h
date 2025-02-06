@@ -22,11 +22,11 @@ typedef struct stat lib_stat_t;
 // fs-file
 
 #ifdef _WIN32
-#include <windows.h>
-#include <errno.h>
 
-#include "strlib.h"
-#include "wstrlib.h"
+//#include <windows.h>
+//#include <errno.h>
+//#include "strlib.h"
+//#include "wstrlib.h"
 
 /*
 typedef struct _BY_HANDLE_FILE_INFORMATION {

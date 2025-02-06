@@ -4,6 +4,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <errno.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <string.h>
+#include "strlib.h"
+#include "wstrlib.h"
+#endif
 
 #define LIB_FS_DIR_SEPARATOR_NIX '/'
 #define LIB_FS_DIR_SEPARATOR_STR_NIX "/"
@@ -14,8 +22,6 @@
 #define LIB_FS_IS_DIR_SEPARATOR_ALL(c) ((c) == LIB_FS_DIR_SEPARATOR_NIX || (c) == LIB_FS_DIR_SEPARATOR_WIN)
 
 #ifdef _WIN32
-
-//#include <windows.h>
 
 /* Stuff missing in std vc6 api */
 #ifndef INVALID_FILE_ATTRIBUTES
@@ -31,14 +37,11 @@
 
 #else
 
-//#include <dirent.h>
-
 #define LIB_FS_DIR_SEPARATOR '/'
 #define LIB_FS_DIR_SEPARATOR_STR "/"
 #define LIB_FS_IS_DIR_SEPARATOR(c) ((c) == LIB_FS_DIR_SEPARATOR)
 
 #endif
-
 
 /*
  * File types
@@ -52,5 +55,55 @@
 #define LIB_FS_LNK          10
 #define LIB_FS_SOCK         12
 #define LIB_FS_WHT          14
+
+
+#ifndef S_ISLNK
+#  ifdef _S_ISLNK
+#    define S_ISLNK(m) _S_ISLNK(m)
+#  else
+#    ifdef _S_IFLNK
+#      define S_ISLNK(m) ((m & S_IFMT) == _S_IFLNK)
+#    else
+#      ifdef S_IFLNK
+#	     define S_ISLNK(m) ((m & S_IFMT) == S_IFLNK)
+#      else
+#        define _S_IFLNK 0x1200
+#        define S_IFLNK _S_IFLNK
+#	     define S_ISLNK(m) ((m & S_IFMT) == S_IFLNK)
+#      endif
+#    endif
+#  endif
+#endif
+
+#ifdef _WIN32
+
+#  ifdef _MSC_VER
+#    ifndef S_IXUSR
+#      define _S_IRUSR _S_IREAD
+#      define _S_IWUSR _S_IWRITE
+#      define _S_IXUSR _S_IEXEC
+#      define S_IRUSR _S_IRUSR
+#      define S_IWUSR _S_IWUSR
+#      define S_IXUSR _S_IXUSR
+#      define S_IRGRP (S_IRUSR >> 3)
+#      define S_IWGRP (S_IWUSR >> 3)
+#      define S_IXGRP (S_IXUSR >> 3)
+#      define S_IROTH (S_IRGRP >> 3)
+#      define S_IWOTH (S_IWGRP >> 3)
+#      define S_IXOTH (S_IXGRP >> 3)
+#    endif
+#    ifndef S_ISDIR
+#      define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
+#    endif
+#    ifndef S_ISREG
+#      define S_ISREG(m) (((m) & _S_IFMT) == _S_IFREG)
+#    endif
+#    ifndef S_ISLNK
+#      define S_ISLNK(m) (((m) & _S_IFMT) == _S_IFLNK)
+#    endif
+#  endif
+
+#endif
+
 
 #endif // PLAZMA_LIB_FSDEF_H

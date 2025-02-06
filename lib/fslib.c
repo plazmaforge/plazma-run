@@ -434,23 +434,6 @@ bool lib_fs_file_check(const char* file_name, lib_file_check_t check) {
 
 ////////////////////////////////
 
-
-#ifdef _WIN32
-
-//
-
-#endif
-
-// int lib_fs_stat(const char* path, lib_stat_t* buf) {
-//     #ifdef _WIN32
-//     return _lib_fs_stat(path, buf);
-//     #else
-//     return stat(path, buf);
-//     #endif
-// }
-
-////////////////////////////////
-
 int lib_fs_mkdir_all(const char* path, int mode) {
     char* fn;
     char* p;
