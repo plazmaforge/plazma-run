@@ -10,44 +10,6 @@
 
 #ifdef _WIN32
 
-// static const wchar_t* _lib_fs_wfind_ext(const wchar_t* wpath) {
-//     if (!wpath) {
-//         return 0;
-//     }
-
-//     const wchar_t* name = wpath;
-//     const wchar_t* dot = NULL;
-
-//     do {
-//         wchar_t* last_dot = wcschr(name, L'.');
-//         if (last_dot == NULL)
-//             break;
-
-//         dot = last_dot;
-//         name = &last_dot[1];
-//     } while (1);
-
-//     return dot;
-// }
-
-// static bool _lib_fs_is_wexec_ext(const wchar_t* wpath) {
-//     if (!wpath) {
-//         return 0;
-//     }
-//     const wchar_t* wext = _lib_fs_wfind_ext(wpath);
-//     if (!wext) {
-//         return 0;
-//     }
-//     return (wcsicmp(wext, L".exe") == 0 ||
-//             wcsicmp(wext, L".com") == 0 ||
-//             wcsicmp(wext, L".bat") == 0 ||
-//             wcsicmp(wext, L".cmd") == 0);
-// }
-
-// static bool _lib_fs_is_wexec(const wchar_t* wpath) {
-//     return lib_fs_is_wexec_ext(wpath);
-// }
-
 /*
  * https://support.microsoft.com/en-ca/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
  *
@@ -81,9 +43,9 @@ static int64_t _lib_fs_ftime_to_utime(const FILETIME *ft/*, int32_t* nsec*/) {
   return result / hundreds_of_usec_per_sec;
 }
 
-static int _lib_fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FILE_INFORMATION* handle_info, lib_stat_t* buf) {
+static int _lib_fs_fill_stat(const wchar_t* wpath, const BY_HANDLE_FILE_INFORMATION* info, lib_stat_t* buf) {
 
-    if (!wfile_name || !handle_info || !buf) {
+    if (!wpath || !info || !buf) {
         errno = EINVAL;
         return -1;
     }
@@ -93,9 +55,9 @@ static int _lib_fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FIL
     buf->st_uid = 0;
     buf->st_gid = 0;
 
-    if (handle_info->dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) {
+    if (info->dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) {
         buf->st_mode |= S_IFDIR | S_IXUSR | S_IXGRP | S_IXOTH;
-    } else if (handle_info->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+    } else if (info->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
         buf->st_mode |= S_IFLNK;
     } else {
         buf->st_mode |= S_IFREG;
@@ -108,43 +70,45 @@ static int _lib_fs_fill_stat_info(const wchar_t* wfile_name, const BY_HANDLE_FIL
     /* MS stat() behaviour,  */
     buf->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
 
-    if ((handle_info->dwFileAttributes & FILE_ATTRIBUTE_READONLY) != FILE_ATTRIBUTE_READONLY)
+    if ((info->dwFileAttributes & FILE_ATTRIBUTE_READONLY) != FILE_ATTRIBUTE_READONLY)
         buf->st_mode |= S_IWUSR | S_IWGRP | S_IWOTH;
 
+
+    // Check eecutable mode by file extension
     if (!S_ISDIR(buf->st_mode)) {
-        if (lib_fs_is_wexec_ext(wfile_name))
+        if (lib_fs_is_wexec_ext(wpath))
             buf->st_mode |= S_IXUSR | S_IXGRP | S_IXOTH;
     }
 
-    buf->st_nlink = handle_info->nNumberOfLinks;
-    buf->st_size = (((uint64_t) handle_info->nFileSizeHigh) << 32) | handle_info->nFileSizeLow;
-    buf->st_ctime = _lib_fs_ftime_to_utime(&handle_info->ftCreationTime);
-    buf->st_mtime = _lib_fs_ftime_to_utime(&handle_info->ftLastWriteTime);
-    buf->st_atime = _lib_fs_ftime_to_utime(&handle_info->ftLastAccessTime);
+    buf->st_nlink = info->nNumberOfLinks;
+    buf->st_size = (((uint64_t) info->nFileSizeHigh) << 32) | info->nFileSizeLow;
+    buf->st_ctime = _lib_fs_ftime_to_utime(&info->ftCreationTime);
+    buf->st_mtime = _lib_fs_ftime_to_utime(&info->ftLastWriteTime);
+    buf->st_atime = _lib_fs_ftime_to_utime(&info->ftLastAccessTime);
 
     return 0;
 }
 
-int _lib_fs_wstat(const wchar_t* wfile_name, lib_stat_t* buf) {
+int _lib_fs_wstat(const wchar_t* wpath, lib_stat_t* buf) {
 
-    if (!wfile_name || !buf) {
+    if (!wpath || !buf) {
         errno = EINVAL;
         return -1;
     }
 
-    BY_HANDLE_FILE_INFORMATION handle_info;
+    BY_HANDLE_FILE_INFORMATION info;
     //FILE_STANDARD_INFO std_info;
 
     DWORD attributes;
     DWORD open_flags;
     DWORD error_code;
-    HANDLE file_handle;
+    HANDLE handle;
     BOOL success;
 
     //int is_symlink = 0;
     int is_directory = 0;
 
-    attributes = GetFileAttributesW(wfile_name);
+    attributes = GetFileAttributesW(wpath);
 
     if (attributes == INVALID_FILE_ATTRIBUTES) {
         error_code = GetLastError();
@@ -163,49 +127,53 @@ int _lib_fs_wstat(const wchar_t* wfile_name, lib_stat_t* buf) {
     if (is_directory)
         open_flags |= FILE_FLAG_BACKUP_SEMANTICS;
 
-    file_handle = CreateFileW(wfile_name, FILE_READ_ATTRIBUTES | FILE_READ_EA,
+    handle = CreateFileW(wpath, FILE_READ_ATTRIBUTES | FILE_READ_EA,
                               FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                               NULL, OPEN_EXISTING,
                               open_flags,
                               NULL);
 
-    if (file_handle == INVALID_HANDLE_VALUE) {
+    if (handle == INVALID_HANDLE_VALUE) {
         error_code = GetLastError();
         errno = to_errno_win(error_code);
         return -1;
     }
 
-    success = GetFileInformationByHandle(file_handle, &handle_info);
+    success = GetFileInformationByHandle(handle, &info);
     
     if (!success) {
         error_code = GetLastError();
         errno = to_errno_win(error_code);
-        CloseHandle(file_handle);
+        CloseHandle(handle);
         return -1;
     }
 
-    int retval = _lib_fs_fill_stat_info(wfile_name, &handle_info, buf);
+    int retval = _lib_fs_fill_stat(wpath, &info, buf);
 
-    CloseHandle(file_handle);
+    CloseHandle(handle);
 
     return retval;
 
 }
 
-int _lib_fs_stat(const char* file_name, lib_stat_t* buf) {
-    wchar_t *wfile_name = lib_mbs_to_wcs(file_name);
-    if (!wfile_name) {
+int _lib_fs_stat(const char* path, lib_stat_t* buf) {
+    wchar_t *wpath = lib_mbs_to_wcs(path);
+    if (!wpath) {
         errno = EINVAL;
         return -1;
     }
-    int retval = _lib_fs_wstat(wfile_name, buf);
-    free(wfile_name);
+    int retval = _lib_fs_wstat(wpath, buf);
+    free(wpath);
     return retval;
 }
 
 #endif
 
 int lib_fs_stat(const char* path, lib_stat_t* buf) {
+    if (!path && !buf) {
+        errno = EINVAL;
+        return -1;
+    }
     #ifdef _WIN32
     return _lib_fs_stat(path, buf);
     #else
@@ -215,7 +183,6 @@ int lib_fs_stat(const char* path, lib_stat_t* buf) {
 
 ////
 
-// [fslib]
 lib_file_t* lib_fs_file_new() {
   lib_file_t* file = (lib_file_t*) malloc(sizeof(struct lib_file_t));
   if (!file) {
