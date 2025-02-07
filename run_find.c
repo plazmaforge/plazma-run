@@ -48,11 +48,11 @@ static void _find_pattern(const char* dir_name, const char* pattern) {
             }
             _print_file(file);
             //free(file);
-            //fs_file_free(file);
+            //lib_file_free(file);
         }
     }
 
-    lib_fs_files_free(files);
+    lib_files_free(files);
 }
 
 static void _find_item(const char* arg) {

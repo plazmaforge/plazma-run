@@ -76,6 +76,9 @@ typedef struct file_entry_t {
     char* path;
     char* name;
     int nlink;
+    uint64_t size;
+    time_t time;
+    //
     char* uname;
     char* gname;
     //
@@ -268,7 +271,7 @@ static int _print_line_csv(run_ls_context* context, file_entry_t* entry) {
         }
         char mode[LIB_FS_MODE_LEN + 1]; // +NUL
         lib_fs_init_mode(mode);
-        lib_fs_file_add_attr(file, mode);
+        lib_file_add_attr(file, mode);
         pos += _print_quote(context);
         pos += printf("%s", mode);
         pos += _print_quote(context);
@@ -314,7 +317,7 @@ static int _print_line_csv(run_ls_context* context, file_entry_t* entry) {
         if (has) {
             pos += _print_value_separator(context);
         }
-        uint64_t size = lib_fs_file_get_size(file);
+        uint64_t size = entry->size;
         pos += _print_size_txt(context, size);
         has = true;
     }
@@ -324,7 +327,7 @@ static int _print_line_csv(run_ls_context* context, file_entry_t* entry) {
         if (has) {
             pos += _print_value_separator(context);
         }
-        time_t time = lib_fs_file_get_mtime(file);
+        time_t time = entry->time;
         pos += _print_quote(context);
         pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
         pos += _print_quote(context);
@@ -374,7 +377,7 @@ static int _print_line_json(run_ls_context* context, file_entry_t* entry) {
 
         char mode[LIB_FS_MODE_LEN + 1]; // +NUL
         lib_fs_init_mode(mode);
-        lib_fs_file_add_attr(file, mode);
+        lib_file_add_attr(file, mode);
         pos += _print_quote(context);
         pos += printf("%s", mode);
         pos += _print_quote(context);
@@ -428,7 +431,7 @@ static int _print_line_json(run_ls_context* context, file_entry_t* entry) {
         }
         pos += printf("%s", "    \"size\": ");
 
-        uint64_t size = lib_fs_file_get_size(file);
+        uint64_t size = entry->size;
         pos += _print_size_txt(context, size);
         has = true;
     }
@@ -440,7 +443,7 @@ static int _print_line_json(run_ls_context* context, file_entry_t* entry) {
         }
         pos += printf("%s", "    \"time\": ");
 
-        time_t time = lib_fs_file_get_mtime(file);
+        time_t time = entry->time;
         pos += _print_quote(context);
         pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
         pos += _print_quote(context);
@@ -487,7 +490,7 @@ static int _print_line_xml(run_ls_context* context, file_entry_t* entry) {
         pos += printf("%s", "    <mode>");
         char mode[LIB_FS_MODE_LEN + 1]; // +NUL
         lib_fs_init_mode(mode);
-        lib_fs_file_add_attr(file, mode);
+        lib_file_add_attr(file, mode);
         //pos += _print_quote(context);
         pos += printf("%s", mode);
         //pos += _print_quote(context);
@@ -541,7 +544,7 @@ static int _print_line_xml(run_ls_context* context, file_entry_t* entry) {
             pos += _print_value_separator(context);
         }
         pos += printf("%s", "    <size>");
-        uint64_t size = lib_fs_file_get_size(file);
+        uint64_t size = entry->size;
         pos += _print_size_txt(context, size);
         pos += printf("%s", "</size>");
         has = true;
@@ -554,7 +557,7 @@ static int _print_line_xml(run_ls_context* context, file_entry_t* entry) {
         }
         pos += printf("%s", "    <time>");
 
-        time_t time = lib_fs_file_get_mtime(file);
+        time_t time = entry->time;
         //pos += _print_quote(context);
         pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
         //pos += _print_quote(context);
@@ -601,7 +604,7 @@ static int _print_line_fix(run_ls_context* context, file_entry_t* entry) {
         }
         char mode[LIB_FS_MODE_LEN + 1]; // +NUL
         lib_fs_init_mode(mode);
-        lib_fs_file_add_attr(file, mode);
+        lib_file_add_attr(file, mode);
         pos += printf("%s", mode);
         has = true;
     }
@@ -641,7 +644,7 @@ static int _print_line_fix(run_ls_context* context, file_entry_t* entry) {
         if (has) {
             pos += _print_value_separator(context);
         }
-        uint64_t size = lib_fs_file_get_size(file);
+        uint64_t size = entry->size;
         pos += _print_size_fix(context, size);
         has = true;
     }
@@ -651,7 +654,7 @@ static int _print_line_fix(run_ls_context* context, file_entry_t* entry) {
         if (has) {
             pos += _print_value_separator(context);
         }
-        time_t time = lib_fs_file_get_mtime(file);
+        time_t time = entry->time;
         pos += lib_fmt_print_file_date_time(time, context->time_buf, TIME_BUF_LEN, true);
         has = true;
     }
@@ -706,7 +709,7 @@ int run_ls(run_ls_context* context) {
     int file_count = lib_fs_scandir(dir_name, pattern, &files, LIB_SCANDIR_FLAT, false);
 
     if (file_count <= 0) {
-        lib_fs_files_free(files);
+        lib_files_free(files);
         free(dir_name);
         return 0;
     }
@@ -737,22 +740,22 @@ int run_ls(run_ls_context* context) {
         entry->path = file->name;
         entry->name = lib_fs_get_base_name(entry->path); // allocate
         entry->nlink = file->stat->st_nlink;
-        entry->uname = lib_fs_file_get_uname(file);
-        entry->gname = lib_fs_file_get_gname(file);
+        entry->uname = lib_file_get_uname(file);
+        entry->gname = lib_file_get_gname(file);
+        entry->size = lib_file_get_size(file);
+        entry->time = lib_file_get_mtime(file);
 
         entry->name_len = entry->name ? strlen(entry->name) : 0;
         entry->nlink_len = _lib_digit_count(entry->nlink);
         entry->uname_len = entry->uname ? strlen(entry->uname) : 0;
         entry->gname_len = entry->gname ? strlen(entry->gname) : 0;
-
-        uint64_t size = lib_fs_file_get_size(file);
-        int size_len = _lib_digit_count_u64(size);
+        int size_len = _lib_digit_count_u64(entry->size);
 
         lib_fmt_size_format_t format;
-        _get_size_format(context, size, &format);
+        _get_size_format(context, entry->size, &format);
 
         if (format.unit) {
-            uint64_t unit_size = _get_unit_isize(size, &format);
+            uint64_t unit_size = _get_unit_isize(entry->size, &format);
             int unit_size_len = _lib_digit_count_u64(unit_size);
             size_len = unit_size_len;
         }
@@ -826,7 +829,7 @@ int run_ls(run_ls_context* context) {
         printf("%s", "\n</files>\n");
     }
 
-    lib_fs_files_free(files);                        
+    lib_files_free(files);
     free(dir_name);
 
     lib_sys_locale_restore();

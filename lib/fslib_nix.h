@@ -48,19 +48,7 @@ static char* lib_fs_get_gname_by_id(gid_t gid) {
     return g ? g->gr_name : NULL;
 }
 
-char* lib_fs_file_get_uname(lib_file_t* file) {
-    if (!file || !file->stat) {
-        return NULL;
-    }
-    return lib_fs_get_uname_by_id(file->stat->st_uid);
-}
-
-char* lib_fs_file_get_gname(lib_file_t* file) {    
-    if (!file || !file->stat) {
-        return NULL;
-    }
-    return lib_fs_get_gname_by_id(file->stat->st_gid);
-}
+////
 
 char lib_fs_get_mode_access(const char* path) {
     if (!path) {
@@ -94,6 +82,22 @@ char lib_fs_get_mode_access(const char* path) {
     }
     //printf("%c\n", chr);
     return chr;
+}
+
+// fs-file
+
+char* lib_file_get_uname(lib_file_t* file) {
+    if (!file || !file->stat) {
+        return NULL;
+    }
+    return lib_fs_get_uname_by_id(file->stat->st_uid);
+}
+
+char* lib_file_get_gname(lib_file_t* file) {    
+    if (!file || !file->stat) {
+        return NULL;
+    }
+    return lib_fs_get_gname_by_id(file->stat->st_gid);
 }
 
 #endif

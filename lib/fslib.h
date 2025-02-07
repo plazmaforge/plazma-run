@@ -87,45 +87,45 @@ int lib_fs_remove_dir(const char* path);
 
 //// fs-file
 
-lib_file_t* lib_fs_get_file(const char* file_name);
+// lib_file_t* lib_fs_get_file(const char* file_name);
 
-const char* lib_fs_file_get_name(lib_file_t* file);
+// const char* lib_fs_file_get_name(lib_file_t* file);
 
-int lib_fs_file_get_type(lib_file_t* file);
+// int lib_fs_file_get_type(lib_file_t* file);
 
-char lib_fs_file_get_type_char(lib_file_t* file);
+// char lib_fs_file_get_type_char(lib_file_t* file);
 
-char* lib_fs_file_get_uname(lib_file_t* file);
+// char* lib_fs_file_get_uname(lib_file_t* file);
 
-char* lib_fs_file_get_gname(lib_file_t* file);
-
-//
-
-void lib_fs_init_mode(char* mode);
-
-char* lib_fs_file_add_attr(lib_file_t* file, char* mode);
-
-char* lib_fs_file_add_mode(lib_file_t* file, char* mode);
-
-char lib_fs_file_get_mode_access(lib_file_t* file);
-
-char lib_fs_get_mode_access(const char* path);
+// char* lib_fs_file_get_gname(lib_file_t* file);
 
 //
 
-uint64_t lib_fs_file_get_size(lib_file_t* file);
+// void lib_fs_init_mode(char* mode);
 
-int lib_fs_file_get_mode(lib_file_t* file);
+// char* lib_fs_file_add_attr(lib_file_t* file, char* mode);
 
-time_t lib_fs_file_get_atime(lib_file_t* file);
+// char* lib_fs_file_add_mode(lib_file_t* file, char* mode);
 
-time_t lib_fs_file_get_mtime(lib_file_t* file);
+// char lib_fs_file_get_mode_access(lib_file_t* file);
 
-time_t lib_fs_file_get_ctime(lib_file_t* file);
+// char lib_fs_get_mode_access(const char* path);
 
-bool lib_fs_file_is_dir(lib_file_t* file);
+//
 
-int lib_fs_file_get_type_by_mode(int mode);
+// uint64_t lib_fs_file_get_size(lib_file_t* file);
+
+// int lib_fs_file_get_mode(lib_file_t* file);
+
+// time_t lib_fs_file_get_atime(lib_file_t* file);
+
+// time_t lib_fs_file_get_mtime(lib_file_t* file);
+
+// time_t lib_fs_file_get_ctime(lib_file_t* file);
+
+// bool lib_fs_file_is_dir(lib_file_t* file);
+
+// int lib_fs_file_get_type_by_mode(int mode);
 
 //// fs-scan
 

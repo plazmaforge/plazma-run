@@ -169,6 +169,8 @@ int _lib_fs_stat(const char* path, lib_stat_t* buf) {
 
 #endif
 
+// fs-stat
+
 int lib_fs_stat(const char* path, lib_stat_t* buf) {
     if (!path && !buf) {
         errno = EINVAL;
@@ -181,9 +183,17 @@ int lib_fs_stat(const char* path, lib_stat_t* buf) {
     #endif
 }
 
+lib_stat_t* lib_fs_stat_new() {
+    lib_stat_t* stat = (lib_stat_t*) malloc(sizeof(lib_stat_t));
+    if (!stat) {
+        return NULL;
+    }
+    return stat;
+}
+
 ////
 
-lib_file_t* lib_fs_file_new() {
+lib_file_t* lib_file_new() {
   lib_file_t* file = (lib_file_t*) malloc(sizeof(struct lib_file_t));
   if (!file) {
     return NULL;
@@ -194,8 +204,7 @@ lib_file_t* lib_fs_file_new() {
   return file;
 }
 
-// [fslib]
-void lib_fs_file_free(lib_file_t* file) {
+void lib_file_free(lib_file_t* file) {
     if (!file) {
         return;
     }
@@ -208,22 +217,23 @@ void lib_fs_file_free(lib_file_t* file) {
     free(file);
 }
 
-// [fslib]
-void lib_fs_files_free(lib_file_t** files) {
+void lib_files_free(lib_file_t** files) {
     if (!files) {
         return;
     }
     lib_file_t* file = NULL;
-    lib_file_t** elements = files;
-    while ((file = *elements) != NULL) {
-        lib_fs_file_free(file);
-        elements++;
+    lib_file_t** list = files;
+    while ((file = *list) != NULL) {
+        lib_file_free(file);
+        list++;
     }
     free(files);
 }
 
-// [fslib]
-int lib_fs_files_init(lib_file_t*** files, size_t size) {
+int lib_files_init(lib_file_t*** files, size_t size) {
+    if (!files) {
+        return -1;
+    }
     // NULL-terminate array: +1
     lib_file_t** list = (struct lib_file_t**) calloc(size + 1, sizeof(struct lib_file_t*));
     if (!list) {
@@ -234,8 +244,10 @@ int lib_fs_files_init(lib_file_t*** files, size_t size) {
     return 0;
 }
 
-// [fslib]
-int lib_fs_files_reinit(lib_file_t*** files, size_t size) {
+int lib_files_reinit(lib_file_t*** files, size_t size) {
+    if (!files) {
+        return -1;
+    }
     // NULL-terminate array: +1
     lib_file_t** list = (struct lib_file_t **) realloc( /*(lib_file_t *)*/ *files, (size + 1) * sizeof(struct lib_file_t *));
     list[size] = NULL;
@@ -248,16 +260,6 @@ int lib_fs_files_reinit(lib_file_t*** files, size_t size) {
 
 ////
 
-// fs-stat
-
-lib_stat_t* lib_fs_stat_new() {
-    lib_stat_t* stat = (lib_stat_t*) malloc(sizeof(lib_stat_t));
-    if (!stat) {
-        return NULL;
-    }
-    return stat;
-}
-
 // fs-file
 
 lib_file_t* lib_fs_get_file(const char* file_name) {
@@ -268,7 +270,7 @@ lib_file_t* lib_fs_get_file(const char* file_name) {
     if (!path) {
         return NULL;
     }
-    lib_file_t* file = lib_fs_file_new();
+    lib_file_t* file = lib_file_new();
     if (!file) {
         return NULL;
     }
@@ -284,19 +286,19 @@ lib_file_t* lib_fs_get_file(const char* file_name) {
     lib_fs_stat(path, file->stat);
 
     /* Get file type by stat mode */
-    file->type = lib_fs_file_get_type_by_mode(stat->st_mode);
+    file->type = lib_fs_get_type_by_mode(stat->st_mode);
 
     return file;
 }
 
-const char* lib_fs_file_get_name(lib_file_t* file) {
+const char* lib_file_get_name(lib_file_t* file) {
     if (!file) {
         return 0;
     }
     return file->name;
 }
 
-int lib_fs_file_get_type(lib_file_t* file) {
+int lib_file_get_type(lib_file_t* file) {
     if (!file) {
         return 0;
     }
@@ -325,7 +327,7 @@ char _file_type(char* path, struct stat Stat) {
 }
 */
 
-char lib_fs_file_get_type_char(lib_file_t* file) {
+char lib_file_get_type_char(lib_file_t* file) {
     if (!file) {
         return ' ';
     }
@@ -362,7 +364,7 @@ void lib_fs_init_mode(char* mode) {
     mode[11] = '\0';
 }
 
-char* lib_fs_file_add_attr(lib_file_t* file, char* mode) {
+char* lib_file_add_attr(lib_file_t* file, char* mode) {
     if (!mode) {
         return NULL;
     }
@@ -370,12 +372,12 @@ char* lib_fs_file_add_attr(lib_file_t* file, char* mode) {
         lib_fs_init_mode(mode);
         return mode;
     }
-    mode[0] = lib_fs_file_get_type_char(file);
+    mode[0] = lib_file_get_type_char(file);
     /* mode[1] - mode[9], mode[10] */
-    return lib_fs_file_add_mode(file, mode);
+    return lib_file_add_mode(file, mode);
 }
 
-char* lib_fs_file_add_mode(lib_file_t* file, char* mode) {
+char* lib_file_add_mode(lib_file_t* file, char* mode) {
     if (!mode) {
         return NULL;
     }
@@ -401,12 +403,12 @@ char* lib_fs_file_add_mode(lib_file_t* file, char* mode) {
     mode[8] = st_mode & S_IWOTH ? 'w' : '-';
     mode[9] = st_mode & S_IXOTH ? 'x' : '-';
 
-    mode[10] = lib_fs_file_get_mode_access(file);
+    mode[10] = lib_file_get_mode_access(file);
 
     return mode;
 }
 
-char lib_fs_file_get_mode_access(lib_file_t* file) {
+char lib_file_get_mode_access(lib_file_t* file) {
     if (!file) {
         return ' ';
     }
@@ -415,21 +417,21 @@ char lib_fs_file_get_mode_access(lib_file_t* file) {
 
 //
 
-uint64_t lib_fs_file_get_size(lib_file_t* file) {
+uint64_t lib_file_get_size(lib_file_t* file) {
     if (!file || !file->stat) {
         return 0;
     }
     return file->stat->st_size;
 }
 
-int lib_fs_file_get_mode(lib_file_t* file) {
+int lib_file_get_mode(lib_file_t* file) {
     if (!file || !file->stat) {
         return 0;
     }
     return file->stat->st_mode;
 }
 
-static time_t _lib_fs_file_get_time(lib_file_t* file, int index) {
+static time_t _lib_file_get_time(lib_file_t* file, int index) {
 
     if (!file || !file->stat) {
         return 0;
@@ -466,26 +468,28 @@ static time_t _lib_fs_file_get_time(lib_file_t* file, int index) {
 
 }
 
-time_t lib_fs_file_get_atime(lib_file_t* file) {
-    return _lib_fs_file_get_time(file, 1);
+time_t lib_file_get_atime(lib_file_t* file) {
+    return _lib_file_get_time(file, 1);
 }
 
-time_t lib_fs_file_get_mtime(lib_file_t* file) {
-    return _lib_fs_file_get_time(file, 2);
+time_t lib_file_get_mtime(lib_file_t* file) {
+    return _lib_file_get_time(file, 2);
 }
 
-time_t lib_fs_file_get_ctime(lib_file_t* file) {
-    return _lib_fs_file_get_time(file, 3);
+time_t lib_file_get_ctime(lib_file_t* file) {
+    return _lib_file_get_time(file, 3);
 }
 
-bool lib_fs_file_is_dir(lib_file_t* file) {
+bool lib_file_is_dir(lib_file_t* file) {
     if (!file) {
         return 0;
     }
     return file->type == LIB_FS_DIR;
 }
 
-int lib_fs_file_get_type_by_mode(int mode) {    
+// fs
+
+int lib_fs_get_type_by_mode(int mode) {    
     #ifdef _WIN32
 
     /* Base: FS_DIR, FS_REG, FS_LNK only */
@@ -522,5 +526,3 @@ int lib_fs_file_get_type_by_mode(int mode) {
     return LIB_FS_UNKNOWN;
     #endif
 }
-
-

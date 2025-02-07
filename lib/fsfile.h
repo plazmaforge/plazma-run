@@ -149,56 +149,58 @@ lib_stat_t* lib_fs_stat_new();
 
 /// fs-file
 
-lib_file_t* lib_fs_file_new();
+lib_file_t* lib_file_new();
 
-void lib_fs_file_free(lib_file_t* file);
+void lib_file_free(lib_file_t* file);
 
-void lib_fs_files_free(lib_file_t** files);
+void lib_files_free(lib_file_t** files);
 
-int lib_fs_files_init(lib_file_t*** files, size_t size);
+int lib_files_init(lib_file_t*** files, size_t size);
 
-int lib_fs_files_reinit(lib_file_t*** files, size_t size);
+int lib_files_reinit(lib_file_t*** files, size_t size);
 
 ////
 
 lib_file_t* lib_fs_get_file(const char* file_name);
 
-const char* lib_fs_file_get_name(lib_file_t* file);
+const char* lib_file_get_name(lib_file_t* file);
 
-int lib_fs_file_get_type(lib_file_t* file);
+int lib_file_get_type(lib_file_t* file);
 
-char lib_fs_file_get_type_char(lib_file_t* file);
+char lib_file_get_type_char(lib_file_t* file);
 
-char* lib_fs_file_get_uname(lib_file_t* file);
+char* lib_file_get_uname(lib_file_t* file);
 
-char* lib_fs_file_get_gname(lib_file_t* file);
+char* lib_file_get_gname(lib_file_t* file);
 
 //
 
-void lib_fs_init_mode(char* mode);
+char* lib_file_add_attr(lib_file_t* file, char* mode);
 
-char* lib_fs_file_add_attr(lib_file_t* file, char* mode);
+char* lib_file_add_mode(lib_file_t* file, char* mode);
 
-char* lib_fs_file_add_mode(lib_file_t* file, char* mode);
-
-char lib_fs_file_get_mode_access(lib_file_t* file);
+char lib_file_get_mode_access(lib_file_t* file);
 
 char lib_fs_get_mode_access(const char* path);
 
 //
 
-uint64_t lib_fs_file_get_size(lib_file_t* file);
+uint64_t lib_file_get_size(lib_file_t* file);
 
-int lib_fs_file_get_mode(lib_file_t* file);
+int lib_file_get_mode(lib_file_t* file);
 
-time_t lib_fs_file_get_atime(lib_file_t* file);
+time_t lib_file_get_atime(lib_file_t* file);
 
-time_t lib_fs_file_get_mtime(lib_file_t* file);
+time_t lib_file_get_mtime(lib_file_t* file);
 
-time_t lib_fs_file_get_ctime(lib_file_t* file);
+time_t lib_file_get_ctime(lib_file_t* file);
 
-bool lib_fs_file_is_dir(lib_file_t* file);
+bool lib_file_is_dir(lib_file_t* file);
 
-int lib_fs_file_get_type_by_mode(int mode);
+// fs
+
+void lib_fs_init_mode(char* mode);
+
+int lib_fs_get_type_by_mode(int mode);
 
 #endif // PLAZMA_LIB_FSFILE_H

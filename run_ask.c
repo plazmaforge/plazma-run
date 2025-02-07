@@ -46,7 +46,7 @@ int _find_pattern(lib_ask_config_t* config, char* file_name, char* input, size_t
     lib_file_t* file = NULL;
     int count = lib_fs_scandir(dir_name, pattern, &files, LIB_SCANDIR_RECURSIVE, true);
     if (count <= 0) {
-        lib_fs_files_free(files);
+        lib_files_free(files);
         free(dir_name);
         return count;
     }
@@ -59,10 +59,10 @@ int _find_pattern(lib_ask_config_t* config, char* file_name, char* input, size_t
         }
 
         //free(file);
-        //fs_file_free(file);
+        //lib_file_free(file);
     }
 
-    lib_fs_files_free(files);                
+    lib_files_free(files);                
     free(dir_name);
 
     return retval;
