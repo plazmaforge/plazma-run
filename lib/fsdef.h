@@ -146,5 +146,4 @@ static int to_errno_win(DWORD error_code) {
 
 #endif
 
-
 #endif // PLAZMA_LIB_FSDEF_H

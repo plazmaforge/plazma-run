@@ -38,24 +38,24 @@ static void _lib_fs_normalize_slash(char* path, size_t len) {
 
 // Convert directory name to WIN32 find path: add '\*'
 // [allocate]
-static char* _find_path(const char* dir_name) {
-    if (dir_name == NULL) {
+static char* _find_path(const char* dirname) {
+    if (dirname == NULL) {
         return NULL;
     }
 
-    //printf("_find_path: input: %s\n", dir_name);
+    //printf("_find_path: input: %s\n", dirname);
 
-    int len = strlen(dir_name);
+    int len = strlen(dirname);
     int add = 0;
 
     if (len == 0) {
         add = 3;     // add: './*' - current dir
     } else {
-        if (dir_name[len - 1] == '\\' || dir_name[len - 1] == '/') {
+        if (dirname[len - 1] == '\\' || dirname[len - 1] == '/') {
             add = 1; // add: '*'
         } else {
-            if (dir_name[len - 1] != '*') {
-                //printf("get_find_path: %s: '*'\n", dir_name);
+            if (dirname[len - 1] != '*') {
+                //printf("_find_path: %s: '*'\n", dirname);
                 add = 2; // add: '\*'
             }
         }
@@ -67,7 +67,7 @@ static char* _find_path(const char* dir_name) {
     if (add == 3) {
         strcpy(path, "./*"); // Why not '.\*'?
     } else {
-        strcpy(path, dir_name);
+        strcpy(path, dirname);
         if (add == 2) {
            strcat(path, "\\");
            strcat(path, "*");

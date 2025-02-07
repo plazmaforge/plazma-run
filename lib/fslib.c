@@ -471,23 +471,23 @@ int lib_fs_remove_dir(const char* path) {
 
 // file-scan
 
-int lib_fs_is_recursive_ignore(const char* path) {
+bool lib_fs_is_recursive_ignore(const char* path) {
     if (!path) {
-        return 1;
+        return true;
     }
     return (strcmp(path, ".") == 0 || strcmp(path, "..") == 0);
 }
 
-int lib_fs_is_classic_ignore(const char* path) {
+bool lib_fs_is_classic_ignore(const char* path) {
     if (!path || path[0] == '\0') {
-        return 1;
+        return true;
     }
     // starts with '.': .git, .svn
     return path[0] == '.';
 }
 
-int lib_fs_is_ignore(const char* path) {
-    return 0; //return lib_fs_is_recursive_ignore(path) || lib_fs_is_classic_ignore(path);
+bool lib_fs_is_ignore(const char* path) {
+    return false; //return lib_fs_is_recursive_ignore(path) || lib_fs_is_classic_ignore(path);
 }
 
 ////
@@ -523,15 +523,15 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
     while ((dirent = lib_readdir(dir)) != NULL) {
 
         char* file_name = dirent->d_name;
-        int file_type = dirent->d_type; // lib_fs_get_dirent_type(dirent);                       // dirent type (!)
-        int is_recursive_ignore = lib_fs_is_recursive_ignore(file_name); // ., ..
-        int is_ignore = lib_fs_is_ignore(file_name);                     // .git, .svn
-        int is_force_ignore = is_recursive_ignore || is_ignore;
-        int is_match = is_ignore ? 0 : (pattern == NULL || lib_fs_match_file_internal(pattern, file_name));
-        int is_dir_ = dirent->d_type == LIB_FS_DIR; // lib_fs_is_dirent_dir(dirent);                           // dirent type (!)
+        int file_type = dirent->d_type;
+        bool is_recursive_ignore = lib_fs_is_recursive_ignore(file_name); // ., ..
+        bool is_ignore = lib_fs_is_ignore(file_name);                     // .git, .svn
+        bool is_force_ignore = is_recursive_ignore || is_ignore;
+        bool is_match = is_ignore ? 0 : (pattern == NULL || lib_fs_match_file_internal(pattern, file_name));
+        bool is_dir_ = dirent->d_type == LIB_FS_DIR; // lib_fs_is_dirent_dir(dirent);                           // dirent type (!)
 
         if (!is_match && is_dir_ && is_force_pattern && !is_force_ignore) {
-            is_match = 1;
+            is_match = true;
         }
 
         //printf("find [%s] [%s%s] [%d] %s, %s, %s\n", (is_match ? "+" : " "), (is_dir_ ? "D" : " "), (is_ignore ? "I" : " "), level, dir_name, file_name, pattern);
@@ -540,7 +540,11 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
 
             //printf("match [%d] %s, %s, %s\n", level, dir_name, file_name, pattern);
 
-            int mode = 0; // 0 - notning, 1 - add file/dir, 2 - scandir recursive
+            // 0 - notning
+            // 1 - add file/dir
+            // 2 - scandir recursive
+            
+            int mode = 0;
             if (!is_dir_) {
                 // We add the file from last pattern level only
                 if (level == 0 || level == pattern_count - 1 || is_force_pattern) {
