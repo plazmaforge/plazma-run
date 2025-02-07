@@ -48,9 +48,9 @@ static char* lib_fs_get_gname_by_id(gid_t gid) {
     return g ? g->gr_name : NULL;
 }
 
-////
+// fs-file
 
-char lib_fs_get_mode_access(const char* path) {
+char lib_file_get_amode_by_path(const char* path) {
     if (!path) {
         return ' ';
     }
@@ -83,8 +83,6 @@ char lib_fs_get_mode_access(const char* path) {
     //printf("%c\n", chr);
     return chr;
 }
-
-// fs-file
 
 char* lib_file_get_uname(lib_file_t* file) {
     if (!file || !file->stat) {

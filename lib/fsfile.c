@@ -453,16 +453,16 @@ char* lib_file_add_mode(lib_file_t* file, char* mode) {
     mode[8] = st_mode & S_IWOTH ? 'w' : '-';
     mode[9] = st_mode & S_IXOTH ? 'x' : '-';
 
-    mode[10] = lib_file_get_mode_access(file);
+    mode[10] = lib_file_get_amode(file);
 
     return mode;
 }
 
-char lib_file_get_mode_access(lib_file_t* file) {
+char lib_file_get_amode(lib_file_t* file) {
     if (!file) {
         return ' ';
     }
-    return lib_fs_get_mode_access(file->name);
+    return lib_file_get_amode_by_path(file->name);
 }
 
 //

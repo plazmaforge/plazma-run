@@ -93,14 +93,12 @@ static char* getUserName() {
 static char* _uname = NULL;
 static char* _gname = NULL;
 
-////
+// fs-file
 
-char lib_fs_get_mode_access(const char* path) {
+char lib_file_get_amode_by_path(const char* path) {
     // TODO: Stub
     return ' ';
 }
-
-// fs-file
 
 char* lib_file_get_uname(lib_file_t* file) {
     if (_uname) {

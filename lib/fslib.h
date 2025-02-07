@@ -18,13 +18,6 @@ typedef enum {
 #define LIB_SCANDIR_FLAT       -1 // Scandir flat mode (only one level)
 #define LIB_SCANDIR_RECURSIVE   0 // Scandir recursive mode
 
-// typedef enum {
-//   LIB_FILE_SORT_NONE           = 0,
-//   LIB_FILE_SORT_BY_NAME        = 1,
-//   LIB_FILE_SORT_BY_SIZE        = 2,
-//   LIB_FILE_SORT_BY_TIME        = 3,
-// } lib_file_sort_t;
-
 #define LIB_FS_MODE_LEN    11
 #define LIB_FS_ACCESS_LEN   9
 

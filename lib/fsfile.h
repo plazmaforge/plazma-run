@@ -196,9 +196,9 @@ char* lib_file_add_attr(lib_file_t* file, char* mode);
 
 char* lib_file_add_mode(lib_file_t* file, char* mode);
 
-char lib_file_get_mode_access(lib_file_t* file);
+char lib_file_get_amode(lib_file_t* file);
 
-char lib_fs_get_mode_access(const char* path);
+char lib_file_get_amode_by_path(const char* path);
 
 //
 
