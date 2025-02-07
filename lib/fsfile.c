@@ -526,3 +526,141 @@ int lib_fs_get_type_by_mode(int mode) {
     return LIB_FS_UNKNOWN;
     #endif
 }
+
+// fs-file-compare
+
+int lib_file_compare_by_type(int type1, int type2) {
+    if (type1 == LIB_FS_DIR && type2 != LIB_FS_DIR) {
+        return -1;
+    }
+
+    if (type2 == LIB_FS_DIR && type1 != LIB_FS_DIR) {
+        return 1;
+    }
+
+    return 0;
+}
+
+int lib_file_compare_by_name(const char* name1, const char* name2) {
+    if (!name1 && !name2) {
+        return 0;
+    }
+    if (!name1) {
+        return -1;
+    }
+    if (!name2) {
+        return 1;
+    }
+    return strcmp(name1, name2);
+}
+
+int lib_file_compare_by_size(uint64_t size1, uint64_t size2) {
+    if (size2 == size1) {
+        return 0;
+    }
+    return size1 > size2 ? 1 : -1; // 
+    //return size1 > size2 ? -1 : 1; // ^   
+}
+
+int lib_file_compare_by_time(long time1, long time2) {
+    if (time2 == time1) {
+        return 0;
+    }
+    return time1 > time2 ? 1 : -1; // 
+    //return time1 > time2 ? -1 : 1; // ^   
+}
+
+////
+
+int lib_file_compare(const void* v1, const void* v2, lib_file_sort_t file_sort, bool asc, bool is_dir_first) {
+
+    if (file_sort < 1 || file_sort > 3) {
+        return 0;
+    }
+
+    if (!v1 && !v2) {
+        return 0;
+    }
+
+    if (!v1) {
+        return asc ? -1 : 1;
+    }
+    if (!v2) {
+        return asc ? 1 : -1;
+    }
+
+    lib_file_t* f1 = *((lib_file_t**) v1);
+    lib_file_t* f2 = *((lib_file_t**) v2);
+
+    int cmp = 0;
+    if (is_dir_first) {
+        /* Sort by type before: DIR is priority then other types */
+        int type1 = f1->type;
+        int type2 = f2->type;
+        cmp = lib_file_compare_by_type(type1, type2);
+        if (cmp != 0) {
+            return cmp;
+        }
+    }
+
+    cmp = 0;
+    if (file_sort == LIB_FILE_SORT_BY_NAME) {
+
+        /* Sort By name */
+        char *name1 = f1->name;
+        char *name2 = f2->name;
+        cmp = lib_file_compare_by_name(name1, name2);
+    } else if (file_sort == LIB_FILE_SORT_BY_SIZE) {
+
+        /* Sort By size */
+        uint64_t size1 = lib_file_get_size(f1);
+        uint64_t size2 = lib_file_get_size(f2);
+        cmp = lib_file_compare_by_size(size1, size2);
+    } else if (file_sort == LIB_FILE_SORT_BY_TIME) {
+
+        /* Sort By time */
+        long time1 = lib_file_get_mtime(f1);
+        long time2 = lib_file_get_mtime(f2);
+        cmp = lib_file_compare_by_size(time1, time2);
+    }
+
+    return (asc || cmp == 0) ? cmp : (cmp * -1);
+}
+
+// file-sort (asc)
+
+int lib_file_sort_by_alpha(const void* v1, const void* v2) {
+    return lib_file_compare(v1, v2, LIB_FILE_SORT_BY_NAME, true, false);
+}
+
+int lib_file_sort_by_name(const void* v1, const void* v2) {
+    return lib_file_compare(v1, v2, LIB_FILE_SORT_BY_NAME, true, true);
+}
+
+int lib_file_sort_by_size(const void* v1, const void* v2) {
+    return lib_file_compare(v1, v2, LIB_FILE_SORT_BY_SIZE, true, false);
+}
+
+int lib_file_sort_by_time(const void* v1, const void* v2) {
+    return lib_file_compare(v1, v2, LIB_FILE_SORT_BY_TIME, true, false);
+}
+
+// file-sort (desc)
+
+int lib_file_sort_by_alpha_desc(const void* v1, const void* v2) {
+    return lib_file_compare(v1, v2, LIB_FILE_SORT_BY_NAME, false, false);
+}
+
+int lib_file_sort_by_name_desc(const void* v1, const void* v2) {
+    return lib_file_compare(v1, v2, LIB_FILE_SORT_BY_NAME, false, true);
+}
+
+int lib_file_sort_by_size_desc(const void* v1, const void* v2) {
+    return lib_file_compare(v1, v2, LIB_FILE_SORT_BY_SIZE, false, false);
+}
+
+int fs_file_sort_by_time_desc(const void* v1, const void* v2) {
+    return lib_file_compare(v1, v2, LIB_FILE_SORT_BY_TIME, false, false);
+}
+
+////

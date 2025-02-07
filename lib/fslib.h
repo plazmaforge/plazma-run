@@ -18,12 +18,12 @@ typedef enum {
 #define LIB_SCANDIR_FLAT       -1 // Scandir flat mode (only one level)
 #define LIB_SCANDIR_RECURSIVE   0 // Scandir recursive mode
 
-typedef enum {
-  LIB_FILE_SORT_NONE           = 0,
-  LIB_FILE_SORT_BY_NAME        = 1,
-  LIB_FILE_SORT_BY_SIZE        = 2,
-  LIB_FILE_SORT_BY_TIME        = 3,
-} lib_file_sort_t;
+// typedef enum {
+//   LIB_FILE_SORT_NONE           = 0,
+//   LIB_FILE_SORT_BY_NAME        = 1,
+//   LIB_FILE_SORT_BY_SIZE        = 2,
+//   LIB_FILE_SORT_BY_TIME        = 3,
+// } lib_file_sort_t;
 
 #define LIB_FS_MODE_LEN    11
 #define LIB_FS_ACCESS_LEN   9
@@ -80,52 +80,6 @@ int lib_fs_create_dir_all(const char* path);
 int lib_fs_remove_file(const char* path);
 
 int lib_fs_remove_dir(const char* path);
-
-//// fs-stat
-
-//int lib_fs_stat(const char* path, lib_stat_t* buf);
-
-//// fs-file
-
-// lib_file_t* lib_fs_get_file(const char* file_name);
-
-// const char* lib_fs_file_get_name(lib_file_t* file);
-
-// int lib_fs_file_get_type(lib_file_t* file);
-
-// char lib_fs_file_get_type_char(lib_file_t* file);
-
-// char* lib_fs_file_get_uname(lib_file_t* file);
-
-// char* lib_fs_file_get_gname(lib_file_t* file);
-
-//
-
-// void lib_fs_init_mode(char* mode);
-
-// char* lib_fs_file_add_attr(lib_file_t* file, char* mode);
-
-// char* lib_fs_file_add_mode(lib_file_t* file, char* mode);
-
-// char lib_fs_file_get_mode_access(lib_file_t* file);
-
-// char lib_fs_get_mode_access(const char* path);
-
-//
-
-// uint64_t lib_fs_file_get_size(lib_file_t* file);
-
-// int lib_fs_file_get_mode(lib_file_t* file);
-
-// time_t lib_fs_file_get_atime(lib_file_t* file);
-
-// time_t lib_fs_file_get_mtime(lib_file_t* file);
-
-// time_t lib_fs_file_get_ctime(lib_file_t* file);
-
-// bool lib_fs_file_is_dir(lib_file_t* file);
-
-// int lib_fs_file_get_type_by_mode(int mode);
 
 //// fs-scan
 

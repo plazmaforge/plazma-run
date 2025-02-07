@@ -467,24 +467,27 @@ int lib_fs_remove_dir(const char* path) {
     return lib_fs_rmdir(path);
 }
 
-// fs-file-scan
+//
 
-int lib_fs_is_recursive_ignore_file(const char* file_name) {
-    if (!file_name) {
+// file-scan
+
+int lib_fs_is_recursive_ignore(const char* path) {
+    if (!path) {
         return 1;
     }
-    return (strcmp(file_name, ".") == 0 || strcmp(file_name, "..") == 0);
+    return (strcmp(path, ".") == 0 || strcmp(path, "..") == 0);
 }
 
-int lib_fs_is_classic_ignore_file(const char* file_name) {
-    if (!file_name || file_name[0] == '\0') {
+int lib_fs_is_classic_ignore(const char* path) {
+    if (!path || path[0] == '\0') {
         return 1;
     }
-    return file_name[0] == '.';
+    // starts with '.': .git, .svn
+    return path[0] == '.';
 }
 
-int lib_fs_is_ignore_file(const char* file_name) {
-    return 0; //return lib_fs_is_recursive_ignore_file(file_name) || lib_fs_is_classic_ignore_file(file_name);
+int lib_fs_is_ignore(const char* path) {
+    return 0; //return lib_fs_is_recursive_ignore(path) || lib_fs_is_classic_ignore(path);
 }
 
 ////
@@ -521,8 +524,8 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
 
         char* file_name = dirent->d_name;
         int file_type = dirent->d_type; // lib_fs_get_dirent_type(dirent);                       // dirent type (!)
-        int is_recursive_ignore = lib_fs_is_recursive_ignore_file(file_name); // ., ..
-        int is_ignore = lib_fs_is_ignore_file(file_name);                     // .git, .svn
+        int is_recursive_ignore = lib_fs_is_recursive_ignore(file_name); // ., ..
+        int is_ignore = lib_fs_is_ignore(file_name);                     // .git, .svn
         int is_force_ignore = is_recursive_ignore || is_ignore;
         int is_match = is_ignore ? 0 : (pattern == NULL || lib_fs_match_file_internal(pattern, file_name));
         int is_dir_ = dirent->d_type == LIB_FS_DIR; // lib_fs_is_dirent_dir(dirent);                           // dirent type (!)
@@ -573,7 +576,6 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
                     if (lib_files_reinit(files, size) != 0) {
                         free(full_name);
                         lib_files_free(*files);
-                        //lib_fs_close_dir(dir);
                         lib_closedir(dir);
                         return -1;
                     }
@@ -627,140 +629,11 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
         // TODO: stderr: error
     //}
 
-    //lib_fs_close_dir(dir);
     lib_closedir(dir);
     return 0;
 }
 
-int lib_fs_compare_by_type(int type1, int type2) {
-    if (type1 == LIB_FS_DIR && type2 != LIB_FS_DIR) {
-        return -1;
-    }
-
-    if (type2 == LIB_FS_DIR && type1 != LIB_FS_DIR) {
-        return 1;
-    }
-
-    return 0;
-}
-
-int lib_fs_compare_by_name(const char* name1, const char* name2) {
-    if (!name1 && !name2) {
-        return 0;
-    }
-    if (!name1) {
-        return -1;
-    }
-    if (!name2) {
-        return 1;
-    }
-    return strcmp(name1, name2);
-}
-
-int lib_fs_compare_by_size(uint64_t size1, uint64_t size2) {
-    if (size2 == size1) {
-        return 0;
-    }
-    return size1 > size2 ? 1 : -1; // 
-    //return size1 > size2 ? -1 : 1; // ^   
-}
-
-int lib_fs_compare_by_time(long time1, long time2) {
-    if (time2 == time1) {
-        return 0;
-    }
-    return time1 > time2 ? 1 : -1; // 
-    //return time1 > time2 ? -1 : 1; // ^   
-}
-
-int lib_fs_compare(const void* v1, const void* v2, lib_file_sort_t file_sort, bool asc, bool is_dir_first) {
-
-    if (file_sort < 1 || file_sort > 3) {
-        return 0;
-    }
-
-    if (!v1 && !v2) {
-        return 0;
-    }
-
-    if (!v1) {
-        return asc ? -1 : 1;
-    }
-    if (!v2) {
-        return asc ? 1 : -1;
-    }
-
-    lib_file_t* f1 = *((lib_file_t**) v1);
-    lib_file_t* f2 = *((lib_file_t**) v2);
-
-    int cmp = 0;
-    if (is_dir_first) {
-        /* Sort by type before: DIR is priority then other types */
-        int type1 = f1->type;
-        int type2 = f2->type;
-        cmp = lib_fs_compare_by_type(type1, type2);
-        if (cmp != 0) {
-            return cmp;
-        }
-    }
-
-    cmp = 0;
-    if (file_sort == LIB_FILE_SORT_BY_NAME) {
-
-        /* Sort By name */
-        char *name1 = f1->name;
-        char *name2 = f2->name;
-        cmp = lib_fs_compare_by_name(name1, name2);
-    } else if (file_sort == LIB_FILE_SORT_BY_SIZE) {
-
-        /* Sort By size */
-        uint64_t size1 = lib_file_get_size(f1);
-        uint64_t size2 = lib_file_get_size(f2);
-        cmp = lib_fs_compare_by_size(size1, size2);
-    } else if (file_sort == LIB_FILE_SORT_BY_TIME) {
-
-        /* Sort By time */
-        long time1 = lib_file_get_mtime(f1);
-        long time2 = lib_file_get_mtime(f2);
-        cmp = lib_fs_compare_by_size(time1, time2);
-    }
-
-    return (asc || cmp == 0) ? cmp : (cmp * -1);
-}
-
-int lib_fs_file_sort_by_alpha(const void* v1, const void* v2) {
-    return lib_fs_compare(v1, v2, LIB_FILE_SORT_BY_NAME, true, false);
-}
-
-int lib_fs_file_sort_by_name(const void* v1, const void* v2) {
-    return lib_fs_compare(v1, v2, LIB_FILE_SORT_BY_NAME, true, true);
-}
-
-int lib_fs_file_sort_by_size(const void* v1, const void* v2) {
-    return lib_fs_compare(v1, v2, LIB_FILE_SORT_BY_SIZE, true, false);
-}
-
-int lib_fs_file_sort_by_time(const void* v1, const void* v2) {
-    return lib_fs_compare(v1, v2, LIB_FILE_SORT_BY_TIME, true, false);
-}
-
-////
-
-int lib_fs_file_sort_by_alpha_desc(const void* v1, const void* v2) {
-    return lib_fs_compare(v1, v2, LIB_FILE_SORT_BY_NAME, false, false);
-}
-
-int lib_fs_file_sort_by_name_desc(const void* v1, const void* v2) {
-    return lib_fs_compare(v1, v2, LIB_FILE_SORT_BY_NAME, false, true);
-}
-
-int lib_fs_file_sort_by_size_desc(const void* v1, const void* v2) {
-    return lib_fs_compare(v1, v2, LIB_FILE_SORT_BY_SIZE, false, false);
-}
-
-int fs_file_sort_by_time_desc(const void* v1, const void* v2) {
-    return lib_fs_compare(v1, v2, LIB_FILE_SORT_BY_TIME, false, false);
-}
+// file-scan
 
 int lib_fs_scandir(const char* dir_name, const char* pattern, lib_file_t*** files, int max_depth, int file_only) {
     if (!dir_name) {
@@ -785,15 +658,15 @@ int lib_fs_scandir(const char* dir_name, const char* pattern, lib_file_t*** file
     lib_strarrfree(patterns);
 
     if (files && file_count > 0) {
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_fs_file_sort_by_alpha);
-        qsort(*files, file_count, sizeof(struct lib_file_t*), lib_fs_file_sort_by_name);
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_fs_file_sort_by_size);
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_fs_file_sort_by_time);
+        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_alpha);
+        qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_name);
+        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_size);
+        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_time);
 
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_fs_file_sort_by_alpha_desc);
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_fs_file_sort_by_name_desc);
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_fs_file_sort_by_size_desc);
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_fs_file_sort_by_time_desc);
+        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_alpha_desc);
+        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_name_desc);
+        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_size_desc);
+        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_time_desc);
 
     }
     

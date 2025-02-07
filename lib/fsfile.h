@@ -141,6 +141,13 @@ typedef int lib_fd_t;
 
 #endif
 
+typedef enum {
+  LIB_FILE_SORT_NONE           = 0,
+  LIB_FILE_SORT_BY_NAME        = 1,
+  LIB_FILE_SORT_BY_SIZE        = 2,
+  LIB_FILE_SORT_BY_TIME        = 3,
+} lib_file_sort_t;
+
 //// fs-stat
 
 int lib_fs_stat(const char* path, lib_stat_t* buf);
@@ -202,5 +209,41 @@ bool lib_file_is_dir(lib_file_t* file);
 void lib_fs_init_mode(char* mode);
 
 int lib_fs_get_type_by_mode(int mode);
+
+// fs-file-compare
+
+int lib_file_compare_by_type(int type1, int type2);
+
+int lib_file_compare_by_name(const char* name1, const char* name2);
+
+int lib_file_compare_by_size(uint64_t size1, uint64_t size2);
+
+int lib_file_compare_by_time(long time1, long time2);
+
+////
+
+int lib_file_compare(const void* v1, const void* v2, lib_file_sort_t file_sort, bool asc, bool is_dir_first);
+
+// file-sort (asc)
+
+int lib_file_sort_by_alpha(const void* v1, const void* v2);
+
+int lib_file_sort_by_name(const void* v1, const void* v2);
+
+int lib_file_sort_by_size(const void* v1, const void* v2);
+
+int lib_file_sort_by_time(const void* v1, const void* v2);
+
+// file-sort (desc)
+
+int lib_file_sort_by_alpha_desc(const void* v1, const void* v2);
+
+int lib_file_sort_by_name_desc(const void* v1, const void* v2);
+
+int lib_file_sort_by_size_desc(const void* v1, const void* v2);
+
+int fs_file_sort_by_time_desc(const void* v1, const void* v2);
+
+//int lib_fs_scandir(const char* dir_name, const char* pattern, lib_file_t*** files, int max_depth, int file_only);
 
 #endif // PLAZMA_LIB_FSFILE_H
