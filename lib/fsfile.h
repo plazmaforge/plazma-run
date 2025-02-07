@@ -148,13 +148,21 @@ typedef enum {
   LIB_FILE_SORT_BY_TIME        = 3,
 } lib_file_sort_t;
 
+// fs
+
+lib_file_t* lib_fs_get_file(const char* file_name);
+
+void lib_fs_init_mode(char* mode);
+
+int lib_fs_get_type_by_mode(int mode);
+
 //// fs-stat
 
 int lib_fs_stat(const char* path, lib_stat_t* buf);
 
 lib_stat_t* lib_fs_stat_new();
 
-/// fs-file
+// fs-file
 
 lib_file_t* lib_file_new();
 
@@ -166,13 +174,15 @@ int lib_files_init(lib_file_t*** files, size_t size);
 
 int lib_files_reinit(lib_file_t*** files, size_t size);
 
-////
+// fs-file
 
-lib_file_t* lib_fs_get_file(const char* file_name);
+lib_file_t* lib_file_get(const char* file_name);
 
 const char* lib_file_get_name(lib_file_t* file);
 
 int lib_file_get_type(lib_file_t* file);
+
+int lib_file_get_type_by_mode(int mode);
 
 char lib_file_get_type_char(lib_file_t* file);
 
@@ -204,11 +214,9 @@ time_t lib_file_get_ctime(lib_file_t* file);
 
 bool lib_file_is_dir(lib_file_t* file);
 
-// fs
+////
 
-void lib_fs_init_mode(char* mode);
-
-int lib_fs_get_type_by_mode(int mode);
+void lib_file_init_mode(char* mode);
 
 // fs-file-compare
 
@@ -242,7 +250,7 @@ int lib_file_sort_by_name_desc(const void* v1, const void* v2);
 
 int lib_file_sort_by_size_desc(const void* v1, const void* v2);
 
-int fs_file_sort_by_time_desc(const void* v1, const void* v2);
+int lib_file_sort_by_time_desc(const void* v1, const void* v2);
 
 //int lib_fs_scandir(const char* dir_name, const char* pattern, lib_file_t*** files, int max_depth, int file_only);
 

@@ -169,6 +169,20 @@ int _lib_fs_stat(const char* path, lib_stat_t* buf) {
 
 #endif
 
+// fs
+
+lib_file_t* lib_fs_get_file(const char* path) {
+    return lib_file_get(path);
+}
+
+void lib_fs_init_mode(char* mode) {
+    return lib_file_init_mode(mode);
+}
+
+int lib_fs_get_type_by_mode(int mode) {
+    return lib_file_get_type_by_mode(mode);
+}
+
 // fs-stat
 
 int lib_fs_stat(const char* path, lib_stat_t* buf) {
@@ -258,23 +272,21 @@ int lib_files_reinit(lib_file_t*** files, size_t size) {
     return 0;
 }
 
-////
-
 // fs-file
 
-lib_file_t* lib_fs_get_file(const char* file_name) {
-    if (!file_name) {
+lib_file_t* lib_file_get(const char* path) {
+    if (!path) {
         return NULL;
     }
-    char* path = lib_fs_get_real_path(file_name);
-    if (!path) {
+    char* rpath = lib_fs_get_real_path(path);
+    if (!rpath) {
         return NULL;
     }
     lib_file_t* file = lib_file_new();
     if (!file) {
         return NULL;
     }
-    file->name = path;
+    file->name = rpath;
 
     lib_stat_t* stat = lib_fs_stat_new();
     if (!stat) {
@@ -283,7 +295,7 @@ lib_file_t* lib_fs_get_file(const char* file_name) {
     file->stat = stat;
 
     /* Get stat info */
-    lib_fs_stat(path, file->stat);
+    lib_fs_stat(rpath, file->stat);
 
     /* Get file type by stat mode */
     file->type = lib_fs_get_type_by_mode(stat->st_mode);
@@ -303,6 +315,44 @@ int lib_file_get_type(lib_file_t* file) {
         return 0;
     }
     return file->type;
+}
+
+int lib_file_get_type_by_mode(int mode) {
+    #ifdef _WIN32
+
+    /* Base: FS_DIR, FS_REG, FS_LNK only */
+    if (S_ISDIR(mode)) {
+        return LIB_FS_DIR;
+    } else if (S_ISREG(mode)) {
+        return LIB_FS_REG;
+    } else if (S_ISLNK(mode)) {
+        return LIB_FS_LNK;
+    }
+    return LIB_FS_UNKNOWN;
+    #else
+
+    /* Base: FS_DIR, FS_REG, FS_LNK */
+    if (S_ISDIR(mode)) {
+        return LIB_FS_DIR;
+    } else if (S_ISREG(mode)) {
+        return LIB_FS_REG;
+    } else if (S_ISLNK(mode)) {
+        return LIB_FS_LNK;
+
+    /* Other */
+    } else if (S_ISFIFO(mode)) {
+        return LIB_FS_FIFO;
+    } else if (S_ISCHR(mode)) {
+        return LIB_FS_CHR;
+    } else if (S_ISBLK(mode)) {
+        return LIB_FS_BLK;
+    } else if (S_ISSOCK(mode)) {
+        return LIB_FS_SOCK;
+    } else if (S_ISWHT(mode)) {
+        return LIB_FS_WHT;
+    }
+    return LIB_FS_UNKNOWN;
+    #endif
 }
 
 /*
@@ -353,7 +403,7 @@ char lib_file_get_type_char(lib_file_t* file) {
     return ' ';
 }
 
-void lib_fs_init_mode(char* mode) {    
+void lib_file_init_mode(char* mode) {    
     /*  len = 11 + 1  */
     /*  0123456789    */
     /* ' --------- ^' */
@@ -485,46 +535,6 @@ bool lib_file_is_dir(lib_file_t* file) {
         return 0;
     }
     return file->type == LIB_FS_DIR;
-}
-
-// fs
-
-int lib_fs_get_type_by_mode(int mode) {    
-    #ifdef _WIN32
-
-    /* Base: FS_DIR, FS_REG, FS_LNK only */
-    if (S_ISDIR(mode)) {
-        return LIB_FS_DIR;
-    } else if (S_ISREG(mode)) {
-        return LIB_FS_REG;
-    } else if (S_ISLNK(mode)) {
-        return LIB_FS_LNK;
-    }
-    return LIB_FS_UNKNOWN;
-    #else
-
-    /* Base: FS_DIR, FS_REG, FS_LNK */
-    if (S_ISDIR(mode)) {
-        return LIB_FS_DIR;
-    } else if (S_ISREG(mode)) {
-        return LIB_FS_REG;
-    } else if (S_ISLNK(mode)) {
-        return LIB_FS_LNK;
-
-    /* Other */
-    } else if (S_ISFIFO(mode)) {
-        return LIB_FS_FIFO;
-    } else if (S_ISCHR(mode)) {
-        return LIB_FS_CHR;
-    } else if (S_ISBLK(mode)) {
-        return LIB_FS_BLK;
-    } else if (S_ISSOCK(mode)) {
-        return LIB_FS_SOCK;
-    } else if (S_ISWHT(mode)) {
-        return LIB_FS_WHT;
-    }
-    return LIB_FS_UNKNOWN;
-    #endif
 }
 
 // fs-file-compare
@@ -659,8 +669,6 @@ int lib_file_sort_by_size_desc(const void* v1, const void* v2) {
     return lib_file_compare(v1, v2, LIB_FILE_SORT_BY_SIZE, false, false);
 }
 
-int fs_file_sort_by_time_desc(const void* v1, const void* v2) {
+int lib_file_sort_by_time_desc(const void* v1, const void* v2) {
     return lib_file_compare(v1, v2, LIB_FILE_SORT_BY_TIME, false, false);
 }
-
-////
