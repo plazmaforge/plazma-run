@@ -19,6 +19,27 @@
 
 #define LIB_FS_BUF_SIZE 4096 // For file copy
 
+typedef struct lib_fs_scan_context_t {
+
+    // config-1
+    int max_depth;
+    bool use_file_only;     // = false;
+    bool use_stat;          // = true;  // optional
+    bool use_force_pattern; // = true;  // optional
+
+    // config-2
+    char** patterns;
+    int pattern_count;
+
+    // context
+    //const char* dir_name;
+    //int level;
+
+    lib_file_t*** files;
+    int file_count;
+
+} lib_fs_scan_context_t;
+
 //// fs-math ////
 
 int lib_fs_match_file(const char* name, const char* pattern) {
@@ -492,7 +513,21 @@ bool lib_fs_is_ignore(const char* path) {
 
 ////
 
-int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int pattern_count, lib_file_t*** files, int* file_count, int level, int max_depth, int file_only) {
+static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, int level
+
+    /*, 
+        char* dir_name, 
+        char** patterns, 
+        int pattern_count, 
+        lib_file_t*** files, 
+        int* file_count, 
+        int level, 
+        int max_depth, 
+        int file_only
+    */   
+    ) {
+
+    //printf(">> scan: %d %s\n", ctx->level, ctx->dir_name);
 
     DIR* dir = lib_opendir(dir_name);
     if (!dir) {
@@ -504,21 +539,22 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
     const char* pattern = NULL;
 
     // BUG (!) 
-    if (patterns && level >= 0)  {
-        if (level > pattern_count - 1) {
-            if (pattern_count == 1) {
+    if (ctx->patterns && level >= 0)  {
+        if (level > ctx->pattern_count - 1) {
+            if (ctx->pattern_count == 1) {
                 // patterns: '*' or '*.*'
-                pattern = patterns[0];
+                pattern = ctx->patterns[0];
             }
         } else {
-            pattern = patterns[level];
+            pattern = ctx->patterns[level];
         }
     } 
 
     bool use_stat = true;          // optional
-    bool use_dir = !file_only;     // optional
+    bool use_dir = true;//!ctx->use_file_only;     // optional
     bool use_force_pattern = true; // optional
-    bool is_force_pattern = use_force_pattern && pattern && pattern_count == 1;
+
+    bool is_force_pattern = use_force_pattern && pattern && ctx->pattern_count == 1;
 
     while ((dirent = lib_readdir(dir)) != NULL) {
 
@@ -527,32 +563,34 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
         bool is_recursive_ignore = lib_fs_is_recursive_ignore(file_name); // ., ..
         bool is_ignore = lib_fs_is_ignore(file_name);                     // .git, .svn
         bool is_force_ignore = is_recursive_ignore || is_ignore;
-        bool is_match = is_ignore ? 0 : (pattern == NULL || lib_fs_match_file_internal(pattern, file_name));
-        bool is_dir_ = dirent->d_type == LIB_FS_DIR; // lib_fs_is_dirent_dir(dirent);                           // dirent type (!)
+        bool is_match = is_ignore ? false : (pattern == NULL || lib_fs_match_file_int(pattern, file_name));
+        bool is_dir_type = dirent->d_type == LIB_FS_DIR;
 
-        if (!is_match && is_dir_ && is_force_pattern && !is_force_ignore) {
+        if (!is_match && is_dir_type && is_force_pattern && !is_force_ignore) {
             is_match = true;
         }
 
         //printf("find [%s] [%s%s] [%d] %s, %s, %s\n", (is_match ? "+" : " "), (is_dir_ ? "D" : " "), (is_ignore ? "I" : " "), level, dir_name, file_name, pattern);
 
+        //printf(">> dirent: %d %s\n", ctx->level, file_name);
+
         if (is_match) {
 
-            //printf("match [%d] %s, %s, %s\n", level, dir_name, file_name, pattern);
+            //printf("match [%d] %s, %s, %s\n", ctx->level, ctx->dir_name, file_name, pattern);
 
             // 0 - notning
             // 1 - add file/dir
             // 2 - scandir recursive
-            
+
             int mode = 0;
-            if (!is_dir_) {
+            if (!is_dir_type) {
                 // We add the file from last pattern level only
-                if (level == 0 || level == pattern_count - 1 || is_force_pattern) {
+                if (level == 0 || level == ctx->pattern_count - 1 || is_force_pattern) {
                     mode = 1; // add file
                 }
             } else {
                 // Recursive if max_depth != -1
-                if (max_depth >= 0 && !is_recursive_ignore) {
+                if (ctx->max_depth >= 0 && !is_recursive_ignore) {
                     mode = 2;
                 }
                 if (mode == 0 && use_dir) {
@@ -571,15 +609,18 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
             if (mode == 1) {
 
                 //printf("try   : add_file\n");
-                int index = *file_count; // old file_count
-                lib_file_t** list = *files;
+                //int index = *file_count; // old file_count
+                //lib_file_t** list = *files;
+
+                int index = ctx->file_count; // old file_count
+                lib_file_t** list = *(ctx->files);
 
                 if (list[index] == NULL) { // NULL-terminate array: +1
                     const int inc = 10;	/* increase by this much */
                     int size = index + inc;
-                    if (lib_files_reinit(files, size) != 0) {
+                    if (lib_files_reinit(ctx->files, size) != 0) {
                         free(full_name);
-                        lib_files_free(*files);
+                        lib_files_free(*(ctx->files));
                         lib_closedir(dir);
                         return -1;
                     }
@@ -600,14 +641,18 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
                 //printf("try  : index        : %d\n", *file_count);
                 //printf("try  : reserved     : %d\n", *reserved);
 
-                list = *files;
+                //list = *files;
+                list = *(ctx->files);
                 list[index] = file_s; 
                 //*files[*file_count] = file_s; // Doesn't work
 
-                *file_count = *file_count + 1;
+                //*file_count = *file_count + 1;
+                ctx->file_count = ctx->file_count + 1;
                  
                 // Shift NULL marker (size + 1): for allocation without fulling NULL
-                index = *file_count; // new file_count
+                //index = *file_count; // new file_count
+                index = ctx->file_count; // new file_count
+                
                 if (list[index] != NULL) {
                     list[index] = NULL;
                 }
@@ -617,16 +662,25 @@ int lib_fs_scandir_internal(const char* dir_name, /*const*/ char** patterns, int
             }
                 
             if (mode == 2) {
+
                //printf("try   : add_dir\n");
 
-               int result = lib_fs_scandir_internal(full_name, patterns, pattern_count, files, file_count, level + 1, max_depth, file_only);
-               if (result < 0) {
-                 //printf("err  : %d\n", result);
-                 // error
-               }
+               //ctx->level = ctx->level + 1;
+               //ctx->dir_name = full_name;
+
+               //int result = lib_fs_scandir_ctx(full_name, patterns, pattern_count, files, file_count, level + 1, max_depth, file_only);
+               int result = lib_fs_scandir_ctx(ctx, full_name, level + 1);
+
+               //ctx->level = ctx->level - 1;
+               
+               //if (result < 0) {
+               //  printf("err  : %d\n", result);
+               //  // error
+               //}
             }
 
             free(full_name);
+            //printf("try free: %s\n", full_name);
         }
     }
     //if (errno != 0) {
@@ -649,17 +703,32 @@ int lib_fs_scandir(const char* dir_name, const char* pattern, lib_file_t*** file
 
     //printf(">>pattern_count : %d\n", pattern_count);
     //printf(">>scandir       : %s\n", dir_name);
-    //printf(">>level         : %d\n", level);
+    //printf(">>max_depth     : %d\n", max_depth);
     //printf(">>pattern       : %s\n", pattern);
 
-    int file_count = 0;
+    //int file_count = 0;
     int size = 10; // start size
 
     lib_files_init(files, size);
 
-    lib_fs_scandir_internal(dir_name, /*(const char**)*/ patterns, pattern_count, files, &file_count, 0, max_depth, file_only);
+    lib_fs_scan_context_t ctx;
+    ctx.patterns = patterns;
+    ctx.pattern_count = pattern_count;
+    ctx.max_depth = max_depth;
+    ctx.use_file_only = file_only;
+               
+    ctx.files = files;
+    ctx.file_count = 0;
+
+    //ctx.level = 0;
+    //ctx.dir_name = dir_name;
+
+    //lib_fs_scandir_ctx(dir_name, patterns, pattern_count, files, &file_count, 0, max_depth, file_only);
+    lib_fs_scandir_ctx(&ctx, dir_name, 0);
 
     lib_strarrfree(patterns);
+
+    int file_count = ctx.file_count;
 
     if (files && file_count > 0) {
         //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_alpha);

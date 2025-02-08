@@ -14,17 +14,17 @@
 #include "strlib.h"
 #include "fslib.h"
 
-static int lib_fs_match_file_internal(const char* pattern, const char* name);
+static int lib_fs_match_file_int(const char* pattern, const char* name);
 
-static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode);
+static int lib_fs_match_file_int_mode(const char* pattern, const char* name, int mode);
 
 ////
 
-static int lib_fs_match_file_internal(const char* pattern, const char* name) {
-    return lib_fs_match_file_internal_mode(pattern, name, FNM_PERIOD);
+static int lib_fs_match_file_int(const char* pattern, const char* name) {
+    return lib_fs_match_file_int_mode(pattern, name, FNM_PERIOD);
 }
 
-static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode) {
+static int lib_fs_match_file_int_mode(const char* pattern, const char* name, int mode) {
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
     //return fnmatch(pattern, name, FNM_PERIOD) == 0; // true id '0'
 

@@ -23,17 +23,17 @@
 #include "wstrlib.h"
 #include "fslib.h"
 
-static int lib_fs_match_file_internal(const char* pattern, const char* name);
+static int lib_fs_match_file_int(const char* pattern, const char* name);
 
-static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode);
+static int lib_fs_match_file_int_mode(const char* pattern, const char* name, int mode);
 
 static wchar_t* getUserNameW();
 
-static int lib_fs_match_file_internal(const char* pattern, const char* name) {
-    return lib_fs_match_file_internal_mode(pattern, name, 0);
+static int lib_fs_match_file_int(const char* pattern, const char* name) {
+    return lib_fs_match_file_int_mode(pattern, name, 0);
 }
 
-static int lib_fs_match_file_internal_mode(const char* pattern, const char* name, int mode) {
+static int lib_fs_match_file_int_mode(const char* pattern, const char* name, int mode) {
 
     // PathMatchSpecA
     //printf(" %s -> %s, %d, %d\n", pattern, name, val, res);
