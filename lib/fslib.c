@@ -23,9 +23,9 @@ typedef struct lib_fs_scan_context_t {
 
     // config-1
     int max_depth;
-    bool use_file_only;     // = false;
-    bool use_stat;          // = true;  // optional
-    bool use_force_pattern; // = true;  // optional
+    bool use_stat;          // true
+    bool use_dir;           // true
+    bool use_force_pattern; // true
 
     // config-2
     char** patterns;
@@ -34,6 +34,9 @@ typedef struct lib_fs_scan_context_t {
     // context
     //const char* dir_name;
     //int level;
+
+    int (*filter)(const void* v);
+    int (*compare) (const void* v1, const void* v2);
 
     lib_file_t*** files;
     int file_count;
@@ -513,21 +516,7 @@ bool lib_fs_is_ignore(const char* path) {
 
 ////
 
-static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, int level
-
-    /*, 
-        char* dir_name, 
-        char** patterns, 
-        int pattern_count, 
-        lib_file_t*** files, 
-        int* file_count, 
-        int level, 
-        int max_depth, 
-        int file_only
-    */   
-    ) {
-
-    //printf(">> scan: %d %s\n", ctx->level, ctx->dir_name);
+static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, int level) {
 
     DIR* dir = lib_opendir(dir_name);
     if (!dir) {
@@ -550,9 +539,9 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
         }
     } 
 
-    bool use_stat = true;          // optional
-    bool use_dir = true;//!ctx->use_file_only;     // optional
-    bool use_force_pattern = true; // optional
+    bool use_stat = ctx->use_stat;
+    bool use_dir = ctx->use_dir;
+    bool use_force_pattern = ctx->use_force_pattern;
 
     bool is_force_pattern = use_force_pattern && pattern && ctx->pattern_count == 1;
 
@@ -694,53 +683,57 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
 // file-scan
 
 int lib_fs_scandir(const char* dir_name, const char* pattern, lib_file_t*** files, int max_depth, int file_only) {
-    if (!dir_name) {
+    if (!dir_name || !files) {
         return -1;
     }
 
     char** patterns = lib_path_split(pattern); // split pattern by level
     int pattern_count = lib_strarrlen(patterns);
 
-    //printf(">>pattern_count : %d\n", pattern_count);
-    //printf(">>scandir       : %s\n", dir_name);
-    //printf(">>max_depth     : %d\n", max_depth);
     //printf(">>pattern       : %s\n", pattern);
-
+    //printf(">>pattern_count : %d\n", pattern_count);
+    //printf(">>dir_name      : %s\n", dir_name);
+    //printf(">>max_depth     : %d\n", max_depth);
+    
     //int file_count = 0;
     int size = 10; // start size
 
     lib_files_init(files, size);
 
     lib_fs_scan_context_t ctx;
+
+    ctx.use_stat = true;          // optional
+    ctx.use_dir = !file_only;     // optional
+    ctx.use_force_pattern = true; // optional
+
     ctx.patterns = patterns;
     ctx.pattern_count = pattern_count;
     ctx.max_depth = max_depth;
-    ctx.use_file_only = file_only;
-               
+
+    //ctx.compare = lib_file_sort_by_alpha;
+    ctx.compare = lib_file_sort_by_name;
+    //ctx.compare = lib_file_sort_by_size;
+    //ctx.compare = lib_file_sort_by_time;
+
+    //ctx.compare = lib_file_sort_by_alpha_desc;
+    //ctx.compare = lib_file_sort_by_name_desc;
+    //ctx.compare = lib_file_sort_by_size_desc;
+    //ctx.compare = lib_file_sort_by_time_desc;
+
     ctx.files = files;
     ctx.file_count = 0;
 
     //ctx.level = 0;
     //ctx.dir_name = dir_name;
 
-    //lib_fs_scandir_ctx(dir_name, patterns, pattern_count, files, &file_count, 0, max_depth, file_only);
     lib_fs_scandir_ctx(&ctx, dir_name, 0);
 
     lib_strarrfree(patterns);
 
     int file_count = ctx.file_count;
 
-    if (files && file_count > 0) {
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_alpha);
-        qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_name);
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_size);
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_time);
-
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_alpha_desc);
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_name_desc);
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_size_desc);
-        //qsort(*files, file_count, sizeof(struct lib_file_t*), lib_file_sort_by_time_desc);
-
+    if (ctx.compare && file_count > 0) {
+        qsort(*files, file_count, sizeof(struct lib_file_t*), ctx.compare);
     }
     
     return file_count;
