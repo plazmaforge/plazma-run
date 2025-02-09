@@ -572,7 +572,7 @@ int lib_file_compare_by_size(uint64_t size1, uint64_t size2) {
     //return size1 > size2 ? -1 : 1; // ^   
 }
 
-int lib_file_compare_by_time(long time1, long time2) {
+int lib_file_compare_by_time(time_t time1, time_t time2) {
     if (time2 == time1) {
         return 0;
     }
@@ -629,8 +629,8 @@ int lib_file_compare(const void* v1, const void* v2, lib_file_sort_t file_sort, 
     } else if (file_sort == LIB_FILE_SORT_BY_TIME) {
 
         /* Sort By time */
-        long time1 = lib_file_get_mtime(f1);
-        long time2 = lib_file_get_mtime(f2);
+        time_t time1 = lib_file_get_mtime(f1);
+        time_t time2 = lib_file_get_mtime(f2);
         cmp = lib_file_compare_by_size(time1, time2);
     }
 

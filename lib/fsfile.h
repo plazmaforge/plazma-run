@@ -226,7 +226,7 @@ int lib_file_compare_by_name(const char* name1, const char* name2);
 
 int lib_file_compare_by_size(uint64_t size1, uint64_t size2);
 
-int lib_file_compare_by_time(long time1, long time2);
+int lib_file_compare_by_time(time_t time1, time_t time2);
 
 ////
 

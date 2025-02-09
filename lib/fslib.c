@@ -19,30 +19,6 @@
 
 #define LIB_FS_BUF_SIZE 4096 // For file copy
 
-typedef struct lib_fs_scan_context_t {
-
-    // config-1
-    int max_depth;
-    bool use_stat;          // true
-    bool use_dir;           // true
-    bool use_force_pattern; // true
-
-    // config-2
-    char** patterns;
-    int pattern_count;
-
-    // context
-    //const char* dir_name;
-    //int level;
-
-    int (*filter)(const void* v);
-    int (*compare) (const void* v1, const void* v2);
-
-    lib_file_t*** files;
-    int file_count;
-
-} lib_fs_scan_context_t;
-
 //// fs-math ////
 
 int lib_fs_match_file(const char* name, const char* pattern) {
@@ -495,6 +471,11 @@ int lib_fs_remove_dir(const char* path) {
 
 // file-scan
 
+/**
+ * Return true if the path is not supported scandir recursive
+ * We can't use '.' or '..' to scandir recursive,
+ * because it is not correct
+ */
 bool lib_fs_is_recursive_ignore(const char* path) {
     if (!path) {
         return true;
@@ -502,6 +483,16 @@ bool lib_fs_is_recursive_ignore(const char* path) {
     return (strcmp(path, ".") == 0 || strcmp(path, "..") == 0);
 }
 
+/**
+ * Return true if the parh in classic ignore list (starts with '.')
+ * For example:
+ * 
+ * .git
+ * .gitignore
+ * .svn
+ * .vscode
+ * .project
+ */
 bool lib_fs_is_classic_ignore(const char* path) {
     if (!path || path[0] == '\0') {
         return true;
@@ -527,7 +518,12 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
     struct dirent* dirent;
     const char* pattern = NULL;
 
-    // BUG (!) 
+    // BUG (!)
+    // Get pattern by level from patterns.
+    // For level >= 0 only.
+    // If level deep is bigger than count of pattern
+    // and count of pattern is 1 than use patterns[0],
+    // becasue this pattern is global for all files
     if (ctx->patterns && level >= 0)  {
         if (level > ctx->pattern_count - 1) {
             if (ctx->pattern_count == 1) {
@@ -541,9 +537,11 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
 
     bool use_stat = ctx->use_stat;
     bool use_dir = ctx->use_dir;
-    bool use_force_pattern = ctx->use_force_pattern;
+    bool use_global_pattern = ctx->use_global_pattern;
 
-    bool is_force_pattern = use_force_pattern && pattern && ctx->pattern_count == 1;
+    // Force global pattern for all files
+    // Only one pattern
+    bool is_global_pattern = use_global_pattern && pattern && ctx->pattern_count == 1;
 
     while ((dirent = lib_readdir(dir)) != NULL) {
 
@@ -551,16 +549,15 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
         int file_type = dirent->d_type;
         bool is_recursive_ignore = lib_fs_is_recursive_ignore(file_name); // ., ..
         bool is_ignore = lib_fs_is_ignore(file_name);                     // .git, .svn
-        bool is_force_ignore = is_recursive_ignore || is_ignore;
+        bool is_global_ignore = is_recursive_ignore || is_ignore;
         bool is_match = is_ignore ? false : (pattern == NULL || lib_fs_match_file_int(pattern, file_name));
         bool is_dir_type = dirent->d_type == LIB_FS_DIR;
 
-        if (!is_match && is_dir_type && is_force_pattern && !is_force_ignore) {
+        if (!is_match && is_dir_type && is_global_pattern && !is_global_ignore) {
             is_match = true;
         }
 
         //printf("find [%s] [%s%s] [%d] %s, %s, %s\n", (is_match ? "+" : " "), (is_dir_ ? "D" : " "), (is_ignore ? "I" : " "), level, dir_name, file_name, pattern);
-
         //printf(">> dirent: %d %s\n", ctx->level, file_name);
 
         if (is_match) {
@@ -574,11 +571,11 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
             int mode = 0;
             if (!is_dir_type) {
                 // We add the file from last pattern level only
-                if (level == 0 || level == ctx->pattern_count - 1 || is_force_pattern) {
+                if (level == 0 || level == ctx->pattern_count - 1 || is_global_pattern) {
                     mode = 1; // add file
                 }
             } else {
-                // Recursive if max_depth != -1
+                // Recursive if max_depth != -1 (not flat mode)
                 if (ctx->max_depth >= 0 && !is_recursive_ignore) {
                     mode = 2;
                 }
@@ -598,9 +595,6 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
             if (mode == 1) {
 
                 //printf("try   : add_file\n");
-                //int index = *file_count; // old file_count
-                //lib_file_t** list = *files;
-
                 int index = ctx->file_count; // old file_count
                 lib_file_t** list = *(ctx->files);
 
@@ -635,11 +629,9 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
                 list[index] = file_s; 
                 //*files[*file_count] = file_s; // Doesn't work
 
-                //*file_count = *file_count + 1;
                 ctx->file_count = ctx->file_count + 1;
                  
                 // Shift NULL marker (size + 1): for allocation without fulling NULL
-                //index = *file_count; // new file_count
                 index = ctx->file_count; // new file_count
                 
                 if (list[index] != NULL) {
@@ -657,10 +649,10 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
                //ctx->level = ctx->level + 1;
                //ctx->dir_name = full_name;
 
-               //int result = lib_fs_scandir_ctx(full_name, patterns, pattern_count, files, file_count, level + 1, max_depth, file_only);
                int result = lib_fs_scandir_ctx(ctx, full_name, level + 1);
 
                //ctx->level = ctx->level - 1;
+               //ctx->dir_name = full_name;
                
                //if (result < 0) {
                //  printf("err  : %d\n", result);
@@ -680,9 +672,100 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
     return 0;
 }
 
-// file-scan
+// fs-scan
 
-int lib_fs_scandir(const char* dir_name, const char* pattern, lib_file_t*** files, int max_depth, int file_only) {
+int lib_fs_scan_config_init(lib_fs_scan_config_t* cnf) {
+    if (!cnf) {
+        return 1;
+    }
+    cnf->max_depth  = -1;
+    cnf->use_stat   = true;
+    cnf->use_dir    = true;
+    cnf->use_global_pattern = true;
+
+    cnf->sort       = LIB_FILE_SORT_NONE;
+    cnf->filter     = NULL;
+    cnf->compare    = NULL;
+    return 0;
+}
+
+int lib_fs_scan_context_init(lib_fs_scan_context_t* ctx) {
+    if (!ctx) {
+        return 1;
+    }
+    ctx->max_depth  = -1;
+    ctx->use_stat   = true;
+    ctx->use_dir    = true;
+    ctx->use_global_pattern = true;
+
+    ctx->filter     = NULL;
+    ctx->compare    = NULL;
+
+    ctx->patterns   = NULL;
+    ctx->pattern_count = 0;
+
+    ctx->files      = NULL;
+    ctx->file_count = 0;
+
+    return 0;
+}
+
+int lib_fs_scan_context_init_cnf(lib_fs_scan_context_t* ctx, lib_fs_scan_config_t* cnf) {
+    if (!ctx) {
+        return 1;
+    }
+    
+    lib_fs_scan_context_init(ctx);
+
+    if (!cnf) {
+        // default
+        ctx->filter  = NULL;
+        ctx->compare = lib_file_sort_by_name;
+        return 0;
+    }
+
+    ctx->max_depth   = cnf->max_depth;
+    ctx->use_dir     = cnf->use_dir;
+
+    if (cnf->filter) {
+        ctx->filter  = cnf->filter;
+    } else {
+        ctx->filter  = NULL;
+    }
+
+    if (cnf->compare) {
+        ctx->compare = cnf->compare;
+    } else {
+        ctx->compare = NULL;
+        if (cnf->sort > LIB_FILE_SORT_NONE) {
+            if (cnf->sort == LIB_FILE_SORT_BY_NAME) {
+                ctx->compare = lib_file_sort_by_name;
+            } else if (cnf->sort == LIB_FILE_SORT_BY_SIZE) {
+                ctx->compare = lib_file_sort_by_size;
+            } else if (cnf->sort == LIB_FILE_SORT_BY_TIME) {
+                ctx->compare = lib_file_sort_by_time;
+            }
+        }
+        if (!ctx->compare) {
+            // default
+            ctx->compare = lib_file_sort_by_name;
+        }
+    }
+
+    //ctx->compare = lib_file_sort_by_alpha;
+    //ctx->compare = lib_file_sort_by_name;
+    //ctx->compare = lib_file_sort_by_size;
+    //ctx->compare = lib_file_sort_by_time;
+
+    //ctx->compare = lib_file_sort_by_alpha_desc;
+    //ctx->compare = lib_file_sort_by_name_desc;
+    //ctx->compare = lib_file_sort_by_size_desc;
+    //ctx->compare = lib_file_sort_by_time_desc;
+
+    return 0;
+}
+
+int lib_fs_scandir_cnf(lib_fs_scan_config_t* cnf, const char* dir_name, const char* pattern, lib_file_t*** files) {
     if (!dir_name || !files) {
         return -1;
     }
@@ -700,43 +783,45 @@ int lib_fs_scandir(const char* dir_name, const char* pattern, lib_file_t*** file
 
     lib_files_init(files, size);
 
-    lib_fs_scan_context_t ctx;
+    lib_fs_scan_context_t ctx_s;
+    lib_fs_scan_context_t* ctx = &ctx_s;
 
-    ctx.use_stat = true;          // optional
-    ctx.use_dir = !file_only;     // optional
-    ctx.use_force_pattern = true; // optional
+    lib_fs_scan_context_init_cnf(ctx, cnf);
 
-    ctx.patterns = patterns;
-    ctx.pattern_count = pattern_count;
-    ctx.max_depth = max_depth;
+    ctx->patterns = patterns;
+    ctx->pattern_count = pattern_count;
 
-    //ctx.compare = lib_file_sort_by_alpha;
-    ctx.compare = lib_file_sort_by_name;
-    //ctx.compare = lib_file_sort_by_size;
-    //ctx.compare = lib_file_sort_by_time;
+    ctx->files = files;
+    ctx->file_count = 0;
 
-    //ctx.compare = lib_file_sort_by_alpha_desc;
-    //ctx.compare = lib_file_sort_by_name_desc;
-    //ctx.compare = lib_file_sort_by_size_desc;
-    //ctx.compare = lib_file_sort_by_time_desc;
+    //ctx->level = 0;
+    //ctx->dir_name = dir_name;
 
-    ctx.files = files;
-    ctx.file_count = 0;
-
-    //ctx.level = 0;
-    //ctx.dir_name = dir_name;
-
-    lib_fs_scandir_ctx(&ctx, dir_name, 0);
+    lib_fs_scandir_ctx(ctx, dir_name, 0);
 
     lib_strarrfree(patterns);
 
-    int file_count = ctx.file_count;
+    int file_count = ctx->file_count;
 
-    if (ctx.compare && file_count > 0) {
-        qsort(*files, file_count, sizeof(struct lib_file_t*), ctx.compare);
+    if (ctx->compare && file_count > 0) {
+        qsort(*files, file_count, sizeof(struct lib_file_t*), ctx->compare);
     }
     
     return file_count;
+}
+
+int lib_fs_scandir(const char* dir_name, const char* pattern, lib_file_t*** files, int max_depth, int file_only) {
+    if (!dir_name || !files) {
+        return -1;
+    }
+    
+    lib_fs_scan_config_t cnf;
+    lib_fs_scan_config_init(&cnf);
+
+    cnf.max_depth = max_depth;
+    cnf.use_dir = !file_only;
+
+    return lib_fs_scandir_cnf(&cnf, dir_name, pattern, files);
 }
 
 // https://github.com/tronkko/dirent/tree/master

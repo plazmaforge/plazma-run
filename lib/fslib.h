@@ -21,6 +21,44 @@ typedef enum {
 #define LIB_FS_MODE_LEN    11
 #define LIB_FS_ACCESS_LEN   9
 
+typedef struct lib_fs_scan_config_t {
+
+    int max_depth;
+    bool use_stat;           // Use stat                                     : true
+    bool use_dir;            // Use directory in output list                 : true
+    bool use_global_pattern; // Use global pattern (only one pattern: *, *.*): true
+
+    lib_file_sort_t sort;
+
+    int (*filter)(const void* v);
+    int (*compare) (const void* v1, const void* v2);
+
+} lib_fs_scan_config_t;
+
+typedef struct lib_fs_scan_context_t {
+
+    // config-1
+    int max_depth;
+    bool use_stat;           // Use stat                                     : true
+    bool use_dir;            // Use directory in output list                 : true
+    bool use_global_pattern; // Use global pattern (only one pattern: *, *.*): true
+
+    // config-2
+    char** patterns;
+    int pattern_count;
+
+    // context
+    //const char* dir_name;
+    //int level;
+
+    int (*filter)(const void* v);
+    int (*compare) (const void* v1, const void* v2);
+
+    lib_file_t*** files;
+    int file_count;
+
+} lib_fs_scan_context_t;
+
 /**
  * Return true if a file name is matched by a pattern
  */
