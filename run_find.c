@@ -57,20 +57,20 @@ static void _find_pattern(const char* dir_name, const char* pattern) {
 
 static void _find_item(const char* arg) {
 
-    char* file_name = lib_strdupuq(arg);
+    char* expression = lib_strdupuq(arg);
     char* dir_name  = NULL;
     char* pattern   = NULL;
 
     bool doit = false;
 
     // Get wildcard start index
-    int start_index = lib_wc_get_start_index(file_name);
+    int wldc_index = lib_wc_get_start_index(expression);
     int path_index = 0;
 
-    //printf(">> file_name  : %s\n", file_name);
-    //printf(">> start_index: %d\n", start_index);
+    //printf(">> expression : %s\n", expression);
+    //printf(">> wldc_index : %d\n", wldc_index);
 
-    if (start_index >= 0) {
+    if (wldc_index >= 0) {
         
         //printf(">> mode: wildcard\n");
 
@@ -80,16 +80,16 @@ static void _find_item(const char* arg) {
         // file*
         // file?
 
-        path_index = lib_wc_get_path_index(start_index, file_name);
+        path_index = lib_wc_get_path_index(wldc_index, expression);
         if (path_index >= 0) {
 
             // dir1/
-            dir_name = lib_strndup(file_name, path_index + 1);
+            dir_name = lib_strndup(expression, path_index + 1);
 
             // dir2/file*
             // dir2/file?
 
-            file_name = file_name + path_index + 1;
+            expression = expression + path_index + 1;
         } else {
 
             // .   - Nix
@@ -97,19 +97,19 @@ static void _find_item(const char* arg) {
             dir_name = lib_strdup(lib_fs_get_current_find_path());
         }
 
-        pattern = file_name;
+        pattern = expression;
         doit = true;
 
     } else {
 
         //printf(">> mode: path\n");
 
-        char* path = lib_fs_get_real_path(file_name);
+        char* path = lib_fs_get_real_path(expression);
         if (path) {
             _print_file_path(path);
             free(path);
         } else {
-            dir_name = lib_fs_get_dir_name(file_name);
+            dir_name = lib_fs_get_dir_name(expression);
             if (!dir_name || strcmp(dir_name, ".") == 0) {
 
                 // Scandir in current directory for one file
@@ -117,7 +117,7 @@ static void _find_item(const char* arg) {
                     free(dir_name);
                 }
                 dir_name = lib_strdup(lib_fs_get_current_find_path());
-                pattern = file_name;
+                pattern = expression;
                 doit = true;
 
             } else {
@@ -128,21 +128,21 @@ static void _find_item(const char* arg) {
 
     }
 
-    //printf(">> dir    : %s\n", dir_name);
-    //printf(">> file   : %s\n", file_name);
-    //printf(">> pattern: %s\n", pattern);
+    //printf(">> directory  : %s\n", dir_name);
+    //printf(">> expression : %s\n", expression);
+    //printf(">> pattern    : %s\n", pattern);
 
     if (doit) {
         //printf(">> doit\n");
         _find_pattern(dir_name, pattern);
     }
 
-    if (file_name && path_index > 0) {
-        file_name = file_name - path_index - 1;
+    if (expression && path_index > 0) {
+        expression = expression - path_index - 1;
     }
 
     free(dir_name);
-    free(file_name);
+    free(expression);
 
 }
 

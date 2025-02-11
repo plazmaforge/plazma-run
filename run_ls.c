@@ -23,7 +23,9 @@ typedef struct run_ls_config {
     bool is_all;
     bool is_long;
     bool is_human;
+    bool is_verbose;
     int format;
+    int sort;
     //
     bool use_mode;
     bool use_nlink;
@@ -75,6 +77,7 @@ typedef struct file_entry_t {
     lib_file_t* file;
     char* path;
     char* name;
+    char mode[LIB_FS_MODE_LEN];
     int nlink;
     uint64_t size;
     time_t time;
@@ -88,7 +91,10 @@ typedef struct file_entry_t {
     int gname_len;
 } file_entry_t;
 
-void run_ls_config_set_columns(run_ls_config* config, bool flag) {
+int run_ls_config_set_columns(run_ls_config* config, bool flag) {
+        if (!config) {
+        return 1;
+    }
     config->use_mode       = flag;
     config->use_nlink      = flag;
     config->use_uname      = flag;
@@ -96,21 +102,61 @@ void run_ls_config_set_columns(run_ls_config* config, bool flag) {
     //config->use_date       = flag;
     config->use_time       = flag;
     config->use_size       = flag;
+
+    return 0;
 }
 
-void run_ls_config_init(run_ls_config* config) {
+int run_ls_config_init(run_ls_config* config) {
+    if (!config) {
+        return 1;
+    }
     config->is_all         = true;
     config->is_long        = true;
     config->is_human       = false;
+    config->is_verbose     = false;
     config->format         = RUN_LS_FORMAT_DEF;
+    config->sort           = 0;
     //
     run_ls_config_set_columns(config, true);
     config->min_size_format = 1;
     //
     config->value_separator = " ";
+
+    return 0;
 }
 
-void run_ls_context_init(run_ls_context* context) {
+int run_ls_config_format_init(run_ls_config* config) {
+    if (!config) {
+        return 1;
+    }
+
+    if (config->is_human 
+        && (config->format == RUN_LS_FORMAT_DEF || config->format == RUN_LS_FORMAT_TAB)) {
+        // Set human size mode: start with 'Kb'
+        config->min_size_format = 0;
+    }
+
+    if (config->format == RUN_LS_FORMAT_DEF) {
+        config->value_separator = " ";
+    } else if (config->format == RUN_LS_FORMAT_CSV) {
+        config->value_separator = ",";
+    } else if (config->format == RUN_LS_FORMAT_TSV) {
+        config->value_separator = "\t";
+    } else if (config->format == RUN_LS_FORMAT_JSON) {
+        config->value_separator = ",\n";
+    } else if (config->format == RUN_LS_FORMAT_XML) {
+        config->value_separator = "\n";
+    } else if (config->format == RUN_LS_FORMAT_TAB) {
+        config->value_separator = " | ";
+    }
+
+    return 0;
+}
+
+int run_ls_context_init(run_ls_context* context) {
+    if (!context) {
+        return 1;
+    }
     context->max_nlink_len = 0;
     context->max_name_len  = 0;
     context->max_uname_len = 0;
@@ -122,6 +168,8 @@ void run_ls_context_init(run_ls_context* context) {
     context->total = 0;
     //
     context->buf_size = 0;
+
+    return 0;
 }
 
 static int _lib_digit_count(int val) {
@@ -171,14 +219,44 @@ static int _get_format(char* val) {
 
     if (strcmp(val, "csv") == 0) {
         return RUN_LS_FORMAT_CSV;
-    } else if (strcmp(optarg, "tsv") == 0) {
+    } else if (strcmp(val, "tsv") == 0) {
         return RUN_LS_FORMAT_TSV;
-    } else if (strcmp(optarg, "xml") == 0) {
+    } else if (strcmp(val, "xml") == 0) {
         return RUN_LS_FORMAT_XML;
-    } else if (strcmp(optarg, "json") == 0) {
+    } else if (strcmp(val, "json") == 0) {
         return RUN_LS_FORMAT_JSON;
-    } else if (strcmp(optarg, "tab") == 0) {
+    } else if (strcmp(val, "tab") == 0) {
         return RUN_LS_FORMAT_TAB;
+    }
+    return 0;
+}
+
+static const char* _get_format_name(int val) {
+    if (val == RUN_LS_FORMAT_CSV) {
+        return "csv";
+    } else if (val == RUN_LS_FORMAT_TSV) {
+        return "tsv";
+    } else if (val == RUN_LS_FORMAT_XML) {
+        return "xml";
+    } else if (val == RUN_LS_FORMAT_JSON) {
+        return "json";
+    } else if (val == RUN_LS_FORMAT_TAB) {
+        return "tab";
+    }
+    return "";
+}
+
+static int _get_sort(char* val) {
+    if (!val) {
+        return 0;
+    }
+
+    if (strcmp(val, "name") == 0) {
+        return LIB_FILE_SORT_BY_NAME;
+    } else if (strcmp(val, "size") == 0) {
+        return LIB_FILE_SORT_BY_SIZE;
+    } else if (strcmp(val, "time") == 0) {
+        return LIB_FILE_SORT_BY_TIME;
     }
     return 0;
 }
@@ -212,6 +290,10 @@ static uint64_t _get_unit_isize(uint64_t size, const lib_fmt_size_format_t* form
     return (uint64_t) _get_unit_size(size, format);
 }
 
+static const char* _bool_to_str(bool val) {
+    return val ? "true" : "false";
+}
+
 //// Print Value
 
 static int _print_size_txt(run_ls_context* context, uint64_t size) {
@@ -242,6 +324,16 @@ static int _print_size_fix(run_ls_context* context, uint64_t size) {
     }
 }
 
+static char* _trim_mode(char* mode) {
+    if (!mode) {
+        return NULL;
+    }
+    if (mode[LIB_FS_MODE_LEN - 1] == ' ') {
+        mode[LIB_FS_MODE_LEN - 1] = '\0';
+    }
+    return mode;
+}
+
 //// Print Line CSV ////
 
 static int _print_quote(run_ls_context* context) {
@@ -269,11 +361,9 @@ static int _print_line_csv(run_ls_context* context, file_entry_t* entry) {
         if (has) {
             pos += _print_value_separator(context);
         }
-        char mode[LIB_FS_MODE_LEN + 1]; // +NUL
-        lib_fs_init_mode(mode);
-        lib_file_add_attr(file, mode);
+
         pos += _print_quote(context);
-        pos += printf("%s", mode);
+        pos += printf("%s", _trim_mode(entry->mode));
         pos += _print_quote(context);
         has = true;
     }
@@ -375,11 +465,8 @@ static int _print_line_json(run_ls_context* context, file_entry_t* entry) {
         }
         pos += printf("%s", "    \"mode\": ");
 
-        char mode[LIB_FS_MODE_LEN + 1]; // +NUL
-        lib_fs_init_mode(mode);
-        lib_file_add_attr(file, mode);
         pos += _print_quote(context);
-        pos += printf("%s", mode);
+        pos += printf("%s", _trim_mode(entry->mode));
         pos += _print_quote(context);
         has = true;
     }
@@ -488,11 +575,9 @@ static int _print_line_xml(run_ls_context* context, file_entry_t* entry) {
             pos += _print_value_separator(context);
         }
         pos += printf("%s", "    <mode>");
-        char mode[LIB_FS_MODE_LEN + 1]; // +NUL
-        lib_fs_init_mode(mode);
-        lib_file_add_attr(file, mode);
+        
         //pos += _print_quote(context);
-        pos += printf("%s", mode);
+        pos += printf("%s", _trim_mode(entry->mode));
         //pos += _print_quote(context);
         pos += printf("%s", "</mode>");
         has = true;
@@ -602,10 +687,8 @@ static int _print_line_fix(run_ls_context* context, file_entry_t* entry) {
         if (has) {
             pos += _print_value_separator(context);
         }
-        char mode[LIB_FS_MODE_LEN + 1]; // +NUL
-        lib_fs_init_mode(mode);
-        lib_file_add_attr(file, mode);
-        pos += printf("%s", mode);
+        
+        pos += printf("%s", entry->mode);
         has = true;
     }
         
@@ -701,12 +784,32 @@ int run_ls(run_ls_context* context) {
 
     run_ls_config* config = context->config;
     char* dir_name = lib_fs_get_current_dir(); //fs_get_current_find_path();
-    //printf("Current Dir: %s\n", dir_name);
 
+    if (config->is_verbose) {
+
+        printf("flag_all     : %s\n", _bool_to_str(config->is_all));
+        printf("flag_long    : %s\n", _bool_to_str(config->is_long));
+        printf("flag_human   : %s\n", _bool_to_str(config->is_human));
+        printf("flag_verbose : %s\n", _bool_to_str(config->is_verbose));
+        printf("format       : %s\n", _get_format_name(config->format));
+        printf("dir          : %s\n", dir_name);
+        printf("\n");
+    }
+    
     char* pattern = NULL;
     lib_file_t** files = NULL;
     lib_file_t* file = NULL;
-    int file_count = lib_fs_scandir(dir_name, pattern, &files, LIB_SCANDIR_FLAT, false);
+
+    lib_fs_scan_config_t cfg;
+    lib_fs_scan_config_init(&cfg);
+    cfg.max_depth = LIB_SCANDIR_FLAT;
+    cfg.use_all = config->is_all;
+    if (config->sort > 0) {
+        cfg.sort = config->sort;
+    }
+    
+    //int file_count = lib_fs_scandir(dir_name, pattern, &files, LIB_SCANDIR_FLAT, false);
+    int file_count = lib_fs_scandir_cfg(&cfg, dir_name, pattern, &files);
 
     if (file_count <= 0) {
         lib_files_free(files);
@@ -739,7 +842,11 @@ int run_ls(run_ls_context* context) {
         entry->file = file;
         entry->path = file->name;
         entry->name = lib_fs_get_base_name(entry->path); // allocate
-        entry->nlink = file->stat->st_nlink;
+
+        lib_fs_init_mode(entry->mode);
+        lib_file_add_attr(file, entry->mode);
+
+        entry->nlink = lib_file_get_nlink(file);
         entry->uname = lib_file_get_uname(file);
         entry->gname = lib_file_get_gname(file);
         entry->size = lib_file_get_size(file);
@@ -838,7 +945,7 @@ int run_ls(run_ls_context* context) {
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-ls [-alh] [-f name]\n");
+    fprintf(stderr, "Usage: run-ls [-alh] [-format name]\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -848,17 +955,20 @@ int main(int argc, char *argv[]) {
     int opt;
     int long_ind;
 
-    bool is_all   = true;
-    bool is_long  = true;
-    bool is_human = false;    
-    int format    = 0;
+    bool is_all     = false;
+    bool is_long    = true;
+    bool is_human   = false;
+    bool is_verbose = false;
+    int format      = 0;
+    int sort        = 0;
 
     static lib_option long_options[] = {
-          {"format", required_argument, 0, 'f'},
+          {"format", required_argument, 0, 1001}, // 'f'
+          {"sort", required_argument, 0, 1002},
           {NULL,     0,                 0, 0 }
     };
 
-    while ((opt = lib_getopt_long(argc, argv, "alhf:", long_options, &long_ind)) != -1) {
+    while ((opt = lib_getopt_long(argc, argv, "alhv", long_options, &long_ind)) != -1) {
         switch (opt) {
         case 'a':
             is_all = true;
@@ -869,11 +979,21 @@ int main(int argc, char *argv[]) {
         case 'h':
             is_human = true;
             break;
-        case 'f':
+        case 'v':
+            is_verbose = true;
+            break;
+        case 1001: // 'f'
             format = _get_format(optarg);
             if (format == 0) {
                 error = 1;
                 fprintf(stderr, "%s: Unsupported format: %s\n", prog_name, optarg);
+            }
+            break;
+        case 1002: // 's'
+            sort = _get_sort(optarg);
+            if (sort == 0) {
+                error = 1;
+                fprintf(stderr, "%s: Unsupported sorting: %s\n", prog_name, optarg);
             }
             break;
         case '?':
@@ -893,30 +1013,14 @@ int main(int argc, char *argv[]) {
     run_ls_config config;
     run_ls_config_init(&config);
 
-    config.is_all   = is_all;
-    config.is_long  = is_long;
-    config.is_human = is_human;
-    config.format   = format;
+    config.is_all     = is_all;
+    config.is_long    = is_long;
+    config.is_human   = is_human;
+    config.is_verbose = is_verbose;
+    config.format     = format;
+    config.sort       = sort;
 
-    if (config.is_human 
-        && (config.format == RUN_LS_FORMAT_DEF || config.format == RUN_LS_FORMAT_TAB)) {
-        // Set human size mode: start with 'Kb'
-        config.min_size_format = 0;
-    }
-
-    if (config.format == RUN_LS_FORMAT_DEF) {
-        config.value_separator = " ";
-    } else if (config.format == RUN_LS_FORMAT_CSV) {
-        config.value_separator = ",";
-    } else if (config.format == RUN_LS_FORMAT_TSV) {
-        config.value_separator = "\t";
-    } else if (config.format == RUN_LS_FORMAT_JSON) {
-        config.value_separator = ",\n";
-    } else if (config.format == RUN_LS_FORMAT_XML) {
-        config.value_separator = "\n";
-    } else if (config.format == RUN_LS_FORMAT_TAB) {
-        config.value_separator = " | ";
-    }
+    run_ls_config_format_init(&config);
 
     run_ls_context context;
     run_ls_context_init(&context);

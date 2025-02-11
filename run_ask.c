@@ -14,7 +14,7 @@
 #include "syslib.h"
 #include "asklib.h"
 
-int _find_file(lib_ask_config_t* config, char* file_name, char* input, size_t input_size) {
+int _find_by_name(lib_ask_config_t* config, char* file_name, char* input, size_t input_size) {
     int retval = lib_ask_find(config, file_name, input, input_size);
     if (retval != 0) {
         fprintf(stderr, "%s: %s: No such file or directory\n", prog_name, file_name);
@@ -23,25 +23,26 @@ int _find_file(lib_ask_config_t* config, char* file_name, char* input, size_t in
     return retval;
 }
 
-int _find_pattern(lib_ask_config_t* config, char* file_name, char* input, size_t input_size) {
+int _find_by_expr(lib_ask_config_t* config, char* expr, char* input, size_t input_size) {
+
     // Get wildcard start index
-    int start_index = lib_wc_get_start_index(file_name);
-    if (start_index < 0) {
+    int wldc_index = lib_wc_get_start_index(expr);
+    if (wldc_index < 0) {
         return -1;
     }
-    int path_index = lib_wc_get_path_index(start_index, file_name);
+    int path_index = lib_wc_get_path_index(wldc_index, expr);
     char* dir_name = NULL;
     if (path_index >= 0) {
-        dir_name = lib_strndup(file_name, path_index + 1);
-        file_name = file_name + path_index + 1;
+        dir_name = lib_strndup(expr, path_index + 1);
+        expr = expr + path_index + 1;
     } else {
         dir_name = lib_strdup(lib_fs_get_current_find_path());
     }
 
     //printf("dir  : %s\n", dir_name);
-    //printf("file : %s\n", file_name);
+    //printf("expr : %s\n", expr);
 
-    char* pattern = file_name;
+    char* pattern = expr;
     lib_file_t** files = NULL;
     lib_file_t* file = NULL;
     int count = lib_fs_scandir(dir_name, pattern, &files, LIB_SCANDIR_RECURSIVE, true);
@@ -54,7 +55,7 @@ int _find_pattern(lib_ask_config_t* config, char* file_name, char* input, size_t
     int retval = 0;
     for (int i = 0; i < count; i++) {
         file = files[i];
-        if (_find_file(config, files[i]->name, input, input_size) != 0) {
+        if (_find_by_name(config, files[i]->name, input, input_size) != 0) {
             retval = 1;
         }
 
@@ -74,9 +75,9 @@ int run_ask(lib_ask_config_t* config, char* file_name, char* input, size_t input
 
     int retval = 0;
     if (lib_wc_is_pattern(file_name)) {
-        retval = _find_pattern(config, file_name, input, input_size);
+        retval = _find_by_expr(config, file_name, input, input_size);
     } else {
-        retval = _find_file(config, file_name, input, input_size);
+        retval = _find_by_name(config, file_name, input, input_size);
     }
 
     lib_sys_locale_restore();

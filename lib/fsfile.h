@@ -206,6 +206,8 @@ uint64_t lib_file_get_size(lib_file_t* file);
 
 int lib_file_get_mode(lib_file_t* file);
 
+int lib_file_get_nlink(lib_file_t* file);
+
 time_t lib_file_get_atime(lib_file_t* file);
 
 time_t lib_file_get_mtime(lib_file_t* file);

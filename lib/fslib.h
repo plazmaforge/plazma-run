@@ -27,6 +27,7 @@ typedef struct lib_fs_scan_config_t {
     bool use_stat;           // Use stat                                     : true
     bool use_dir;            // Use directory in output list                 : true
     bool use_global_pattern; // Use global pattern (only one pattern: *, *.*): true
+    bool use_all;            // Use all files (., .., .git, .svn, )          : true
 
     lib_file_sort_t sort;
 
@@ -42,6 +43,7 @@ typedef struct lib_fs_scan_context_t {
     bool use_stat;           // Use stat                                     : true
     bool use_dir;            // Use directory in output list                 : true
     bool use_global_pattern; // Use global pattern (only one pattern: *, *.*): true
+    bool use_all;            // Use all files (., .., .git, .svn, )          : true
 
     // config-2
     char** patterns;
@@ -114,6 +116,10 @@ int lib_fs_remove_dir(const char* path);
 
 //// fs-scan
 
+int lib_fs_scan_config_init(lib_fs_scan_config_t* cfg);
+
 int lib_fs_scandir(const char* dir_name, const char* pattern, lib_file_t*** files, int max_depth, int file_only);
+
+int lib_fs_scandir_cfg(lib_fs_scan_config_t* cfg, const char* dir_name, const char* pattern, lib_file_t*** files);
 
 #endif // PLAZMA_LIB_FSLIB_H

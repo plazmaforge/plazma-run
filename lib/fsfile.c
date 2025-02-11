@@ -481,6 +481,13 @@ int lib_file_get_mode(lib_file_t* file) {
     return file->stat->st_mode;
 }
 
+int lib_file_get_nlink(lib_file_t* file) {
+    if (!file || !file->stat) {
+        return 0;
+    }
+    return file->stat->st_nlink;
+}
+
 static time_t _lib_file_get_time(lib_file_t* file, int index) {
 
     if (!file || !file->stat) {
