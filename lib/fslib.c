@@ -1,7 +1,15 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <fts.h>
+//#include <fts.h>
+
+//#define LIB_DEBUG
+//#define LIB_DEBUG_LL
+//#define LIB_DEBUG_L2
+
+//#ifdef LIB_DEBUG
+//#include <stdio.h>
+//#endif
 
 #ifdef _WIN32
 #include <sys/utime.h>
@@ -516,6 +524,12 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
         return -1;
     }
 
+    #ifdef LIB_DEBUG
+    fprintf(stderr, "DEBUG: fs_scandir_ctx: dir_name      = %s\n", dir_name);
+    fprintf(stderr, "DEBUG: fs_scandir_ctx: level         = %d\n", level);
+    #endif
+
+
     //errno = 0;
     struct dirent* dirent;
     const char* pattern = NULL;
@@ -537,13 +551,17 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
         }
     } 
 
+    #ifdef LIB_DEBUG
+    fprintf(stderr, "DEBUG: fs_scandir_ctx: pattern       = %s\n", pattern);
+    #endif
+
     bool use_stat = ctx->use_stat;
     bool use_dir = ctx->use_dir;
-    bool use_global_pattern = ctx->use_global_pattern;
+    bool use_global = ctx->use_global;
 
     // Force global pattern for all files
     // Only one pattern
-    bool is_global_pattern = use_global_pattern && pattern && ctx->pattern_count == 1;
+    bool is_global_pattern = use_global && pattern && ctx->pattern_count == 1;
 
     while ((dirent = lib_readdir(dir)) != NULL) {
 
@@ -563,13 +581,18 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
         if (!is_match && is_dir_type && is_global_pattern && !is_global_ignore) {
             is_match = true;
         }
-
-        //printf("find [%s] [%s%s] [%d] %s, %s, %s\n", (is_match ? "+" : " "), (is_dir_ ? "D" : " "), (is_ignore ? "I" : " "), level, dir_name, file_name, pattern);
-        //printf(">> dirent: %d %s\n", ctx->level, file_name);
+        
+        #ifdef LIB_DEBUG_LL
+        fprintf(stderr, "DEBUG: fs_scandir_ctx: >> find [%s] [%s%s] [%d] %s, %s, %s\n", (is_match ? "+" : " "), (is_dir_type ? "D" : " "), (is_ignore ? "I" : " "), level, dir_name, file_name, pattern);
+        #endif
 
         if (is_match) {
 
             //printf("match [%d] %s, %s, %s\n", ctx->level, ctx->dir_name, file_name, pattern);
+
+            #ifdef LIB_DEBUG_L2
+            fprintf(stderr, "DEBUG: fs_scandir_ctx: >>   match [%s]\n", file_name);
+            #endif
 
             // 0 - notning
             // 1 - add file/dir
@@ -601,26 +624,49 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
 
             if (mode == 1) {
 
-                //printf("try   : add_file\n");
+                #ifdef LIB_DEBUG_L2
+                fprintf(stderr, "DEBUG: fs_scandir_ctx: >>   %s\n", is_dir_type ? "add-dir" : "add-file");
+                #endif
+
                 int index = ctx->file_count; // old file_count
                 lib_file_t** list = *(ctx->files);
 
-                if (list[index] == NULL) { // NULL-terminate array: +1
+                //if (list[index] == NULL) { // NULL-terminate array: +1
+
+                if (ctx->file_count >= ctx->allocated) {
+
+                    #ifdef LIB_DEBUG_L2
+                    fprintf(stderr, "DEBUG: fs_scandir_ctx: >>   try-reinit: %d, %lu\n", ctx->file_count, ctx->allocated);
+                    #endif
+
                     const int inc = 10;	/* increase by this much */
                     int size = index + inc;
                     if (lib_files_reinit(ctx->files, size) != 0) {
+
+
                         free(full_name);
                         lib_files_free(*(ctx->files));
                         lib_closedir(dir);
                         return -1;
                     }
+                    ctx->allocated = size;
+
+                    #ifdef LIB_DEBUG_L2
+                    fprintf(stderr, "DEBUG: fs_scandir_ctx: >>   ok-reinit: %lu\n", ctx->allocated);
+                    #endif
                 }
+
 
                 lib_file_t* file_s = lib_file_new();
                 file_s->name = strdup(full_name);
                 file_s->type = file_type;                
 
                 if (use_stat) {
+
+                    #ifdef LIB_DEBUG_L2
+                    fprintf(stderr, "DEBUG: fs_scandir_ctx: >>   fs-stat\n");
+                    #endif
+
                     char* real_path = lib_fs_get_real_path(file_s->name);
                     lib_stat_t* stat = lib_fs_stat_new();
                     lib_fs_stat(real_path, stat);
@@ -651,7 +697,9 @@ static int lib_fs_scandir_ctx(lib_fs_scan_context_t* ctx, const char* dir_name, 
                 
             if (mode == 2) {
 
-               //printf("try   : add_dir\n");
+                #ifdef LIB_DEBUG_L2
+                fprintf(stderr, "DEBUG: fs_scandir_ctx: >>   scan-dir\n");
+                #endif
 
                //ctx->level = ctx->level + 1;
                //ctx->dir_name = full_name;
@@ -688,7 +736,7 @@ int lib_fs_scan_config_init(lib_fs_scan_config_t* cfg) {
     cfg->max_depth  = -1;
     cfg->use_stat   = true;
     cfg->use_dir    = true;
-    cfg->use_global_pattern = true;
+    cfg->use_global = true;
     cfg->use_all    = true;
 
     cfg->sort       = LIB_FILE_SORT_NONE;
@@ -704,7 +752,7 @@ int lib_fs_scan_context_init(lib_fs_scan_context_t* ctx) {
     ctx->max_depth  = -1;
     ctx->use_stat   = true;
     ctx->use_dir    = true;
-    ctx->use_global_pattern = true;
+    ctx->use_global = true;
     ctx->use_all    = true;
 
     ctx->filter     = NULL;
@@ -715,6 +763,7 @@ int lib_fs_scan_context_init(lib_fs_scan_context_t* ctx) {
 
     ctx->files      = NULL;
     ctx->file_count = 0;
+    ctx->allocated  = 0;
 
     return 0;
 }
@@ -736,7 +785,7 @@ int lib_fs_scan_context_init_cfg(lib_fs_scan_context_t* ctx, lib_fs_scan_config_
     ctx->max_depth  = cfg->max_depth;
     ctx->use_stat   = cfg->use_stat;
     ctx->use_dir    = cfg->use_dir;
-    ctx->use_global_pattern= cfg->use_global_pattern;
+    ctx->use_global = cfg->use_global;
     ctx->use_all    = cfg->use_all;
 
     if (cfg->filter) {
@@ -778,18 +827,32 @@ int lib_fs_scan_context_init_cfg(lib_fs_scan_context_t* ctx, lib_fs_scan_config_
 }
 
 int lib_fs_scandir_cfg(lib_fs_scan_config_t* cfg, const char* dir_name, const char* pattern, lib_file_t*** files) {
-    if (!dir_name || !files) {
+    if (!cfg || !dir_name || !files) {
+        #ifdef LIB_ERROR
+        fprintf(stderr, "ERROR: fs_scandir_cfg: Invalid arguments\n");
+        #endif     
         return -1;
     }
+
+    #ifdef LIB_DEBUG
+    fprintf(stderr, "DEBUG: fs_scandir_cfg: dir_name      = %s\n", dir_name);
+    fprintf(stderr, "DEBUG: fs_scandir_cfg: pattern       = %s\n", pattern);
+    fprintf(stderr, "DEBUG: fs_scandir_cfg: max_depth     = %d\n", cfg->max_depth);
+    #endif
 
     char** patterns = lib_path_split(pattern); // split pattern by level
     int pattern_count = lib_strarrlen(patterns);
 
-    //printf(">>pattern       : %s\n", pattern);
-    //printf(">>pattern_count : %d\n", pattern_count);
-    //printf(">>dir_name      : %s\n", dir_name);
-    //printf(">>max_depth     : %d\n", max_depth);
-    
+    #ifdef LIB_DEBUG
+    fprintf(stderr, "DEBUG: fs_scandir_cfg: pattern_count = %d\n", pattern_count);
+    if (pattern_count > 0) {
+        for (int i = 0 ; i < pattern_count; i++) {
+            fprintf(stderr, "DEBUG: fs_scandir_cfg: pattern[%d]    = %s\n", i, patterns[i]);
+        }
+    }
+
+    #endif
+
     int size = 10; // start size
 
     lib_files_init(files, size);
@@ -804,6 +867,7 @@ int lib_fs_scandir_cfg(lib_fs_scan_config_t* cfg, const char* dir_name, const ch
 
     ctx->files = files;
     ctx->file_count = 0;
+    ctx->allocated  = size;
 
     //ctx->level = 0;
     //ctx->dir_name = dir_name;

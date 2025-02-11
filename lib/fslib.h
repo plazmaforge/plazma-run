@@ -8,11 +8,11 @@
 #include "fsfile.h"
 
 typedef enum {
-  LIB_FILE_CHECK_REG   = 1 << 0,
-  LIB_FILE_CHECK_LNK   = 1 << 1,
-  LIB_FILE_CHECK_DIR   = 1 << 2,
-  LIB_FILE_CHECK_EXEC  = 1 << 3,
-  LIB_FILE_CHECK_EXISTS   = 1 << 4
+  LIB_FILE_CHECK_REG    = 1 << 0,
+  LIB_FILE_CHECK_LNK    = 1 << 1,
+  LIB_FILE_CHECK_DIR    = 1 << 2,
+  LIB_FILE_CHECK_EXEC   = 1 << 3,
+  LIB_FILE_CHECK_EXISTS = 1 << 4
 } lib_file_check_t;
 
 #define LIB_SCANDIR_FLAT       -1 // Scandir flat mode (only one level)
@@ -24,10 +24,10 @@ typedef enum {
 typedef struct lib_fs_scan_config_t {
 
     int max_depth;
-    bool use_stat;           // Use stat                                     : true
-    bool use_dir;            // Use directory in output list                 : true
-    bool use_global_pattern; // Use global pattern (only one pattern: *, *.*): true
-    bool use_all;            // Use all files (., .., .git, .svn, )          : true
+    bool use_stat;   // Use stat                                     : true
+    bool use_dir;    // Use directory in output list                 : true
+    bool use_global; // Use global pattern (only one pattern: *, *.*): true
+    bool use_all;    // Use all files (., .., .git, .svn, )          : true
 
     lib_file_sort_t sort;
 
@@ -40,10 +40,10 @@ typedef struct lib_fs_scan_context_t {
 
     // config-1
     int max_depth;
-    bool use_stat;           // Use stat                                     : true
-    bool use_dir;            // Use directory in output list                 : true
-    bool use_global_pattern; // Use global pattern (only one pattern: *, *.*): true
-    bool use_all;            // Use all files (., .., .git, .svn, )          : true
+    bool use_stat;   // Use stat                                     : true
+    bool use_dir;    // Use directory in output list                 : true
+    bool use_global; // Use global pattern (only one pattern: *, *.*): true
+    bool use_all;    // Use all files (., .., .git, .svn, )          : true
 
     // config-2
     char** patterns;
@@ -58,6 +58,7 @@ typedef struct lib_fs_scan_context_t {
 
     lib_file_t*** files;
     int file_count;
+    size_t allocated;
 
 } lib_fs_scan_context_t;
 
