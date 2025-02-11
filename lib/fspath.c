@@ -442,7 +442,7 @@ bool lib_fs_is_relative_path(const char* path) {
 
 // [allocate]
 char* lib_fs_get_base_name(const char* path) {
-
+    
     if (!path) {
         return NULL;
     }

@@ -13,6 +13,12 @@ static char *input = NULL;
 static int restopt = 0;
 static int init    = 0;
 
+static int start   = 0;
+static int end     = 0;
+static int eq_pos  = 0;
+
+static int print_error = 0;
+
 static const char* find_short_option(const char* short_option, char c) {
     if (short_option == NULL) {
         return NULL;
@@ -72,6 +78,95 @@ static void getopt_init() {
     restopt = 0;
 }
 
+static int process_short_option() {
+    // TODO
+    return 0;
+}
+
+static int process_long_option(
+    int argc,
+    char* const argv[],
+    const lib_option* long_option,
+    int* long_ind,
+    const char* name,
+    int len,
+    int try
+    ) {
+
+    int index = 0;
+    const lib_option* p = find_long_option(long_option, &index, name, len);
+
+    if (p == NULL) {
+        if (try) {
+            return -1;
+        }
+        if (print_error) {
+            fprintf(stderr, "%s: Illegal long option %s\n", argv[0], input);
+        }            
+        optind++;
+        return '?';
+    }
+
+    *long_ind = index;
+
+    if (p->has_arg == no_argument) {
+                //printf("optarg - no arg\n");
+                optind++;
+                if (p->flag != NULL) {
+                    *(p->flag) = p->val;
+                }
+                return p->val;
+    }
+
+    if (p->has_arg == required_argument || p->has_arg == optional_argument) {
+                //printf("optarg - has arg\n");
+
+                // optarg by '='
+                if (eq_pos > 0) {
+                    optarg = (char*) (name + len + 1);
+                    optind++;
+                    if (p->flag != NULL) {
+                        *(p->flag) = p->val;
+                    }
+                    return p->val;
+                }
+
+                // otparg by next 'argv'                    
+                if (!check_next_value(argc, argv, optind)) {
+
+                    if (p->has_arg == required_argument) {
+                        if (print_error) {
+                           fprintf(stderr, "%s: Option requires an argument %s\n", argv[0], input);
+                        }
+                        optind++;
+                        return ':';
+                    }
+
+                    optind++;
+                    if (p->flag != NULL) {
+                       *(p->flag) = p->val;
+                    }
+                    return p->val;
+                }
+
+                optind++;
+                optarg = argv[optind];
+                optind++; // next
+
+                if (p->flag != NULL) {
+                    *(p->flag) = p->val;
+                }
+                return p->val;
+    }
+
+    // TODO: Incorrect p->has_arg. It must be: [0,1,2]
+    if (print_error) {
+        fprintf(stderr, "%s: Illegal long option %s\n", argv[0], input);
+    }
+    optind++;
+    return '?';
+}
+
 static int getopt_internal(int argc, char* const argv[], const char* short_option, const lib_option* long_option, int* long_ind, int long_only) {
 
     if (argc <= 0 || argv == NULL /*|| optstr == NULL*/) {
@@ -115,7 +210,15 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
         prefix_len = 1;
         if (input_len > 1 && input[1] == '-') {
             prefix_len++;
+            if (input_len > 2 && input[2] == '-') {
+                prefix_len++;
+            }
         }
+    }
+
+    if (prefix_len == 0) {
+       // optarg
+       return -1;
     }
 
     if (prefix_len == input_len) {
@@ -124,8 +227,13 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
         return -1;
     }
 
+    if (prefix_len > 2) {
+        // '---..'
+        return -1;
+    }
+
     // Correct print error flag by short option string
-    int print_error = opterr;
+    /*int*/ print_error = opterr;
     if (short_option != NULL) {
         if (short_option[0] == ':') {
             print_error = 0;                      // first ':'
@@ -134,10 +242,10 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
         }
     }
 
-    if (prefix_len == 0) {
-       // optarg
-       return -1;
-    }
+    //if (prefix_len == 0) {
+    //   // optarg
+    //   return -1;
+    //}
 
     //////
 
@@ -160,12 +268,19 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
  
     //printf(">> optind: %d, input: '%s', input_len %d, str_len %d, print_error %d\n", optind, input, input_len, str_len, print_error);
 
+    if (prefix_len == 2) {
+        // long option
+    }
+
     if (str_len > 1) {
 
+        // long option
+        // multi option
+
         // '-abc', '-abc=24'
-        int start = prefix_len;
-        int end = input_len;
-        int eq_pos = -1;
+        /*int*/ start = prefix_len;
+        /*int*/ end = input_len;
+        /*int*/ eq_pos = -1;
 
         // search '='
         for (int i = start; i < end; i++) {
@@ -189,6 +304,20 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
 
         char* name = input + start;
         int len = end - start;
+
+        if (long_option) {
+            int try = prefix_len == 2 ? 0 : 1; 
+            int retval = process_long_option(argc, argv, long_option, long_ind, name, len, try);
+            if (retval > 0) {
+                return retval;
+            }
+            if (!try) {
+                return -1;
+            }
+        }
+
+        // TODO
+        multi_short = 1;
 
         if (multi_short && short_option != NULL && prefix_len == 1) {
 
@@ -240,75 +369,80 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
 
         } else {
 
-            int index = 0;
-            const lib_option* p = find_long_option(long_option, &index, name, len);
-
-            if (p == NULL) {
-                if (print_error) {
-                    fprintf(stderr, "%s: Illegal long option %s\n", argv[0], input);
-                }            
-                optind++;
-                return '?';
+            int retval = process_long_option(argc, argv, long_option, long_ind, name, len, 0);
+            if (retval > 0) {
+                return retval;
             }
 
-            *long_ind = index;
+            // int index = 0;
+            // const lib_option* p = find_long_option(long_option, &index, name, len);
 
-            if (p->has_arg == no_argument) {
-                //printf("optarg - no arg\n");
-                optind++;
-                if (p->flag != NULL) {
-                    *(p->flag) = p->val;
-                }
-                return p->val;
-            }
+            // if (p == NULL) {
+            //     if (print_error) {
+            //         fprintf(stderr, "%s: Illegal long option %s\n", argv[0], input);
+            //     }            
+            //     optind++;
+            //     return '?';
+            // }
 
-            if (p->has_arg == required_argument || p->has_arg == optional_argument) {
-                //printf("optarg - has arg\n");
+            // *long_ind = index;
 
-                // optarg by '='
-                if (eq_pos > 0) {
-                    optarg = name + len + 1;
-                    optind++;
-                    if (p->flag != NULL) {
-                        *(p->flag) = p->val;
-                    }
-                    return p->val;
-                }
+            // if (p->has_arg == no_argument) {
+            //     //printf("optarg - no arg\n");
+            //     optind++;
+            //     if (p->flag != NULL) {
+            //         *(p->flag) = p->val;
+            //     }
+            //     return p->val;
+            // }
 
-                // otparg by next 'argv'                    
-                if (!check_next_value(argc, argv, optind)) {
+            // if (p->has_arg == required_argument || p->has_arg == optional_argument) {
+            //     //printf("optarg - has arg\n");
 
-                    if (p->has_arg == required_argument) {
-                        if (print_error) {
-                           fprintf(stderr, "%s: Option requires an argument %s\n", argv[0], input);
-                        }
-                        optind++;
-                        return ':';
-                    }
+            //     // optarg by '='
+            //     if (eq_pos > 0) {
+            //         optarg = name + len + 1;
+            //         optind++;
+            //         if (p->flag != NULL) {
+            //             *(p->flag) = p->val;
+            //         }
+            //         return p->val;
+            //     }
 
-                    optind++;
-                    if (p->flag != NULL) {
-                       *(p->flag) = p->val;
-                    }
-                    return p->val;
-                }
+            //     // otparg by next 'argv'                    
+            //     if (!check_next_value(argc, argv, optind)) {
 
-                optind++;
-                optarg = argv[optind];
-                optind++; // next
+            //         if (p->has_arg == required_argument) {
+            //             if (print_error) {
+            //                fprintf(stderr, "%s: Option requires an argument %s\n", argv[0], input);
+            //             }
+            //             optind++;
+            //             return ':';
+            //         }
 
-                if (p->flag != NULL) {
-                    *(p->flag) = p->val;
-                }
-                return p->val;
-            }
+            //         optind++;
+            //         if (p->flag != NULL) {
+            //            *(p->flag) = p->val;
+            //         }
+            //         return p->val;
+            //     }
 
-            // TODO: Incorrect p->has_arg. It must be: [0,1,2]
-            if (print_error) {
-                fprintf(stderr, "%s: Illegal long option %s\n", argv[0], input);
-            }            
-            optind++;
-            return '?';
+            //     optind++;
+            //     optarg = argv[optind];
+            //     optind++; // next
+
+            //     if (p->flag != NULL) {
+            //         *(p->flag) = p->val;
+            //     }
+            //     return p->val;
+            // }
+
+            // // TODO: Incorrect p->has_arg. It must be: [0,1,2]
+            // if (print_error) {
+            //     fprintf(stderr, "%s: Illegal long option %s\n", argv[0], input);
+            // }            
+            // optind++;
+            // return '?';
 
         }
 
