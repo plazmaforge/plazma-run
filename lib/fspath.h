@@ -65,10 +65,16 @@ bool lib_fs_is_current_find_path(const char* path);
 /* General Functions          */
 
 #ifdef _WIN32
-int lib_fs_is_drive_path(const char* path);
+
+bool lib_fs_is_drive_path(const char* path);
+
+bool lib_fs_starts_drive_path(const char* path);
+
+bool lib_fs_is_unc_path(const char* path);
+
 #endif
 
-int lib_fs_is_absolute_path(const char* path);
+bool lib_fs_is_absolute_path(const char* path);
 
 /**
  * Return base file name

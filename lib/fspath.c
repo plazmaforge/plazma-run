@@ -388,25 +388,25 @@ bool lib_fs_is_current_find_path(const char* path) {
 /* General Functions          */
 
 #ifdef _WIN32
-int lib_fs_is_drive_path(const char* path) {
+bool lib_fs_is_drive_path(const char* path) {
     if (!path) {
-        return 0;
+        return false;
     }
     /* first [3] chars: 'X:\' */
-    return (isalpha (path[0]) 
+    return (isalpha(path[0]) 
       && path[1] == ':' 
       && LIB_FS_IS_DIR_SEPARATOR(path[2]));
 }
 
-int lib_fs_starts_drive_path(const char* path) {
+bool lib_fs_starts_drive_path(const char* path) {
     if (!path) {
-        return 0;
+        return false;
     }
     /* first [2] chars: 'X:' */
     return (isalpha (path[0]) && path[1] == ':'); 
 }
 
-int lib_fs_is_unc_path(const char* path) {
+bool lib_fs_is_unc_path(const char* path) {
     /* 
       first [2] chars: '\\'  
       and check next non-dir separator char 
@@ -419,13 +419,13 @@ int lib_fs_is_unc_path(const char* path) {
 
 #endif
 
-int lib_fs_is_absolute_path(const char* path) {
+bool lib_fs_is_absolute_path(const char* path) {
     if (!path) {
-        return 0;
+        return false;
     }
 
     if (LIB_FS_IS_DIR_SEPARATOR(path[0])) {
-        return 1;
+        return true;
     }
 
 #ifdef _WIN32
@@ -433,7 +433,7 @@ int lib_fs_is_absolute_path(const char* path) {
     return lib_fs_is_drive_path(path);
 #endif
 
-    return 0;
+    return false;
 }
 
 // [allocate]
