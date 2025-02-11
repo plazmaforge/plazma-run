@@ -76,6 +76,8 @@ bool lib_fs_is_unc_path(const char* path);
 
 bool lib_fs_is_absolute_path(const char* path);
 
+bool lib_fs_is_relative_path(const char* path);
+
 /**
  * Return base file name
  * 

@@ -436,6 +436,10 @@ bool lib_fs_is_absolute_path(const char* path) {
     return false;
 }
 
+bool lib_fs_is_relative_path(const char* path) {
+    return !lib_fs_is_absolute_path(path);
+}
+
 // [allocate]
 char* lib_fs_get_base_name(const char* path) {
 
