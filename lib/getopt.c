@@ -13,26 +13,30 @@ static char *input = NULL;
 static int restopt = 0;
 static int init    = 0;
 
-static int start   = 0;
-static int end     = 0;
+//static int start   = 0;
+//static int end     = 0;
 static int eq_pos  = 0;
 
 static int print_error = 0;
 
 static const char* find_short_option(const char* short_option, char c) {
-    if (short_option == NULL) {
+    if (!short_option) {
         return NULL;
     }
     return strchr(short_option, c);
 }
 
 static const lib_option* find_long_option(const lib_option* long_option, int* long_index, const char* name, int len)  {
+    if (!long_option) {
+        return NULL;
+    }
     const lib_option* p = long_option;
-    int i = *long_index;
+    //int i = *long_index;
+    int i = 0;
 
     // search option in long_option list
     while (p != NULL && p->name != NULL) {
-        if (!strncmp(name, p->name, len)) {
+        if (len == strlen(p->name) && strncmp(name, p->name, len) == 0) {
             *long_index = i;
             return p;
         }
@@ -169,7 +173,8 @@ static int process_long_option(
 
 static int getopt_internal(int argc, char* const argv[], const char* short_option, const lib_option* long_option, int* long_ind, int long_only) {
 
-    if (argc <= 0 || argv == NULL /*|| optstr == NULL*/) {
+    if (argc <= 0 || argv == NULL || optind >= argc /*|| optstr == NULL*/) {
+        // Incorrect arguments: error
         return -1;
     }
 
@@ -182,56 +187,6 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
         init = 1;
     }
 
-    //printf(">> optind: %d\n", optind);
-    //printf(">> opterr: %d\n", opterr);
-
-    if (optind >= argc) {
-        return -1;
-    }
-
-    optopt = '?';
-    optarg = NULL;
-
-    input = argv[optind];
-    optinput = input;
-
-    if (input == NULL) {
-        return -1;
-    }
-
-    int input_len = strlen(input);
-    if (input_len == 0) {
-        return -1;
-    }
-
-    int prefix_len = 0;
-
-    if (input[0] == '-') {
-        prefix_len = 1;
-        if (input_len > 1 && input[1] == '-') {
-            prefix_len++;
-            if (input_len > 2 && input[2] == '-') {
-                prefix_len++;
-            }
-        }
-    }
-
-    if (prefix_len == 0) {
-       // optarg
-       return -1;
-    }
-
-    if (prefix_len == input_len) {
-        // '-'
-        // '--'
-        return -1;
-    }
-
-    if (prefix_len > 2) {
-        // '---..'
-        return -1;
-    }
-
     // Correct print error flag by short option string
     /*int*/ print_error = opterr;
     if (short_option != NULL) {
@@ -242,10 +197,67 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
         }
     }
 
-    //if (prefix_len == 0) {
-    //   // optarg
-    //   return -1;
-    //}
+    optopt = '?';
+    optarg = NULL;
+    
+    // Get next argument string
+    // For example: 
+    //
+    // '-w'
+    // '-w=32
+    // '--file'
+    // '--file readme.txt'
+
+    input = argv[optind];
+    optinput = input;
+
+    // NULL/Empty string: error
+    int input_len = !input ? 0 : strlen(input);
+    if (input_len == 0) {
+        return -1;
+    }
+
+    // Calculate prefix lenght
+    // By default: '-' (dash)
+    int prefix_len = 0;
+    for (int i = 0; i < input_len; i++) {
+        if (input[i] != '-') {
+            break;
+        }
+        prefix_len++;
+    }
+
+    int error = 0;
+
+    // No prefix         : 'n', 'name'
+    if (prefix_len == 0) {
+        error = 1;
+        // optarg
+    }
+
+    // No option name  : '-', '--', '---'
+    if (prefix_len == input_len) {
+        error = 2;
+    }
+
+    // Prefix lenght > 2 : '---name'
+    if (prefix_len > 2) {
+        error = 3;
+    }
+
+    if (error > 0) {
+        if (print_error) {
+            if (error == 1) {
+                fprintf(stderr, "%s: Illegal argument %s\n", argv[0], input);
+            } else if (error == 2) {
+                fprintf(stderr, "%s: Illegal option name %s\n", argv[0], input);
+            } else if (error == 3) {
+                fprintf(stderr, "%s: Illegal option prefix %s\n", argv[0], input);
+            }             
+        }
+        optind++;
+        return '?';
+    }
 
     //////
 
@@ -268,28 +280,28 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
  
     //printf(">> optind: %d, input: '%s', input_len %d, str_len %d, print_error %d\n", optind, input, input_len, str_len, print_error);
 
-    if (prefix_len == 2) {
-        // long option
-    }
-
     if (str_len > 1) {
 
-        // long option
-        // multi option
+        // 1. short/long option with '=' : '-w=10', '-width=10'
+        // 2. long option                : '-help', '-width 10'
+        // 3. multi option               : '-abc'
 
         // '-abc', '-abc=24'
-        /*int*/ start = prefix_len;
-        /*int*/ end = input_len;
+        int start = prefix_len;
+        int end = input_len;
         /*int*/ eq_pos = -1;
 
-        // search '='
+        // Search and calculate '='
+        int eq_count = 0;
         for (int i = start; i < end; i++) {
             if (input[i] == '=') {
                 eq_pos = i;
+                eq_count++;
             }
         }
 
-        if (eq_pos == start || eq_pos == end - 1) {
+        if (eq_count > 1 || eq_pos == start || eq_pos == end - 1) {
+            // '-==', '-a=10=30'
             // '-=10', '-name=', -='
             if (print_error) {
                 fprintf(stderr, "%s: Illegal input %s\n", argv[0], input);
@@ -298,15 +310,36 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
             return '?';
         }
 
+        // Set end position (exclude)
+        // '-a=10'  -> '-a='
         if (eq_pos > 0) {
             end = eq_pos;
         }
 
+        // Shift name by prefix
+        // '-a=10' -> 'a=10'
         char* name = input + start;
+
+        // Calculate real name lenght
+        // '-a=10' -> 'a'
         int len = end - start;
 
-        if (long_option) {
-            int try = prefix_len == 2 ? 0 : 1; 
+
+        ///////////////////////////////////////////////////////////////////////////////////////
+        // 1. long_option
+        ///////////////////////////////////////////////////////////////////////////////////////
+
+        // For example:
+        // '-file', '--file', '-file readme.txt', '--file readme.txt', '--file=readme.txt'
+
+        // If we use 'long_option' then try search this before
+        // The 'long_option' has higher priority than 'multi_short_option'
+        // We can use long_option with '-' or '--' prefix
+
+        if (long_option && (prefix_len == 1 || prefix_len == 2) && len > 1) {
+            // prefix_len == [1, 2]
+            // prefix_len == 2: long option always
+            int try = prefix_len == 2 ? 0 : 1;
             int retval = process_long_option(argc, argv, long_option, long_ind, name, len, try);
             if (retval > 0) {
                 return retval;
@@ -316,36 +349,76 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
             }
         }
 
+        ///////////////////////////////////////////////////////////////////////////////////////
+        // 2. short_option with '='
+        ///////////////////////////////////////////////////////////////////////////////////////
+
+        // For example:
+        // '-w=10'
+
+        if (short_option && prefix_len == 1 && len == 1 && eq_pos > 0) {
+            
+            ch = name[0];
+
+            const char* opt = find_short_option(short_option, ch);
+            if (opt == NULL) {
+                if (print_error) {
+                    fprintf(stderr, "%s: Illegal option %s\n", argv[0], input);
+                }
+                optind++;
+               return '?';
+            }
+
+            if (*(++opt) == ':') {
+                optarg = name + len + 1;
+                optind++;
+                return optopt;
+            }
+                           
+            if (print_error) {
+                fprintf(stderr, "%s: Option hasn't an argument %s\n", argv[0], input);
+                optind++;
+                return '?';
+            }
+        }
+
         // TODO
         multi_short = 1;
 
-        if (multi_short && short_option != NULL && prefix_len == 1) {
+        ///////////////////////////////////////////////////////////////////////////////////////
+        // 3. multi_short_option with
+        ///////////////////////////////////////////////////////////////////////////////////////
 
+        if (multi_short && short_option && prefix_len == 1) {
+            // prefix_len == [1] only
             // multi short option cannot be with '=': '-abc=10'
-            int error = 0;
             if (eq_pos > 0) {
 
-                if (eq_pos - start == 1) {
-                    // '-a=10
-                    error = check_multi_short_option(short_option, input, start, end);
-                    if (error > 0) {
-                        if (print_error) {
-                            if (error == 1) {
-                                fprintf(stderr, "%s: Illegal multi option %s\n", argv[0], input);
-                            } else {
-                                fprintf(stderr, "%s: Incorrect multi option %s\n", argv[0], input);
-                            }
-                        }
-                        optind++;
-                        return '?';
-                    }
-                    optarg = name + len + 1;
-                    optind++;
-                    return optopt;
-                }
+                // if (eq_pos - start == 1) {
+                //     // '-a=10
+                //     error = check_multi_short_option(short_option, input, start, end);
+                //     if (error > 0) {
+                //         if (print_error) {
+                //             if (error == 1) {
+                //                 fprintf(stderr, "%s: Illegal multi option %s\n", argv[0], input);
+                //             } else {
+                //                 fprintf(stderr, "%s: Incorrect multi option %s\n", argv[0], input);
+                //             }
+                //         }
+                //         optind++;
+                //         return '?';
+                //     }
+                //     optarg = name + len + 1;
+                //     optind++;
+                //     return optopt;
+                // }
 
                 if (print_error) {
-                  fprintf(stderr, "%s: Illegal multi option %s\n", argv[0], input);
+                    if (long_option) {
+                        fprintf(stderr, "%s: Illegal long option %s\n", argv[0], input);
+                    } else {
+                        fprintf(stderr, "%s: Illegal multi option %s\n", argv[0], input);
+                    }                  
                 }            
                 optind++;
                 return '?';
@@ -357,7 +430,11 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
             if (error > 0) {
                 if (print_error) {
                     if (error == 1) {
-                        fprintf(stderr, "%s: Illegal multi option %s\n", argv[0], input);
+                        if (long_option) {
+                            fprintf(stderr, "%s: Illegal long option %s\n", argv[0], input);
+                        } else {
+                            fprintf(stderr, "%s: Illegal multi option %s\n", argv[0], input);
+                        }
                     } else {
                         fprintf(stderr, "%s: Incorrect multi option %s\n", argv[0], input);
                     }                  
