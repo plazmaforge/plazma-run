@@ -47,6 +47,7 @@ $CC $CFLAGS lib/utf8lib.c -o utf8lib.o
 $CC $CFLAGS lib/unimap.c -o unimap.o
 $CC $CFLAGS lib/encdef.c -o encdef.o
 $CC $CFLAGS lib/enclib.c -o enclib.o
+$CC $CFLAGS lib/base64.c -o base64.o
 
 $CC $CFLAGS lib/common.c -o common.o
 $CC $CFLAGS lib/debug.c -o debug.o
@@ -96,6 +97,7 @@ $CC $CFLAGS run_basename.c -o run_basename.o
 $CC $CFLAGS run_dirname.c -o run_dirname.o
 $CC $CFLAGS run_realpath.c -o run_realpath.o
 $CC $CFLAGS run_pwd.c -o run_pwd.o
+$CC $CFLAGS run_base64.c -o run_base64.o
 
 $CC $CFLAGS test_getopt.c -o test_getopt.o
 $CC $CFLAGS test_echo.c -o test_echo.o
@@ -142,6 +144,7 @@ $CC $LDFLAGS getopt.o pathlib.o run_basename.o -o run-basename
 $CC $LDFLAGS getopt.o pathlib.o run_dirname.o -o run-dirname
 $CC $LDFLAGS getopt.o fspath.o run_realpath.o -o run-realpath
 $CC $LDFLAGS getopt.o fspath.o run_pwd.o -o run-pwd
+$CC $LDFLAGS getopt.o iolib.o base64.o run_base64.o -o run-base64
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo

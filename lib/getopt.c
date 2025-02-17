@@ -231,8 +231,9 @@ static int getopt_internal(int argc, char* const argv[], const char* short_optio
 
     // No prefix         : 'n', 'name'
     if (prefix_len == 0) {
-        error = 1;
-        // optarg
+        // error = 1;
+        // optarg       
+        return -1;
     }
 
     // No option name  : '-', '--', '---'
