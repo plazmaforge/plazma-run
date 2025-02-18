@@ -126,16 +126,18 @@ static int base64_decode(char* out, const char* src) {
 
 char* lib_base64_encode(const char *src, size_t len, size_t* out_len) {
 	size_t olen = base64_encode_len(len);
-    char* out = (char*) malloc(olen);
+    char* out = (char*) malloc(olen + 1);
 	base64_encode(out, src, len);
+    out[olen] = '\0';
     *out_len = olen;
 	return out;
 }
 
 char* lib_base64_decode(const char *src, size_t len, size_t* out_len) {
     size_t olen = base64_decode_len(src);
-    char* out = (char*) malloc(olen);
+    char* out = (char*) malloc(olen + 1);
 	base64_decode(out, src);
+    out[olen] = '\0';
 	return out;
 }
 
