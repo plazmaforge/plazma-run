@@ -52,21 +52,45 @@ static void to_bin5(char* buf, char c) {
 }
 
 static void base32_encode(char* out, const unsigned char* src, size_t len) {
-    char binary_string[8 * len + 1];
+
+    //fprintf(stderr, "src_len = %lu\n", len);
+    size_t bin_len = 8 * len;
+    size_t padding = bin_len % 5;
+    size_t alg_len = 0;
+    if (padding != 0) {
+        alg_len = 5 - padding;
+        bin_len = bin_len + alg_len;
+    }
+
+    //fprintf(stderr, "padding = %lu\n", padding);
+    //fprintf(stderr, "rst_len = %lu\n", rst_len);
+    //fprintf(stderr, "bin_len = %lu\n", bin_len);
+
+    //char binary_string[8 * len + 1];
+    char binary_string[bin_len + 1];
     binary_string[0] = '\0';
+
     for (size_t i = 0; i < len; i++) {
         char byte_string[9];
         to_bin8(byte_string, src[i]);
-        //sprintf(byte_string, "%08b", data[i]);
+        //sprintf(byte_string, "%08b", src[i]);
         strcat(binary_string, byte_string);
     }
-    int padding = strlen(binary_string) % 5;
+
     if (padding != 0) {
         //strcat(binary_string, "00000" + padding);
-        memset(binary_string + (8 * len), '0', 5 - padding);
+        char* alg_str = binary_string + (8 * len);
+        memset(alg_str, '0', alg_len);
+        alg_str += alg_len;
+        alg_str[0] = '\0';
     }
+
+    //fprintf(stderr, "bin_str = %s\n", binary_string);
+    //fprintf(stderr, "str_len = %lu\n", strlen(binary_string));
+
     size_t out_len = 0;
-    for (size_t i = 0; i < strlen(binary_string); i += 5) {
+    for (size_t i = 0; i < bin_len; i += 5) {
+    
         char segment[6];
         strncpy(segment, binary_string + i, 5);
         segment[5] = '\0';
@@ -74,12 +98,13 @@ static void base32_encode(char* out, const unsigned char* src, size_t len) {
         strncat(out, &encode_table[index], 1);
         out_len++;
     }
-    //fprintf(stderr, "out_len = %d\n", out_len);
+
+    //fprintf(stderr, "out_len = %lu\n", out_len);
     while (strlen(out) % 8 != 0) {
         strcat(out, "=");
         out_len++;
     }
-    //fprintf(stderr, "out_len = %d\n", out_len);
+    //fprintf(stderr, "out_len = %lu\n", out_len);
 }
 
 static size_t base32_decode_len_bin(size_t len) {
@@ -137,3 +162,4 @@ char* lib_base32_decode(const char *src, size_t len, size_t* out_len) {
 }
 
 // https://medium.com/@at.kishor.k/demystifying-base32-an-in-depth-guide-to-this-encoding-standard-697b9426fc25
+//01001000011001010110110001101100011011110011000100110010001100110
