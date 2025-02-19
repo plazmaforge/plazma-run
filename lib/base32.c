@@ -21,11 +21,17 @@ static size_t base32_encode_len(size_t len) {
     // calculate iterations with step 5
     size_t out_len = bin_len / 5;
 
-    padding = out_len % 8;
-    if (padding != 0) {
-        out_len = out_len / 8;
-        out_len++;
-        out_len = out_len * 8;
+    // padding = out_len % 8;
+    // if (padding != 0) {
+    //     out_len = out_len / 8;
+    //     out_len++;
+    //     out_len = out_len * 8;
+    // }
+
+    if (out_len % 8 != 0) {
+        size_t count = out_len / 8;
+        count++;
+        out_len = count * 8;
     }
 
     return out_len;
@@ -101,11 +107,23 @@ static void base32_encode(char* out, const unsigned char* src, size_t len) {
     }
 
     //fprintf(stderr, "out_len = %lu\n", out_len);
-    while (strlen(out) % 8 != 0) {
-        strcat(out, "=");
-        out_len++;
+    alg_len = 0;
+    //while (strlen(out) % 8 != 0) {
+    //    strcat(out, "=");
+    //    out_len++;
+    //    alg_len++;
+    //}
+
+    if (out_len % 8 != 0) {
+        size_t count = out_len / 8;
+        count++;
+        size_t out_len2 = count * 8;
+        alg_len = out_len2 - out_len;
+        memset(out + out_len, '=', alg_len);
     }
-    //fprintf(stderr, "out_len = %lu\n", out_len);
+
+    fprintf(stderr, "alg_len = %lu\n", alg_len);
+    fprintf(stderr, "out_len = %lu\n", out_len);
 }
 
 static size_t base32_decode_len_bin(size_t len) {
