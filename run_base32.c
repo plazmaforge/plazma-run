@@ -13,12 +13,12 @@ static void _file_error(const char* file_name) {
     fprintf(stderr, "%s: %s: %s\n", prog_name, file_name, strerror(errno));
 }
 
-int run_base32_encode_data(const char* data, size_t size) {
+int run_base32_encode_data(int type, const char* data, size_t size) {
     if (!data) {
         return 1;
     }
     size_t osize = 0;
-    char* odata = lib_base32_encode(data, size, &osize);
+    char* odata = lib_base32_encode_type(type, data, size, &osize);
     if (!odata) {
         fprintf(stderr, "Empty output data\n");
         return 1;
@@ -31,12 +31,12 @@ int run_base32_encode_data(const char* data, size_t size) {
     return 0;
 }
 
-int run_base32_decode_data(const char* data, size_t size) {
+int run_base32_decode_data(int type, const char* data, size_t size) {
     if (!data) {
         return 1;
     }
     size_t osize = 0;
-    char* odata = lib_base32_decode(data, size, &osize);
+    char* odata = lib_base32_decode_type(type, data, size, &osize);
     if (!odata) {
         fprintf(stderr, "Empty output data\n");
         return 1;
@@ -50,7 +50,7 @@ int run_base32_decode_data(const char* data, size_t size) {
     return 0;
 }
 
-int run_base32_encode_file(const char* file_name) {
+int run_base32_encode_file(int type, const char* file_name) {
     if (!file_name) {
         return 1;
     }
@@ -67,14 +67,14 @@ int run_base32_encode_file(const char* file_name) {
         _file_error(file_name);
         return 1;
     }
-    retval = run_base32_encode_data(data, size);
+    retval = run_base32_encode_data(type, data, size);
     if (data) {
         free(data);
     }
     return retval;
 }
 
-int run_base32_decode_file(const char* file_name) {
+int run_base32_decode_file(int type, const char* file_name) {
     if (!file_name) {
         return 1;
     }
@@ -91,7 +91,7 @@ int run_base32_decode_file(const char* file_name) {
         _file_error(file_name);
         return 1;
     }
-    retval = run_base32_decode_data(data, size);
+    retval = run_base32_decode_data(type, data, size);
     if (data) {
         free(data);
     }
@@ -99,7 +99,7 @@ int run_base32_decode_file(const char* file_name) {
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-base32 [-D] -s string | file\n");
+    fprintf(stderr, "Usage: run-base32 [-base32 | -base32u | -base32l | zbase32 | base32hex] [-D] -s string | file\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -107,17 +107,29 @@ int main(int argc, char* argv[]) {
     prog_name = lib_cli_prog_name(argv);
     int error = 0;
     int opt;
+    int long_ind;
 
     bool flag_decode = false;
     bool flag_string = false;
     char* data       = NULL;
+    int type         = LIB_BASE32;
 
     if (argc < 2) {
         usage();
         return 1;
     }
 
-    while ((opt = lib_getopt(argc, argv, "Ds:")) != -1) {
+    static lib_option long_options[] = {
+          {"base32",    no_argument, 0, 1000},
+          {"base32u",   no_argument, 0, 1001},
+          {"base32l",   no_argument, 0, 1002},
+          {"zbase32",   no_argument, 0, 1003},
+          {"base32hex", no_argument, 0, 1004},
+          {NULL,        0,           0, 0}
+    };
+
+    while ((opt = lib_getopt_long(argc, argv, "Ds:", long_options, &long_ind)) != -1) {
+    //while ((opt = lib_getopt(argc, argv, "Ds:")) != -1) {
         switch (opt) {
         case 'D':
             /* Set decode flag */
@@ -127,6 +139,21 @@ int main(int argc, char* argv[]) {
             /* Set mode by string */
             flag_string = true;
             data = optarg;
+            break;
+        case 1000:
+            type = LIB_BASE32;
+            break;
+        case 1001:
+            type = LIB_BASE32U;
+            break;
+        case 1002:
+            type = LIB_BASE32L;
+            break;
+        case 1003:
+            type = LIB_ZBASE32;
+            break;
+        case 1004:
+            type = LIB_BASE32HEX;
             break;
         case '?':
             error = 1;
@@ -151,9 +178,9 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         if (flag_decode) {
-            return run_base32_decode_data(data, strlen(data));
+            return run_base32_decode_data(type, data, strlen(data));
         } else {
-            return run_base32_encode_data(data, strlen(data));
+            return run_base32_encode_data(type, data, strlen(data));
         }        
     } else {
         if (optind >= argc) {
@@ -163,9 +190,9 @@ int main(int argc, char* argv[]) {
         char* file_name = argv[optind];
         //fprintf(stderr, "file: %s\n", file_name);
         if (flag_decode) {
-            return run_base32_decode_file(file_name);
+            return run_base32_decode_file(type, file_name);
         } else {
-            return run_base32_encode_file(file_name);
+            return run_base32_encode_file(type, file_name);
         }        
     }
     return 0;

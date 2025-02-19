@@ -4,13 +4,32 @@
 
 #include "base32.h"
 
-static const char encode_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+static const char base32u[]   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+static const char base32l[]   = "abcdefghijklmmopqrstuvwxyz234567";
+static const char zbase32[]   = "ybndrfg8ejkmcpqxot1uwisza345h769";
+static const char base32hex[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
+
+static const char* base32_table_type(int type) {
+    if (type == LIB_BASE32 || type == LIB_BASE32U) {
+        return base32u;
+    }
+    if (type == LIB_BASE32L) {
+        return base32l;
+    }
+    if (type == LIB_ZBASE32) {
+        return zbase32;
+    }
+    if (type == LIB_BASE32HEX) {
+        return base32hex;
+    }
+    return base32u;
+}
 
 static size_t base32_encode_len_bin(size_t len) {
 	return 8 * len;
 }
 
-static size_t base32_encode_len(size_t len) {
+static size_t base32_encode_len_type(int type, size_t len) {
 	size_t bin_len = base32_encode_len_bin(len);
     size_t padding = bin_len % 5;
     if (padding != 0) {
@@ -20,6 +39,10 @@ static size_t base32_encode_len(size_t len) {
     // calculate iterations with step 5
     size_t out_len = bin_len / 5;
 
+    if (type == LIB_ZBASE32) {
+        return out_len;
+    }
+
     if (out_len % 8 != 0) {
         size_t count = out_len / 8;
         count++;
@@ -27,6 +50,10 @@ static size_t base32_encode_len(size_t len) {
     }
 
     return out_len;
+}
+
+static size_t base32_encode_len(size_t len) {
+    return base32_encode_len_type(LIB_BASE32, len);
 }
 
 static char to_bin(char c, int i) {
@@ -49,7 +76,9 @@ static void to_bin5(char* buf, char c) {
     to_bin_count(buf, c, 5);
 }
 
-static void base32_encode(char* out, const unsigned char* src, size_t len) {
+void base32_encode_type(int type, char* out, const unsigned char* src, size_t len) {
+
+    const char* encode_table = base32_table_type(type);
 
     //fprintf(stderr, "src_len = %lu\n", len);
     size_t bin_len = 8 * len;
@@ -97,7 +126,7 @@ static void base32_encode(char* out, const unsigned char* src, size_t len) {
 
     //fprintf(stderr, "out_len = %lu\n", out_len);
     alg_len = 0;
-    if (out_len % 8 != 0) {
+    if (type != LIB_ZBASE32 && (out_len % 8) != 0) {
         size_t count = out_len / 8;
         count++;
         size_t out_len2 = count * 8;
@@ -107,6 +136,10 @@ static void base32_encode(char* out, const unsigned char* src, size_t len) {
 
     //fprintf(stderr, "alg_len = %lu\n", alg_len);
     //fprintf(stderr, "out_len = %lu\n", out_len);
+}
+
+static void base32_encode(char* out, const unsigned char* src, size_t len) {
+    base32_encode_type(LIB_BASE32, out, src, len);
 }
 
 static size_t base32_decode_len_bin(size_t len) {
@@ -120,7 +153,10 @@ static size_t base32_decode_len(size_t len) {
     return out_len / 8;
 }
 
-void base32_decode(unsigned char* out, const char *src, size_t len) {
+void base32_decode_type(int type, unsigned char* out, const char *src, size_t len) {
+
+    const char* encode_table = base32_table_type(type);
+
     //fprintf(stderr, "src_len = %lu\n", len);
     size_t bin_len = 5 * len;
     size_t padding = bin_len % 8;
@@ -162,26 +198,41 @@ void base32_decode(unsigned char* out, const char *src, size_t len) {
     //fprintf(stderr, "out_len = %lu\n", out_len);
 }
 
+void base32_decode(unsigned char* out, const char *src, size_t len) {
+     base32_decode_type(LIB_BASE32, out, src, len);
+}
+
 ////
 
-char* lib_base32_encode(const char *src, size_t len, size_t* out_len) {
-	size_t olen = base32_encode_len(len);
+char* lib_base32_encode_type(int type, const char *src, size_t len, size_t* out_len) {
+	size_t olen = base32_encode_len_type(type, len);
     //fprintf(stderr, "%lu\n", olen);
     char* out = (char*) malloc(olen + 1);
-	base32_encode(out, (unsigned char*) src, len);
+	base32_encode_type(type, out, (unsigned char*) src, len);
+    out[olen] = '\0';
+    *out_len = olen;
+	return out;
+}
+
+char* lib_base32_encode(const char *src, size_t len, size_t* out_len) {
+    return lib_base32_encode_type(LIB_BASE32, src, len, out_len);
+}
+
+char* lib_base32_decode_type(int type, const char *src, size_t len, size_t* out_len) {
+    size_t olen = base32_decode_len(len);
+    //fprintf(stderr, "%lu\n", olen);
+    char* out = (char*) malloc(olen + 1);
+	base32_decode_type(type, (unsigned char*) out, src, len);
     out[olen] = '\0';
     *out_len = olen;
 	return out;
 }
 
 char* lib_base32_decode(const char *src, size_t len, size_t* out_len) {
-    size_t olen = base32_decode_len(len);
-    //fprintf(stderr, "%lu\n", olen);
-    char* out = (char*) malloc(olen + 1);
-	base32_decode((unsigned char*) out, src, len);
-    out[olen] = '\0';
-    *out_len = olen;
-	return out;
+    return lib_base32_decode_type(LIB_BASE32, src, len, out_len);
 }
 
 // https://medium.com/@at.kishor.k/demystifying-base32-an-in-depth-guide-to-this-encoding-standard-697b9426fc25
+
+// Base32, Z-Base32, Base32Hex, Crockford’s Base32
+// https://base32encode.com/blog/base32-alternatives/
