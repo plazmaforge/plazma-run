@@ -9,6 +9,10 @@
 #include "base32.h"
 #include "iolib.h"
 
+static void _file_error(const char* file_name) {
+    fprintf(stderr, "%s: %s: %s\n", prog_name, file_name, strerror(errno));
+}
+
 int run_base32_encode_data(const char* data, size_t size) {
     if (!data) {
         return 1;
@@ -60,8 +64,7 @@ int run_base32_encode_file(const char* file_name) {
         if (data) {
             free(data);
         }
-        //error = 1;
-        //_file_error(config, file_name);
+        _file_error(file_name);
         return 1;
     }
     retval = run_base32_encode_data(data, size);
@@ -85,8 +88,7 @@ int run_base32_decode_file(const char* file_name) {
         if (data) {
             free(data);
         }
-        //error = 1;
-        //_file_error(config, file_name);
+        _file_error(file_name);
         return 1;
     }
     retval = run_base32_decode_data(data, size);
