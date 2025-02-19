@@ -4,7 +4,6 @@
 
 #include "base32.h"
 
-
 static const char encode_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
 static size_t base32_encode_len_bin(size_t len) {
@@ -20,13 +19,6 @@ static size_t base32_encode_len(size_t len) {
 
     // calculate iterations with step 5
     size_t out_len = bin_len / 5;
-
-    // padding = out_len % 8;
-    // if (padding != 0) {
-    //     out_len = out_len / 8;
-    //     out_len++;
-    //     out_len = out_len * 8;
-    // }
 
     if (out_len % 8 != 0) {
         size_t count = out_len / 8;
@@ -72,7 +64,6 @@ static void base32_encode(char* out, const unsigned char* src, size_t len) {
     //fprintf(stderr, "alg_len = %lu\n", alg_len);
     //fprintf(stderr, "bin_len = %lu\n", bin_len);
 
-    //char binary_string[8 * len + 1];
     char binary_string[bin_len + 1];
     binary_string[0] = '\0';
 
@@ -87,8 +78,6 @@ static void base32_encode(char* out, const unsigned char* src, size_t len) {
         //strcat(binary_string, "00000" + padding);
         char* alg_str = binary_string + (8 * len);
         memset(alg_str, '0', alg_len);
-        //alg_str += alg_len;
-        //alg_str[0] = '\0';
     }
     binary_string[bin_len] = '\0';
 
@@ -108,12 +97,6 @@ static void base32_encode(char* out, const unsigned char* src, size_t len) {
 
     //fprintf(stderr, "out_len = %lu\n", out_len);
     alg_len = 0;
-    //while (strlen(out) % 8 != 0) {
-    //    strcat(out, "=");
-    //    out_len++;
-    //    alg_len++;
-    //}
-
     if (out_len % 8 != 0) {
         size_t count = out_len / 8;
         count++;
@@ -122,8 +105,8 @@ static void base32_encode(char* out, const unsigned char* src, size_t len) {
         memset(out + out_len, '=', alg_len);
     }
 
-    fprintf(stderr, "alg_len = %lu\n", alg_len);
-    fprintf(stderr, "out_len = %lu\n", out_len);
+    //fprintf(stderr, "alg_len = %lu\n", alg_len);
+    //fprintf(stderr, "out_len = %lu\n", out_len);
 }
 
 static size_t base32_decode_len_bin(size_t len) {
@@ -141,10 +124,6 @@ void base32_decode(unsigned char* out, const char *src, size_t len) {
     //fprintf(stderr, "src_len = %lu\n", len);
     size_t bin_len = 5 * len;
     size_t padding = bin_len % 8;
-
-    //if (padding != 0) {
-        //bin_len = bin_len - padding
-    //}
 
     //fprintf(stderr, "padding = %lu\n", padding);
     //fprintf(stderr, "bin_len = %lu\n", bin_len);
@@ -166,20 +145,12 @@ void base32_decode(unsigned char* out, const char *src, size_t len) {
         }
     }
 
-    //padding = strlen(binary_string) % 8;
-    //if (padding != 0) {
-        //bin_len = strlen(binary_string) - padding;
-        //binary_string[strlen(binary_string) - padding] = '\0';
-        //binary_string[bin_len] = '\0';
-    //}
-
     binary_string[bin_len] = '\0';
 
     //fprintf(stderr, "padding = %lu\n", padding);
     //fprintf(stderr, "bin_len = %lu\n", bin_len);
     //fprintf(stderr, "str_len = %lu\n", strlen(binary_string));
 
-    //for (size_t i = 0; i < strlen(binary_string); i += 8) {
     size_t out_len = 0;
     for (size_t i = 0; i < bin_len; i += 8) {
         char byte_string[9];
@@ -214,4 +185,3 @@ char* lib_base32_decode(const char *src, size_t len, size_t* out_len) {
 }
 
 // https://medium.com/@at.kishor.k/demystifying-base32-an-in-depth-guide-to-this-encoding-standard-697b9426fc25
-//01001000011001010110110001101100011011110011000100110010001100110
