@@ -63,7 +63,7 @@ static void base32_encode(char* out, const unsigned char* src, size_t len) {
     }
 
     //fprintf(stderr, "padding = %lu\n", padding);
-    //fprintf(stderr, "rst_len = %lu\n", rst_len);
+    //fprintf(stderr, "alg_len = %lu\n", alg_len);
     //fprintf(stderr, "bin_len = %lu\n", bin_len);
 
     //char binary_string[8 * len + 1];
@@ -72,8 +72,8 @@ static void base32_encode(char* out, const unsigned char* src, size_t len) {
 
     for (size_t i = 0; i < len; i++) {
         char byte_string[9];
-        to_bin8(byte_string, src[i]);
         //sprintf(byte_string, "%08b", src[i]);
+        to_bin8(byte_string, src[i]);
         strcat(binary_string, byte_string);
     }
 
@@ -81,9 +81,10 @@ static void base32_encode(char* out, const unsigned char* src, size_t len) {
         //strcat(binary_string, "00000" + padding);
         char* alg_str = binary_string + (8 * len);
         memset(alg_str, '0', alg_len);
-        alg_str += alg_len;
-        alg_str[0] = '\0';
+        //alg_str += alg_len;
+        //alg_str[0] = '\0';
     }
+    binary_string[bin_len] = '\0';
 
     //fprintf(stderr, "bin_str = %s\n", binary_string);
     //fprintf(stderr, "str_len = %lu\n", strlen(binary_string));
@@ -119,8 +120,25 @@ static size_t base32_decode_len(size_t len) {
 }
 
 void base32_decode(unsigned char* out, const char *src, size_t len) {
-    char binary_string[5 * len + 1];
+    //fprintf(stderr, "src_len = %lu\n", len);
+    size_t bin_len = 5 * len;
+    size_t padding = bin_len % 8;
+
+    //if (padding != 0) {
+        //bin_len = bin_len - padding
+    //}
+
+    //fprintf(stderr, "padding = %lu\n", padding);
+    //fprintf(stderr, "bin_len = %lu\n", bin_len);
+
+    char binary_string[bin_len + 1];
     binary_string[0] = '\0';
+
+    if (padding != 0) {
+        bin_len = bin_len - padding;
+        //fprintf(stderr, "bin_len = %lu\n", bin_len);
+    }
+
     for (size_t i = 0; i < len; i++) {
         if (src[i] != '=') {
             char index_string[6];
@@ -129,14 +147,30 @@ void base32_decode(unsigned char* out, const char *src, size_t len) {
             strcat(binary_string, index_string);
         }
     }
-    int padding = strlen(binary_string) % 8;
-    if (padding != 0) binary_string[strlen(binary_string) - padding] = '\0';
-    for (size_t i = 0; i < strlen(binary_string); i += 8) {
+
+    //padding = strlen(binary_string) % 8;
+    //if (padding != 0) {
+        //bin_len = strlen(binary_string) - padding;
+        //binary_string[strlen(binary_string) - padding] = '\0';
+        //binary_string[bin_len] = '\0';
+    //}
+
+    binary_string[bin_len] = '\0';
+
+    //fprintf(stderr, "padding = %lu\n", padding);
+    //fprintf(stderr, "bin_len = %lu\n", bin_len);
+    //fprintf(stderr, "str_len = %lu\n", strlen(binary_string));
+
+    //for (size_t i = 0; i < strlen(binary_string); i += 8) {
+    size_t out_len = 0;
+    for (size_t i = 0; i < bin_len; i += 8) {
         char byte_string[9];
         strncpy(byte_string, binary_string + i, 8);
         byte_string[8] = '\0';
         out[i / 8] = (unsigned char) strtol(byte_string, NULL, 2);
+        out_len++;
     }
+    //fprintf(stderr, "out_len = %lu\n", out_len);
 }
 
 ////
