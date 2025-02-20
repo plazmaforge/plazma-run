@@ -33,7 +33,7 @@ static size_t base64_encode_len(size_t len) {
 	return ((len + 2) / 3 * 4);
 }
 
-static size_t base64_encode(char* out, const char* src, size_t len) {
+static ssize_t base64_encode(char* out, const char* src, size_t len) {
 	int i;
 	char *p;
 
@@ -79,8 +79,8 @@ static int base64_decode_len(const char* src) {
 	return out_len;
 }
 
-static int base64_decode(char* out, const char* src) {
-	int out_len;
+static ssize_t base64_decode(char* out, const char* src) {
+	ssize_t out_len = 0;
 	const unsigned char *bufin;
 	unsigned char *bufout;
 	int nprbytes;
@@ -127,7 +127,14 @@ static int base64_decode(char* out, const char* src) {
 char* lib_base64_encode(const char *src, size_t len, size_t* out_len) {
 	size_t olen = base64_encode_len(len);
     char* out = (char*) malloc(olen + 1);
-	base64_encode(out, src, len);
+    if (!out) {
+        return NULL;
+    }
+	ssize_t retval = base64_encode(out, src, len);
+    if (retval < 0) {
+        free(out);
+        return NULL;
+    }
     out[olen] = '\0';
     *out_len = olen;
 	return out;
@@ -136,7 +143,14 @@ char* lib_base64_encode(const char *src, size_t len, size_t* out_len) {
 char* lib_base64_decode(const char *src, size_t len, size_t* out_len) {
     size_t olen = base64_decode_len(src);
     char* out = (char*) malloc(olen + 1);
-	base64_decode(out, src);
+    if (!out) {
+        return NULL;
+    }
+	ssize_t retval = base64_decode(out, src);
+    if (retval < 0) {
+        free(out);
+        return NULL;
+    }
     out[olen] = '\0';
 	return out;
 }

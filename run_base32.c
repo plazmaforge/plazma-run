@@ -13,6 +13,14 @@ static void _file_error(const char* file_name) {
     fprintf(stderr, "%s: %s: %s\n", prog_name, file_name, strerror(errno));
 }
 
+static void _encode_error() {
+    fprintf(stderr, "%s: %s\n", prog_name, "Encoding error");
+}
+
+static void _decode_error() {
+    fprintf(stderr, "%s: %s\n", prog_name, "Invalid character in input stream");
+}
+
 int run_base32_encode_data(int type, const char* data, size_t size) {
     if (!data) {
         return 1;
@@ -20,7 +28,7 @@ int run_base32_encode_data(int type, const char* data, size_t size) {
     size_t osize = 0;
     char* odata = lib_base32_encode_type(type, data, size, &osize);
     if (!odata) {
-        fprintf(stderr, "Empty output data\n");
+        _encode_error();
         return 1;
     }
     for (size_t i = 0; i < osize; i++) {
@@ -38,7 +46,7 @@ int run_base32_decode_data(int type, const char* data, size_t size) {
     size_t osize = 0;
     char* odata = lib_base32_decode_type(type, data, size, &osize);
     if (!odata) {
-        fprintf(stderr, "Empty output data\n");
+        _decode_error();
         return 1;
     }
     fprintf(stdout, "%s", odata);
