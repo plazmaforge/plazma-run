@@ -107,7 +107,7 @@ int run_base32_decode_file(int type, const char* file_name) {
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-base32 [-base32 | -base32u | -base32l | zbase32 | base32hex] [-D] -s string | file\n");
+    fprintf(stderr, "Usage: run-base32 [-base32 | -base32u | -base32l | zbase32 | base32hex | cbase32] [-D] -s string | file\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -133,6 +133,7 @@ int main(int argc, char* argv[]) {
           {"base32l",   no_argument, 0, 1002},
           {"zbase32",   no_argument, 0, 1003},
           {"base32hex", no_argument, 0, 1004},
+          {"cbase32",   no_argument, 0, 1005},
           {NULL,        0,           0, 0}
     };
 
@@ -163,6 +164,9 @@ int main(int argc, char* argv[]) {
         case 1004:
             type = LIB_BASE32HEX;
             break;
+       case 1005:
+            type = LIB_CBASE32;
+            break;            
         case '?':
             error = 1;
             break;

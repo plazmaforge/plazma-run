@@ -5,11 +5,15 @@
 
 #include "base32.h"
 
-static const char base32u[]   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-static const char base32l[]   = "abcdefghijklmmopqrstuvwxyz234567";
-static const char zbase32[]   = "ybndrfg8ejkmcpqxot1uwisza345h769";
-static const char base32hex[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
+static const char base32u[]   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"; /* Base32 (upper)     */
+static const char base32l[]   = "abcdefghijklmmopqrstuvwxyz234567"; /* Base32 (lower)     */
+static const char zbase32[]   = "ybndrfg8ejkmcpqxot1uwisza345h769"; /* Z-Base32           */
+static const char base32hex[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV"; /* Base32Hex          */
+static const char cbase32[]   = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"; /* Crockford’s Base32 */
 
+/**
+ * Return encode table by type  
+ */
 static const char* base32_table_type(int type) {
     if (type == LIB_BASE32 || type == LIB_BASE32U) {
         return base32u;
@@ -23,6 +27,9 @@ static const char* base32_table_type(int type) {
     if (type == LIB_BASE32HEX) {
         return base32hex;
     }
+    if (type == LIB_CBASE32) {
+        return cbase32;
+    }
     return base32u;
 }
 
@@ -35,8 +42,31 @@ static bool base32_is_spec(int type, char c) {
     return ((type != LIB_ZBASE32 && c == '=') || base32_non_print(c));
 }
 
-static bool base32_find(const char* encode_table, char c) {
+static char base32_conv_crockford(char c) {
+    if (c == 'o' 
+        || c == 'O') {
+        // oO => 0
+        return '0';
+    }
+    if (c == 'i' 
+        || c == 'I'
+        || c == 'l'
+        || c == 'L') {
+        // iIlL => 1
+        return '1';
+    }
+    if (c >= 'a' && c <= 'z') {
+        // a..z => A..Z
+        return c - 32;
+    }
+    return c;
+}
+
+static bool base32_is_table(int type, const char* encode_table, char c) {
     char* s = (char*) encode_table;
+    if (type == LIB_CBASE32) {
+        c = base32_conv_crockford(c);
+    }
     for (size_t i = 0; i < 32; i++) {
         if (c == *s) {
             return true;
@@ -47,7 +77,7 @@ static bool base32_find(const char* encode_table, char c) {
 }
 
 static bool base32_is_valid_char(int type, const char* encode_table, char c) {
-    return base32_is_spec(type, c) || base32_find(encode_table, c);
+    return base32_is_spec(type, c) || base32_is_table(type, encode_table, c);
 }
 
 static bool base32_is_valid(int type, const char* encode_table, const char *src, size_t len) {
@@ -226,8 +256,13 @@ ssize_t base32_decode_type(int type, unsigned char* out, const char *src, size_t
     for (size_t i = 0; i < len; i++) {
         if (src[i] != '=') {
             char ind_str[6];
-            //sprintf(index_string, "%05b", (int) (strchr(encode_table, src[i]) - encode_table));
-            to_bin5(ind_str, (int) (strchr(encode_table, src[i]) - encode_table));
+            char c = src[i];
+            if (type == LIB_CBASE32) {
+                // Converch a char for Crockford's Base32
+                c = base32_conv_crockford(c);
+            }
+            //sprintf(index_string, "%05b", (int) (strchr(encode_table, c) - encode_table));
+            to_bin5(ind_str, (int) (strchr(encode_table, c) - encode_table));
             strcat(bin_str, ind_str);
         }
     }
@@ -290,7 +325,7 @@ char* lib_base32_decode_type(int type, const char *src, size_t len, size_t* out_
     if (!base32_is_valid(type, base32_table_type(type), src, len)) {
         return NULL;
     }
-    
+
     size_t olen = base32_decode_len(len);
     //fprintf(stderr, "olen  : %lu\n", olen);
     char* out = (char*) malloc(olen + 1);
