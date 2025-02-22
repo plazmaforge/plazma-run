@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -28,6 +29,37 @@ static const unsigned char decode_table[256] = {
 };
 
 ////
+
+static bool base64_non_print(char c) {
+    return (c >= 0 && c <= 32);
+}
+
+static bool base64_is_spec(char c) {
+    return (c == '=' || base64_non_print(c));
+}
+
+static bool base64_is_table(char c) {
+	return ((c >= 'A' && c <= 'Z')
+	    || (c >= 'a' && c <= 'z')
+		|| (c >= '0' && c <= '9')
+		|| c == '+' 
+		|| c == '-');
+}
+
+static bool base64_is_valid_char(char c) {
+    return base64_is_spec(c) || base64_is_table(c);
+}
+
+static bool base64_is_valid(const char *src, size_t len) {
+    char* s = (char*) src;
+    for (size_t i = 0; i < len; i++) {
+        if (!base64_is_valid_char(*s)) {
+            return false;
+        }
+        s++;
+    }
+    return true;
+}
 
 static size_t base64_encode_len(size_t len) {
 	return ((len + 2) / 3 * 4);
@@ -125,6 +157,10 @@ static ssize_t base64_decode(char* out, const char* src) {
 ////
 
 char* lib_base64_encode(const char *src, size_t len, size_t* out_len) {
+    if (!src || !out_len || len == 0) {
+        return NULL;
+    }
+
 	size_t olen = base64_encode_len(len);
     char* out = (char*) malloc(olen + 1);
     if (!out) {
@@ -141,6 +177,15 @@ char* lib_base64_encode(const char *src, size_t len, size_t* out_len) {
 }
 
 char* lib_base64_decode(const char *src, size_t len, size_t* out_len) {
+	if (!src || !out_len || len == 0) {
+        return NULL;
+    }
+
+    // Validate chars
+    if (!base64_is_valid(src, len)) {
+        return NULL;
+    }
+
     size_t olen = base64_decode_len(src);
     char* out = (char*) malloc(olen + 1);
     if (!out) {
