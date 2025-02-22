@@ -41,6 +41,7 @@ rem compile
 %CC% %CFLAGS% lib/unimap.c -o unimap.o
 %CC% %CFLAGS% lib/encdef.c -o encdef.o
 %CC% %CFLAGS% lib/enclib.c -o enclib.o
+%CC% %CFLAGS% lib/base16.c -o base16.o
 %CC% %CFLAGS% lib/base32.c -o base32.o
 %CC% %CFLAGS% lib/base64.c -o base64.o
 
@@ -88,6 +89,7 @@ rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 %CC% %CFLAGS% run_dirname.c -o run_dirname.o
 %CC% %CFLAGS% run_realpath.c -o run_realpath.o
 %CC% %CFLAGS% run_pwd.c -o run_pwd.o
+%CC% %CFLAGS% run_base16.c -o run_base16.o
 %CC% %CFLAGS% run_base32.c -o run_base32.o
 %CC% %CFLAGS% run_base64.c -o run_base64.o
 
@@ -136,7 +138,8 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 %CC% %LDFLAGS% getopt.o pathlib.o run_dirname.o -o run-dirname.exe
 %CC% %LDFLAGS% getopt.o wstrlib.o fspath.o run_realpath.o -o run-realpath.exe
 %CC% %LDFLAGS% getopt.o wstrlib.o fspath.o run_pwd.o -o run-pwd.exe
-%CC% %LDFLAGS% getopt.o iolib.o base32.o run_base32.o -o run-base32
+%CC% %LDFLAGS% getopt.o iolib.o base16.o run_base16.o -o run-base16.exe
+%CC% %LDFLAGS% getopt.o iolib.o base32.o run_base32.o -o run-base32.exe
 %CC% %LDFLAGS% getopt.o iolib.o base64.o run_base64.o -o run-base64.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe

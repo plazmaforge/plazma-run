@@ -1,35 +1,54 @@
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
+#include "base16.h"
 
+static const char encode_table[] = "0123456789ABCDEF";
 
-//https://nachtimwald.com/2017/09/24/hex-encode-and-decode-in-c/
+////
 
-
-/*
-
-char *bin2hex(const unsigned char *bin, size_t len)
-{
-	char   *out;
-	size_t  i;
-
-	if (bin == NULL || len == 0)
-		return NULL;
-
-	out = malloc(len*2+1);
-	for (i=0; i<len; i++) {
-		out[i*2]   = "0123456789ABCDEF"[bin[i] >> 4];
-		out[i*2+1] = "0123456789ABCDEF"[bin[i] & 0x0F];
-	}
-	out[len*2] = '\0';
-
-	return out;
+static bool base16_non_print(char c) {
+    return (c >= 0 && c <= 32);
 }
 
+static bool base16_is_spec(char c) {
+    return base16_non_print(c);
+}
 
+static bool base16_is_table(char c) {
+	return ((c >= '0' && c <= '9')
+		|| (c >= 'A' && c <= 'F'));
+}
 
+static bool base16_is_valid_char(char c) {
+    return base16_is_spec(c) || base16_is_table(c);
+}
 
-int hexchr2bin(const char hex, char *out)
-{
-	if (out == NULL)
+static bool base16_is_valid(const char *src, size_t len) {
+    char* s = (char*) src;
+    for (size_t i = 0; i < len; i++) {
+        if (!base16_is_valid_char(*s)) {
+            return false;
+        }
+        s++;
+    }
+    return true;
+}
+
+////
+
+static size_t base16_encode_len(size_t len) {
+	return len * 2;
+}
+
+static size_t base16_decode_len(size_t len) {
+	return len / 2;
+}
+
+int hex2bin(char *out, const char hex) {
+	if (!out)
 		return 0;
 
 	if (hex >= '0' && hex <= '9') {
@@ -45,96 +64,90 @@ int hexchr2bin(const char hex, char *out)
 	return 1;
 }
 
+static ssize_t base16_encode(char* out, const char* src, size_t len) {
+	for (size_t i = 0; i < len; i++) {
+		out[i * 2]     = encode_table[src[i] >> 4];
+		out[i * 2 + 1] = encode_table[src[i] & 0x0F];
+	}
+	return len * 2;
+}
 
-size_t hexs2bin(const char *hex, unsigned char **out)
-{
-	size_t len;
+static ssize_t base16_decode(char* out, const char* src, size_t len) {
+	if (len % 2 != 0) {
+		return -1;
+	}
+		
+	len /= 2; // out_len
 	char   b1;
 	char   b2;
-	size_t i;
-
-	if (hex == NULL || *hex == '\0' || out == NULL)
-		return 0;
-
-	len = strlen(hex);
-	if (len % 2 != 0)
-		return 0;
-	len /= 2;
-
-	*out = malloc(len);
-	memset(*out, 'A', len);
-	for (i=0; i<len; i++) {
-		if (!hexchr2bin(hex[i*2], &b1) || !hexchr2bin(hex[i*2+1], &b2)) {
-			return 0;
+	for (size_t i = 0; i < len; i++) {
+		if (!hex2bin(&b1, src[i * 2]) || !hex2bin(&b2, src[i * 2 + 1])) {
+			return -1;
 		}
-		(*out)[i] = (b1 << 4) | b2;
+		out[i] = (b1 << 4) | b2;
 	}
-	return len;
+	return len; // out_len
 }
 
+////
 
-int main(int argc, char **argv)
-{
-	const char    *a = "Test 123! - jklmn";
-	char          *hex;
-	unsigned char *bin;
-	size_t         binlen;
-
-	hex = bin2hex((unsigned char *)a, strlen(a));
-	printf("%sn", hex);
-
-	binlen = hexs2bin(hex, &bin);
-	printf("%.*sn", (int)binlen, (char *)bin);
-
-	free(bin);
-	free(hex);
-	return 0;
-}
-
-
-*/
-
-
-/*
-
-void hex(unsigned char a, char* buf) {
-    // hex lookup table
-    char data[] = "0123456789ABCDEF";
-    buf[0] = '0';
-    buf[1] = 'x';
-    int i = 2;
-    while (a) {
-        buf[i ++] = data[a % 16];
-        a /= 16;
-    }    
-    int j = 2;
-    -- i;
-    // reverse i..j
-    while (j < i) {
-        char t = buf[j];
-        buf[j] = buf[i];
-        buf[i] = t;
-        i --;
-        j ++;
+char* lib_base16_encode(const char *src, size_t len, size_t* out_len) {
+    if (!src || !out_len || len == 0) {
+        return NULL;
     }
+
+	size_t olen = base16_encode_len(len);
+    char* out = (char*) malloc(olen + 1);
+    if (!out) {
+        return NULL;
+    }
+	ssize_t retval = base16_encode(out, src, len);
+    if (retval < 0) {
+        free(out);
+        return NULL;
+    }
+    out[olen] = '\0';
+    *out_len = olen;
+	return out;
 }
 
+char* lib_base16_decode(const char *src, size_t len, size_t* out_len) {
+	if (!src || !out_len || len == 0) {
+        return NULL;
+    }
 
-int main(int argc, char* argv[]) {
-    if (argc == 0) {
-        return 0;
+	size_t i = len - 1;
+	while (i >= 0 && base16_is_spec(src[i])) {
+		if (i == 0) {
+			return NULL;
+		}
+		i--;
+		len--;
+	}
+
+	if (len % 2 != 0) {
+		return NULL;
+	}
+
+    // Validate chars
+    if (!base16_is_valid(src, len)) {
+        return NULL;
     }
-    for (int i = 1; i < argc; ++ i) {
-        for (int j = 0; j < strlen(argv[i]); ++ j) {
-            char buf[4];
-            unsigned char cur = argv[i][j] & 0xFF;
-            hex(cur, buf);
-            printf("\"%s\", ", buf);
-        }
+
+    size_t olen = base16_decode_len(len);
+    char* out = (char*) malloc(olen + 1);
+    if (!out) {
+        return NULL;
     }
-    printf("\n");
-    return 0;
+	ssize_t retval = base16_decode(out, src, len);
+    if (retval < 0) {
+        free(out);
+        return NULL;
+    }
+    out[olen] = '\0';
+	return out;
 }
-*/
+
+// https://nachtimwald.com/2017/09/24/hex-encode-and-decode-in-c/ 
 
 // https://helloacm.com/c-program-to-convert-characters-to-hex-c-source-text/
