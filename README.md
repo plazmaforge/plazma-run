@@ -8,6 +8,7 @@ Plazma Run is cross-platform command line utilities
 | run-cat      | Concatenate and print files |
 | run-base16   | Encode and decode using Base16 representation |
 | run-base32   | Encode and decode using Base32/Z-Base32/Base32Hex/Crockford’s Base32 representation |
+| run-base58   | Encode and decode using Base58 representation |
 | run-base64   | Encode and decode using Base64 representation |
 | run-basename | Print base file name of a path |
 | run-cp       | Copy files
