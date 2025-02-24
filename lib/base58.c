@@ -33,21 +33,49 @@ typedef uint32_t b58_almostmaxint_t;
 #define b58_almostmaxint_bits (sizeof(b58_almostmaxint_t) * 8)
 static const b58_almostmaxint_t b58_almostmaxint_mask = ((((b58_maxint_t)1) << b58_almostmaxint_bits) - 1);
 
-static bool _base58_encode_(char* out, size_t* out_len, const char* src, size_t len) {
+static size_t base58_zcount(const uint8_t* src, size_t len) {
+    size_t count = 0;
+	while (count < len && src[count] == 0) {
+        ++count;
+    }
+    return count;
+}
+
+static int _base58_encode_(char* out, size_t* out_len, const char* src, size_t len) {
 	const uint8_t* bin = (uint8_t*) src;
-	int carry;
-	size_t i, j, high, zcount = 0;
-	size_t size;
+
+	size_t i      = 0;
+    size_t j      = 0;
+    size_t high   = 0;
+    size_t zcount = 0;
+	size_t size   = 0;
+	int carry     = 0;
 	
-	while (zcount < len && !bin[zcount])
-		++zcount;
+	//while (zcount < len && !bin[zcount])
+    //    ++zcount;
+
+    zcount = base58_zcount(bin, len);
+
+    //fprintf(stderr, "base58_encode: zcount: %lu\n", zcount);
 	
 	size = (len - zcount) * 138 / 100 + 1;
 	uint8_t buf[size];
 	memset(buf, 0, size);
-	
-	for (i = zcount, high = size - 1; i < len; ++i, high = j)	{
-		for (carry = bin[i], j = size - 1; (j > high) || carry; --j) {
+    
+    //int icount = 0;
+    //int jcount = 0;
+
+    high = size - 1;    // >>ALT
+	//for (i = zcount, high = size - 1; i < len; ++i, high = j)	{
+    for (i = zcount; i < len; ++i)	{
+
+        //icount++;
+        carry = bin[i]; // >>ALT
+
+		//for (carry = bin[i], j = size - 1; (j > high) || carry; --j) {
+        for (j = size - 1; (j > high) || carry; --j) {
+            //jcount++;
+
 			carry += 256 * buf[j];
 			buf[j] = carry % 58;
 			carry /= 58;
@@ -56,29 +84,46 @@ static bool _base58_encode_(char* out, size_t* out_len, const char* src, size_t 
 				break;
 			}
 		}
+        high = j;       // >>ALT
 	}
+
+    //fprintf(stderr, "base58_encode: icount: %d\n", icount);
+    //fprintf(stderr, "base58_encode: icount: %d\n", jcount);
+
+    //fprintf(stderr, "base58_encode: loop-1\n");
 	
-	for (j = 0; j < size && !buf[j]; ++j);
+	//for (j = 0; j < size && !buf[j]; ++j);
+
+    j = base58_zcount((const uint8_t*) buf, size);
+
+    //fprintf(stderr, "base58_encode: j: %lu\n", j);
 	
 	if (*out_len <= zcount + size - j) {
 		*out_len = zcount + size - j + 1;
-		return false;
+		return -1;
 	}
 	
-	if (zcount)
-		memset(out, '1', zcount);
+	if (zcount) {
+        memset(out, '1', zcount);
+    }
+		
+    //fprintf(stderr, "base58_encode: memset-2\n");
 
-	for (i = zcount; j < size; ++i, ++j)
-		out[i] = encode_table[buf[j]];
+	for (i = zcount; j < size; ++i, ++j) {
+        out[i] = encode_table[buf[j]];
+    }
+		
+    //fprintf(stderr, "base58_encode: loop-3\n");    
 
 	out[i] = '\0';
-	*out_len = i + 1;
+	*out_len = i; // >>ALT + 1; // WHY +1 ?
 	
-	return true;
+	return 0;
 }
 
 
-static bool _base58_decode_(char* out, size_t* out_len, const char* src, size_t len) {
+static int _base58_decode_(char* out, size_t* out_len, const char* src, size_t len) {
+
 	size_t _out_len = *out_len;
     //fprintf(stderr, "out_len: %lu\n", _out_len);
 	const unsigned char *b58u = (void*) src;
@@ -110,11 +155,11 @@ static bool _base58_decode_(char* out, size_t* out_len, const char* src, size_t 
 	for ( ; i < len; ++i) {
 		if (b58u[i] & 0x80)
 			// High-bit set on invalid digit
-			return false;
+			return -1001;
 
 		if (decode_table[b58u[i]] == -1)
 			// Invalid base58 digit
-			return false;
+			return -1002;
 
 		c = (unsigned) decode_table[b58u[i]];
 		for (j = outisz; j--; ) {
@@ -125,10 +170,11 @@ static bool _base58_decode_(char* out, size_t* out_len, const char* src, size_t 
 
 		if (c)
 			// Output number too big (carry to the next int32)
-			return false;
+			return -1003;
+
 		if (outi[0] & zeromask)
 			// Output number too big (last int32 filled too far)
-			return false;
+			return -1004;
 	}
 	
 	j = 0;
@@ -177,15 +223,11 @@ static bool _base58_decode_(char* out, size_t* out_len, const char* src, size_t 
 
     //fprintf(stderr, "out_len: %lu\n", _out_len);
 	
-	return true;
+	return 0;
 }
 
-static ssize_t base58_encode(char* out, const char* src, size_t len) {
-    size_t olen = len * 2;
-    if (_base58_encode_(out, &olen, src, len)) {
-        return olen;
-    }
-    return -1;
+static int base58_encode(char* out, size_t* out_len, const char* src, size_t len) {
+    return _base58_encode_(out, out_len, src, len);
 }
 
 char* lib_base58_encode(const char* src, size_t len, size_t* out_len) {
@@ -200,8 +242,10 @@ char* lib_base58_encode(const char* src, size_t len, size_t* out_len) {
         return NULL;
     }
     memset(out, 0, olen);
-	ssize_t retval = base58_encode(out, src, len);
-    if (retval < 0) {
+    //fprintf(stderr, "base58_encode: out_len (alloc) = %lu\n", olen);
+	int retval = base58_encode(out, &olen, src, len);
+    //fprintf(stderr, "base58_encode: out_len (trunc) = %lu\n", olen);
+    if (retval != 0) {
         free(out);
         return NULL;
     }
@@ -211,18 +255,11 @@ char* lib_base58_encode(const char* src, size_t len, size_t* out_len) {
 	return out;
 }
 
-static ssize_t base58_decode(char* out, const char* src, size_t len) {
-    //fprintf(stderr, "base58_decode: processing..\n");
-    size_t olen = len;// / 2;
-    if (_base58_decode_(out, &olen, src, len)) {
-        //fprintf(stderr, "base58_decode: success\n");
-        return olen;
-    }
-    //fprintf(stderr, "base58_decode: error\n");
-    return -1;
+static int base58_decode(char* out, size_t* out_len, const char* src, size_t len) {
+    return _base58_decode_(out, out_len, src, len);
 }
 
-char* lib_base58_decode(const char *src, size_t len, size_t* out_len) {
+char* lib_base58_decode(const char* src, size_t len, size_t* out_len) {
 
 	if (!src || !out_len || len == 0) {
         return NULL;
@@ -238,8 +275,8 @@ char* lib_base58_decode(const char *src, size_t len, size_t* out_len) {
 		i--;
 		len--;
 	}
-    //fprintf(stderr, "len: %lu\n", len);
 
+    //fprintf(stderr, "len: %lu\n", len);
 
     // Validate chars
     //if (!base58_is_valid(src, len)) {
@@ -252,7 +289,9 @@ char* lib_base58_decode(const char *src, size_t len, size_t* out_len) {
         return NULL;
     }
     memset(out, 0, olen);
-	ssize_t retval = base58_decode(out, src, len);
+    //fprintf(stderr, "base58_decode: out_len (alloc) = %lu\n", olen);
+	int retval = base58_decode(out, &olen, src, len);
+    //fprintf(stderr, "base58_decode: out_len (trunc) = %lu\n", olen);
     if (retval < 0) {
         free(out);
         return NULL;
