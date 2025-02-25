@@ -43,7 +43,7 @@ static bool base64_is_table(char c) {
 	    || (c >= 'a' && c <= 'z')
 		|| (c >= '0' && c <= '9')
 		|| c == '+' 
-		|| c == '-');
+		|| c == '/');
 }
 
 static bool base64_is_valid_char(char c) {
@@ -54,6 +54,7 @@ static bool base64_is_valid(const char *src, size_t len) {
     char* s = (char*) src;
     for (size_t i = 0; i < len; i++) {
         if (!base64_is_valid_char(*s)) {
+			// error: invalid char
             return false;
         }
         s++;
@@ -65,139 +66,197 @@ static size_t base64_encode_len(size_t len) {
 	return ((len + 2) / 3 * 4);
 }
 
-static ssize_t base64_encode(char* out, const char* src, size_t len) {
+static int base64_encode(const char* data, size_t len, char* odata, size_t* olen) {
 	int i;
 	char *p;
 
-	p = out;
+	p = odata;
 	for (i = 0; i < len - 2; i += 3) {
-		*p++ = encode_table[(src[i] >> 2) & 0x3F];
-		*p++ = encode_table[((src[i] & 0x3) << 4) |
-			((int)(src[i + 1] & 0xF0) >> 4)];
-		*p++ = encode_table[((src[i + 1] & 0xF) << 2) |
-			((int)(src[i + 2] & 0xC0) >> 6)];
-		*p++ = encode_table[src[i + 2] & 0x3F];
+		*p++ = encode_table[(data[i] >> 2) & 0x3F];
+		*p++ = encode_table[((data[i] & 0x3) << 4) |
+			((int)(data[i + 1] & 0xF0) >> 4)];
+		*p++ = encode_table[((data[i + 1] & 0xF) << 2) |
+			((int)(data[i + 2] & 0xC0) >> 6)];
+		*p++ = encode_table[data[i + 2] & 0x3F];
 	}
 	if (i < len) {
-		*p++ = encode_table[(src[i] >> 2) & 0x3F];
+		*p++ = encode_table[(data[i] >> 2) & 0x3F];
 		if (i == (len - 1)) {
-			*p++ = encode_table[((src[i] & 0x3) << 4)];
+			*p++ = encode_table[((data[i] & 0x3) << 4)];
 			*p++ = '=';
 		}
 		else {
-			*p++ = encode_table[((src[i] & 0x3) << 4) |
-				((int)(src[i + 1] & 0xF0) >> 4)];
-			*p++ = encode_table[((src[i + 1] & 0xF) << 2)];
+			*p++ = encode_table[((data[i] & 0x3) << 4) |
+				((int)(data[i + 1] & 0xF0) >> 4)];
+			*p++ = encode_table[((data[i + 1] & 0xF) << 2)];
 		}
 		*p++ = '=';
 	}
 
-	return p - out;
+	*olen = p - odata;
+	return 0;
 }
 
 ////
 
-static int base64_decode_len(const char* src) {
-	int out_len;
-	const unsigned char *bufin;
-	int nprbytes;
+static size_t base64_decode_len(const char* data, size_t len, size_t* nprbytes) {
+	size_t blen;
+	const unsigned char* ibuf;
+	size_t _nprbytes;
 
-	bufin = (const unsigned char *) src;
-	while (decode_table[*(bufin++)] <= 63);
+	ibuf = (const unsigned char *) data;
+	size_t count = 0;
+	while (count <= len && decode_table[*(ibuf++)] <= 63) {
+		count++;
+	}
+	//fprintf(stderr, "count-1   : %lu\n", count);
 
-	nprbytes = (bufin - (const unsigned char *) src) - 1;
-	out_len = ((nprbytes + 3) / 4) * 3;
+	_nprbytes = (ibuf - (const unsigned char *) data) - 1;
+	blen = ((_nprbytes + 3) / 4) * 3;
 
-	return out_len;
+	*nprbytes = _nprbytes;
+
+	//fprintf(stderr, "ilen-1    : %lu\n", len);
+	//fprintf(stderr, "blen-1    : %lu\n", blen);
+	//fprintf(stderr, "nprbytes-1: %lu\n", *nprbytes);
+
+	return blen;
 }
 
-static ssize_t base64_decode(char* out, const char* src) {
-	ssize_t out_len = 0;
-	const unsigned char *bufin;
-	unsigned char *bufout;
-	int nprbytes;
+static int base64_decode(const char* data, size_t len, char* odata, size_t* olen, size_t nprbytes) {
 
-	bufin = (const unsigned char *) src;
-	while (decode_table[*(bufin++)] <= 63);
-	nprbytes = (bufin - (const unsigned char *) src) - 1;
-	out_len = ((nprbytes + 3) / 4) * 3;
+	size_t blen = *olen;
+	const unsigned char* ibuf;
+	unsigned char* obuf;
+	
+	//int nprbytes;
+	//ibuf = (const unsigned char *) data;
+	//while (decode_table[*(ibuf++)] <= 63);
+	//nprbytes = (ibuf - (const unsigned char *) data) - 1;
+	//blen = ((nprbytes + 3) / 4) * 3;
 
-	bufout = (unsigned char *) out;
-	bufin = (const unsigned char *) src;
+	//fprintf(stderr, "blen-2    : %lu\n", blen);
+	//fprintf(stderr, "nprbytes-2: %d\n", nprbytes);
+
+	obuf = (unsigned char *) odata;
+	ibuf = (const unsigned char *) data;
 
 	while (nprbytes > 4) {
-		*(bufout++) =
-			(unsigned char)(decode_table[*bufin] << 2 | decode_table[bufin[1]] >> 4);
-		*(bufout++) =
-			(unsigned char)(decode_table[bufin[1]] << 4 | decode_table[bufin[2]] >> 2);
-		*(bufout++) =
-			(unsigned char)(decode_table[bufin[2]] << 6 | decode_table[bufin[3]]);
-		bufin += 4;
+		*(obuf++) =
+			(unsigned char)(decode_table[*ibuf] << 2 | decode_table[ibuf[1]] >> 4);
+		*(obuf++) =
+			(unsigned char)(decode_table[ibuf[1]] << 4 | decode_table[ibuf[2]] >> 2);
+		*(obuf++) =
+			(unsigned char)(decode_table[ibuf[2]] << 6 | decode_table[ibuf[3]]);
+		ibuf += 4;
 		nprbytes -= 4;
 	}
 
 	/* Note: (nprbytes == 1) would be an error, so just ingore that case */
 	if (nprbytes > 1) {
-		*(bufout++) =
-			(unsigned char)(decode_table[*bufin] << 2 | decode_table[bufin[1]] >> 4);
+		*(obuf++) =
+			(unsigned char)(decode_table[*ibuf] << 2 | decode_table[ibuf[1]] >> 4);
 	}
 	if (nprbytes > 2) {
-		*(bufout++) =
-			(unsigned char)(decode_table[bufin[1]] << 4 | decode_table[bufin[2]] >> 2);
+		*(obuf++) =
+			(unsigned char)(decode_table[ibuf[1]] << 4 | decode_table[ibuf[2]] >> 2);
 	}
 	if (nprbytes > 3) {
-		*(bufout++) =
-			(unsigned char)(decode_table[bufin[2]] << 6 | decode_table[bufin[3]]);
+		*(obuf++) =
+			(unsigned char)(decode_table[ibuf[2]] << 6 | decode_table[ibuf[3]]);
 	}
 
-	out_len -= (4 - nprbytes) & 3;
-	return out_len;
+	blen -= (4 - nprbytes) & 3;
+	*olen = blen; 
+
+	return 0;
 }
 
 ////
 
-char* lib_base64_encode(const char *src, size_t len, size_t* out_len) {
-    if (!src || !out_len || len == 0) {
+char* lib_base64_encode(const char* data, size_t len, size_t* olen) {
+	if (olen) {
+		*olen = 0;
+	}
+
+    if (!data || !olen) {
+		// error: invalid arguments
         return NULL;
     }
 
-	size_t olen = base64_encode_len(len);
-    char* out = (char*) malloc(olen + 1);
-    if (!out) {
+	if (len == 0) {
+		// error: empty data
         return NULL;
     }
-	ssize_t retval = base64_encode(out, src, len);
-    if (retval < 0) {
-        free(out);
+
+	size_t blen = base64_encode_len(len);
+	if (blen == 0) {
+		// error: encode len
+		return NULL;
+	}
+
+    char* buf = (char*) malloc(blen + 1);
+    if (!buf) {
         return NULL;
     }
-    out[olen] = '\0';
-    *out_len = olen;
-	return out;
+	int retval = base64_encode(data, len, buf, &blen);
+    if (retval != 0) {
+        free(buf);
+        return NULL;
+    }
+    buf[blen] = '\0';
+    *olen = blen;
+	return buf;
 }
 
-char* lib_base64_decode(const char *src, size_t len, size_t* out_len) {
-	if (!src || !out_len || len == 0) {
+char* lib_base64_decode(const char* data, size_t len, size_t* olen) {
+	if (olen) {
+		*olen = 0;
+	}
+	
+	if (!data || !olen) {
+		// error: invalid arguments
         return NULL;
     }
+
+	if (len == 0) {
+		// error: empty data
+        return NULL;
+    }
+
+	while (len > 0 && base64_is_spec(data[len - 1])) {
+		len--;
+	}
+
+	if (len == 0) {
+		// error: empty trim data
+		return NULL;
+	}
 
     // Validate chars
-    if (!base64_is_valid(src, len)) {
+    if (!base64_is_valid(data, len)) {
+		// error: validation
         return NULL;
     }
 
-    size_t olen = base64_decode_len(src);
-    char* out = (char*) malloc(olen + 1);
-    if (!out) {
+	size_t nprbytes = 0;
+    size_t blen = base64_decode_len(data, len, &nprbytes);
+	if (blen == 0) {
+		// error: decode len
+		return NULL;
+	}
+    char* buf = (char*) malloc(blen + 1);
+    if (!buf) {
         return NULL;
     }
-	ssize_t retval = base64_decode(out, src);
-    if (retval < 0) {
-        free(out);
+	int retval = base64_decode(data, len, buf, &blen, nprbytes);
+    if (retval != 0) {
+        free(buf);
         return NULL;
     }
-    out[olen] = '\0';
-	return out;
+    buf[blen] = '\0';
+	*olen = blen;
+	return buf;
 }
 
 // https://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
