@@ -174,54 +174,57 @@ static int base64_decode(const char* data, size_t len, char* odata, size_t* olen
 
 ////
 
-char* lib_base64_encode(const char* data, size_t len, size_t* olen) {
+int lib_base64_encode(const char* data, size_t len, char** odata, size_t* olen) {
 	if (olen) {
 		*olen = 0;
 	}
 
     if (!data || !olen) {
 		// error: invalid arguments
-        return NULL;
+        return -1;
     }
 
 	if (len == 0) {
 		// error: empty data
-        return NULL;
+        return -1;
     }
 
 	size_t blen = base64_encode_len(len);
 	if (blen == 0) {
 		// error: encode len
-		return NULL;
+		return -1;
 	}
 
     char* buf = (char*) malloc(blen + 1);
     if (!buf) {
-        return NULL;
+        return -1;
     }
 	int retval = base64_encode(data, len, buf, &blen);
     if (retval != 0) {
         free(buf);
-        return NULL;
+        return retval;
     }
     buf[blen] = '\0';
+
+	*odata = buf;
     *olen = blen;
-	return buf;
+
+	return 0;
 }
 
-char* lib_base64_decode(const char* data, size_t len, size_t* olen) {
+int lib_base64_decode(const char* data, size_t len,  char** odata, size_t* olen) {
 	if (olen) {
 		*olen = 0;
 	}
 	
 	if (!data || !olen) {
 		// error: invalid arguments
-        return NULL;
+        return -1;
     }
 
 	if (len == 0) {
 		// error: empty data
-        return NULL;
+        return -1;
     }
 
 	while (len > 0 && base64_is_spec(data[len - 1])) {
@@ -230,33 +233,36 @@ char* lib_base64_decode(const char* data, size_t len, size_t* olen) {
 
 	if (len == 0) {
 		// error: empty trim data
-		return NULL;
+		return -1;
 	}
 
     // Validate chars
     if (!base64_is_valid(data, len)) {
 		// error: validation
-        return NULL;
+        return -1;
     }
 
 	size_t nprbytes = 0;
     size_t blen = base64_decode_len(data, len, &nprbytes);
 	if (blen == 0) {
 		// error: decode len
-		return NULL;
+		return -1;
 	}
     char* buf = (char*) malloc(blen + 1);
     if (!buf) {
-        return NULL;
+        return -1;
     }
 	int retval = base64_decode(data, len, buf, &blen, nprbytes);
     if (retval != 0) {
         free(buf);
-        return NULL;
+        return -1;
     }
     buf[blen] = '\0';
+
+	*odata = buf;
 	*olen = blen;
-	return buf;
+
+	return 0;
 }
 
 // https://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c

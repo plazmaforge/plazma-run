@@ -25,17 +25,28 @@ int run_base64_encode_data(const char* data, size_t size) {
     if (!data) {
         return 1;
     }
+
+    char* odata  = NULL;
     size_t osize = 0;
-    char* odata = lib_base64_encode(data, size, &osize);
+
+    int retval = lib_base64_encode(data, size, &odata, &osize);
+    if (retval != 0) {
+        free(odata);
+        _encode_error();
+        return 1;
+    }
+
     if (!odata) {
         _encode_error();
         return 1;
     }
+
     for (size_t i = 0; i < osize; i++) {
         fprintf(stdout, "%c", odata[i]);
     }
     fprintf(stdout, "\n");
     free(odata);
+
     return 0;
 }
 
@@ -43,8 +54,16 @@ int run_base64_decode_data(const char* data, size_t size) {
     if (!data) {
         return 1;
     }
+    char* odata  = NULL;
     size_t osize = 0;
-    char* odata = lib_base64_decode(data, size, &osize);
+
+    int retval = lib_base64_decode(data, size, &odata, &osize);
+    if (retval != 0) {
+        free(odata);
+        _decode_error();
+        return 1;
+    }
+
     if (!odata) {
         _decode_error();
         return 1;
