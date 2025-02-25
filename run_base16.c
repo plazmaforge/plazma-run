@@ -49,11 +49,11 @@ int run_base16_decode_data(const char* data, size_t size) {
         _decode_error();
         return 1;
     }
-    fprintf(stdout, "%s", odata);
-    //for (size_t i = 0; i < osize; i++) {
-    //    fprintf(stdout, "%c", odata[i]);
-    //}
-    fprintf(stdout, "\n");
+    //fprintf(stdout, "%s", odata);
+    for (size_t i = 0; i < osize; i++) {
+        fprintf(stdout, "%c", odata[i]);
+    }
+    //fprintf(stdout, "\n");
     free(odata);
     return 0;
 }
