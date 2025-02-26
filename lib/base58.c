@@ -26,10 +26,15 @@ static bool base58_is_spec(char c) {
     return base58_non_print(c);
 }
 
+//typedef uint64_t b58_maxint_t;
+//typedef uint32_t b58_almostmaxint_t;
+//#define b58_almostmaxint_bits (sizeof(b58_almostmaxint_t) * 8)
+//static const b58_almostmaxint_t b58_almostmaxint_mask = ((((b58_maxint_t)1) << b58_almostmaxint_bits) - 1);
+
 typedef uint64_t b58_maxint_t;
-typedef uint32_t b58_almostmaxint_t;
-#define b58_almostmaxint_bits (sizeof(b58_almostmaxint_t) * 8)
-static const b58_almostmaxint_t b58_almostmaxint_mask = ((((b58_maxint_t)1) << b58_almostmaxint_bits) - 1);
+typedef uint32_t b58_int_t;
+#define b58_int_bits (sizeof(b58_int_t) * 8)
+static const b58_int_t b58_int_mask = ((((b58_maxint_t)1) << b58_int_bits) - 1);
 
 static size_t base58_zcount(const uint8_t* data, size_t len) {
     size_t count = 0;
@@ -117,10 +122,10 @@ static int _base58_decode_(const char* data, size_t len, char* odata, size_t* ol
 	//b58_almostmaxint_t outi[outisz];
 
 	b58_maxint_t t;
-	b58_almostmaxint_t c;
+	b58_int_t c;
 	size_t i, j;
-	uint8_t bytesleft = _olen % sizeof(b58_almostmaxint_t);
-	b58_almostmaxint_t zmask = bytesleft ? (b58_almostmaxint_mask << (bytesleft * 8)) : 0;
+	uint8_t bytesleft = _olen % sizeof(b58_int_t);
+	b58_int_t zmask = bytesleft ? (b58_int_mask << (bytesleft * 8)) : 0;
 	unsigned zcount = 0;
 
     //fprintf(stderr, "bytesleft: %d\n", bytesleft);
@@ -128,9 +133,9 @@ static int _base58_decode_(const char* data, size_t len, char* odata, size_t* ol
 	//if (!len)
 	//	len = strlen(data);	
 	
-	size_t size = (_olen + sizeof(b58_almostmaxint_t) - 1) / sizeof(b58_almostmaxint_t);    
-	b58_almostmaxint_t buf[size];
-	memset(buf, 0, size * sizeof(b58_almostmaxint_t));
+	size_t size = (_olen + sizeof(b58_int_t) - 1) / sizeof(b58_int_t);    
+	b58_int_t buf[size];
+	memset(buf, 0, size * sizeof(b58_int_t));
 	
 	//for (i = 0; i < size; ++i) {
 	//	buf[i] = 0;
@@ -152,8 +157,8 @@ static int _base58_decode_(const char* data, size_t len, char* odata, size_t* ol
 		c = (unsigned) decode_table[b58u[i]];
 		for (j = size; j--; ) {
 			t = ((b58_maxint_t) buf[j]) * 58 + c;
-			c = t >> b58_almostmaxint_bits;
-			buf[j] = t & b58_almostmaxint_mask;
+			c = t >> b58_int_bits;
+			buf[j] = t & b58_int_mask;
 		}
 
 		if (c)
