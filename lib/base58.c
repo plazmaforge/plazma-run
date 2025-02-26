@@ -38,36 +38,37 @@ static const b58_int_t b58_int_mask = ((((b58_maxint_t)1) << b58_int_bits) - 1);
 
 static size_t base58_zcount(const uint8_t* data, size_t len) {
     size_t count = 0;
-	while (count < len && data[count] == 0) {
+    while (count < len && data[count] == 0) {
         ++count;
     }
     return count;
 }
 
 static int _base58_encode_(const char* data, size_t len, char* odata, size_t* olen) {
-	const uint8_t* bin = (uint8_t*) data;
+    const uint8_t* ibuf = (uint8_t*) data;
 
-	size_t i      = 0;
+    size_t i      = 0;
     size_t j      = 0;
-    size_t high   = 0;
-	int carry     = 0;
-	
-	//while (zcount < len && !bin[zcount])
+    int carry     = 0;
+
+    //while (zcount < len && !bin[zcount])
     //    ++zcount;
 
-    size_t zcount = base58_zcount(bin, len);
+	// Calculate zero count in input data
+    size_t zcount = base58_zcount(ibuf, len);
 
     //fprintf(stderr, "base58_encode: zcount: %lu\n", zcount);
-	
+
+	// Create tmp buffer
 	size_t size = (len - zcount) * 138 / 100 + 1;
 	uint8_t buf[size];
 	memset(buf, 0, size);
     
-    high = size - 1;    // >>ALT
+    size_t high = size - 1;    // >>ALT
 	//for (i = zcount, high = size - 1; i < len; ++i, high = j)	{
     for (i = zcount; i < len; ++i)	{
 
-        carry = bin[i]; // >>ALT
+        carry = ibuf[i]; // >>ALT
 
 		//for (carry = bin[i], j = size - 1; (j > high) || carry; --j) {
         for (j = size - 1; (j > high) || carry; --j) {
@@ -85,6 +86,7 @@ static int _base58_encode_(const char* data, size_t len, char* odata, size_t* ol
 	
 	//for (j = 0; j < size && !buf[j]; ++j);
 
+	// Calculate zero count in tmp buffer
     j = base58_zcount((const uint8_t*) buf, size);
 
     //fprintf(stderr, "base58_encode: j: %lu\n", j);
@@ -93,11 +95,13 @@ static int _base58_encode_(const char* data, size_t len, char* odata, size_t* ol
 		*olen = zcount + size - j + 1;
 		return -1;
 	}
-	
+
+	// Add '1' to output buffer
 	if (zcount) {
         memset(odata, '1', zcount);
     }
-		
+	
+	// Encode data
 	for (i = zcount; j < size; ++i, ++j) {
         odata[i] = encode_table[buf[j]];
     }
@@ -114,8 +118,8 @@ static int _base58_decode_(const char* data, size_t len, char* odata, size_t* ol
 	size_t _olen = *olen;
 	//fprintf(stderr, "olen: %lu\n", _olen);
 	
-	const unsigned char *b58u = (void*) data;
-	unsigned char* binu = (unsigned char*) odata;
+	const unsigned char* ibuf = (void*) data;
+	unsigned char* obuf = (unsigned char*) odata;
 
 	//size_t outisz = (_olen + sizeof(b58_almostmaxint_t) - 1) / sizeof(b58_almostmaxint_t);
 	//fprintf(stderr, "size: %lu\n", size);
@@ -129,10 +133,7 @@ static int _base58_decode_(const char* data, size_t len, char* odata, size_t* ol
 	unsigned zcount = 0;
 
     //fprintf(stderr, "bytesleft: %d\n", bytesleft);
-	
-	//if (!len)
-	//	len = strlen(data);	
-	
+		
 	size_t size = (_olen + sizeof(b58_int_t) - 1) / sizeof(b58_int_t);    
 	b58_int_t buf[size];
 	memset(buf, 0, size * sizeof(b58_int_t));
@@ -142,19 +143,19 @@ static int _base58_decode_(const char* data, size_t len, char* odata, size_t* ol
 	//}
 
 	// Leading zeros, just count
-	for (i = 0; i < len && b58u[i] == '1'; ++i)
+	for (i = 0; i < len && ibuf[i] == '1'; ++i)
 		++zcount;
 	
 	for ( ; i < len; ++i) {
-		if (b58u[i] & 0x80)
+		if (ibuf[i] & 0x80)
 			// High-bit set on invalid digit
 			return -1001;
 
-		if (decode_table[b58u[i]] == -1)
+		if (decode_table[ibuf[i]] == -1)
 			// Invalid base58 digit
 			return -1002;
 
-		c = (unsigned) decode_table[b58u[i]];
+		c = (unsigned) decode_table[ibuf[i]];
 		for (j = size; j--; ) {
 			t = ((b58_maxint_t) buf[j]) * 58 + c;
 			c = t >> b58_int_bits;
@@ -176,9 +177,9 @@ static int _base58_decode_(const char* data, size_t len, char* odata, size_t* ol
 	if (bytesleft) {
 		for (i = bytesleft; i > 0; --i) {
 			//*(binu++) = (outi[0] >> (8 * (i - 1))) & 0xff;
-            *(binu) = (buf[0] >> (8 * (i - 1))) & 0xff;
-            if ((int) *(binu) != 0 || start) {
-                binu++;
+            *(obuf) = (buf[0] >> (8 * (i - 1))) & 0xff;
+            if ((int) *(obuf) != 0 || start) {
+                obuf++;
                 rlen++;
 				start = true;
             }
@@ -189,9 +190,9 @@ static int _base58_decode_(const char* data, size_t len, char* odata, size_t* ol
 	for (; j < size; ++j) {
 		for (i = sizeof(*buf); i > 0; --i) {
 			//*(binu++) = (outi[j] >> (8 * (i - 1))) & 0xff;
-            *(binu) = (buf[j] >> (8 * (i - 1))) & 0xff;
-            if ((int) *(binu) != 0 || start) {
-                binu++;
+            *(obuf) = (buf[j] >> (8 * (i - 1))) & 0xff;
+            if ((int) *(obuf) != 0 || start) {
+                obuf++;
                 rlen++;
 				start = true;
             }
@@ -206,9 +207,9 @@ static int _base58_decode_(const char* data, size_t len, char* odata, size_t* ol
 	// Count canonical base58 byte count
 	// May be we don't have this case because we resolve it before
 	int zlen = 0;
-	binu = (unsigned char*) odata;
+	obuf = (unsigned char*) odata;
 	for (i = 0; i < _olen; ++i) {
-		if (binu[i])
+		if (obuf[i])
 			break;
 		--*olen;
 		zlen++;
