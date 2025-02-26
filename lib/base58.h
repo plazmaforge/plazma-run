@@ -1,8 +1,8 @@
 #ifndef PLAZMA_LIB_BASE58_H
 #define PLAZMA_LIB_BASE58_H
 
-char* lib_base58_encode(const char* src, size_t len, size_t* out_len);
+int lib_base58_encode(const char* data, size_t len, char** odata, size_t* olen);
 
-char* lib_base58_decode(const char* src, size_t len, size_t* out_len);
+int lib_base58_decode(const char* data, size_t len, char** odata, size_t* olen);
 
 #endif // PLAZMA_LIB_BASE58_H

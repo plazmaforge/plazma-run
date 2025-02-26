@@ -50,8 +50,8 @@ static bool base64_is_valid_char(char c) {
     return base64_is_spec(c) || base64_is_table(c);
 }
 
-static bool base64_is_valid(const char *src, size_t len) {
-    char* s = (char*) src;
+static bool base64_is_valid(const char* data, size_t len) {
+    char* s = (char*) data;
     for (size_t i = 0; i < len; i++) {
         if (!base64_is_valid_char(*s)) {
 			// error: invalid char
