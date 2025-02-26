@@ -5,8 +5,6 @@
 
 #include "base58.h"
 
-//static const char* const ASCII_CHARS  = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
-
 static const char encode_table[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 static const int8_t decode_table[] = {
@@ -62,19 +60,14 @@ static int _base58_encode_(char* out, size_t* out_len, const char* src, size_t l
 	uint8_t buf[size];
 	memset(buf, 0, size);
     
-    //int icount = 0;
-    //int jcount = 0;
-
     high = size - 1;    // >>ALT
 	//for (i = zcount, high = size - 1; i < len; ++i, high = j)	{
     for (i = zcount; i < len; ++i)	{
 
-        //icount++;
         carry = bin[i]; // >>ALT
 
 		//for (carry = bin[i], j = size - 1; (j > high) || carry; --j) {
         for (j = size - 1; (j > high) || carry; --j) {
-            //jcount++;
 
 			carry += 256 * buf[j];
 			buf[j] = carry % 58;
@@ -86,11 +79,6 @@ static int _base58_encode_(char* out, size_t* out_len, const char* src, size_t l
 		}
         high = j;       // >>ALT
 	}
-
-    //fprintf(stderr, "base58_encode: icount: %d\n", icount);
-    //fprintf(stderr, "base58_encode: icount: %d\n", jcount);
-
-    //fprintf(stderr, "base58_encode: loop-1\n");
 	
 	//for (j = 0; j < size && !buf[j]; ++j);
 
@@ -107,14 +95,10 @@ static int _base58_encode_(char* out, size_t* out_len, const char* src, size_t l
         memset(out, '1', zcount);
     }
 		
-    //fprintf(stderr, "base58_encode: memset-2\n");
-
 	for (i = zcount; j < size; ++i, ++j) {
         out[i] = encode_table[buf[j]];
     }
 		
-    //fprintf(stderr, "base58_encode: loop-3\n");    
-
 	out[i] = '\0';
 	*out_len = i; // >>ALT + 1; // WHY +1 ?
 	
@@ -125,7 +109,8 @@ static int _base58_encode_(char* out, size_t* out_len, const char* src, size_t l
 static int _base58_decode_(char* out, size_t* out_len, const char* src, size_t len) {
 
 	size_t _out_len = *out_len;
-    //fprintf(stderr, "out_len: %lu\n", _out_len);
+	//fprintf(stderr, "out_len: %lu\n", _out_len);
+	
 	const unsigned char *b58u = (void*) src;
 	unsigned char* binu = (unsigned char*) out;
 	size_t outisz = (_out_len + sizeof(b58_almostmaxint_t) - 1) / sizeof(b58_almostmaxint_t);
@@ -178,17 +163,16 @@ static int _base58_decode_(char* out, size_t* out_len, const char* src, size_t l
 	}
 	
 	j = 0;
-    int zzz = 0;
-    int shift = 0;
+    int rlen = 0; // real len
+	bool start = false;
 	if (bytesleft) {
 		for (i = bytesleft; i > 0; --i) {
 			//*(binu++) = (outi[0] >> (8 * (i - 1))) & 0xff;
             *(binu) = (outi[0] >> (8 * (i - 1))) & 0xff;
-            //fprintf(stderr, "a>>i: %d, %d\n", zzz, (int) *(binu));
-            if ((int) *(binu) != 0) {
-                //fprintf(stderr, "a>>i: %d, %d\n", zzz, (int) *(binu));
+            if ((int) *(binu) != 0 || start) {
                 binu++;
-                zzz++;
+                rlen++;
+				start = true;
             }
 		}
 		++j;
@@ -198,26 +182,37 @@ static int _base58_decode_(char* out, size_t* out_len, const char* src, size_t l
 		for (i = sizeof(*outi); i > 0; --i) {
 			//*(binu++) = (outi[j] >> (8 * (i - 1))) & 0xff;
             *(binu) = (outi[j] >> (8 * (i - 1))) & 0xff;
-            //fprintf(stderr, "b>>i: %d, %d\n", zzz, (int) *(binu));
-            if ((int) *(binu) != 0) {
-                //fprintf(stderr, "b>>i: %d, %d\n", zzz, (int) *(binu));
+            if ((int) *(binu) != 0 || start) {
                 binu++;
-                zzz++;
+                rlen++;
+				start = true;
             }
 		}
 	}
 
-    //fprintf(stderr, "out_len: %lu\n", _out_len);
+    //fprintf(stderr, "rlen: %lu\n", rlen);
+
+    // Set real len
+	*out_len = rlen;
 	
 	// Count canonical base58 byte count
+	// May be we don't have this case because we resolve it before
+	int zlen = 0;
 	binu = (unsigned char*) out;
 	for (i = 0; i < _out_len; ++i) {
 		if (binu[i])
 			break;
 		--*out_len;
+		zlen++;
 	}
 
-    //fprintf(stderr, "out_len: %lu\n", _out_len);
+	/*
+	// May be need shift first position of out?
+	out += zlen;
+	*/
+
+	//fprintf(stderr, "zlen: %lu\n", zlen);
+    //fprintf(stderr, "zerocount: %lu\n", zerocount);
 
 	*out_len += zerocount;
 
@@ -297,6 +292,8 @@ char* lib_base58_decode(const char* src, size_t len, size_t* out_len) {
         return NULL;
     }
     out[olen] = '\0';
+
+	*out_len = olen;
     
 	return out;
 }
@@ -306,3 +303,16 @@ char* lib_base58_decode(const char* src, size_t len, size_t* out_len) {
 // https://github.com/martinus/base58/blob/master/source/base58.cpp
 // https://medium.com/@raphaeldemoraesdutenkefer/implementing-a-base58-decoder-for-extended-private-key-in-c-d4cc8e9b0792
 // https://cplusplus.com/forum/beginner/285815/
+
+// https://kanga.exchange/university/en/courses/advanced-course/lessons/55-base-58-function-in-cryptocurrencies/
+// https://news.ycombinator.com/item?id=18407321
+
+// https://github.com/bitcoin/bitcoin/tree/master/src/crypto
+
+// https://en.bitcoin.it/wiki/Base58Check_encoding
+
+// https://www.vbforums.com/showthread.php?891688-VB6-Base58-encoding
+
+// https://raw.githubusercontent.com/trezor/trezor-crypto/master/base58.c
+
+// https://github.com/trezor/trezor-crypto
