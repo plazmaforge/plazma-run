@@ -94,6 +94,7 @@ rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 %CC% %CFLAGS% run_base32.c -o run_base32.o
 %CC% %CFLAGS% run_base58.c -o run_base58.o
 %CC% %CFLAGS% run_base64.c -o run_base64.o
+%CC% %CFLAGS% run_ascii.c -o run_ascii.o
 
 %CC% %CFLAGS% test_getopt.c -o test_getopt.o
 %CC% %CFLAGS% test_echo.c -o test_echo.o
@@ -144,6 +145,7 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 %CC% %LDFLAGS% getopt.o iolib.o base32.o run_base32.o -o run-base32.exe
 %CC% %LDFLAGS% getopt.o iolib.o base58.o run_base58.o -o run-base58.exe
 %CC% %LDFLAGS% getopt.o iolib.o base64.o run_base64.o -o run-base64.exe
+%CC% %LDFLAGS% getopt.o run_ascii.o -o run-ascii.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe

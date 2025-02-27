@@ -104,6 +104,7 @@ $CC $CFLAGS run_base16.c -o run_base16.o
 $CC $CFLAGS run_base32.c -o run_base32.o
 $CC $CFLAGS run_base58.c -o run_base58.o
 $CC $CFLAGS run_base64.c -o run_base64.o
+$CC $CFLAGS run_ascii.c -o run_ascii.o
 
 $CC $CFLAGS test_getopt.c -o test_getopt.o
 $CC $CFLAGS test_echo.c -o test_echo.o
@@ -154,6 +155,7 @@ $CC $LDFLAGS getopt.o iolib.o base16.o run_base16.o -o run-base16
 $CC $LDFLAGS getopt.o iolib.o base32.o run_base32.o -o run-base32
 $CC $LDFLAGS getopt.o iolib.o base58.o run_base58.o -o run-base58
 $CC $LDFLAGS getopt.o iolib.o base64.o run_base64.o -o run-base64
+$CC $LDFLAGS getopt.o run_ascii.o -o run-ascii
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo
