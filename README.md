@@ -4,6 +4,7 @@ Plazma Run is cross-platform command line utilities
 
 | Name         | Description    |
 | ------------ | -------------- |
+| run-ascii    | Print ASCII table |
 | run-ask      | Find data in files |
 | run-cat      | Concatenate and print files |
 | run-base16   | Encode and decode using Base16 representation |
