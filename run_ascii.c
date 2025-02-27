@@ -11,6 +11,13 @@ const char* NAME[32] = {
     "CAN", "EM",  "SUB", "ESC", "FS",  "GS",  "RS",  "US"
     };
 
+static const char* _to_str(char c) {
+    static char str[2];
+    str[0] = c;
+    str[1] = '\0';
+    return str;
+}
+
 static const char* _to_name(char c) {
     if (c >= 0 && c <= 31) {
         return NAME[c];
@@ -18,7 +25,8 @@ static const char* _to_name(char c) {
     if (c == 127) {
         return "DEL";
     }
-    return "";
+    //return "";
+    return _to_str(c);
 }
 
 static bool _non_print(char c) {
@@ -26,19 +34,21 @@ static bool _non_print(char c) {
 }
 
 static void _print_char_dec(char c) {
-    if (_non_print(c)) {
-        printf("%3d %-3s  ", c, _to_name(c));
-    } else {
-        printf("%3d %c    ", c, c);
-    }
+    printf("%3d %-3s  ", c, _to_name(c));
+    //if (_non_print(c)) {
+    //    printf("%3d %-3s  ", c, _to_name(c));
+    //} else {
+    //    printf("%3d %c    ", c, c);
+    //}
 }
 
 static void _print_char_hex(char c) {
-    if (_non_print(c)) {
-        printf("%02X %-3s  ", c, _to_name(c));
-    } else {
-        printf("%02X %c    ", c, c);
-    }
+    printf("%02X %-3s  ", c, _to_name(c));
+    //if (_non_print(c)) {
+    //    printf("%02X %-3s  ", c, _to_name(c));
+    //} else {
+    //    printf("%02X %c    ", c, c);
+    //}
 }
 
 static void _print_char(int type, char c) {
@@ -97,3 +107,4 @@ int main(int argc, char* argv[]) {
 
 // https://www.johndcook.com/blog/2022/05/28/how-to-memorize-the-ascii-table/
 // https://www.sciencebuddies.org/science-fair-projects/references/ascii-table
+// https://c-for-dummies.com/blog/?p=4895
