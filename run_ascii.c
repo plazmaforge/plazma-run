@@ -39,19 +39,19 @@ static bool _non_print(char c) {
     return ((c >= 0 && c <= 31) || c == 127);
 }
 
-static char to_bin(char c, int i) {
+static char _to_bin(char c, int i) {
     return ( (c & (1 << i)) ? '1' : '0' );
 }
 
-static void to_bin_count(char* buf, char c, int count) {
+static void _to_bin_count(char* buf, char c, int count) {
     int n = count - 1;
     for (int i = n; i >= 0; --i) {
-        buf[n - i] = to_bin(c, i);
+        buf[n - i] = _to_bin(c, i);
     }
 }
 
-static void to_bin8(char* buf, char c) {
-    to_bin_count(buf, c, 8);
+static void _to_bin8(char* buf, char c) {
+    _to_bin_count(buf, c, 8);
 }
 
 static void _print_char_dec(char c) {
@@ -75,7 +75,7 @@ static void _print_char(int type, char c) {
     if (type & LIB_TYPE_BIN) {
         char buf[9];
         buf[8] = '\0';
-        to_bin8(buf, c);
+        _to_bin8(buf, c);
         printf("%s ", buf);
     }
 
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
     int error = 0;
     int opt;
 
-    int type = 0; //LIB_TYPE_DEF;
+    int type = 0;
 
     while ((opt = lib_getopt(argc, argv, "dxob")) != -1) {
         switch (opt) {
