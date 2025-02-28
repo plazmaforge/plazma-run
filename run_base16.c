@@ -3,6 +3,11 @@
 #include <stdbool.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
+
 #include "getopt.h"
 #include "clilib.h"
 
@@ -153,9 +158,16 @@ int main(int argc, char* argv[]) {
     //printf("argc  : %i\n", argc);
     //printf("optind: %i\n", optind);
 
+    #ifdef _WIN32
+    int result = _setmode(_fileno(stdout), _O_BINARY);
+    if (result == -1) {
+        fprintf(stderr, "%s: %s\n", prog_name, "Cannot set binary mode in stdout");
+    }
+    #endif
+
     if (flag_string) {
         if (!data) {
-            fprintf(stderr, "Empty input string\n");
+            fprintf(stderr, "%s: %s\n", prog_name, "Empty input string");
             return 1;
         }
         if (flag_decode) {
