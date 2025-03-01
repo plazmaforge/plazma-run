@@ -9,7 +9,10 @@
 #define LIB_TYPE_DEC 1 << 3
 #define LIB_TYPE_HEX 1 << 4
 
-#define LIB_TYPE_DEF LIB_TYPE_DEC
+#define LIB_TYPE_DEF LIB_TYPE_DEC | LIB_TYPE_HEX
+#define LIB_TYPE_ALL LIB_TYPE_BIN | LIB_TYPE_OCT | LIB_TYPE_DEC | LIB_TYPE_HEX
+
+#define LIB_SEPARATE_BIN 1
 
 const char* CHR[32] = {
     "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL",
@@ -50,40 +53,72 @@ static void _to_bin_count(char* buf, char c, int count) {
     }
 }
 
+static void _shift_bin_count(char* buf, int count) {
+    int mid = count / 2;
+    int n = count - 1;
+    for (int i = n; i >= mid; --i) {
+        buf[i + 1] = buf[i];
+    }
+    buf[mid] = ' ';
+}
+
 static void _to_bin8(char* buf, char c) {
     _to_bin_count(buf, c, 8);
 }
 
-static void _print_char_dec(char c) {
-    printf("%3d %-3s  ", c, _to_chr(c));
+static void _shift_bin8(char* buf) {
+    _shift_bin_count(buf, 8);
 }
 
-static void _print_char_hex(char c) {
-    printf("%02X %-3s  ", c, _to_chr(c));
+static void _print_hcell(int type) {
+    if (type & LIB_TYPE_DEC) {
+        printf("Dec ");
+    } 
+    if (type & LIB_TYPE_HEX) {
+        printf("Hex ");
+    }
+    if (type & LIB_TYPE_OCT) {
+        printf("Oct ");
+    }
+    if (type & LIB_TYPE_BIN) {
+        printf("Bin      ");
+        if (LIB_SEPARATE_BIN) {
+            printf(" ");
+        }
+    }
+    printf("      ");
 }
 
-static void _print_char(int type, char c) {
+static void _print_tcell(int type, char c) {
     if (type & LIB_TYPE_DEC) {
         printf("%3d ", c);
     } 
     if (type & LIB_TYPE_HEX) {
-        printf("%02X ", c);
+        printf("%02X  ", c);
     }
     if (type & LIB_TYPE_OCT) {
         printf("%03o ", c);
     }
     if (type & LIB_TYPE_BIN) {
-        char buf[9];
-        buf[8] = '\0';
+        size_t len = 8;
+        if (LIB_SEPARATE_BIN) {
+            len++;
+        }
+        char buf[len + 1];
+        buf[len] = '\0';
+
         _to_bin8(buf, c);
+        if (LIB_SEPARATE_BIN) {
+            _shift_bin8(buf);
+        }        
         printf("%s ", buf);
     }
 
-    printf("%-3s  ", _to_chr(c));
+    printf("%-3s   ", _to_chr(c));
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-ascii [-dxob]\n");
+    fprintf(stderr, "Usage: run-ascii [-dxoba]\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -93,7 +128,7 @@ int main(int argc, char* argv[]) {
 
     int type = 0;
 
-    while ((opt = lib_getopt(argc, argv, "dxob")) != -1) {
+    while ((opt = lib_getopt(argc, argv, "dxoba")) != -1) {
         switch (opt) {
         case 'd':
             /* Set DEC type */
@@ -111,6 +146,11 @@ int main(int argc, char* argv[]) {
             /* Set BIN type */
             type |= LIB_TYPE_BIN;
             break;
+        case 'a':
+            /* Set ALL type */
+            type = LIB_TYPE_ALL;
+            break;
+
         case '?':
             error = 1;
             break;
@@ -128,12 +168,19 @@ int main(int argc, char* argv[]) {
         usage();
         return 1;
     }
-     
+
+    // Print header
+    for (int col = 0; col < 8; col++) {
+        _print_hcell(type);
+    }
+    printf("\n");
+
+    // Print table     
     char c;
     for (int row = 0; row < 16; row++) {
         for (int col = 0; col < 8; col++) {
             c = row + col * 16;
-            _print_char(type, c);
+            _print_tcell(type, c);
         }
         printf("\n");
     }    
