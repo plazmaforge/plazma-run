@@ -302,35 +302,38 @@ int base32_decode(const char* data, size_t len, unsigned char* odata) {
 
 ////
 
-char* lib_base32_encode_type(int type, const char* data, size_t len, size_t* olen) {
+int lib_base32_encode_type(int type, const char* data, size_t len, char** odata, size_t* olen) {
     if (!data || !olen || len == 0) {
-        return NULL;
+        return -1;
     }
 	size_t size = base32_encode_len_type(type, len);
     //fprintf(stderr, "size  : %lu\n", size);
     char* buf = (char*) malloc(size + 1);
     if (!buf) {
-        return NULL;
+        return -1;
     }
     memset(buf, 0, size);
 	int retval = base32_encode_type(type, (unsigned char*) data, len, buf);
     //fprintf(stderr, "retval: %ld\n", retval);
     if (retval < 0) {
         free(buf);
-        return NULL;
+        return -1;
     }
     buf[size] = '\0';
+    
+    *odata = buf;
     *olen = size;
-	return buf;
+
+	return 0;
 }
 
-char* lib_base32_encode(const char* data, size_t len, size_t* out_len) {
-    return lib_base32_encode_type(LIB_BASE32, data, len, out_len);
+int lib_base32_encode(const char* data, size_t len, char** odata, size_t* out_len) {
+    return lib_base32_encode_type(LIB_BASE32, data, len, odata, out_len);
 }
 
-char* lib_base32_decode_type(int type, const char* data, size_t len, size_t* olen) {
+int lib_base32_decode_type(int type, const char* data, size_t len, char** odata, size_t* olen) {
     if (!data || !olen || len == 0) {
-        return NULL;
+        return -1;
     }
 
 	while (len > 0 && base32_is_spec(type, data[len - 1])) {
@@ -339,29 +342,32 @@ char* lib_base32_decode_type(int type, const char* data, size_t len, size_t* ole
 
     // Validate chars
     if (!base32_is_valid(type, base32_table_type(type), data, len)) {
-        return NULL;
+        return -1;
     }
 
     size_t size = base32_decode_len(len);
     //fprintf(stderr, "size  : %lu\n", size);
     char* buf = (char*) malloc(size + 1);
     if (!buf) {
-        return NULL;
+        return -1;
     }
     memset(buf, 0, size);
 	int retval = base32_decode_type(type, data, len, (unsigned char*) buf);
     //fprintf(stderr, "retval: %ld\n", retval);
     if (retval < 0) {
         free(buf);
-        return NULL;
+        return -1;
     }
     buf[size] = '\0';
+
+    *odata = buf;
     *olen = size;
-	return buf;
+
+	return 0;
 }
 
-char* lib_base32_decode(const char* data, size_t len, size_t* olen) {
-    return lib_base32_decode_type(LIB_BASE32, data, len, olen);
+int lib_base32_decode(const char* data, size_t len, char** odata, size_t* olen) {
+    return lib_base32_decode_type(LIB_BASE32, data, len, odata, olen);
 }
 
 // https://medium.com/@at.kishor.k/demystifying-base32-an-in-depth-guide-to-this-encoding-standard-697b9426fc25

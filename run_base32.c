@@ -30,8 +30,17 @@ int run_base32_encode_data(int type, const char* data, size_t size) {
     if (!data) {
         return 1;
     }
+
+    char* odata = NULL;
     size_t osize = 0;
-    char* odata = lib_base32_encode_type(type, data, size, &osize);
+
+    int retval = lib_base32_encode_type(type, data, size, &odata, &osize);
+    if (retval != 0) {
+        free(odata);
+        _encode_error();
+        return 1;
+    }
+
     if (!odata) {
         _encode_error();
         return 1;
@@ -48,8 +57,16 @@ int run_base32_decode_data(int type, const char* data, size_t size) {
     if (!data) {
         return 1;
     }
+    char* odata = NULL;
     size_t osize = 0;
-    char* odata = lib_base32_decode_type(type, data, size, &osize);
+
+    int retval = lib_base32_decode_type(type, data, size, &odata, &osize);
+    if (retval != 0) {
+        free(odata);
+        _encode_error();
+        return 1;
+    }
+
     if (!odata) {
         _decode_error();
         return 1;
