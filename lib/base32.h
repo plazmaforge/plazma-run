@@ -8,12 +8,12 @@
 #define LIB_BASE32HEX 4 /* Base32Hex          */
 #define LIB_CBASE32   5 /* Crockford’s Base32 */
 
-int lib_base32_encode_type(int type, const char* data, size_t len, char** odata, size_t* out_len);
+int lib_base32_encode_type(int type, const char* idata, size_t isize, char** odata, size_t* osize);
 
-int lib_base32_encode(const char* data, size_t len, char** odata, size_t* out_len);
+int lib_base32_encode(const char* idata, size_t isize, char** odata, size_t* osize);
 
-int lib_base32_decode_type(int type, const char* data, size_t len, char** odata, size_t* out_len);
+int lib_base32_decode_type(int type, const char* idata, size_t isize, char** odata, size_t* osize);
 
-int lib_base32_decode(const char* data, size_t len, char** odata, size_t* out_len);
+int lib_base32_decode(const char* idata, size_t isize, char** odata, size_t* osize);
 
 #endif // PLAZMA_LIB_BASE32_H

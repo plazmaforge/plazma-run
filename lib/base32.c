@@ -80,9 +80,9 @@ static bool base32_is_valid_char(int type, const char* encode_table, char c) {
     return base32_is_spec(type, c) || base32_is_table(type, encode_table, c);
 }
 
-static bool base32_is_valid(int type, const char* encode_table, const char* data, size_t len) {
+static bool base32_is_valid(int type, const char* encode_table, const char* data, size_t size) {
     char* s = (char*) data;
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < size; i++) {
         if (!base32_is_valid_char(type, encode_table, *s)) {
             return false;
         }
@@ -91,35 +91,35 @@ static bool base32_is_valid(int type, const char* encode_table, const char* data
     return true;
 }
 
-static size_t base32_encode_len_bin(size_t len) {
-	return 8 * len;
+static size_t base32_encode_size_fix(size_t size) {
+	return 8 * size;
 }
 
-static size_t base32_encode_len_type(int type, size_t len) {
-	size_t size = base32_encode_len_bin(len);
+static size_t base32_encode_size_type(int type, size_t isize) {
+	size_t size = base32_encode_size_fix(isize);
     size_t padding = size % 5;
     if (padding != 0) {
         size += (5 - padding);
     }
 
     // calculate iterations with step 5
-    size_t olen = size / 5;
+    size_t osize = size / 5;
 
     if (type == LIB_ZBASE32) {
-        return olen;
+        return osize;
     }
 
-    if (olen % 8 != 0) {
-        size_t count = olen / 8;
+    if (osize % 8 != 0) {
+        size_t count = osize / 8;
         count++;
-        olen = count * 8;
+        osize = count * 8;
     }
 
-    return olen;
+    return osize;
 }
 
-static size_t base32_encode_len(size_t len) {
-    return base32_encode_len_type(LIB_BASE32, len);
+static size_t base32_encode_size(size_t size) {
+    return base32_encode_size_type(LIB_BASE32, size);
 }
 
 static char to_bin(char c, int i) {
@@ -142,21 +142,20 @@ static void to_bin5(char* buf, char c) {
     to_bin_count(buf, c, 5);
 }
 
-int base32_encode_type(int type, const unsigned char* data, size_t len, char* odata) {
-    if (!odata || !data) {
+static int base32_encode_type(int type, const unsigned char* idata, size_t isize, char* odata) {
+    if (!idata || !odata) {
         return -1;
     }
-    if (len == 0) {
+    if (isize == 0) {
         return 0;
     }
 
-    const unsigned char* ibuf = data;
+    const unsigned char* ibuf = idata;
     char* obuf = odata;
     const char* encode_table = base32_table_type(type);
 
-    //fprintf(stderr, "len = %lu\n", len);
 
-    size_t fsize = 8 * len;     // Fix size
+    size_t fsize = 8 * isize;   // Fix size
     size_t asize = 0;           // Add size
     size_t size  = fsize;       // Buf size
     size_t padding = size % 5;
@@ -164,7 +163,8 @@ int base32_encode_type(int type, const unsigned char* data, size_t len, char* od
         asize = 5 - padding;
         size += asize;
     }
-    
+
+    //fprintf(stderr, "isize = %lu\n", isize);    
     //fprintf(stderr, "fsize = %lu\n", fsize);
     //fprintf(stderr, "asize = %lu\n", asize);
     //fprintf(stderr, "size  = %lu\n", size);
@@ -177,7 +177,7 @@ int base32_encode_type(int type, const unsigned char* data, size_t len, char* od
     byte_buf[8] = '\0';
     char* tmp = buf;
 
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < isize; i++) {
         //char byte_str[9];
         //sprintf(byte_str, "%08b", data[i]);
         //to_bin8(byte_buf, data[i]);
@@ -193,7 +193,7 @@ int base32_encode_type(int type, const unsigned char* data, size_t len, char* od
 
     if (padding != 0) {
         //strcat(bin_str, "00000" + padding);
-        //char* str = buf + (8 * len);
+        //char* str = buf + (8 * isize);
         //memset(str, '0', asize);
 
         memset(buf + fsize, '0', asize);
@@ -211,7 +211,7 @@ int base32_encode_type(int type, const unsigned char* data, size_t len, char* od
         strncpy(segment_buf, buf + i, 5);
         segment_buf[5] = '\0';
         int index = (int) strtol(segment_buf, NULL, 2);
-        
+
         //strncat(odata, &encode_table[index], 1); // very slowly
 
         *obuf = encode_table[index];
@@ -236,35 +236,35 @@ int base32_encode_type(int type, const unsigned char* data, size_t len, char* od
     return psize;
 }
 
-static int base32_encode(const unsigned char* data, size_t len, char* odata) {
-    return base32_encode_type(LIB_BASE32, data, len, odata);
+static int base32_encode(const unsigned char* idata, size_t isize, char* odata) {
+    return base32_encode_type(LIB_BASE32, idata, isize, odata);
 }
 
-static size_t base32_decode_len_bin(size_t len) {
-	return 5 * len;
+static size_t base32_decode_size_fix(size_t size) {
+	return 5 * size;
 }
 
-static size_t base32_decode_len(size_t len) {
-	size_t out_len = base32_decode_len_bin(len);
+static size_t base32_decode_size(size_t isize) {
+	size_t osize = base32_decode_size_fix(isize);
 
     // calculate iterations with step 8
-    return out_len / 8;
+    return osize / 8;
 }
 
-int base32_decode_type(int type, const char* data, size_t len, unsigned char* odata) {
-    if (!odata || !data) {
+static int base32_decode_type(int type, const char* idata, size_t isize, unsigned char* odata) {
+    if (!odata || !idata) {
         return -1;
     }
-    if (len == 0) {
+    if (isize == 0) {
         return 0;
     }
 
-    const char* ibuf = data;
+    const char* ibuf = idata;
     unsigned char* obuf = odata;
     const char* encode_table = base32_table_type(type);
 
-    //fprintf(stderr, "len = %lu\n", len);
-    size_t size = 5 * len;
+    //fprintf(stderr, "isize = %lu\n", isize);
+    size_t size = 5 * isize;
     size_t padding = size % 8;
 
     //fprintf(stderr, "padding = %lu\n", padding);
@@ -282,8 +282,8 @@ int base32_decode_type(int type, const char* data, size_t len, unsigned char* od
     index_buf[5] = '\0';
     char* tmp = buf;
 
-    for (size_t i = 0; i < len; i++) {
-        //char c = data[i];
+    for (size_t i = 0; i < isize; i++) {
+        //char c = idata[i];
         char c = *ibuf;
         if (c != '=') {                        
             if (type == LIB_CBASE32) {
@@ -333,24 +333,35 @@ int base32_decode_type(int type, const char* data, size_t len, unsigned char* od
     return psize;
 }
 
-int base32_decode(const char* data, size_t len, unsigned char* odata) {
-    return base32_decode_type(LIB_BASE32, data, len, odata);
+int base32_decode(const char* idata, size_t isize, unsigned char* odata) {
+    return base32_decode_type(LIB_BASE32, idata, isize, odata);
 }
 
 ////
 
-int lib_base32_encode_type(int type, const char* data, size_t len, char** odata, size_t* olen) {
-    if (!data || !olen || len == 0) {
+int lib_base32_encode_type(int type, const char* idata, size_t isize, char** odata, size_t* osize) {
+    if (osize) {
+        *osize = 0;
+    }
+
+	if (!idata || !odata || !osize) {
+		// error: invalid arguments
         return -1;
     }
-	size_t size = base32_encode_len_type(type, len);
+
+	if (isize == 0) {
+		// error: empty data
+        return -1;
+    }
+
+	size_t size = base32_encode_size_type(type, isize);
     //fprintf(stderr, "size  : %lu\n", size);
     char* buf = (char*) malloc(size + 1);
     if (!buf) {
         return -1;
     }
     memset(buf, 0, size);
-	int retval = base32_encode_type(type, (unsigned char*) data, len, buf);
+	int retval = base32_encode_type(type, (unsigned char*) idata, isize, buf);
     //fprintf(stderr, "retval: %ld\n", retval);
     if (retval < 0) {
         free(buf);
@@ -359,37 +370,47 @@ int lib_base32_encode_type(int type, const char* data, size_t len, char** odata,
     buf[size] = '\0';
     
     *odata = buf;
-    *olen = size;
+    *osize = size;
 
 	return 0;
 }
 
-int lib_base32_encode(const char* data, size_t len, char** odata, size_t* out_len) {
-    return lib_base32_encode_type(LIB_BASE32, data, len, odata, out_len);
+int lib_base32_encode(const char* idata, size_t isize, char** odata, size_t* osize) {
+    return lib_base32_encode_type(LIB_BASE32, idata, isize, odata, osize);
 }
 
-int lib_base32_decode_type(int type, const char* data, size_t len, char** odata, size_t* olen) {
-    if (!data || !olen || len == 0) {
+int lib_base32_decode_type(int type, const char* idata, size_t isize, char** odata, size_t* osize) {
+    if (osize) {
+        *osize = 0;
+    }
+
+	if (!idata || !odata || !osize) {
+		// error: invalid arguments
         return -1;
     }
 
-	while (len > 0 && base32_is_spec(type, data[len - 1])) {
-		len--;
-	}
+	if (isize == 0) {
+		// error: empty data
+        return -1;
+    }
+
+    while (isize > 0 && base32_is_spec(type, idata[isize - 1])) {
+        isize--;
+    }
 
     // Validate chars
-    if (!base32_is_valid(type, base32_table_type(type), data, len)) {
+    if (!base32_is_valid(type, base32_table_type(type), idata, isize)) {
         return -1;
     }
 
-    size_t size = base32_decode_len(len);
+    size_t size = base32_decode_size(isize);
     //fprintf(stderr, "size  : %lu\n", size);
     char* buf = (char*) malloc(size + 1);
     if (!buf) {
         return -1;
     }
     memset(buf, 0, size);
-	int retval = base32_decode_type(type, data, len, (unsigned char*) buf);
+	int retval = base32_decode_type(type, idata, isize, (unsigned char*) buf);
     //fprintf(stderr, "retval: %ld\n", retval);
     if (retval < 0) {
         free(buf);
@@ -398,13 +419,13 @@ int lib_base32_decode_type(int type, const char* data, size_t len, char** odata,
     buf[size] = '\0';
 
     *odata = buf;
-    *olen = size;
+    *osize = size;
 
 	return 0;
 }
 
-int lib_base32_decode(const char* data, size_t len, char** odata, size_t* olen) {
-    return lib_base32_decode_type(LIB_BASE32, data, len, odata, olen);
+int lib_base32_decode(const char* idata, size_t isize, char** odata, size_t* osize) {
+    return lib_base32_decode_type(LIB_BASE32, idata, isize, odata, osize);
 }
 
 // https://medium.com/@at.kishor.k/demystifying-base32-an-in-depth-guide-to-this-encoding-standard-697b9426fc25
