@@ -30,8 +30,17 @@ int run_base16_encode_data(const char* data, size_t size) {
     if (!data) {
         return 1;
     }
+
+    char* odata = NULL;
     size_t osize = 0;
-    char* odata = lib_base16_encode(data, size, &osize);
+
+    int retval = lib_base16_encode(data, size, &odata, &osize);
+    if (retval != 0) {
+        free(odata);
+        _encode_error();
+        return 1;
+    }
+
     if (!odata) {
         _encode_error();
         return 1;
@@ -48,8 +57,17 @@ int run_base16_decode_data(const char* data, size_t size) {
     if (!data) {
         return 1;
     }
+
+    char* odata = NULL;
     size_t osize = 0;
-    char* odata = lib_base16_decode(data, size, &osize);
+
+    int retval = lib_base16_decode(data, size, &odata, &osize);
+    if (retval != 0) {
+        free(odata);
+        _decode_error();
+        return 1;
+    }
+
     if (!odata) {
         _decode_error();
         return 1;

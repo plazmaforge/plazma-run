@@ -94,35 +94,40 @@ static ssize_t base16_decode(char* out, const char* src, size_t len) {
 
 ////
 
-char* lib_base16_encode(const char *src, size_t len, size_t* out_len) {
+int lib_base16_encode(const char *src, size_t len, char** odata, size_t* out_len) {
     if (!src || !out_len || len == 0) {
-        return NULL;
+        return -1;
     }
 
-	size_t olen = base16_encode_len(len);
+    size_t olen = base16_encode_len(len);
     char* out = (char*) malloc(olen + 1);
     if (!out) {
-        return NULL;
+        return -1;
     }
-	ssize_t retval = base16_encode(out, src, len);
+    
+    ssize_t retval = base16_encode(out, src, len);
     if (retval < 0) {
         free(out);
-        return NULL;
+        return -1;
     }
+
     out[olen] = '\0';
+
+    *odata = out;
     *out_len = olen;
-	return out;
+
+    return 0;
 }
 
-char* lib_base16_decode(const char *src, size_t len, size_t* out_len) {
+int lib_base16_decode(const char *src, size_t len, char** odata, size_t* out_len) {
 	if (!src || !out_len || len == 0) {
-        return NULL;
+        return -1;
     }
 
 	size_t i = len - 1;
 	while (i >= 0 && base16_is_spec(src[i])) {
 		if (i == 0) {
-			return NULL;
+			return -1;
 		}
 		i--;
 		len--;
@@ -130,30 +135,32 @@ char* lib_base16_decode(const char *src, size_t len, size_t* out_len) {
 
 	if (len % 2 != 0) {
 		//fprintf(stderr, "ERROR: size\n");
-		return NULL;
+		return -1;
 	}
 
     // Validate chars
     if (!base16_is_valid(src, len)) {
-		//fprintf(stderr, "ERROR: invalid\n");
-        return NULL;
+        //fprintf(stderr, "ERROR: invalid\n");
+        return -1;
     }
 
     size_t olen = base16_decode_len(len);
     char* out = (char*) malloc(olen + 1);
     if (!out) {
-        return NULL;
+        return -1;
     }
-	ssize_t retval = base16_decode(out, src, len);
+
+    ssize_t retval = base16_decode(out, src, len);
     if (retval < 0) {
         free(out);
-        return NULL;
+        return -1;
     }
     out[olen] = '\0';
 
-	*out_len = olen;
+    *odata = out;
+    *out_len = olen;
 
-	return out;
+    return 0;
 }
 
 // https://nachtimwald.com/2017/09/24/hex-encode-and-decode-in-c/ 
