@@ -26,9 +26,9 @@ static bool base16_is_valid_char(char c) {
     return base16_is_spec(c) || base16_is_table(c);
 }
 
-static bool base16_is_valid(const char *src, size_t len) {
-    char* s = (char*) src;
-    for (size_t i = 0; i < len; i++) {
+static bool base16_is_valid(const char* data, size_t size) {
+    char* s = (char*) data;
+    for (size_t i = 0; i < size; i++) {
         if (!base16_is_valid_char(*s)) {
 			//fprintf(stderr, "Invalid char: '%c' [%d]\n", *s, (int) (*s));
             return false;
@@ -40,15 +40,15 @@ static bool base16_is_valid(const char *src, size_t len) {
 
 ////
 
-static size_t base16_encode_len(size_t len) {
-	return len * 2;
+static size_t base16_encode_size(size_t size) {
+	return size * 2;
 }
 
-static size_t base16_decode_len(size_t len) {
-	return len / 2;
+static size_t base16_decode_size(size_t size) {
+	return size / 2;
 }
 
-int hex2bin(char *out, const char hex) {
+int hex2bin(char* out, const char hex) {
 	if (!out)
 		return 0;
 
@@ -65,100 +65,101 @@ int hex2bin(char *out, const char hex) {
 	return 1;
 }
 
-static ssize_t base16_encode(char* out, const char* src, size_t len) {
-	const unsigned char* buf = (const unsigned char*) src;
-	for (size_t i = 0; i < len; i++) {
-		out[i * 2]     = encode_table[buf[i] >> 4];
-		out[i * 2 + 1] = encode_table[buf[i] & 0x0F];
-	}
-	return len * 2;
+static ssize_t base16_encode(char* odata, const char* idata, size_t isize) {
+    const unsigned char* buf = (const unsigned char*) idata;
+    for (size_t i = 0; i < isize; i++) {
+        odata[i * 2]     = encode_table[buf[i] >> 4];
+        odata[i * 2 + 1] = encode_table[buf[i] & 0x0F];
+    }
+    return isize * 2;
 }
 
-static ssize_t base16_decode(char* out, const char* src, size_t len) {
-	if (len % 2 != 0) {
+static ssize_t base16_decode(char* odata, const char* idata, size_t isize) {
+	if (isize % 2 != 0) {
 		return -1;
 	}
 		
-	len /= 2; // out_len
-	char   b1;
-	char   b2;
-	for (size_t i = 0; i < len; i++) {
-		if (!hex2bin(&b1, src[i * 2]) || !hex2bin(&b2, src[i * 2 + 1])) {
-			//fprintf(stderr, "ERROR: non hex: '%c'-'%c'\n", src[i * 2], src[i * 2 + 1]);
+	// isize /= 2;
+	size_t osize = isize / 2;
+	char b1;
+	char b2;
+	for (size_t i = 0; i < osize; i++) {
+		if (!hex2bin(&b1, idata[i * 2]) || !hex2bin(&b2, idata[i * 2 + 1])) {
+			//fprintf(stderr, "ERROR: non hex: '%c'-'%c'\n", idata[i * 2], idata[i * 2 + 1]);
 			return -1;
 		}
-		out[i] = (b1 << 4) | b2;
+		odata[i] = (b1 << 4) | b2;
 	}
-	return len; // out_len
+	return osize;
 }
 
 ////
 
-int lib_base16_encode(const char *src, size_t len, char** odata, size_t* out_len) {
-    if (!src || !out_len || len == 0) {
+int lib_base16_encode(const char* idata, size_t isize, char** odata, size_t* osize) {
+    if (!idata || !osize || isize == 0) {
         return -1;
     }
 
-    size_t olen = base16_encode_len(len);
-    char* out = (char*) malloc(olen + 1);
-    if (!out) {
+    size_t size = base16_encode_size(isize);
+    char* buf = (char*) malloc(size + 1);
+    if (!buf) {
         return -1;
     }
     
-    ssize_t retval = base16_encode(out, src, len);
+    ssize_t retval = base16_encode(buf, idata, isize);
     if (retval < 0) {
-        free(out);
+        free(buf);
         return -1;
     }
 
-    out[olen] = '\0';
+    buf[size] = '\0';
 
-    *odata = out;
-    *out_len = olen;
+    *odata = buf;
+    *osize = size;
 
     return 0;
 }
 
-int lib_base16_decode(const char *src, size_t len, char** odata, size_t* out_len) {
-	if (!src || !out_len || len == 0) {
+int lib_base16_decode(const char* idata, size_t isize, char** odata, size_t* osize) {
+    if (!idata || !osize || isize == 0) {
         return -1;
     }
 
-	size_t i = len - 1;
-	while (i >= 0 && base16_is_spec(src[i])) {
+	size_t i = isize - 1;
+	while (i >= 0 && base16_is_spec(idata[i])) {
 		if (i == 0) {
 			return -1;
 		}
 		i--;
-		len--;
+		isize--;
 	}
 
-	if (len % 2 != 0) {
-		//fprintf(stderr, "ERROR: size\n");
-		return -1;
-	}
+    if (isize % 2 != 0) {
+        //fprintf(stderr, "ERROR: size\n");
+        return -1;
+    }
 
     // Validate chars
-    if (!base16_is_valid(src, len)) {
+    if (!base16_is_valid(idata, isize)) {
         //fprintf(stderr, "ERROR: invalid\n");
         return -1;
     }
 
-    size_t olen = base16_decode_len(len);
-    char* out = (char*) malloc(olen + 1);
-    if (!out) {
+    size_t size = base16_decode_size(isize);
+    char* buf = (char*) malloc(size + 1);
+    if (!buf) {
         return -1;
     }
 
-    ssize_t retval = base16_decode(out, src, len);
+    ssize_t retval = base16_decode(buf, idata, isize);
     if (retval < 0) {
-        free(out);
+        free(buf);
         return -1;
     }
-    out[olen] = '\0';
+    buf[size] = '\0';
 
-    *odata = out;
-    *out_len = olen;
+    *odata = buf;
+    *osize = size;
 
     return 0;
 }
