@@ -46,6 +46,8 @@ rem compile
 %CC% %CFLAGS% lib/base58.c -o base58.o
 %CC% %CFLAGS% lib/base64.c -o base64.o
 
+%CC% %CFLAGS% lib/uuid.c -o uuid.o
+
 %CC% %CFLAGS% lib/common.c -o common.o
 %CC% %CFLAGS% lib/debug.c -o debug.o
 
@@ -95,6 +97,7 @@ rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 %CC% %CFLAGS% run_base58.c -o run_base58.o
 %CC% %CFLAGS% run_base64.c -o run_base64.o
 %CC% %CFLAGS% run_ascii.c -o run_ascii.o
+%CC% %CFLAGS% run_uuid.c -o run_uuid.o
 
 %CC% %CFLAGS% test_getopt.c -o test_getopt.o
 %CC% %CFLAGS% test_echo.c -o test_echo.o
