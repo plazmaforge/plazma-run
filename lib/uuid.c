@@ -17,7 +17,7 @@
  * Set the following to the number of 100ns ticks of the actual
  * resolution of your system's clock
  */
-#define UUIDS_PER_TICK 1024
+#define LIB_UUIDS_PER_TICK 1024
 
 /** 
  * System dependent call to get the current system time.
@@ -30,11 +30,38 @@
 #define I64(C) C##LL
 #endif
 
+#define LIB_UUID_RANDOM_TYPE_BASE   1
+#define LIB_UUID_RANDOM_TYPE_NATIVE 2
+
+#define LIB_UUID_RANDOM_TYPE LIB_UUID_RANDOM_TYPE_NATIVE
+
 static int inited_random = 0;
 static int inited_time   = 0;
 static int inited_node   = 0;
   
-static uint16_t true_random();
+/* Context: Time */
+static lib_uuid_time_t time_last;
+static uint16_t uuids_this_tick;
+
+/* Context: Node */
+static lib_uuid_node_t saved_node;
+
+static uint16_t next_random();
+
+/**
+ * Base random generator
+ */
+static int get_random_base(char seed[16]) {
+  uint16_t value;
+  int i = 0;
+  do {
+    value = next_random();
+    seed[i++] = value & 0xff;
+    seed[i++] = value >> 8;
+  } while (i < 14);
+  //fprintf(stderr, "get_random_base\n");
+  return 0;
+}
 
 //// OS
 
@@ -45,7 +72,9 @@ static void get_system_time(lib_uuid_time_t* uuid_time) {
   ULARGE_INTEGER time;
 
   /* NT keeps time in FILETIME format which is 100ns ticks since
-     Jan 1, 1601. UUIDs use time in 100ns ticks since Oct 15, 1582.
+     Jan 1, 1601. 
+     
+     UUIDs use time in 100ns ticks since Oct 15, 1582.
      The difference is 17 Days in Oct + 30 (Nov) + 31 (Dec)
      + 18 years and 5 leap days. */
   GetSystemTimeAsFileTime((FILETIME*) &time);
@@ -57,18 +86,9 @@ static void get_system_time(lib_uuid_time_t* uuid_time) {
   *uuid_time = time.QuadPart;
 }
 
-/* Sample code, not for use in production; see RFC 1750 */
-static void get_random_info(char seed[16]) {
-  uint16_t myrand;
-  int i;
-
-  i = 0;
-  do {
-    myrand = true_random();
-    seed[i++] = myrand & 0xff;
-    seed[i++] = myrand >> 8;
-  } while (i < 14);
-
+static int get_random_native(char seed[16]) {
+  // TODO
+  return -1;
 }
 
 #else
@@ -87,42 +107,42 @@ static void get_system_time(lib_uuid_time_t* uuid_time) {
     + I64(0x01B21DD213814000);
 }
 
-/* Sample code, not for use in production; see RFC 1750 */
-static void get_random_info(char seed[16]) {
-
-  int fd;
-  uint16_t myrand;
-  int i;
+static int get_random_native(char seed[16]) {
 
   /* we aren't all that picky, and we would rather not block so we
     will use urandom */
-  fd = open("/dev/urandom", O_RDONLY);
+  int fd = open("/dev/urandom", O_RDONLY);
 
   if (fd != -1) {
     read(fd, seed, 16);
     close(fd);
-    return;
+    //fprintf(stderr, "get_random_native\n");
+    return 0;
   }
 
-  /* ok, now what? */
-
-  i = 0;
-  do {
-    myrand = true_random();
-    seed[i++] = myrand & 0xff;
-    seed[i++] = myrand >> 8;
-  } while (i < 14);
-
+  return -1;
 }
 
 #endif
 
 //// COMMON
 
+/* Sample code, not for use in production; see RFC 1750 */
+static int get_random(char seed[16]) {
+
+  // Random Native has priority
+  if (LIB_UUID_RANDOM_TYPE == LIB_UUID_RANDOM_TYPE_NATIVE 
+      && get_random_native(seed) == 0) {
+    return 0;
+  }
+
+  return get_random_base(seed);
+}
+
 /** 
  * Generate a crypto-quality random number.
  */
-static uint16_t true_random() {
+static uint16_t next_random() {
 
   //static int inited_random = 0;
   lib_uuid_time_t time_now;
@@ -130,11 +150,11 @@ static uint16_t true_random() {
   if (!inited_random) {
     //fprintf(stderr, "Start init random...\n");
     get_system_time(&time_now);
-    time_now = time_now / UUIDS_PER_TICK;
-    srand((unsigned int)
-	  (((time_now >> 32) ^ time_now) & 0xffffffff));
+    time_now = time_now / LIB_UUIDS_PER_TICK;
+    srand((unsigned int) (((time_now >> 32) ^ time_now) & 0xffffffff));
     inited_random = 1;
   }
+  //fprintf(stderr, "next_random\n");
 
   return (uint16_t) rand();
 }
@@ -146,32 +166,42 @@ static uint16_t true_random() {
 static void get_current_time(lib_uuid_time_t* timestamp) {
 
   //static int inited_time = 0;
-  static lib_uuid_time_t time_last;
-  static uint16_t uuids_this_tick;
+  //static lib_uuid_time_t time_last;
+  //static uint16_t uuids_this_tick;
   lib_uuid_time_t time_now;
 
   if (!inited_time) {
     //fprintf(stderr, "Start init time...\n");
     get_system_time(&time_now);
-    uuids_this_tick = UUIDS_PER_TICK;
+    uuids_this_tick = LIB_UUIDS_PER_TICK;
     inited_time = 1;
   }
 
   for (;;) {
     get_system_time(&time_now);
+    //fprintf(stderr, "get_system_time-%d-%llu-%llu\n", i, time_now, time_last);
 
-    /* if clock reading changed since last UUID generated, */
+    /* if clock reading changed since last UUID generated, */    
     if (time_last != time_now) {
+    //if (time_now - time_last >= 100) { // ALT
       /* reset count of uuids gen'd with this clock reading */
       uuids_this_tick = 0;
       time_last = time_now;
       break;
     }
 
-    if (uuids_this_tick < UUIDS_PER_TICK) {
+    // ALT
+    // if (uuids_this_tick >= LIB_UUIDS_PER_TICK) {
+    //   uuids_this_tick = 0;
+    //   time_last = time_now;
+    //   break;
+    // }
+
+    if (uuids_this_tick < LIB_UUIDS_PER_TICK) {
       uuids_this_tick++;
       break;
     }
+
     /* going too fast for our clock; spin */
   }
 
@@ -183,20 +213,20 @@ static void get_current_time(lib_uuid_time_t* timestamp) {
  * System dependent call to get IEEE node ID.
  * This sample implementation generates a random node ID.
  */
-static void get_ieee_node_identifier(lib_uuid_node_t* node) {
+static void get_node_id(lib_uuid_node_t* node) {
   //static int inited_node = 0;
-  static lib_uuid_node_t saved_node;
+  //static lib_uuid_node_t saved_node;
   char seed[16];
 
   if (!inited_node) {
     //fprintf(stderr, "Start init node...\n");
-    get_random_info(seed);
+    get_random(seed);
     seed[0] |= 0x01;
-    memcpy(&saved_node, seed, sizeof saved_node);
+    memcpy(&saved_node, seed, sizeof(saved_node));
   }
   inited_node = 1;
-
   *node = saved_node;
+  //node = saved_node; // ALT
 }
 
 //// FORMAT
@@ -204,8 +234,11 @@ static void get_ieee_node_identifier(lib_uuid_node_t* node) {
 /**
  * Make a UUID from the timestamp, clockseq, and node ID
  */
-static void format_uuid_v1(lib_uuid_t* uuid, uint16_t clock_seq,
-                    lib_uuid_time_t timestamp, lib_uuid_node_t node) {
+static void format_uuid_v1(
+  lib_uuid_t* uuid,
+  uint16_t clock_seq,
+  lib_uuid_time_t timestamp,
+  lib_uuid_node_t node) {
 
   /* Construct a version 1 uuid with the information we've gathered
      plus a few constants. */
@@ -213,10 +246,11 @@ static void format_uuid_v1(lib_uuid_t* uuid, uint16_t clock_seq,
   uuid->time_mid = (unsigned short) ((timestamp >> 32) & 0xFFFF);
   uuid->time_hi_and_version = (unsigned short) ((timestamp >> 48) & 0x0FFF);
   uuid->time_hi_and_version |= (1 << 12);
+  
   uuid->clock_seq_low = clock_seq & 0xFF;
   uuid->clock_seq_hi_and_reserved = (clock_seq & 0x3F00) >> 8;
   uuid->clock_seq_hi_and_reserved |= 0x80;
-  memcpy(&uuid->node, &node, sizeof uuid->node);
+  memcpy(&uuid->node, &node, sizeof(uuid->node));
 }
 
 /**
@@ -225,25 +259,29 @@ static void format_uuid_v1(lib_uuid_t* uuid, uint16_t clock_seq,
 int lib_uuid_create(lib_uuid_t* uuid) {
 
   lib_uuid_time_t timestamp;
-  uint16_t clockseq;
+  uint16_t clock_seq;
   lib_uuid_node_t node;
 
   /* get time, node ID, saved state from non-volatile storage */
   get_current_time(&timestamp);
-  get_ieee_node_identifier(&node);
+  get_node_id(&node);
+  //get_node_id(node); // ALT
 
-  /* for us clockseq is always to be random as we have no state */
-  clockseq = true_random();
+  /* for us clock_seq is always to be random as we have no state */
+  clock_seq = next_random();
 
   /* stuff fields into the UUID */
-  format_uuid_v1(uuid, clockseq, timestamp, node);
+  format_uuid_v1(uuid, clock_seq, timestamp, node);
   return 1;
 }
 
 void lib_uuid_reset() {
-  /*static int */ inited_random = 0;
-  /*static int */ inited_time   = 0;
-  /*static int */ inited_node   = 0;
+  inited_random = 0;
+  inited_time   = 0;
+  inited_node   = 0;
+
+  time_last = 0;
+  uuids_this_tick = 0;
 }
 
 /**
@@ -442,3 +480,8 @@ V7: void uuid_generate_time_v7(uuid_t out);
 // time v6, v7, UUID v3, v5
 // https://github.com/util-linux/util-linux/blob/master/libuuid/src/gen_uuid.c
 // https://github.com/util-linux/util-linux/blob/master/libuuid/src/uuid_time.c
+
+// WIN32: gettimeofday()
+// https://web.archive.org/web/20130406033313/http://suacommunity.com/dictionary/gettimeofday-entry.php
+// https://stackoverflow.com/questions/1676036/what-should-i-use-to-replace-gettimeofday-on-windows/68429021#68429021
+// https://www.nu42.com/2021/07/windows-c-time-in-nanoseconds.html
