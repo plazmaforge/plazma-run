@@ -6,15 +6,72 @@
 #include "clilib.h"
 #include "uuid.h"
 
-void run_uuid(int count, bool trailing) {
+bool supports_version(int version) {
+    return (version == 1 
+        || version == 3
+        || version == 5
+        || version == 7);
+}
 
-    lib_uuid_t u;
+int uuid_create(int version, lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
+    if (version == 1) {
+        lib_uuid_create_v1(uuid);
+        return 0;
+    } else if (version == 3) {
+        lib_uuid_create_v3(uuid, NameSpace_DNS, "www.widgets.com", 15);
+        return 0;
+    } else if (version == 5) {
+        lib_uuid_create_v5(uuid, NameSpace_DNS, "www.widgets.com", 15);
+        return 0;
+    } else if (version == 7) {
+        lib_uuid_create_v7(uuid);
+        return 0;
+    }
+    return -1;
+}
+
+int run_uuid(int version, /*lib_uuid_t nsid, char* name,*/ int count, bool trailing) {
+    if (!supports_version(version)) {
+        return -1;
+    }
+
+    //NameSpace_DNS, "www.widgets.com"
+    lib_uuid_t nsid = NameSpace_DNS;
+    void* name = "www.widgets.com";
+    size_t namelen = 15;
+
     for (int i = 0; i < count; i++) {
-        lib_uuid_t u;
-        lib_uuid_create(&u);
-        lib_uuid_print(u);
-        lib_uuid_reset();
+        lib_uuid_t uuid;
+        uuid_create(version, &uuid, nsid, name, namelen);
 
+        //lib_uuid_create_v1(&uuid);
+        //lib_uuid_create_md5(&uuid, NameSpace_DNS, "www.widgets.com", 15);
+        //lib_uuid_create_sha1(&uuid, NameSpace_DNS, "www.widgets.com", 15);
+        //lib_uuid_create_v7(&uuid);
+
+        lib_uuid_print(uuid);
+
+        ////
+        /*
+        unsigned char v[16];
+        lib_uuid_pack(&uuid, v);
+        printf("  ");
+        for (int i = 0; i < 16; i++) {
+            printf("%2.2x", v[i]);
+        }
+
+        lib_uuid_t x;
+        lib_uuid_unpack(v, &x);
+
+        printf("  ");
+        lib_uuid_print(x);
+        */
+
+        ////
+
+        if (version == 1) {
+            lib_uuid_reset(); // Why?
+        }
         if (count > 1 && i < count - 1) {
             printf("\n");
         }
@@ -23,6 +80,7 @@ void run_uuid(int count, bool trailing) {
     if (trailing) {
         printf("\n");
     }
+    return 0;
 }
 
 void usage() {
@@ -35,12 +93,23 @@ int main(int argc, char* argv[]) {
     int error = 0;
     int opt;
 
-    int count = 1;
+    int version   = 0;
+    int count     = 1;
     bool trailing = true; // '\n'
-    while ((opt = lib_getopt(argc, argv, "nc:")) != -1) {
+    while ((opt = lib_getopt(argc, argv, "nc:v:")) != -1) {
         switch (opt) {
         case 'n':
             trailing = false;
+            break;
+        case 'v':
+            version = atoi(optarg);
+            if (version == 0) {
+                fprintf(stderr, "%s: Incorrect version: %s\n", prog_name, optarg);
+                error = 1;
+            } else if (!supports_version(version)) {
+                fprintf(stderr, "%s: Unsupported version: %s\n", prog_name, optarg);
+                error = 1;
+            }
             break;
         case 'c':
             count = atoi(optarg);
@@ -69,7 +138,11 @@ int main(int argc, char* argv[]) {
     //     return 0;
     // }
 
-    run_uuid(count, trailing);
+    if (version == 0) {
+        version = 1;
+    }
+
+    run_uuid(version, count, trailing);
     
     return 0;
 }

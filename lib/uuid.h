@@ -1,6 +1,19 @@
 #ifndef PLAZMA_LIB_UUID_H
 #define PLAZMA_LIB_UUID_H
 
+#include <stdint.h>
+
+// UUID Type definitions 
+#define LIB_UUID_TYPE_NONE       0
+#define LIB_UUID_TYPE_TIME       1
+#define LIB_UUID_TYPE_SECURITY   2
+#define LIB_UUID_TYPE_MD5        3
+#define LIB_UUID_TYPE_RANDOM     4
+#define LIB_UUID_TYPE_SHA1       5
+#define LIB_UUID_TYPE_TIME_V6    6
+#define LIB_UUID_TYPE_TIME_V7    7
+#define LIB_UUID_TYPE_VENDOR     8
+
 typedef uint64_t lib_uuid_time_t;
 
 typedef struct {
@@ -23,10 +36,57 @@ typedef struct {
   /* Total 128 bits / 16 bytes */
 } lib_uuid_t;
 
+
+/* Name string is a fully-qualified domain name */
+static lib_uuid_t NameSpace_DNS = { /* 6ba7b810-9dad-11d1-80b4-00c04fd430c8 */
+       0x6ba7b810,
+       0x9dad,
+       0x11d1,
+       0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8
+};
+
+/* Name string is a URL */
+static lib_uuid_t NameSpace_URL = { /* 6ba7b811-9dad-11d1-80b4-00c04fd430c8 */
+       0x6ba7b811,
+       0x9dad,
+       0x11d1,
+       0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8
+};
+
+/* Name string is an ISO OID */
+static lib_uuid_t NameSpace_OID = { /* 6ba7b812-9dad-11d1-80b4-00c04fd430c8 */
+       0x6ba7b812,
+       0x9dad,
+       0x11d1,
+       0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8
+};
+
+/* Name string is an X.500 DN (in DER or a text output format) */
+static lib_uuid_t NameSpace_X500 = { /* 6ba7b814-9dad-11d1-80b4-00c04fd430c8 */
+       0x6ba7b814,
+       0x9dad,
+       0x11d1,
+       0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8
+};
+
 /**
  * Generator a UUID
  */
-int lib_uuid_create(lib_uuid_t* uuid);
+void lib_uuid_create(lib_uuid_t* uuid);
+
+void lib_uuid_create_v1(lib_uuid_t* uuid);
+
+void lib_uuid_create_v3(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
+
+void lib_uuid_create_v5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
+
+void lib_uuid_create_v7(lib_uuid_t* uuid);
+
+////
+
+void lib_uuid_create_md5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
+
+void lib_uuid_create_sha1(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
 
 void lib_uuid_reset();
 
