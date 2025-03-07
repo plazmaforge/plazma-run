@@ -253,9 +253,9 @@ int lib_uuid_print(lib_uuid_t u) {
   int pos = printf("%8.8x-%4.4x-%4.4x-%2.2x%2.2x-", 
      u.time_low,
      u.time_mid,
-	 u.time_hi_and_version, 
+     u.time_hi_and_version, 
      u.clock_seq_hi_and_reserved,
-	 u.clock_seq_low);
+     u.clock_seq_low);
   
   for (int i = 0; i < 6; i++) {
     pos += printf("%2.2x", u.node[i]);
@@ -295,6 +295,150 @@ int lib_uuid_snprint(char* str, size_t size, lib_uuid_t u) {
   return pos;
 }
 
+void lib_uuid_pack(const lib_uuid_t* uuid, unsigned char value[16]) {
+  uint32_t tmp;
+  unsigned char* out = value;
+
+  /* time_low */
+  tmp = uuid->time_low;
+  out[3] = (unsigned char) tmp;
+  tmp >>= 8;
+  out[2] = (unsigned char) tmp;
+  tmp >>= 8;
+  out[1] = (unsigned char) tmp;
+  tmp >>= 8;
+  out[0] = (unsigned char) tmp;
+
+  /* time_mid */
+  tmp = uuid->time_mid;
+  out[5] = (unsigned char) tmp;
+  tmp >>= 8;
+  out[4] = (unsigned char) tmp;
+
+  /* time_hi_and_version */
+  tmp = uuid->time_hi_and_version;
+  out[7] = (unsigned char) tmp;
+  tmp >>= 8;
+  out[6] = (unsigned char) tmp;
+
+  /* clock_seq_hi_and_reserved */
+  tmp = uuid->clock_seq_hi_and_reserved;
+  out[8] = (unsigned char) tmp;
+
+  /* clock_seq_low */
+  tmp = uuid->clock_seq_low;
+  out[9] = (unsigned char) tmp;
+
+  memcpy(out + 10, uuid->node, 6);
+}
+
+void lib_uuid_unpack(const unsigned char value[16], lib_uuid_t* uuid) {
+  const uint8_t* ptr = value;
+  uint32_t tmp;
+
+  tmp = *ptr++;
+  tmp = (tmp << 8) | *ptr++;
+  tmp = (tmp << 8) | *ptr++;
+  tmp = (tmp << 8) | *ptr++;
+  uuid->time_low = tmp;
+
+  tmp = *ptr++;
+  tmp = (tmp << 8) | *ptr++;
+  uuid->time_mid = tmp;
+
+  tmp = *ptr++;
+  tmp = (tmp << 8) | *ptr++;
+  uuid->time_hi_and_version = tmp;
+
+  tmp = *ptr++;
+  uuid->clock_seq_hi_and_reserved = tmp;
+
+  tmp = *ptr++;
+  uuid->clock_seq_low = tmp;
+
+  memcpy(uuid->node, ptr, 6);
+}
+
+/*
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <time.h>
+#include <unistd.h>
+
+int uuidv7(uint8_t* value) {
+    // random bytes
+    int err = getentropy(value, 16);
+    if (err != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+
+    // current timestamp in ms
+    struct timespec ts;
+    int ok = timespec_get(&ts, TIME_UTC);
+    if (ok == 0) {
+        return EXIT_FAILURE;
+    }
+    uint64_t timestamp = (uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+
+    // timestamp
+    value[0] = (timestamp >> 40) & 0xFF;
+    value[1] = (timestamp >> 32) & 0xFF;
+    value[2] = (timestamp >> 24) & 0xFF;
+    value[3] = (timestamp >> 16) & 0xFF;
+    value[4] = (timestamp >> 8) & 0xFF;
+    value[5] = timestamp & 0xFF;
+
+    // version and variant
+    value[6] = (value[6] & 0x0F) | 0x70;
+    value[8] = (value[8] & 0x3F) | 0x80;
+
+    return EXIT_SUCCESS;
+}
+
+int main() {
+    uint8_t uuid_val[16];
+    uuidv7(uuid_val);
+    for (size_t i = 0; i < 16; i++) {
+        printf("%02x", uuid_val[i]);
+    }
+    printf("\n");
+}
+
+*/
+
+/*
+
+// UUID Type definitions 
+#define UUID_TYPE_DCE_NIL        0
+#define UUID_TYPE_DCE_TIME       1
+#define UUID_TYPE_DCE_SECURITY   2
+#define UUID_TYPE_DCE_MD5        3
+#define UUID_TYPE_DCE_RANDOM     4
+#define UUID_TYPE_DCE_SHA1       5
+#define UUID_TYPE_DCE_TIME_V6    6
+#define UUID_TYPE_DCE_TIME_V7    7
+#define UUID_TYPE_DCE_VENDOR     8
+
+////
+
+??: void uuid_generate(uuid_t out);
+
+V1: void uuid_generate_time(uuid_t out);
+V2: int uuid_generate_time_safe(uuid_t out);
+V3: void uuid_generate_md5(uuid_t out, const uuid_t ns, const char *name, size_t len);
+V4: void uuid_generate_random(uuid_t out);
+V5: void uuid_generate_sha1(uuid_t out, const uuid_t ns, const char *name, size_t len);
+V6: void uuid_generate_time_v6(uuid_t out);
+V7: void uuid_generate_time_v7(uuid_t out);
+
+*/
+
 // https://www.ietf.org/rfc/rfc4122.txt
 // https://github.com/zhicheng/uuid/blob/master/uuid.c
 // https://github.com/HewlettPackard/netperf/blob/master/src/net_uuid.c
+
+// time v6, v7, UUID v3, v5
+// https://github.com/util-linux/util-linux/blob/master/libuuid/src/gen_uuid.c
+// https://github.com/util-linux/util-linux/blob/master/libuuid/src/uuid_time.c
