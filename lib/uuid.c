@@ -5,6 +5,7 @@
 
 #ifdef WIN32
 #include <windows.h>
+#include <winsock.h>
 #else
 #include <sys/time.h>
 #include <fcntl.h>  /* open */
