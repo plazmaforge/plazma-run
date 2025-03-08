@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -48,6 +49,30 @@ static uint16_t uuids_this_tick;
 static lib_uuid_node_t saved_node;
 
 static uint16_t next_random();
+
+bool lib_uuid_is_lower_format_default() {
+  return lib_uuid_is_lower_format(LIB_UUID_FORMAT_TYPE);
+}
+
+bool lib_uuid_is_upper_format_default() {
+  return lib_uuid_is_upper_format(LIB_UUID_FORMAT_TYPE);
+}
+
+bool lib_uuid_is_lower_format(int format) {
+  return !lib_uuid_is_upper_format(format);
+}
+
+bool lib_uuid_is_upper_format(int format) {
+  return (format == LIB_UUID_FORMAT_TYPE_UPPER || format == LIB_UUID_FORMAT_TYPE_UPPER_PACK);
+}
+
+bool lib_uuid_is_pack_format(int format) {
+  return (format == LIB_UUID_FORMAT_TYPE_LOWER_PACK || format == LIB_UUID_FORMAT_TYPE_UPPER_PACK);
+}
+
+size_t lib_uuid_get_format_size(int format) {
+  return lib_uuid_is_pack_format(format) ? 32 : 36;
+}
 
 /**
  * Base random generator
@@ -271,6 +296,110 @@ void format_uuid_v3or5(lib_uuid_t* uuid, unsigned char hash[16], int v) {
 	uuid->clock_seq_hi_and_reserved |= 0x80;
 }
 
+//// GEN
+
+/**
+ * Generate UUID structure
+ */
+int lib_uuid_gen_uuid_ver(int version, lib_uuid_t* uuid) {
+  if (!uuid) {
+    return -1;
+  }
+  if (version <= 0) {
+    return -1;
+  }
+  if (version == 1) {
+    lib_uuid_create_v1(uuid);
+  }
+  if (version == 7) {
+    lib_uuid_create_v7(uuid);
+  }
+  return -1;  
+}
+
+/**
+ * Generate UUID data
+ */
+int lib_uuid_gen_data_ver(int version, unsigned char value[16]) {
+  if (!value) {
+    return -1;
+  }
+  if (version <= 0) {
+    return -1;
+  }
+  lib_uuid_t uuid;
+  int retval = lib_uuid_gen_uuid_ver(version, &uuid);
+  if (retval != 0) {
+    return retval;
+  }
+  lib_uuid_pack(&uuid, value);
+  return 0;
+}
+
+/**
+ * Generate UUID string
+ */
+int lib_uuid_gen_str_ver(int version, char* str) {
+  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE, str);
+}
+
+/**
+ * Generate UUID string in lower case
+ */
+int lib_uuid_gen_strl_ver(int version, char* str) {
+  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE_LOWER_PACK, str);
+}
+
+/**
+ * Generate UUID string in upper case
+ */
+int lib_uuid_gen_stru_ver(int version, char* str) {
+  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE_UPPER_PACK, str);
+}
+
+/**
+ * Generate UUID pack (without '-') string
+ */
+int lib_uuid_gen_pstr_ver(int version, char* str) {
+  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE_LOWER_PACK, str);
+}
+
+/**
+ * Generate UUID pack (without '-') string in lower case
+ */
+int lib_uuid_gen_pstrl_ver(int version, char* str) {
+  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE_LOWER_PACK, str);
+}
+
+/**
+ * Generate UUID pack (without '-') string in upper case
+ */
+int lib_uuid_gen_pstru_ver(int version, char* str) {
+  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE_UPPER_PACK, str);
+}
+
+/**
+ * Generate UUID string by format type
+ */
+int lib_uuid_gen_strf_ver(int version, int format, char* str) {
+  if (!str) {
+    return -1;
+  }
+  if (version <= 0) {
+    return -1;
+  }
+  lib_uuid_t uuid;
+  int retval = lib_uuid_gen_uuid_ver(version, &uuid);
+  if (retval != 0) {
+    return retval;
+  }
+  size_t size = lib_uuid_get_format_size(format);
+  retval = lib_uuid_snprintf(format, str, size + 1, uuid);
+  if (retval <= 0) {
+    return -1;
+  }
+  return 0;
+}
 
 //// CREATE
 
@@ -527,10 +656,15 @@ int lib_uuid_snprint(char* str, size_t size, lib_uuid_t u) {
 /**
  * Print a UUID in the supplied buffer by format type
  */
-int lib_uuid_snprintf(int type, char* str, size_t size, lib_uuid_t u) {
-  
-  if (!str || size < 38) {
-    //snprintf(tmp, size, "%s", "uuid string too small");
+int lib_uuid_snprintf(int type, char* str, size_t size, lib_uuid_t u) {  
+  if (!str) {
+    return 0;
+  }
+
+  size_t format_size = lib_uuid_get_format_size(type);
+  format_size++; // NULL
+
+  if (!str || size < format_size + 1) { // < 38
     return 0;
   }
 

@@ -85,6 +85,67 @@ static lib_uuid_t NameSpace_X500 = { /* 6ba7b814-9dad-11d1-80b4-00c04fd430c8 */
        0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8
 };
 
+bool lib_uuid_is_lower_format_default();
+
+bool lib_uuid_is_upper_format_default();
+
+bool lib_uuid_is_lower_format(int format);
+
+bool lib_uuid_is_upper_format(int format);
+
+bool lib_uuid_is_pack_format(int format);
+
+size_t lib_uuid_get_format_size(int format);
+
+//// GEN
+
+/**
+ * Generate UUID structure
+ */
+int lib_uuid_gen_uuid_ver(int version, lib_uuid_t* uuid);
+
+/**
+ * Generate UUID data
+ */
+int lib_uuid_gen_data_ver(int version, unsigned char value[16]);
+
+/**
+ * Generate UUID string
+ */
+int lib_uuid_gen_str_ver(int version, char* str);
+
+/**
+ * Generate UUID string in lower case
+ */
+int lib_uuid_gen_strl_ver(int version, char* str);
+
+/**
+ * Generate UUID string in upper case
+ */
+int lib_uuid_gen_stru_ver(int version, char* str);
+
+/**
+ * Generate UUID pack (without '-') string
+ */
+int lib_uuid_gen_pstr_ver(int version, char* str);
+
+/**
+ * Generate UUID pack (without '-') string in lower case
+ */
+int lib_uuid_gen_pstrl_ver(int version, char* str);
+
+/**
+ * Generate UUID pack (without '-') string in upper case
+ */
+int lib_uuid_gen_pstru_ver(int version, char* str);
+
+/**
+ * Generate UUID string by format type
+ */
+int lib_uuid_gen_strf_ver(int version, int format, char* str);
+
+//// CREATE
+
 /**
  * Generator a UUID
  */
