@@ -6,14 +6,14 @@
 #include "clilib.h"
 #include "uuid.h"
 
-bool supports_version(int version) {
+static bool supports_version(int version) {
     return (version == 1 
         || version == 3
         || version == 5
         || version == 7);
 }
 
-int uuid_create(int version, lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
+static int uuid_create(int version, lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
     if (version == 1) {
         lib_uuid_create_v1(uuid);
         return 0;
@@ -30,7 +30,28 @@ int uuid_create(int version, lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size
     return -1;
 }
 
-int run_uuid(int version, /*lib_uuid_t nsid, char* name,*/ int count, bool trailing) {
+static int get_format(bool upper, bool pack) {
+    if (upper && pack) {
+        return LIB_UUID_FORMAT_TYPE_UPPER_PACK;
+    } 
+    if (!upper && !pack) {
+        return LIB_UUID_FORMAT_TYPE_LOWER;
+    }   
+    if (upper) {
+        return LIB_UUID_FORMAT_TYPE_UPPER;
+    } 
+    if (pack) {
+        return LIB_UUID_FORMAT_TYPE_LOWER_PACK;
+    }
+    return LIB_UUID_FORMAT_TYPE;
+}
+
+static bool is_upper_format_default() {
+    return (LIB_UUID_FORMAT_TYPE == LIB_UUID_FORMAT_TYPE_UPPER 
+    || LIB_UUID_FORMAT_TYPE == LIB_UUID_FORMAT_TYPE_UPPER_PACK);
+}
+
+int run_uuid(int version, int format, /*lib_uuid_t nsid, char* name,*/ int count, bool trailing) {
     if (!supports_version(version)) {
         return -1;
     }
@@ -44,12 +65,7 @@ int run_uuid(int version, /*lib_uuid_t nsid, char* name,*/ int count, bool trail
         lib_uuid_t uuid;
         uuid_create(version, &uuid, nsid, name, namelen);
 
-        //lib_uuid_create_v1(&uuid);
-        //lib_uuid_create_md5(&uuid, NameSpace_DNS, "www.widgets.com", 15);
-        //lib_uuid_create_sha1(&uuid, NameSpace_DNS, "www.widgets.com", 15);
-        //lib_uuid_create_v7(&uuid);
-
-        lib_uuid_print(uuid);
+        lib_uuid_printf(format, uuid);
 
         ////
         /*
@@ -94,12 +110,24 @@ int main(int argc, char* argv[]) {
     int opt;
 
     int version   = 0;
+    int format    = 0;
     int count     = 1;
     bool trailing = true; // '\n'
-    while ((opt = lib_getopt(argc, argv, "nc:v:")) != -1) {
+    bool upper    = is_upper_format_default();
+    bool pack     = false;
+    while ((opt = lib_getopt(argc, argv, "nlupc:v:")) != -1) {
         switch (opt) {
         case 'n':
             trailing = false;
+            break;
+        case 'l':
+            upper = false;
+            break;
+        case 'u':
+            upper = true;
+            break;
+        case 'p':
+            pack = true;
             break;
         case 'v':
             version = atoi(optarg);
@@ -142,7 +170,8 @@ int main(int argc, char* argv[]) {
         version = 1;
     }
 
-    run_uuid(version, count, trailing);
+    format = get_format(upper, pack);
+    run_uuid(version, format, count, trailing);
     
     return 0;
 }

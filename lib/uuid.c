@@ -434,11 +434,50 @@ void lib_uuid_reset() {
   uuids_this_tick = 0;
 }
 
+static const char* lib_uuid_get_time_format(int type) {
+  if (type == LIB_UUID_FORMAT_TYPE_LOWER) {
+    return LIB_UUID_TIME_FORMAT_LOWER;
+  }
+  if (type == LIB_UUID_FORMAT_TYPE_UPPER) {
+    return LIB_UUID_TIME_FORMAT_UPPER;
+  }
+  if (type == LIB_UUID_FORMAT_TYPE_LOWER_PACK) {
+    return LIB_UUID_TIME_FORMAT_LOWER_PACK;
+  }
+  if (type == LIB_UUID_FORMAT_TYPE_UPPER_PACK) {
+    return LIB_UUID_TIME_FORMAT_UPPER_PACK;
+  }
+  return LIB_UUID_TIME_FORMAT_LOWER;
+}
+
+static const char* lib_uuid_get_node_format(int type) {
+  if (type == LIB_UUID_FORMAT_TYPE_LOWER
+   || type == LIB_UUID_FORMAT_TYPE_LOWER_PACK) {
+    return LIB_UUID_NODE_FORMAT_LOWER;
+  }
+  if (type == LIB_UUID_FORMAT_TYPE_UPPER 
+   || type == LIB_UUID_FORMAT_TYPE_UPPER_PACK) {
+    return LIB_UUID_NODE_FORMAT_UPPER;
+  }
+  return LIB_UUID_NODE_FORMAT_LOWER;
+}
+
 /**
  * Print a UUID
  */
 int lib_uuid_print(lib_uuid_t u) {
-  int pos = printf("%8.8x-%4.4x-%4.4x-%2.2x%2.2x-", 
+  return lib_uuid_printf(LIB_UUID_FORMAT_TYPE, u);
+}
+
+/**
+ * Print a UUID by format type
+ */
+int lib_uuid_printf(int type, lib_uuid_t u) {
+  const char* time_format = lib_uuid_get_time_format(type);
+  const char* node_format = lib_uuid_get_node_format(type);
+
+  //int pos = printf("%8.8x-%4.4x-%4.4x-%2.2x%2.2x-",
+  int pos = printf(time_format,
      u.time_low,
      u.time_mid,
      u.time_hi_and_version, 
@@ -446,27 +485,64 @@ int lib_uuid_print(lib_uuid_t u) {
      u.clock_seq_low);
   
   for (int i = 0; i < 6; i++) {
-    pos += printf("%2.2x", u.node[i]);
+    //pos += printf("%2.2x", u.node[i]);
+    pos += printf(node_format, u.node[i]);
   }    
   
   //pos += printf("\n");
   return pos;
 }
 
+////
+
+/**
+ * Print a UUID in the supplied buffer
+ */
+int lib_uuid_sprint(char* str, lib_uuid_t u) {
+  if (!str) {
+    return 0;
+  }
+  return lib_uuid_snprintf(LIB_UUID_FORMAT_TYPE, str, strlen(str), u);
+}
+
+/**
+ * Print a UUID in the supplied buffer
+ */
+int lib_uuid_sprintf(int type, char* str, lib_uuid_t u) {
+  if (!str) {
+    return 0;
+  }
+  return lib_uuid_snprintf(type, str, strlen(str), u);
+}
+
+////
+
 /**
  * Print a UUID in the supplied buffer
  */
 int lib_uuid_snprint(char* str, size_t size, lib_uuid_t u) {
+  return lib_uuid_snprintf(LIB_UUID_FORMAT_TYPE, str, size, u);
+}
+
+/**
+ * Print a UUID in the supplied buffer by format type
+ */
+int lib_uuid_snprintf(int type, char* str, size_t size, lib_uuid_t u) {
   
-  char *tmp = str;
-  if (size < 38) {
+  if (!str || size < 38) {
     //snprintf(tmp, size, "%s", "uuid string too small");
     return 0;
   }
 
+  const char* time_format = lib_uuid_get_time_format(type);
+  const char* node_format = lib_uuid_get_node_format(type);
+
+  char *tmp = str;
+
   /* perhaps this is a trifle optimistic but what the heck */
   int pos = sprintf(tmp,
-	  "%8.8x-%4.4x-%4.4x-%2.2x%2.2x-",
+	  //"%8.8x-%4.4x-%4.4x-%2.2x%2.2x-",
+    time_format,
 	  u.time_low,
 	  u.time_mid,
 	  u.time_hi_and_version,
@@ -475,7 +551,8 @@ int lib_uuid_snprint(char* str, size_t size, lib_uuid_t u) {
 
   tmp += 24;
   for (int i = 0; i < 6; i++) {
-    pos += sprintf(tmp, "%2.2x", u.node[i]);
+    //pos += sprintf(tmp, "%2.2x", u.node[i]);
+    pos += sprintf(tmp, node_format, u.node[i]);
     tmp += 2;
   }
   *tmp = 0;

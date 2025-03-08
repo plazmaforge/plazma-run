@@ -14,6 +14,22 @@
 #define LIB_UUID_TYPE_TIME_V7    7
 #define LIB_UUID_TYPE_VENDOR     8
 
+#define LIB_UUID_TIME_FORMAT_LOWER      "%8.8x-%4.4x-%4.4x-%2.2x%2.2x-"
+#define LIB_UUID_NODE_FORMAT_LOWER      "%2.2x"
+
+#define LIB_UUID_TIME_FORMAT_UPPER      "%8.8X-%4.4X-%4.4X-%2.2X%2.2X-"
+#define LIB_UUID_NODE_FORMAT_UPPER      "%2.2X"
+
+#define LIB_UUID_TIME_FORMAT_LOWER_PACK "%8.8x%4.4x%4.4x%2.2x%2.2x"
+#define LIB_UUID_TIME_FORMAT_UPPER_PACK "%8.8X%4.4X%4.4X%2.2X%2.2X"
+
+#define LIB_UUID_FORMAT_TYPE_LOWER      1
+#define LIB_UUID_FORMAT_TYPE_UPPER      2
+#define LIB_UUID_FORMAT_TYPE_LOWER_PACK 3
+#define LIB_UUID_FORMAT_TYPE_UPPER_PACK 4
+
+#define LIB_UUID_FORMAT_TYPE LIB_UUID_FORMAT_TYPE_LOWER
+
 typedef uint64_t lib_uuid_time_t;
 
 typedef struct {
@@ -96,9 +112,30 @@ void lib_uuid_reset();
 int lib_uuid_print(lib_uuid_t u);
 
 /**
+ * Print a UUID by format type
+ */
+int lib_uuid_printf(int type, lib_uuid_t u);
+
+/**
+ * Print a UUID in the supplied buffer
+ */
+
+int lib_uuid_sprint(char* str, lib_uuid_t u);
+
+/**
+ * Print a UUID in the supplied buffer
+ */
+int lib_uuid_sprintf(int type, char* str, lib_uuid_t u);
+
+/**
  * Print a UUID in the supplied buffer
  */
 int lib_uuid_snprint(char* str, size_t size, lib_uuid_t u);
+
+/**
+ * Print a UUID in the supplied buffer by format type
+ */
+int lib_uuid_snprintf(int type, char* str, size_t size, lib_uuid_t u);
 
 void lib_uuid_pack(const lib_uuid_t* uuid, unsigned char value[16]);
 
