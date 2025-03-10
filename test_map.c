@@ -2,29 +2,41 @@
 #include <stdio.h>
 #include <stdint.h>
 
+/**
+ * Variant Value 
+ */
 typedef union map_value_t {
     int64_t i_value;
     double  f_value;
     void*   p_value;
 } map_value_t;
 
-typedef struct map_typed_value_t {
+/**
+ * Typed Variant Value 
+ */
+typedef struct map_tvalue_t {
     int8_t type;
     map_value_t value;
-} map_typed_value_t;
+} map_tvalue_t;
 
-typedef struct map_entry_t {
+/**
+ * Map Simple Entry 
+ */
+typedef struct map_sentry_t {
     void* key;
     void* value;
-} map_entry_t;
+} map_sentry_t;
 
-typedef struct map_union_entry_t {
+/**
+ * Map Variant Entry
+ */
+typedef struct map_ventry_t {
     map_value_t key;
     map_value_t value;
-} map_union_entry_t;
+} map_ventry_t;
 
 typedef struct map_t {
-    map_union_entry_t** entries;
+    map_ventry_t** entries;
     size_t size;
     size_t allocated;
 } map_t;
@@ -37,6 +49,8 @@ static void _map_free(map_t* map);
 
 static int _map_add(map_t* map, void* key, void* value);
 
+//// add: V-Entry
+
 static int _map_add_ixp(map_t* map, int64_t key, void* value);
 
 static int _map_add_ixi(map_t* map, int64_t key, int64_t value);
@@ -47,11 +61,15 @@ static int _map_add_ixf(map_t* map, int64_t key, double value);
 
 static void* _map_get(map_t* map, void* key);
 
+//// get: V-Entry
+
 static void* _map_get_ixp(map_t* map, int64_t key);
 
 static int64_t _map_get_ixi(map_t* map, int64_t key);
 
 static double _map_get_ixf(map_t* map, int64_t key);
+
+static map_ventry_t* _map_ventry_find(map_t* map, map_value_t key);
 
 //// new
 
@@ -80,7 +98,7 @@ int map_add(map_t* map, void* key, void* value) {
     return _map_add(map, key, value);
 }
 
-////
+//// add: V-Entry
 
 int map_add_ixp(map_t* map, int64_t key, void* value) {
     if (!map) {
@@ -98,12 +116,12 @@ int map_add_ixf(map_t* map, int64_t key, float value) {
 
 ////
 
-int map_add_sxs(map_t* map, char* key, char* value) {
-    if (!map) {
-        return -1;
-    }
-    return _map_add(map, key, value);
-}
+// int map_add_sxs(map_t* map, char* key, char* value) {
+//     if (!map) {
+//         return -1;
+//     }
+//     return _map_add(map, key, value);
+// }
 
 //// get
 
@@ -113,6 +131,8 @@ void* map_get(map_t* map, void* key) {
     }
     return _map_get(map, key);
 }
+
+//// get: V-Entry
 
 void* map_get_ixp(map_t* map, int64_t key) {
     if (!map) {
@@ -128,6 +148,91 @@ float map_get_ixf(map_t* map, int64_t key) {
     return _map_get_ixf(map, key);
 }
 
+//// V-Entry
+
+static map_ventry_t* _map_ventry_new() {
+    map_ventry_t* entry = (map_ventry_t*) malloc(sizeof(map_ventry_t));
+    if (!entry) {
+        return NULL;
+    }
+    entry->key.i_value   = 0;
+    entry->value.i_value = 0;
+    return entry;
+}
+
+static map_ventry_t** _map_ventries_new(size_t size) {
+    return (map_ventry_t**) malloc(sizeof(map_ventry_t*) * size + 1); // +1 NULL
+}
+
+static void _map_ventry_set(map_ventry_t* entry, void* key, void* value) {
+    entry->key.p_value = key;
+    entry->value.p_value = value;
+}
+
+static void _map_ventry_set_ixp(map_ventry_t* entry, int64_t key, void* value) {
+    entry->key.i_value = key;
+    entry->value.p_value = value;
+}
+
+static void _map_ventry_set_ixi(map_ventry_t* entry, int64_t key, int64_t value) {
+    entry->key.i_value = key;
+    entry->value.i_value = value;
+}
+
+static void _map_ventry_set_ixf(map_ventry_t* entry, int64_t key, double value) {
+    entry->key.i_value = key;
+    entry->value.f_value = value;
+}
+
+////
+
+// static int64_t p2i(void* value) {
+//     //return !value ? 0 : (int64_t) value;
+//     map_value_t v;
+//     v.p_value = value;
+//     return v.i_value;
+// }
+
+// static int64_t f2i(float value) {
+//     map_value_t v;
+//     v.f_value = value;
+//     return v.i_value;
+// }
+
+//// 
+
+static map_value_t p2v(void* p) {
+    map_value_t v;
+    v.p_value = p;
+    return v;
+}
+
+static map_value_t i2v(int64_t i) {
+    map_value_t v;
+    v.i_value = i;
+    return v;
+}
+
+static map_value_t f2v(double f) {
+    map_value_t v;
+    v.f_value = f;
+    return v;
+}
+
+////
+
+static void* v2p(map_value_t v) {
+    return v.p_value;
+}
+
+static int64_t v2i(map_value_t v) {
+    return v.i_value;
+}
+
+static double v2f(map_value_t v) {
+    return v.f_value;
+}
+
 ////
 
 static int _map_init(map_t* map) {
@@ -139,7 +244,7 @@ static int _map_init(map_t* map) {
     map->entries = NULL;
 
     size_t capacity = 10; 
-    map_union_entry_t** entries = (map_union_entry_t**) malloc(sizeof(map_union_entry_t*) * capacity + 1); // +1 NULL
+    map_ventry_t** entries = _map_ventries_new(capacity);
     if (!entries) {
         return -1;
     }
@@ -158,203 +263,140 @@ static void _map_free(map_t* map) {
     return;
 }
 
-static map_union_entry_t* _map_entry_new() {
-    map_union_entry_t* entry = (map_union_entry_t*) malloc(sizeof(map_union_entry_t));
-    if (!entry) {
-        return NULL;
-    }
-    entry->key.i_value   = 0;
-    entry->value.i_value = 0;
-    return entry;
-}
-
-static void _map_entry_set_ixp(map_union_entry_t* entry, int64_t key, void* value) {
-    entry->key.i_value = key;
-    entry->value.p_value = value;
-}
-
-static void _map_entry_set_ixi(map_union_entry_t* entry, int64_t key, int64_t value) {
-    entry->key.i_value = key;
-    entry->value.i_value = value;
-}
-
-static void _map_entry_set_ixf(map_union_entry_t* entry, int64_t key, double value) {
-    entry->key.i_value = key;
-    entry->value.f_value = value;
+static map_ventry_t* _map_entry_new() {
+    return _map_ventry_new();
 }
 
 /**
- * Add entry by universal key  
+ * Return V-Entry by key or create new if not found
  */
-static map_union_entry_t* _map_entry_add(map_t* map, int64_t key) {
+static map_ventry_t* _map_ventry_put(map_t* map, map_value_t key) {
 
-    map_union_entry_t** entries = NULL;
-    map_union_entry_t* entry    = NULL;
+    map_ventry_t* entry = NULL;
 
-    if (map->size == 0) {
-        entry = _map_entry_new();
-        if (!entry) {
-            return NULL;
-        }
-        map->entries[0] = entry;
-        //_map_entry_set_ixp(entry, key, value);
-        map->size++;
+    if (map->size > 0) {
+        // Try find entry by key
+        entry = _map_ventry_find(map, key);
+    }
+
+    if (entry) {
+        // Found - Return
         return entry;
     }
 
-    if (map->size >= map->allocated) {
-        // TODO: Use realloc
-        return NULL;
-    }
-
-    entries = map->entries;
-    entry   = NULL;
-
-    while ((entry = *entries) != NULL) {
-         if (entry->key.i_value == key) {
-            // Found and replaced
-            //entry->value.p_value = value;
-            return entry;
-         }
-        entries++;
-    }
-
+    // Not found - Create new
     entry = _map_entry_new();
     if (!entry) {
         return NULL;
     }
 
+    if (map->size >= map->allocated) {
+        // TODO: Use realloc
+        free(entry);
+        return NULL;
+    }
+
     map->entries[map->size] = entry;
-    //_map_entry_set_ixp(entry, key, value);
     map->size++;
     return entry;
 
 }
 
 static int _map_add_ixp(map_t* map, int64_t key, void* value) {
-    map_union_entry_t* entry = _map_entry_add(map, key);
+    map_ventry_t* entry = _map_ventry_put(map, i2v(key));
     if (!entry) {
         return -1;
     }
-    _map_entry_set_ixp(entry, key, value);
+    _map_ventry_set_ixp(entry, key, value);
     return 0;
 }
 
 static int _map_add_ixi(map_t* map, int64_t key, int64_t value) {
-    if (!map) {
-        return -1;
-    }
-    map_union_entry_t* entry = _map_entry_add(map, key);
+    map_ventry_t* entry = _map_ventry_put(map, i2v(key));
     if (!entry) {
         return -1;
     }
-    _map_entry_set_ixi(entry, key, value);
+    _map_ventry_set_ixi(entry, key, value);
     return 0;
 }
 
 static int _map_add_ixf(map_t* map, int64_t key, double value) {
-    if (!map) {
-        return -1;
-    }
-    map_union_entry_t* entry = _map_entry_add(map, key);
+    map_ventry_t* entry = _map_ventry_put(map, i2v(key));
     if (!entry) {
         return -1;
     }
-    _map_entry_set_ixf(entry, key, value);
+    _map_ventry_set_ixf(entry, key, value);
     return 0;
 }
 
 /**
- * Add entry by universal key  
+ * Find V-Entry by key
  */
-static map_union_entry_t* _map_entry_get(map_t* map, map_value_t key) {
-    //if (!map) {
-    //    return NULL;
-    //}
-
-    map_union_entry_t** entries = NULL;
-    map_union_entry_t* entry    = NULL;
+static map_ventry_t* _map_ventry_find(map_t* map, map_value_t key) {
 
     if (map->size == 0) {
         return NULL;
     }
 
-    entries = map->entries;
-    entry   = NULL;
+    map_ventry_t** entries = map->entries;
+    map_ventry_t* entry    = NULL;
 
     while ((entry = *entries) != NULL) {
-         //if (entry->key.i_value == key) {
-         if (entry->key.i_value == key.i_value) {
+        if (entry->key.i_value == key.i_value) {
             // Found
-            //return entry->value.p_value;
             return entry;
-         }
+        }
         entries++;
     }
     return NULL;
 }
 
 static void* _map_get(map_t* map, void* key) {
-    map_value_t vkey;
-    vkey.p_value = key;
-
-    map_union_entry_t* entry = _map_entry_get(map, vkey);
+    map_ventry_t* entry = _map_ventry_find(map, p2v(key));
     if (!entry) {
         return NULL;
     }
-    return entry->value.p_value;
+    //return entry->value.p_value;
+    return v2p(entry->value);
 }
 
 static void* _map_get_ixp(map_t* map, int64_t key) {
-    map_value_t vkey;
-    vkey.i_value = key;
-
-    map_union_entry_t* entry = _map_entry_get(map, vkey);
+    map_ventry_t* entry = _map_ventry_find(map, i2v(key));
     if (!entry) {
         return NULL;
     }
-    return entry->value.p_value;
+    //return entry->value.p_value;
+    return v2p(entry->value);
 }
 
 static int64_t _map_get_ixi(map_t* map, int64_t key) {
-    map_value_t vkey;
-    vkey.i_value = key;
-
-    map_union_entry_t* entry = _map_entry_get(map, vkey);
+    map_ventry_t* entry = _map_ventry_find(map, i2v(key));
     if (!entry) {
         return 0;
     }
-    return entry->value.i_value;
+    //return entry->value.i_value;
+    return v2i(entry->value);
 }
 
 static double _map_get_ixf(map_t* map, int64_t key) {
-    map_value_t vkey;
-    vkey.i_value = key;
-
-    map_union_entry_t* entry = _map_entry_get(map, vkey);
+    map_ventry_t* entry = _map_ventry_find(map, i2v(key));
     if (!entry) {
         return 0;
     }
-    return entry->value.f_value;
-}
-
-static int64_t p2i(void* value) {
-    //return !value ? 0 : (int64_t) value;
-    map_value_t v;
-    v.p_value = value;
-    return v.i_value;
-}
-
-static int64_t f2i(float value) {
-    map_value_t v;
-    v.f_value = value;
-    return v.i_value;
+    //return entry->value.f_value;
+    return v2f(entry->value);
 }
 
 static int _map_add(map_t* map, void* key, void* value) {
-    int64_t ikey = p2i(key);
-    return _map_add_ixp(map, ikey, value);
+    map_ventry_t* entry = _map_ventry_put(map, p2v(key));
+    if (!entry) {
+        return -1;
+    }
+    _map_ventry_set(entry, key, value);
+    return 0;
 }
+
+//// ALT
 
 //// get
 
@@ -418,6 +460,8 @@ void* map_get_ptr(map_value_t* value) {
     return !value ? 0 : ((void*) value->p_value);
 }
 
+//// TEST
+
 map_t* test_map() {
     map_t* map = map_new();
 
@@ -447,24 +491,26 @@ map_t* test_map() {
 }
 
 int main() {
-    fprintf(stdout, "Test Union...\n");
+    fprintf(stdout, "Test Map...\n");
     fprintf(stdout, "=========================================\n");
 
     fprintf(stdout, "sizeof(void*)\t\t: %lu\n", sizeof(void*));
     fprintf(stdout, "sizeof(int*)\t\t: %lu\n", sizeof(int*));
     fprintf(stdout, "sizeof(long*)\t\t: %lu\n", sizeof(long*));
 
-    fprintf(stdout, "sizeof(map_entry_t*)\t: %lu\n", sizeof(map_entry_t*));
-    fprintf(stdout, "sizeof(map_entry_t)\t: %lu\n", sizeof(map_entry_t));
+    fprintf(stdout, "sizeof(map_value_t*)\t: %lu\n", sizeof(map_value_t*));
+    fprintf(stdout, "sizeof(map_sentry_t*)\t: %lu\n", sizeof(map_sentry_t*));
+    fprintf(stdout, "sizeof(map_ventry_t*)\t: %lu\n", sizeof(map_ventry_t*));
+    
     fprintf(stdout, "sizeof(map_value_t)\t: %lu\n", sizeof(map_value_t));
-    fprintf(stdout, "sizeof(map_value_t)\t: %lu\n", sizeof(map_value_t));
-    fprintf(stdout, "sizeof(map_union_entry_t)\t: %lu\n", sizeof(map_union_entry_t));
+    fprintf(stdout, "sizeof(map_sentry_t)\t: %lu\n", sizeof(map_sentry_t));
+    fprintf(stdout, "sizeof(map_ventry_t)\t: %lu\n", sizeof(map_ventry_t));
 
     int    ivalue = 10;
     double dvalue = 3.14;
 
-    map_entry_t entry_1;
-    map_entry_t entry_2;
+    map_sentry_t entry_1;
+    map_sentry_t entry_2;
     
     entry_1.key = (void*) 10;
     entry_1.value = (void*) (long) 3.14;
@@ -512,14 +558,14 @@ int main() {
     map_add_ixp(map, 777, "Hello-777");
     map_add_ixp(map, 200, "Hello-200");
     map_add_ixp(map, 900, (void*) 12345);
-    map_add_ixf(map, 888, 888.777);
+    map_add_ixf(map, 888, 555.777);
 
 
-    map_add(map, "ID-100", "Hello-100-0");
-    map_add(map, "ID-200", "Hello-200-0");
-    map_add(map, "ID-300", "Hello-300-1");
+    map_add(map, "ID-100", "Hello-100-10-X");
+    map_add(map, "ID-200", "Hello-200-10-X");
+    map_add(map, "ID-300", "Hello-300-11-X");
     map_add(map, "ID-400", (void*) 12345);
-    map_add(map, "ID-300", "Hello-300-2");
+    map_add(map, "ID-300", "Hello-300-12-X");
     
     //map_add_int32_ptr(map, 900, (void*) 12345);
 
