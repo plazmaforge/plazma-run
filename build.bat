@@ -51,6 +51,12 @@ rem compile
 %CC% %CFLAGS% lib/common.c -o common.o
 %CC% %CFLAGS% lib/debug.c -o debug.o
 
+%CC% %CFLAGS% lib/array.c -o array.o
+%CC% %CFLAGS% lib/list.c -o list.o
+%CC% %CFLAGS% lib/set.c -o set.o
+%CC% %CFLAGS% lib/stack.c -o stack.o
+%CC% %CFLAGS% lib/map.c -o map.o
+
 %CC% %CFLAGS% lib/md.c -o md.o
 %CC% %CFLAGS% lib/md5.c -o md5.o
 %CC% %CFLAGS% lib/sha256.c -o sha256.o
@@ -108,6 +114,7 @@ rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 %CC% %CFLAGS% test_buf.c -o test_buf.o
 %CC% %CFLAGS% test_scandir.c -o test_scandir.o
 %CC% %CFLAGS% test_map.c -o test_map.o
+%CC% %CFLAGS% test_clt.c -o test_clt.o
 
 rem link
 
@@ -160,4 +167,5 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 %CC% %LDFLAGS% strlib.o test_strlib.o -o test-strlib.exe
 %CC% %LDFLAGS% test_buf.o -o test-buf.exe
 %CC% %LDFLAGS% strlib.o wstrlib.o fsdirent.o test_scandir.o -o test-scandir.exe
-%CC% %LDFLAGS% test_map.o -o test-map
+%CC% %LDFLAGS% test_map.o -o test-map.exe
+%CC% %LDFLAGS% memlib.o array.o test_clt.o -o test-clt.exe

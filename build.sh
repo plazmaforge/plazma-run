@@ -57,6 +57,12 @@ $CC $CFLAGS lib/uuid.c -o uuid.o
 $CC $CFLAGS lib/common.c -o common.o
 $CC $CFLAGS lib/debug.c -o debug.o
 
+$CC $CFLAGS lib/array.c -o array.o
+$CC $CFLAGS lib/list.c -o list.o
+$CC $CFLAGS lib/set.c -o set.o
+$CC $CFLAGS lib/stack.c -o stack.o
+$CC $CFLAGS lib/map.c -o map.o
+
 $CC $CFLAGS lib/md.c -o md.o
 $CC $CFLAGS lib/md5.c -o md5.o
 $CC $CFLAGS lib/sha256.c -o sha256.o
@@ -119,6 +125,7 @@ $CC $CFLAGS test_strlib.c -o test_strlib.o
 $CC $CFLAGS test_buf.c -o test_buf.o
 $CC $CFLAGS test_scandir.c -o test_scandir.o
 $CC $CFLAGS test_map.c -o test_map.o
+$CC $CFLAGS test_clt.c -o test_clt.o
 
 # link
 ###########
@@ -173,3 +180,4 @@ $CC $LDFLAGS strlib.o test_strlib.o -o test-strlib
 $CC $LDFLAGS test_buf.o -o test-buf
 $CC $LDFLAGS fsdirent.o test_scandir.o -o test-scandir
 $CC $LDFLAGS test_map.o -o test-map
+$CC $LDFLAGS memlib.o array.o test_clt.o -o test-clt

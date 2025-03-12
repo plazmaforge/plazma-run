@@ -1,28 +1,91 @@
-#include <stdlib.h>
 #include <string.h>
 #include "memlib.h"
 
-void lib_memset0(void* data, size_t len) {
-    if (!data || len == 0) {
-        return;
-    }
-    memset(data, 0, len);
+/**
+ * Malloc 
+ */
+void* lib_malloc(size_t size) {
+    return malloc(size);
 }
 
-void lib_free0(void* data, size_t len) {
+/**
+ * Malloc and reset memory
+ */
+void* lib_mallocz(size_t size) {
+    void* data = lib_malloc(size);
+    if (!data) {
+        return NULL;
+    }
+    lib_memsetz(data, size);
+    return data;
+}
+
+/**
+ * Calloc
+ */
+void* lib_calloc(size_t count, size_t size) {
+    return calloc(count, size);
+}
+
+/**
+ * Calloc and reset memory
+ */
+void* lib_callocz(size_t count, size_t size) {
+    void* data = calloc(count, size);
+    if (!data) {
+        return NULL;
+    }
+    lib_memsetz(data, size);
+    return data;
+}
+
+/**
+ * Free 
+ */
+void lib_free(void* data) {
     if (!data) {
         return;
     }
-    lib_memset0(data, len);
     free(data);
 }
 
+/**
+ * Reset memory and free
+ */
+void lib_freez(void* data, size_t size) {
+    if (!data) {
+        return;
+    }
+    lib_memsetz(data, size);
+    lib_free(data);
+}
+
+/**
+ * Reset memory
+ */
+void lib_memsetz(void* data, size_t size) {
+    if (!data || size == 0) {
+        return;
+    }
+    memset(data, 0, size);
+}
+
+////
+
+void lib_memset0(void* data, size_t len) {
+    lib_memsetz(data, len);
+}
+
+void lib_free0(void* data, size_t len) {
+    lib_freez(data, len);
+}
+
 void lib_memreset(void* data, size_t len) {
-    lib_memset0(data, len);
+    lib_memsetz(data, len);
 }
 
 void lib_freereset(void* data, size_t len) {
-    lib_free0(data, len);
+    lib_freez(data, len);
 }
 
 
