@@ -37,9 +37,9 @@ typedef struct lib_map_ventry_t {
 } lib_map_ventry_t;
 
 typedef struct lib_map_t {
-    /*lib_map_ventry_t** */ void* entries;
+    void* entries;
     size_t size;
-    size_t allocated;
+    size_t capacity;
 } lib_map_t;
 
 static int _map_init(lib_map_t* map);
@@ -269,7 +269,7 @@ static int _map_init(lib_map_t* map) {
         return -1;
     }
     map->size = 0;
-    map->allocated = 0;
+    map->capacity = 0;
     map->entries = NULL;
 
     size_t init_size = 10; 
@@ -279,8 +279,8 @@ static int _map_init(lib_map_t* map) {
         return -1;
     }
     map->entries = entries;
-    map->allocated = init_size;
-    fprintf(stdout, "map-init\t\t: %p %p\n", map, map->entries);
+    map->capacity = init_size;
+    //fprintf(stdout, "map-init\t\t: %p %p\n", map, map->entries);
     return 0;
 }
 
@@ -317,7 +317,7 @@ static void _map_entries_free(lib_map_t* map) {
 }
 
 static bool _map_need_realloc(lib_map_t* map) {
-    return (map->size >= map->allocated);
+    return (map->size >= map->capacity);
 }
 
 static size_t _map_new_capacity(size_t capacity) {
@@ -325,7 +325,7 @@ static size_t _map_new_capacity(size_t capacity) {
 }
 
 static void* _map_realloc(lib_map_t* map) {
-    size_t capacity = _map_new_capacity(map->allocated);
+    size_t capacity = _map_new_capacity(map->capacity);
 
     // V-entries
     void* entries = _map_ventries_realloc(map, capacity);
@@ -364,11 +364,11 @@ static void _map_ventry_free(lib_map_ventry_t* entry) {
 }
 
 static lib_map_ventry_t** _map_ventries_new(size_t size) {
-    return (lib_map_ventry_t**) malloc(sizeof(lib_map_ventry_t*) * (size)); // +1 NULL
+    return (lib_map_ventry_t**) malloc(sizeof(lib_map_ventry_t*) * size);
 }
 
 static lib_map_ventry_t** _map_ventries_realloc(lib_map_t* map, size_t size) {
-    return (lib_map_ventry_t**) realloc(map->entries, sizeof(lib_map_ventry_t*) * (size)); // +1 NULL
+    return (lib_map_ventry_t**) realloc(map->entries, sizeof(lib_map_ventry_t*) * size);
 }
 
 static void _map_ventries_free(lib_map_t* map) {
