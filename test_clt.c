@@ -15,7 +15,7 @@ void test_array_ptr() {
     lib_array_set(&array, 0, (void*) 100);
     lib_array_set(&array, 1, (void*) 200);
     lib_array_set(&array, 2, "300-A");
-    lib_array_set(&array, 3, "400-A");
+    //lib_array_set(&array, 3, "400-A");
 
     fprintf(stderr, "array[0]: %d\n", (int) lib_array_get(&array, 0));
     fprintf(stderr, "array[1]: %d\n", (int) lib_array_get(&array, 1));
@@ -42,12 +42,19 @@ void test_array_val() {
     lib_array_set(&array, 0, &x0);
     lib_array_set(&array, 1, &x1);
     lib_array_set(&array, 2, &x2);
-    lib_array_set(&array, 3, &x3);
+    //lib_array_set(&array, 3, &x3);
 
     fprintf(stderr, "array[0]: %d\n", *(int*) lib_array_get(&array, 0));
     fprintf(stderr, "array[1]: %d\n", *(int*) lib_array_get(&array, 1));
     fprintf(stderr, "array[2]: %d\n", *(int*) lib_array_get(&array, 2));
     fprintf(stderr, "array[3]: %d\n", *(int*) lib_array_get(&array, 3));
+
+    int* px100 = (int*) lib_array_get(&array, 100);
+    if (px100) {
+        fprintf(stderr, "array[100]: %d\n", *px100);
+    } else {
+        fprintf(stderr, "array[100]: (null)\n");
+    }    
 
     lib_array_free(&array);
 }

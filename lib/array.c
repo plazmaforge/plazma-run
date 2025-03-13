@@ -3,27 +3,22 @@
 #include "memlib.h"
 #include "array.h"
 
-static int _array_init(lib_array_t* array, size_t size, size_t value_size);
+static int _array_init(lib_array_t* array, int type, size_t size, size_t value_size);
 
 static void* _array_get(lib_array_t* array, size_t index);
 
 static int _array_set(lib_array_t* array, size_t index, void* value);
 
 int lib_array_init(lib_array_t* array, size_t size, size_t value_size) {
-    return _array_init(array, size, value_size);
+    return _array_init(array, LIB_CLT_MEM_TYPE_DEF, size, value_size);
 }
 
 int lib_array_init_ptr(lib_array_t* array, size_t size) {
-    int retval = _array_init(array, size, sizeof(void*));
-    if (retval != 0) {
-        return retval;
-    }
-    array->mem_type = LIB_CLT_MEM_TYPE_PTR;
-    return 0;
+    return _array_init(array, LIB_CLT_MEM_TYPE_PTR, size, sizeof(void*));
 }
 
 int lib_array_init_val(lib_array_t* array, size_t size, size_t value_size) {
-    return _array_init(array, size, value_size);
+    return _array_init(array, LIB_CLT_MEM_TYPE_VAL, size, value_size);
 }
 
 void lib_array_free(lib_array_t* array) {
@@ -53,14 +48,14 @@ int lib_array_set(lib_array_t* array, size_t index, void* value) {
 
 ////
 
-static int _array_init(lib_array_t* array, size_t size, size_t value_size) {
+static int _array_init(lib_array_t* array, int type, size_t size, size_t value_size) {
     if (!array || value_size == 0) {
         return -1;
     }
-    array->mem_type = LIB_CLT_MEM_TYPE_DEF;
+    array->mem_type = type;
     array->size = size;
     array->value_size = value_size;
-    array->data = lib_malloc(size * value_size);
+    array->data = lib_mallocz(size * value_size);
     if (!array->data) {
         return -1;
     }
