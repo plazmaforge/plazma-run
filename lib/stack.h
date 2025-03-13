@@ -8,6 +8,7 @@ typedef struct lib_stack_t {
     size_t size;
     size_t capacity;
     size_t value_size;
+    int mem_type;
 } lib_stack_t;
 
 int lib_stack_init(lib_stack_t* stack, size_t capacity, size_t value_size);

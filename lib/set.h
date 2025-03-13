@@ -8,6 +8,7 @@ typedef struct lib_set_t {
     size_t size;
     size_t capacity;
     size_t value_size;
+    int mem_type;
 } lib_set_t;
 
 int lib_set_init(lib_set_t* set, size_t capacity, size_t value_size);

@@ -9,6 +9,7 @@ typedef struct lib_map_t {
     size_t capacity;
     size_t key_size;
     size_t value_size;
+    int mem_type;
 } lib_map_t;
 
 size_t lib_map_size(lib_map_t* map);
