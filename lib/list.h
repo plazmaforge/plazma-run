@@ -31,7 +31,13 @@ void* lib_list_get(lib_list_t* list, size_t index);
 
 int lib_list_set(lib_list_t* list, size_t index, void* value);
 
+int lib_list_insert(lib_list_t* list, size_t index, void* value);
+
 int lib_list_add(lib_list_t* list, void* value);
+
+int lib_list_remove(lib_list_t* list, void* value);
+
+int lib_list_remove_index(lib_list_t* list, size_t index);
 
 #endif /* PLAZMA_LIB_LIST_H */
 
