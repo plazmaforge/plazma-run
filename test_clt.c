@@ -4,14 +4,13 @@
 #include "array.h"
 
 
-void test_array_cast() {
+void test_array_ptr() {
 
-    fprintf(stderr, "Test array_cast...\n");
+    fprintf(stderr, "Test array_ptr...\n");
 
     lib_array_t array;
-    lib_array_init_cast(&array, 10);
-    //lib_array_set_mem_type(&array, LIB_CLT_MEM_TYPE_CAST);
-    fprintf(stderr, "Inited array_cast\n");
+    lib_array_init_ptr(&array, 10);
+    fprintf(stderr, "array_ptr: inited\n");
 
     lib_array_set(&array, 0, (void*) 100);
     lib_array_set(&array, 1, (void*) 200);
@@ -23,15 +22,17 @@ void test_array_cast() {
     fprintf(stderr, "array[2]: %s\n", lib_array_get(&array, 2));
     fprintf(stderr, "array[3]: %s\n", lib_array_get(&array, 3));
 
+    lib_array_free(&array);
+
 }
 
-void test_array_copy() {
+void test_array_val() {
 
-    fprintf(stderr, "Test array_copy...\n");
+    fprintf(stderr, "Test array_val...\n");
 
     lib_array_t array;
-    lib_array_init(&array, 10, sizeof(int));
-    fprintf(stderr, "Inited array_copy\n");
+    lib_array_init_val(&array, 10, sizeof(int));
+    fprintf(stderr, "array_val: inited\n");
 
     int x0 = 100;
     int x1 = 200;
@@ -48,12 +49,12 @@ void test_array_copy() {
     fprintf(stderr, "array[2]: %d\n", *(int*) lib_array_get(&array, 2));
     fprintf(stderr, "array[3]: %d\n", *(int*) lib_array_get(&array, 3));
 
+    lib_array_free(&array);
 }
 
 void test_clt() {
-    test_array_cast();
-    test_array_copy();
-
+    test_array_ptr();
+    test_array_val();
 }
 
 int main(int argc, char* argv[]) {

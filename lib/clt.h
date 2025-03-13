@@ -7,8 +7,9 @@
 #define LIB_MIN(a, b) a < b ? a : b
 #define LIB_MAX(a, b) a > b ? a : b
 
-#define LIB_CLT_MEM_TYPE_CAST 1
-#define LIB_CLT_MEM_TYPE_COPY 2
+#define LIB_CLT_MEM_TYPE_PTR 1
+#define LIB_CLT_MEM_TYPE_VAL 2
+#define LIB_CLT_MEM_TYPE_DEF LIB_CLT_MEM_TYPE_PTR
 
 #include <stdlib.h>
 #include <string.h>
@@ -40,7 +41,7 @@ static int lib_clt_set(void* data, size_t index, size_t value_size, void* value)
 
 static void* lib_clt_get_mem(int type, void* data, size_t index, size_t value_size) {
     void* value = NULL;
-    if (type == LIB_CLT_MEM_TYPE_CAST /* && value_size == sizeof(void*)*/ ) {
+    if (type == LIB_CLT_MEM_TYPE_PTR /* && value_size == sizeof(void*)*/ ) {
         void** table = (void**) data;
         value = table[index]; 
     } else {
@@ -51,7 +52,7 @@ static void* lib_clt_get_mem(int type, void* data, size_t index, size_t value_si
 }
 
 static int lib_clt_set_mem(int type, void* data, size_t index, size_t value_size, void* value) {
-    if (type == LIB_CLT_MEM_TYPE_CAST /* && value_size == sizeof(void*)*/ ) {
+    if (type == LIB_CLT_MEM_TYPE_PTR /* && value_size == sizeof(void*)*/ ) {
         //offset = value;
         //fprintf(stderr, "set << %p\n", value);
         void** table = (void**) data;
