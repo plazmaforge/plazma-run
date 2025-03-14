@@ -168,6 +168,9 @@ int lib_list_iterator_init(lib_list_t* list, lib_iterator_t* iterator) {
     iterator->size = list->size;
     iterator->value_size = list->value_size;
     iterator->mem_type = list->mem_type;
+
+    /* first */
+    iterator->value = list->data;
     iterator->index = 0;
     return 0;
 }

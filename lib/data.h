@@ -32,6 +32,7 @@ typedef struct lib_entry_t {
 
 typedef struct lib_iterator_t {
     void* data;
+    void* value;
     size_t size;
     size_t value_size;
     size_t index;
@@ -58,7 +59,7 @@ static void* lib_data_get(void* data, size_t index, size_t value_size) {
 	return lib_data_offset(data, index, value_size);
 }
 
-static int lib_data_set2(void* data, size_t index, void* value, size_t value_size) {
+static int lib_data_set(void* data, size_t index, void* value, size_t value_size) {
     void* offset = lib_data_offset(data, index, value_size);
     //if (!offset) {
     //    return -1;
@@ -232,15 +233,30 @@ static void lib_data_free_ptr(void* data, size_t size) {
 
 ////
 
+static bool lib_data_has_next(size_t index, size_t size) {
+    return index < size;
+}
+
 static bool lib_data_iterator_has_next(lib_iterator_t* iterator) {
-    return iterator->index < iterator->size;
+    return lib_data_has_next(iterator->index, iterator->size);
 }
 
 static void* lib_data_array_iterator_next(lib_iterator_t* iterator) {
     if (!lib_data_iterator_has_next(iterator)) {
         return NULL;
     }
-    void* value = lib_data_get_mem(iterator->mem_type, iterator->data, iterator->index, iterator->value_size);
+
+    // >> V1
+    // void* value = lib_data_get_mem(iterator->mem_type, iterator->data, iterator->index, iterator->value_size);
+    // << V1
+
+    // >> V2
+    void* offset = iterator->value;
+    void* value = lib_data_read_mem(iterator->mem_type, offset);
+    offset = (lib_data_has_next(iterator->index + 1, iterator->size)) ? (offset + iterator->value_size) : NULL;
+    iterator->value = offset;
+    // << V2
+
     iterator->index++;
     return value;
 }
