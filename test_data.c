@@ -38,8 +38,8 @@ void test_array_ptr() {
     fprintf(stdout, "array[3]: %s\n", lib_array_get(&array, 3));
     fprintf(stdout, "\n");
 
+    // FREE
     lib_array_free(&array);
-
 }
 
 void test_array_val() {

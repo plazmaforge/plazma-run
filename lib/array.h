@@ -20,6 +20,8 @@ int lib_array_init_val(lib_array_t* array, size_t size, size_t value_size);
 
 void lib_array_free(lib_array_t* array);
 
+void lib_array_free_all(lib_array_t* array);
+
 size_t lib_array_size(lib_array_t* array);
 
 void* lib_array_get(lib_array_t* array, size_t index);

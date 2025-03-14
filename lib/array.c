@@ -21,11 +21,27 @@ int lib_array_init_val(lib_array_t* array, size_t size, size_t value_size) {
     return _array_init(array, LIB_DATA_MEM_TYPE_VAL, size, value_size);
 }
 
+void lib_array_free_ptr(lib_array_t* array) {
+    if (!array || !array->data || array->mem_type != LIB_DATA_MEM_TYPE_PTR) {
+        return;
+    }
+    lib_data_free_ptr(array->data, array->size);
+}
+
 void lib_array_free(lib_array_t* array) {
     if (!array || !array->data) {
         return;
     }
     free(array->data);
+    array->data = NULL;
+}
+
+void lib_array_free_all(lib_array_t* array) {
+    if (!array || !array->data) {
+        return;
+    }
+    lib_array_free_ptr(array);
+    lib_array_free(array);
 }
 
 size_t lib_array_size(lib_array_t* array) {

@@ -161,7 +161,7 @@ static void* lib_data_realloc(void* data, size_t size, size_t value_size) {
 
 ////
 
-static void lib_data_free_ptr(void* data, size_t size, size_t value_size) {
+static void lib_data_free_ptr(void* data, size_t size) {
     void** table = (void**) data;
     void* value = NULL;
     for (size_t i = 0; i < size; i++) {

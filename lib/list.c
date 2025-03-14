@@ -26,7 +26,7 @@ void lib_list_free_ptr(lib_list_t* list) {
     if (!list || !list->data || list->mem_type != LIB_DATA_MEM_TYPE_PTR) {
         return;
     }
-    lib_data_free_ptr(list->data, list->size, list->value_size);
+    lib_data_free_ptr(list->data, list->size);
 }
 
 void lib_list_free(lib_list_t* list) {
