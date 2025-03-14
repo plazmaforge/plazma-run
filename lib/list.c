@@ -22,6 +22,13 @@ int lib_list_init_val(lib_list_t* list, size_t size, size_t value_size) {
     return _list_init(list, LIB_DATA_MEM_TYPE_VAL, size, value_size);
 }
 
+void lib_list_free_ptr(lib_list_t* list) {
+    if (!list || !list->data || list->mem_type != LIB_DATA_MEM_TYPE_PTR) {
+        return;
+    }
+    lib_data_free_ptr(list->data, list->size, list->value_size);
+}
+
 void lib_list_free(lib_list_t* list) {
     if (!list || !list->data) {
         return;
@@ -30,27 +37,11 @@ void lib_list_free(lib_list_t* list) {
     list->data = NULL;
 }
 
-void lib_list_free_values(lib_list_t* list) {
-    if (!list || !list->data || list->mem_type != LIB_DATA_MEM_TYPE_PTR) {
-        return;
-    }
-    void** table = (void**) list->data;
-    void* value = NULL;
-    size_t value_size = list->value_size;
-    for (size_t i = 0; i < list->size; i++) {
-        value = table[i];
-        if (value) {
-            //fprintf(stderr, ">> free: %s\n", value);
-            free(value);
-        }
-    }    
-}
-
 void lib_list_free_all(lib_list_t* list) {
     if (!list || !list->data) {
         return;
     }
-    lib_list_free_values(list);
+    lib_list_free_ptr(list);
     lib_list_free(list);
 }
 
@@ -80,26 +71,11 @@ int lib_list_set(lib_list_t* list, size_t index, void* value) {
     return _list_set(list, index, value);
 }
 
-
 ////
-
-static size_t _data_new_capacity(size_t capacity) {
-    return capacity * 2;
-}
-
-static void* _data_realloc(void* data, size_t size, size_t value_size) {
-    return realloc(data, size * value_size);
-}
-
-////
-
-static bool _list_need_realloc(lib_list_t* list) {
-    return (list->size >= list->capacity);
-}
 
 static void* _list_realloc(lib_list_t* list) {
-    size_t capacity = _data_new_capacity(list->capacity);
-    void* data = _data_realloc(list->data, capacity, list->value_size);
+    size_t capacity = lib_data_new_capacity(list->capacity);
+    void* data = lib_data_realloc(list->data, capacity, list->value_size);
     if (!data) {
         return NULL;
     }
@@ -110,7 +86,7 @@ static void* _list_realloc(lib_list_t* list) {
 }
 
 static bool _list_try_realloc(lib_list_t* list) {
-    if (!_list_need_realloc(list)) {
+    if (!lib_data_need_realloc(list->size, list->capacity)) {
         return true;
     }
     return _list_realloc(list);
@@ -122,37 +98,7 @@ static int _list_find(lib_list_t* list, void* value, size_t* index) {
     if (!list || !list->data || list->size == 0) {
         return -1;
     }
-    size_t size = list->size;
-
-    if (!value) {
-        for (size_t i = 0; i < size; i++) {
-            if (!_list_get(list, i)) {
-                *index = i;
-                return 0;
-            }
-        }
-    } else {
-        bool is_ptr = list->mem_type == LIB_DATA_MEM_TYPE_PTR;
-        size_t value_size = list->value_size;
-        for (size_t i = 0; i < size; i++) {
-            void* v = _list_get(list, i);
-            if (!v) {
-                continue;
-            }
-            if (is_ptr) {
-                if (v == value) {
-                    *index = i;
-                    return 0;
-                }
-            } else {
-                if (memcmp(v, value, value_size) == 0) {
-                    *index = i;
-                    return 0;
-                }
-            }
-        }
-    }
-    return -1;
+    return lib_data_find_mem(list->mem_type, list->data, list->size, list->value_size, value, index);
 }
 
 ////
@@ -168,8 +114,8 @@ int lib_list_insert(lib_list_t* list, size_t index, void* value) {
 
     //fprintf(stderr, ">> list: insert : index=%lu, size=%lu\n", index, list->size);
     lib_data_move_next(list->data, list->size, list->value_size, index);
-
     _list_set(list, index, value);
+
     list->size++;
     return 0;
 }
@@ -181,8 +127,8 @@ int lib_list_remove_index(lib_list_t* list, size_t index) {
 
     //fprintf(stderr, ">> list: remove : index=%lu, size=%lu\n", index, list->size);
     lib_data_move_prev(list->data, list->size, list->value_size, index);
-
     lib_data_reset(list->data, list->size - 1, list->value_size);
+
     list->size--;
     return 0;
 }

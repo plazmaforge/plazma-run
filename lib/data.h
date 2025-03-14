@@ -111,4 +111,66 @@ static void lib_data_reset(void* data, size_t index, size_t value_size) {
     memset(offset, 0, value_size);
 }
 
+////
+
+static int lib_data_find_mem(int type, void* data, size_t size, size_t value_size, void* value, size_t* index) {
+
+    if (!value) {
+        for (size_t i = 0; i < size; i++) {
+            if (!lib_data_get_mem(type, data, i, value_size)) {
+                *index = i;
+                return 0;
+            }
+        }
+    } else {
+        bool is_ptr = lib_data_is_ptr(type);
+        for (size_t i = 0; i < size; i++) {
+            void* v = lib_data_get_mem(type, data, i, value_size);
+            if (!v) {
+                continue;
+            }
+            if (is_ptr) {
+                if (v == value) {
+                    *index = i;
+                    return 0;
+                }
+            } else {
+                if (memcmp(v, value, value_size) == 0) {
+                    *index = i;
+                    return 0;
+                }
+            }
+        }
+    }
+    return -1;
+}
+
+////
+
+static bool lib_data_need_realloc(size_t size, size_t capacity) {
+    return (size >= capacity);
+}
+
+static size_t lib_data_new_capacity(size_t capacity) {
+    return capacity * 2;
+}
+
+static void* lib_data_realloc(void* data, size_t size, size_t value_size) {
+    return realloc(data, size * value_size);
+}
+
+////
+
+static void lib_data_free_ptr(void* data, size_t size, size_t value_size) {
+    void** table = (void**) data;
+    void* value = NULL;
+    for (size_t i = 0; i < size; i++) {
+        value = table[i];
+        if (value) {
+            //fprintf(stderr, ">> free: %s\n", value);
+            free(value);
+        }
+    }
+}
+
 #endif // PLAZMA_LIB_DATA_H
