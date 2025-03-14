@@ -125,7 +125,7 @@ $CC $CFLAGS test_strlib.c -o test_strlib.o
 $CC $CFLAGS test_buf.c -o test_buf.o
 $CC $CFLAGS test_scandir.c -o test_scandir.o
 $CC $CFLAGS test_map.c -o test_map.o
-$CC $CFLAGS test_clt.c -o test_clt.o
+$CC $CFLAGS test_data.c -o test_data.o
 
 # link
 ###########
@@ -180,4 +180,4 @@ $CC $LDFLAGS strlib.o test_strlib.o -o test-strlib
 $CC $LDFLAGS test_buf.o -o test-buf
 $CC $LDFLAGS fsdirent.o test_scandir.o -o test-scandir
 $CC $LDFLAGS test_map.o -o test-map
-$CC $LDFLAGS memlib.o array.o list.o test_clt.o -o test-clt
+$CC $LDFLAGS memlib.o array.o list.o test_data.o -o test-data

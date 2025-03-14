@@ -174,12 +174,12 @@ void test_list() {
     //test_list_val();
 }
 
-void test_clt() {
+void test_data() {
     test_array();
     test_list();
 }
 
 int main(int argc, char* argv[]) {
-    test_clt();
+    test_data();
     return 0;
 }

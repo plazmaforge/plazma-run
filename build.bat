@@ -114,7 +114,7 @@ rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 %CC% %CFLAGS% test_buf.c -o test_buf.o
 %CC% %CFLAGS% test_scandir.c -o test_scandir.o
 %CC% %CFLAGS% test_map.c -o test_map.o
-%CC% %CFLAGS% test_clt.c -o test_clt.o
+%CC% %CFLAGS% test_data.c -o test_data.o
 
 rem link
 
@@ -168,4 +168,4 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 %CC% %LDFLAGS% test_buf.o -o test-buf.exe
 %CC% %LDFLAGS% strlib.o wstrlib.o fsdirent.o test_scandir.o -o test-scandir.exe
 %CC% %LDFLAGS% test_map.o -o test-map.exe
-%CC% %LDFLAGS% memlib.o array.o list.o test_clt.o -o test-clt.exe
+%CC% %LDFLAGS% memlib.o array.o list.o test_data.o -o test-data.exe
