@@ -165,6 +165,15 @@ void test_list_ptr() {
     print_header("Remove by ptr value");
     print_list(&list);
 
+    // ITERATOR
+    lib_iterator_t iterator;
+    lib_list_iterator_init(&list, &iterator);
+
+    print_header("Iterator");
+    while(lib_list_iterator_has_next(&list, &iterator)) {
+        fprintf(stdout, ">> %s\n", lib_list_iterator_next(&list, &iterator));
+    }
+
     // FREE
     lib_list_free_all(&list);
 }

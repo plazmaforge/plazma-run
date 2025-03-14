@@ -86,6 +86,6 @@ static void* _array_get(lib_array_t* array, size_t index) {
 }
 
 static int _array_set(lib_array_t* array, size_t index, void* value) {
-    return lib_data_set_mem(array->mem_type, array->data, index, array->value_size, value);
+    return lib_data_set_mem(array->mem_type, array->data, index, value, array->value_size);
 }
 

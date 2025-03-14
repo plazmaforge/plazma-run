@@ -39,5 +39,13 @@ int lib_list_remove(lib_list_t* list, void* value);
 
 int lib_list_remove_index(lib_list_t* list, size_t index);
 
+////
+
+int lib_list_iterator_init(lib_list_t* list, lib_iterator_t* iterator);
+
+bool lib_list_iterator_has_next(lib_list_t* list, lib_iterator_t* iterator);
+
+void* lib_list_iterator_next(lib_list_t* list, lib_iterator_t* iterator);
+
 #endif /* PLAZMA_LIB_LIST_H */
 

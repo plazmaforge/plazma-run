@@ -160,6 +160,34 @@ int lib_list_add(lib_list_t* list, void* value) {
 
 ////
 
+int lib_list_iterator_init(lib_list_t* list, lib_iterator_t* iterator) {
+    if (!list || !iterator) {
+        return -1;
+    }
+    iterator->data = list->data;
+    iterator->size = list->size;
+    iterator->value_size = list->value_size;
+    iterator->mem_type = list->mem_type;
+    iterator->index = 0;
+    return 0;
+}
+
+bool lib_list_iterator_has_next(lib_list_t* list, lib_iterator_t* iterator) {
+    if (!list || !iterator) {
+        return false;
+    }
+    return lib_data_iterator_has_next(iterator);
+}
+
+void* lib_list_iterator_next(lib_list_t* list, lib_iterator_t* iterator) {
+    if (!lib_list_iterator_has_next(list, iterator)) {
+        return NULL;
+    }
+    return lib_data_array_iterator_next(iterator);
+}
+
+////
+
 static int _list_init(lib_list_t* list, int type, size_t capacity, size_t value_size) {
     if (!list || value_size == 0) {
         return -1;
@@ -182,7 +210,7 @@ static void* _list_get(lib_list_t* list, size_t index) {
 }
 
 static int _list_set(lib_list_t* list, size_t index, void* value) {
-    return lib_data_set_mem(list->mem_type, list->data, index, list->value_size, value);
+    return lib_data_set_mem(list->mem_type, list->data, index, value, list->value_size);
 }
 
 // https://github.com/goldsborough/vector

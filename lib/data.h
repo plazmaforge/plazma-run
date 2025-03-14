@@ -19,6 +19,31 @@
 #include <stdio.h>
 #include <string.h>
 
+typedef struct lib_node_t {
+    void* value;
+    struct lib_node_t* prev;
+    struct lib_node_t* next;
+} lib_node_t;
+
+typedef struct lib_entry_t {
+    void* key;
+    void* value;
+} lib_entry_t;
+
+typedef struct lib_iterator_t {
+    void* data;
+    size_t size;
+    size_t value_size;
+    size_t index;
+    int mem_type;
+} lib_iterator_t;
+
+typedef struct lib_bucket_t {
+    int hash;
+    void* data;
+    size_t size;
+} lib_bucket_t;
+
 static void lib_data_copy(void* offset, void* value, size_t value_size) {
     memcpy(offset, value, value_size);
 }
@@ -33,7 +58,7 @@ static void* lib_data_get(void* data, size_t index, size_t value_size) {
 	return lib_data_offset(data, index, value_size);
 }
 
-static int lib_data_set(void* data, size_t index, size_t value_size, void* value) {
+static int lib_data_set2(void* data, size_t index, void* value, size_t value_size) {
     void* offset = lib_data_offset(data, index, value_size);
     //if (!offset) {
     //    return -1;
@@ -48,8 +73,32 @@ static bool lib_data_is_ptr(int type) {
     return (type == LIB_DATA_MEM_TYPE_PTR /* && value_size == sizeof(void*)*/);
 }
 
+static void* lib_data_read_mem(int type, void* offset) {
+    if (lib_data_is_ptr(type)) {
+        size_t* ptr = (size_t*) offset;
+        return (void*) *ptr;
+    } else {
+        return offset;
+    }
+}
+
+static int lib_data_write_mem(int type, void* offset, void* value, size_t value_size) {
+    if (lib_data_is_ptr(type)) {        
+        size_t* ptr = (size_t*) offset;
+        *ptr = (size_t) value;
+    } else {
+        //fprintf(stderr, ">> set-val: %p OK\n", value);
+        lib_data_copy(offset, value, value_size);
+    }
+    return 0;
+}
+
 static void* lib_data_get_mem(int type, void* data, size_t index, size_t value_size) {
-    void* value = NULL;
+    void* offset = lib_data_offset(data, index, value_size);
+    void* value  = lib_data_read_mem(type, offset);
+
+    /*
+    void* value = NULL;    
     if (lib_data_is_ptr(type)) {
         //fprintf(stderr, ">> get-ptr: ");
         void** table = (void**) data;
@@ -59,10 +108,16 @@ static void* lib_data_get_mem(int type, void* data, size_t index, size_t value_s
         value = lib_data_get(data, index, value_size);
     }
     //fprintf(stderr, "%p OK\n", value);
+    */
+
     return value;
 }
 
-static int lib_data_set_mem(int type, void* data, size_t index, size_t value_size, void* value) {
+static int lib_data_set_mem(int type, void* data, size_t index, void* value, size_t value_size) {
+    void* offset = lib_data_offset(data, index, value_size);
+    return lib_data_write_mem(type, offset, value, value_size);
+
+    /*
     if (lib_data_is_ptr(type)) {
         //fprintf(stderr, ">> set-ptr: %p", value);
         //offset = value;
@@ -72,8 +127,10 @@ static int lib_data_set_mem(int type, void* data, size_t index, size_t value_siz
         return 0;
     } else {
         //fprintf(stderr, ">> set-val: %p OK\n", value);
-        return lib_data_set(data, index, value_size, value);
-    }    
+        return lib_data_set(data, index, value, value_size);
+    }
+    */
+
 }
 
 ////
@@ -171,6 +228,21 @@ static void lib_data_free_ptr(void* data, size_t size) {
             free(value);
         }
     }
+}
+
+////
+
+static bool lib_data_iterator_has_next(lib_iterator_t* iterator) {
+    return iterator->index < iterator->size;
+}
+
+static void* lib_data_array_iterator_next(lib_iterator_t* iterator) {
+    if (!lib_data_iterator_has_next(iterator)) {
+        return NULL;
+    }
+    void* value = lib_data_get_mem(iterator->mem_type, iterator->data, iterator->index, iterator->value_size);
+    iterator->index++;
+    return value;
 }
 
 #endif // PLAZMA_LIB_DATA_H
