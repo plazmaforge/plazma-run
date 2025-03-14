@@ -167,16 +167,7 @@ int lib_list_insert(lib_list_t* list, size_t index, void* value) {
     }
 
     //fprintf(stderr, ">> list: insert : index=%lu, size=%lu\n", index, list->size);
-
-    void* data = list->data;
-    void* offset = lib_data_offset(list->data, index, list->value_size);
-    void* curr = offset;
-    void* next = curr + list->value_size;
-    size_t data_size = list->size - index;
-    size_t byte_size = data_size * list->value_size;
-
-    //fprintf(stderr, ">> list: memmove: data_size=%lu, byte_size=%lu\n", data_size, byte_size);
-    memmove(next, curr, byte_size);
+    lib_data_move_next(list->data, list->size, list->value_size, index);
 
     _list_set(list, index, value);
     list->size++;
@@ -189,20 +180,9 @@ int lib_list_remove_index(lib_list_t* list, size_t index) {
     }
 
     //fprintf(stderr, ">> list: remove : index=%lu, size=%lu\n", index, list->size);
+    lib_data_move_prev(list->data, list->size, list->value_size, index);
 
-    void* data = list->data;
-    void* offset = lib_data_offset(list->data, index, list->value_size);
-    void* curr = offset;
-    void* next = curr + list->value_size;
-    size_t data_size = list->size - index;
-    size_t byte_size = data_size * list->value_size;
-
-    //fprintf(stderr, ">> list: memmove: data_size=%lu, byte_size=%lu\n", data_size, byte_size);
-    memmove(curr, next, byte_size);
-
-    void* last = lib_data_offset(list->data, list->size - 1, list->value_size);
-    memset(last, 0, list->value_size);
-
+    lib_data_reset(list->data, list->size - 1, list->value_size);
     list->size--;
     return 0;
 }

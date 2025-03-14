@@ -11,6 +11,9 @@
 #define LIB_DATA_MEM_TYPE_VAL 2
 #define LIB_DATA_MEM_TYPE_DEF LIB_DATA_MEM_TYPE_PTR
 
+#define LIB_DATA_MOVE_TYPE_PREV 1
+#define LIB_DATA_MOVE_TYPE_NEXT 2
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -41,13 +44,13 @@ static int lib_data_set(void* data, size_t index, size_t value_size, void* value
 
 ////
 
-static bool is_ptr(int type) {
+static bool lib_data_is_ptr(int type) {
     return (type == LIB_DATA_MEM_TYPE_PTR /* && value_size == sizeof(void*)*/);
 }
 
 static void* lib_data_get_mem(int type, void* data, size_t index, size_t value_size) {
     void* value = NULL;
-    if (is_ptr(type)) {
+    if (lib_data_is_ptr(type)) {
         //fprintf(stderr, ">> get-ptr: ");
         void** table = (void**) data;
         value = table[index];
@@ -60,7 +63,7 @@ static void* lib_data_get_mem(int type, void* data, size_t index, size_t value_s
 }
 
 static int lib_data_set_mem(int type, void* data, size_t index, size_t value_size, void* value) {
-    if (is_ptr(type)) {
+    if (lib_data_is_ptr(type)) {
         //fprintf(stderr, ">> set-ptr: %p", value);
         //offset = value;
         void** table = (void**) data;
@@ -71,6 +74,41 @@ static int lib_data_set_mem(int type, void* data, size_t index, size_t value_siz
         //fprintf(stderr, ">> set-val: %p OK\n", value);
         return lib_data_set(data, index, value_size, value);
     }    
+}
+
+////
+
+static void lib_data_move(int type, void* data, size_t size, size_t value_size, size_t index) {
+    void* curr = lib_data_offset(data, index, value_size);
+    void* next = curr + value_size;
+    size_t data_size = size - index;
+    size_t byte_size = data_size * value_size;
+
+    void* dst;
+    void* src;
+
+    if (type == LIB_DATA_MOVE_TYPE_PREV) {
+        dst = curr;
+        src = next;
+    } else {
+        dst = next;
+        src = curr;
+    }
+    //fprintf(stderr, ">> list: memmove: data_size=%lu, byte_size=%lu\n", data_size, byte_size);
+    memmove(dst, src, byte_size);
+}
+
+static void lib_data_move_prev(void* data, size_t size, size_t value_size, size_t index) {
+    lib_data_move(LIB_DATA_MOVE_TYPE_PREV, data, size, value_size, index);
+}
+
+static void lib_data_move_next(void* data, size_t size, size_t value_size, size_t index) {
+    lib_data_move(LIB_DATA_MOVE_TYPE_NEXT, data, size, value_size, index);
+}
+
+static void lib_data_reset(void* data, size_t index, size_t value_size) {
+    void* offset = lib_data_offset(data, index, value_size);
+    memset(offset, 0, value_size);
 }
 
 #endif // PLAZMA_LIB_DATA_H
