@@ -11,15 +11,15 @@ static void* _list_get(lib_list_t* list, size_t index);
 static int _list_set(lib_list_t* list, size_t index, void* value);
 
 int lib_list_init(lib_list_t* list, size_t capacity, size_t value_size) {
-    return _list_init(list, LIB_CLT_MEM_TYPE_DEF, capacity, value_size);
+    return _list_init(list, LIB_DATA_MEM_TYPE_DEF, capacity, value_size);
 }
 
 int lib_list_init_ptr(lib_list_t* list, size_t size) {
-    return _list_init(list, LIB_CLT_MEM_TYPE_PTR, size, sizeof(void*));
+    return _list_init(list, LIB_DATA_MEM_TYPE_PTR, size, sizeof(void*));
 }
 
 int lib_list_init_val(lib_list_t* list, size_t size, size_t value_size) {
-    return _list_init(list, LIB_CLT_MEM_TYPE_VAL, size, value_size);
+    return _list_init(list, LIB_DATA_MEM_TYPE_VAL, size, value_size);
 }
 
 void lib_list_free(lib_list_t* list) {
@@ -31,7 +31,7 @@ void lib_list_free(lib_list_t* list) {
 }
 
 void lib_list_free_values(lib_list_t* list) {
-    if (!list || !list->data || list->mem_type != LIB_CLT_MEM_TYPE_PTR) {
+    if (!list || !list->data || list->mem_type != LIB_DATA_MEM_TYPE_PTR) {
         return;
     }
     void** table = (void**) list->data;
@@ -132,7 +132,7 @@ static int _list_find(lib_list_t* list, void* value, size_t* index) {
             }
         }
     } else {
-        bool is_ptr = list->mem_type == LIB_CLT_MEM_TYPE_PTR;
+        bool is_ptr = list->mem_type == LIB_DATA_MEM_TYPE_PTR;
         size_t value_size = list->value_size;
         for (size_t i = 0; i < size; i++) {
             void* v = _list_get(list, i);
@@ -169,7 +169,7 @@ int lib_list_insert(lib_list_t* list, size_t index, void* value) {
     //fprintf(stderr, ">> list: insert : index=%lu, size=%lu\n", index, list->size);
 
     void* data = list->data;
-    void* offset = lib_clt_offset(list->data, index, list->value_size);
+    void* offset = lib_data_offset(list->data, index, list->value_size);
     void* curr = offset;
     void* next = curr + list->value_size;
     size_t data_size = list->size - index;
@@ -191,7 +191,7 @@ int lib_list_remove_index(lib_list_t* list, size_t index) {
     //fprintf(stderr, ">> list: remove : index=%lu, size=%lu\n", index, list->size);
 
     void* data = list->data;
-    void* offset = lib_clt_offset(list->data, index, list->value_size);
+    void* offset = lib_data_offset(list->data, index, list->value_size);
     void* curr = offset;
     void* next = curr + list->value_size;
     size_t data_size = list->size - index;
@@ -200,7 +200,7 @@ int lib_list_remove_index(lib_list_t* list, size_t index) {
     //fprintf(stderr, ">> list: memmove: data_size=%lu, byte_size=%lu\n", data_size, byte_size);
     memmove(curr, next, byte_size);
 
-    void* last = lib_clt_offset(list->data, list->size - 1, list->value_size);
+    void* last = lib_data_offset(list->data, list->size - 1, list->value_size);
     memset(last, 0, list->value_size);
 
     list->size--;
@@ -252,11 +252,11 @@ static int _list_init(lib_list_t* list, int type, size_t capacity, size_t value_
 ////
 
 static void* _list_get(lib_list_t* list, size_t index) {
-    return lib_clt_get_mem(list->mem_type, list->data, index, list->value_size);
+    return lib_data_get_mem(list->mem_type, list->data, index, list->value_size);
 }
 
 static int _list_set(lib_list_t* list, size_t index, void* value) {
-    return lib_clt_set_mem(list->mem_type, list->data, index, list->value_size, value);
+    return lib_data_set_mem(list->mem_type, list->data, index, list->value_size, value);
 }
 
 // https://github.com/goldsborough/vector

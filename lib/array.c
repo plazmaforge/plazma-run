@@ -10,15 +10,15 @@ static void* _array_get(lib_array_t* array, size_t index);
 static int _array_set(lib_array_t* array, size_t index, void* value);
 
 int lib_array_init(lib_array_t* array, size_t size, size_t value_size) {
-    return _array_init(array, LIB_CLT_MEM_TYPE_DEF, size, value_size);
+    return _array_init(array, LIB_DATA_MEM_TYPE_DEF, size, value_size);
 }
 
 int lib_array_init_ptr(lib_array_t* array, size_t size) {
-    return _array_init(array, LIB_CLT_MEM_TYPE_PTR, size, sizeof(void*));
+    return _array_init(array, LIB_DATA_MEM_TYPE_PTR, size, sizeof(void*));
 }
 
 int lib_array_init_val(lib_array_t* array, size_t size, size_t value_size) {
-    return _array_init(array, LIB_CLT_MEM_TYPE_VAL, size, value_size);
+    return _array_init(array, LIB_DATA_MEM_TYPE_VAL, size, value_size);
 }
 
 void lib_array_free(lib_array_t* array) {
@@ -66,10 +66,10 @@ static int _array_init(lib_array_t* array, int type, size_t size, size_t value_s
 ////
 
 static void* _array_get(lib_array_t* array, size_t index) {
-    return lib_clt_get_mem(array->mem_type, array->data, index, array->value_size);
+    return lib_data_get_mem(array->mem_type, array->data, index, array->value_size);
 }
 
 static int _array_set(lib_array_t* array, size_t index, void* value) {
-    return lib_clt_set_mem(array->mem_type, array->data, index, array->value_size, value);
+    return lib_data_set_mem(array->mem_type, array->data, index, array->value_size, value);
 }
 
