@@ -170,7 +170,7 @@ int lib_list_iterator_init(lib_list_t* list, lib_iterator_t* iterator) {
     iterator->mem_type = list->mem_type;
 
     /* first */
-    iterator->value = list->data;
+    iterator->offset = list->data;
     iterator->index = 0;
     return 0;
 }

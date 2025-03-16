@@ -32,7 +32,7 @@ typedef struct lib_entry_t {
 
 typedef struct lib_iterator_t {
     void* data;
-    void* value;
+    void* offset;
     size_t size;
     size_t value_size;
     size_t index;
@@ -251,10 +251,10 @@ static void* lib_data_array_iterator_next(lib_iterator_t* iterator) {
     // << V1
 
     // >> V2
-    void* offset = iterator->value;
+    void* offset = iterator->offset;
     void* value = lib_data_read_mem(iterator->mem_type, offset);
     offset = (lib_data_has_next(iterator->index + 1, iterator->size)) ? (offset + iterator->value_size) : NULL;
-    iterator->value = offset;
+    iterator->offset = offset;
     // << V2
 
     iterator->index++;
