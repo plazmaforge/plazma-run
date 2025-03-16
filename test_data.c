@@ -103,6 +103,7 @@ void test_array_int() {
     for (size_t i = 0 ; i < array.size; i++) {
         fprintf(stdout, "array[%lu]: %d\n", i, lib_int_array_get(&array, i));
     }
+    fprintf(stdout, "\n");
 
     lib_int_array_free(&array);
 }
@@ -124,6 +125,7 @@ void test_array_float() {
     for (size_t i = 0 ; i < array.size; i++) {
         fprintf(stdout, "array[%lu]: %f\n", i, lib_float_array_get(&array, i));
     }
+    fprintf(stdout, "\n");
 
     lib_float_array_free(&array);
 }
@@ -227,14 +229,46 @@ void test_list_ptr() {
     while(lib_list_iterator_has_next(&list, &iterator)) {
         fprintf(stdout, ">> %s\n", lib_list_iterator_next(&list, &iterator));
     }
+    fprintf(stdout, "\n");
 
     // FREE
     lib_list_free_all(&list);
 }
 
+LIB_LIST_TYPE(int)
+LIB_LIST_TYPE_PTR(int)
+
+void test_list_int() {
+    lib_int_list_t list;
+    lib_int_list_init(&list, 10);
+
+    lib_int_list_add(&list, 100);
+    lib_int_list_add(&list, 200);
+    lib_int_list_add(&list, 300);
+    lib_int_list_add(&list, 400);
+    //
+    lib_int_list_add(&list, 500);
+    //
+    lib_int_list_insert(&list, 2, 222);
+    //
+    lib_int_list_remove(&list, 400);
+
+    print_header("int list");
+    for (size_t i = 0 ; i < list.size; i++) {
+        fprintf(stdout, "list[%lu]: %d\n", i, lib_int_list_get(&list, i));
+    }
+    fprintf(stdout, "\n");
+
+    lib_int_list_free(&list);
+}
+
+////
+
 void test_list() {
     test_list_ptr();
     //test_list_val();
+
+    test_list_int();
 }
 
 void test_data() {
