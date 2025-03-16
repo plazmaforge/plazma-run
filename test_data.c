@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "memlib.h"
 #include "array.h"
 #include "list.h"
 
@@ -77,9 +78,62 @@ void test_array_val() {
     lib_array_free(&array);
 }
 
+//LIB_ARRAY_CLASS_STRUCT(test_array_t, int)
+//LIB_ARRAY_CLASS_INIT(test_array, test_array_t, int)
+//LIB_ARRAY_CLASS_GET(test_array, test_array_t, int)
+//LIB_ARRAY_CLASS_SET(test_array, test_array_t, int)
+
+//LIB_ARRAY_CLASS(test_array2, test_array2_t, int)
+
+LIB_ARRAY_TYPE(int)
+LIB_ARRAY_TYPE_PTR(int)
+
+void test_array_int() {
+    lib_int_array_t array;
+    lib_int_array_init(&array, 10);
+
+    lib_int_array_set(&array, 0, 100);
+    lib_int_array_set(&array, 1, 200);
+    lib_int_array_set(&array, 2, 300);
+    lib_int_array_set(&array, 3, 400);
+    //
+    lib_int_array_set(&array, 6, 500);
+
+    print_header("int array");
+    for (size_t i = 0 ; i < array.size; i++) {
+        fprintf(stdout, "array[%lu]: %d\n", i, lib_int_array_get(&array, i));
+    }
+
+    lib_int_array_free(&array);
+}
+
+LIB_ARRAY_TYPE(float)
+
+void test_array_float() {
+    lib_float_array_t array;
+    lib_float_array_init(&array, 10);
+
+    lib_float_array_set(&array, 0, 100.10);
+    lib_float_array_set(&array, 1, 200.20);
+    lib_float_array_set(&array, 2, 300.30);
+    lib_float_array_set(&array, 3, 400.40);
+    //
+    lib_float_array_set(&array, 6, 500.50);
+
+    print_header("float array");
+    for (size_t i = 0 ; i < array.size; i++) {
+        fprintf(stdout, "array[%lu]: %f\n", i, lib_float_array_get(&array, i));
+    }
+
+    lib_float_array_free(&array);
+}
+
 void test_array() {
     test_array_ptr();
     test_array_val();
+
+    test_array_int();
+    test_array_float();
 }
 
 //// LIST ////
