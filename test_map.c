@@ -3,38 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-/**
- * Variant Value 
- */
-typedef union lib_value_t {
-    int64_t i_value;
-    double  f_value;
-    void*   p_value;
-} lib_value_t;
-
-/**
- * Typed Variant Value 
- */
-typedef struct lib_tvalue_t {
-    int8_t type;
-    lib_value_t value;
-} lib_tvalue_t;
-
-/**
- * Map Simple Entry 
- */
-typedef struct lib_map_sentry_t {
-    void* key;
-    void* value;
-} lib_map_sentry_t;
-
-/**
- * Map Variant Entry
- */
-typedef struct lib_map_ventry_t {
-    lib_value_t key;
-    lib_value_t value;
-} lib_map_ventry_t;
+#include "data.h"
 
 typedef struct lib_map_t {
     void* entries;
@@ -96,19 +65,19 @@ static double _map_get_fxf(lib_map_t* map, double key);
 
 ////
 
-static lib_map_ventry_t* _map_ventry_new();
+static lib_ventry_t* _map_ventry_new();
 
-static void _map_ventry_free(lib_map_ventry_t* entry);
+static void _map_ventry_free(lib_ventry_t* entry);
 
-static lib_map_ventry_t** _map_ventries_new(size_t size);
+static lib_ventry_t** _map_ventries_new(size_t size);
 
-static lib_map_ventry_t** _map_ventries_realloc(lib_map_t* map, size_t size);
+static lib_ventry_t** _map_ventries_realloc(lib_map_t* map, size_t size);
 
 static void _map_ventries_free(lib_map_t* map);
 
-static lib_map_ventry_t* _map_ventry_find(lib_map_t* map, lib_value_t key);
+static lib_ventry_t* _map_ventry_find(lib_map_t* map, lib_value_t key);
 
-static lib_map_ventry_t* _map_ventry_put(lib_map_t* map, lib_value_t key);
+static lib_ventry_t* _map_ventry_put(lib_map_t* map, lib_value_t key);
 
 //// x2v: V-Entry
 
@@ -301,7 +270,7 @@ static void* _map_entry_new(lib_map_t* map) {
 static void _map_entry_free(lib_map_t* map, void* entry) {
 
     // V-entries
-    _map_ventry_free((lib_map_ventry_t*) entry);
+    _map_ventry_free((lib_ventry_t*) entry);
 }
 
 static void* _map_entries_new(lib_map_t* map, size_t size) {
@@ -348,8 +317,8 @@ static bool _map_try_realloc(lib_map_t* map) {
 //// V-Entry
 /////////////////////////////////////////////////////////////////////////////////
 
-static lib_map_ventry_t* _map_ventry_new() {
-    lib_map_ventry_t* entry = (lib_map_ventry_t*) malloc(sizeof(lib_map_ventry_t));
+static lib_ventry_t* _map_ventry_new() {
+    lib_ventry_t* entry = (lib_ventry_t*) malloc(sizeof(lib_ventry_t));
     if (!entry) {
         return NULL;
     }
@@ -358,17 +327,17 @@ static lib_map_ventry_t* _map_ventry_new() {
     return entry;
 }
 
-static void _map_ventry_free(lib_map_ventry_t* entry) {
+static void _map_ventry_free(lib_ventry_t* entry) {
     //fprintf(stderr, "Start free: %lld\n", entry->key.i_value);
     free(entry);
 }
 
-static lib_map_ventry_t** _map_ventries_new(size_t size) {
-    return (lib_map_ventry_t**) malloc(sizeof(lib_map_ventry_t*) * size);
+static lib_ventry_t** _map_ventries_new(size_t size) {
+    return (lib_ventry_t**) malloc(sizeof(lib_ventry_t*) * size);
 }
 
-static lib_map_ventry_t** _map_ventries_realloc(lib_map_t* map, size_t size) {
-    return (lib_map_ventry_t**) realloc(map->entries, sizeof(lib_map_ventry_t*) * size);
+static lib_ventry_t** _map_ventries_realloc(lib_map_t* map, size_t size) {
+    return (lib_ventry_t**) realloc(map->entries, sizeof(lib_ventry_t*) * size);
 }
 
 static void _map_ventries_free(lib_map_t* map) {
@@ -376,8 +345,8 @@ static void _map_ventries_free(lib_map_t* map) {
         return;
     }
 
-    lib_map_ventry_t** entries = (lib_map_ventry_t**) map->entries;
-    lib_map_ventry_t* entry    = NULL;
+    lib_ventry_t** entries = (lib_ventry_t**) map->entries;
+    lib_ventry_t* entry    = NULL;
 
     for (size_t i = 0; i < map->size; i++) {
         entry = *entries;
@@ -387,39 +356,39 @@ static void _map_ventries_free(lib_map_t* map) {
  
 }
 
-static void _map_ventry_set(lib_map_ventry_t* entry, void* key, void* value) {
+static void _map_ventry_set(lib_ventry_t* entry, void* key, void* value) {
     entry->key.p_value = key;
     entry->value.p_value = value;
 }
 
-static void _map_ventry_set_ixp(lib_map_ventry_t* entry, int64_t key, void* value) {
+static void _map_ventry_set_ixp(lib_ventry_t* entry, int64_t key, void* value) {
     entry->key.i_value = key;
     entry->value.p_value = value;
 }
 
-static void _map_ventry_set_ixi(lib_map_ventry_t* entry, int64_t key, int64_t value) {
+static void _map_ventry_set_ixi(lib_ventry_t* entry, int64_t key, int64_t value) {
     entry->key.i_value = key;
     entry->value.i_value = value;
 }
 
-static void _map_ventry_set_ixf(lib_map_ventry_t* entry, int64_t key, double value) {
+static void _map_ventry_set_ixf(lib_ventry_t* entry, int64_t key, double value) {
     entry->key.i_value = key;
     entry->value.f_value = value;
 }
 
 ////
 
-static void _map_ventry_set_fxp(lib_map_ventry_t* entry, double key, void* value) {
+static void _map_ventry_set_fxp(lib_ventry_t* entry, double key, void* value) {
     entry->key.f_value = key;
     entry->value.p_value = value;
 }
 
-static void _map_ventry_set_fxi(lib_map_ventry_t* entry, double key, int64_t value) {
+static void _map_ventry_set_fxi(lib_ventry_t* entry, double key, int64_t value) {
     entry->key.f_value = key;
     entry->value.i_value = value;
 }
 
-static void _map_ventry_set_fxf(lib_map_ventry_t* entry, double key, double value) {
+static void _map_ventry_set_fxf(lib_ventry_t* entry, double key, double value) {
     entry->key.f_value = key;
     entry->value.f_value = value;
 }
@@ -480,7 +449,7 @@ static double v2f(lib_value_t v) {
 //// add
 
 static int _map_add(lib_map_t* map, void* key, void* value) {
-    lib_map_ventry_t* entry = _map_ventry_put(map, p2v(key));
+    lib_ventry_t* entry = _map_ventry_put(map, p2v(key));
     if (!entry) {
         return -1;
     }
@@ -491,7 +460,7 @@ static int _map_add(lib_map_t* map, void* key, void* value) {
 //// add: V-Entry
 
 static int _map_add_ixp(lib_map_t* map, int64_t key, void* value) {
-    lib_map_ventry_t* entry = _map_ventry_put(map, i2v(key));
+    lib_ventry_t* entry = _map_ventry_put(map, i2v(key));
     if (!entry) {
         return -1;
     }
@@ -500,7 +469,7 @@ static int _map_add_ixp(lib_map_t* map, int64_t key, void* value) {
 }
 
 static int _map_add_ixi(lib_map_t* map, int64_t key, int64_t value) {
-    lib_map_ventry_t* entry = _map_ventry_put(map, i2v(key));
+    lib_ventry_t* entry = _map_ventry_put(map, i2v(key));
     if (!entry) {
         return -1;
     }
@@ -509,7 +478,7 @@ static int _map_add_ixi(lib_map_t* map, int64_t key, int64_t value) {
 }
 
 static int _map_add_ixf(lib_map_t* map, int64_t key, double value) {
-    lib_map_ventry_t* entry = _map_ventry_put(map, i2v(key));
+    lib_ventry_t* entry = _map_ventry_put(map, i2v(key));
     if (!entry) {
         return -1;
     }
@@ -520,7 +489,7 @@ static int _map_add_ixf(lib_map_t* map, int64_t key, double value) {
 ////
 
 static int _map_add_fxp(lib_map_t* map, double key, void* value) {
-    lib_map_ventry_t* entry = _map_ventry_put(map, f2v(key));
+    lib_ventry_t* entry = _map_ventry_put(map, f2v(key));
     if (!entry) {
         return -1;
     }
@@ -529,7 +498,7 @@ static int _map_add_fxp(lib_map_t* map, double key, void* value) {
 }
 
 static int _map_add_fxi(lib_map_t* map, double key, int64_t value) {
-    lib_map_ventry_t* entry = _map_ventry_put(map, f2v(key));
+    lib_ventry_t* entry = _map_ventry_put(map, f2v(key));
     if (!entry) {
         return -1;
     }
@@ -538,7 +507,7 @@ static int _map_add_fxi(lib_map_t* map, double key, int64_t value) {
 }
 
 static int _map_add_fxf(lib_map_t* map, double key, double value) {
-    lib_map_ventry_t* entry = _map_ventry_put(map, f2v(key));
+    lib_ventry_t* entry = _map_ventry_put(map, f2v(key));
     if (!entry) {
         return -1;
     }
@@ -549,7 +518,7 @@ static int _map_add_fxf(lib_map_t* map, double key, double value) {
 //// get
 
 static void* _map_get(lib_map_t* map, void* key) {
-    lib_map_ventry_t* entry = _map_ventry_find(map, p2v(key));
+    lib_ventry_t* entry = _map_ventry_find(map, p2v(key));
     if (!entry) {
         return NULL;
     }
@@ -559,7 +528,7 @@ static void* _map_get(lib_map_t* map, void* key) {
 //// get: V-Entry
 
 static void* _map_get_ixp(lib_map_t* map, int64_t key) {
-    lib_map_ventry_t* entry = _map_ventry_find(map, i2v(key));
+    lib_ventry_t* entry = _map_ventry_find(map, i2v(key));
     if (!entry) {
         return NULL;
     }
@@ -567,7 +536,7 @@ static void* _map_get_ixp(lib_map_t* map, int64_t key) {
 }
 
 static int64_t _map_get_ixi(lib_map_t* map, int64_t key) {
-    lib_map_ventry_t* entry = _map_ventry_find(map, i2v(key));
+    lib_ventry_t* entry = _map_ventry_find(map, i2v(key));
     if (!entry) {
         return 0;
     }
@@ -575,7 +544,7 @@ static int64_t _map_get_ixi(lib_map_t* map, int64_t key) {
 }
 
 static double _map_get_ixf(lib_map_t* map, int64_t key) {
-    lib_map_ventry_t* entry = _map_ventry_find(map, i2v(key));
+    lib_ventry_t* entry = _map_ventry_find(map, i2v(key));
     if (!entry) {
         return 0;
     }
@@ -585,7 +554,7 @@ static double _map_get_ixf(lib_map_t* map, int64_t key) {
 ////
 
 static void* _map_get_fxp(lib_map_t* map, double key) {
-    lib_map_ventry_t* entry = _map_ventry_find(map, f2v(key));
+    lib_ventry_t* entry = _map_ventry_find(map, f2v(key));
     if (!entry) {
         return NULL;
     }
@@ -593,7 +562,7 @@ static void* _map_get_fxp(lib_map_t* map, double key) {
 }
 
 static int64_t _map_get_fxi(lib_map_t* map, double key) {
-    lib_map_ventry_t* entry = _map_ventry_find(map, f2v(key));
+    lib_ventry_t* entry = _map_ventry_find(map, f2v(key));
     if (!entry) {
         return 0;
     }
@@ -601,7 +570,7 @@ static int64_t _map_get_fxi(lib_map_t* map, double key) {
 }
 
 static double _map_get_fxf(lib_map_t* map, double key) {
-    lib_map_ventry_t* entry = _map_ventry_find(map, f2v(key));
+    lib_ventry_t* entry = _map_ventry_find(map, f2v(key));
     if (!entry) {
         return 0;
     }
@@ -611,14 +580,14 @@ static double _map_get_fxf(lib_map_t* map, double key) {
 /**
  * Find V-Entry by key
  */
-static lib_map_ventry_t* _map_ventry_find(lib_map_t* map, lib_value_t key) {
+static lib_ventry_t* _map_ventry_find(lib_map_t* map, lib_value_t key) {
 
     if (map->size == 0) {
         return NULL;
     }
 
-    lib_map_ventry_t** entries = (lib_map_ventry_t**) map->entries;
-    lib_map_ventry_t* entry    = NULL;
+    lib_ventry_t** entries = (lib_ventry_t**) map->entries;
+    lib_ventry_t* entry    = NULL;
 
     for (size_t i = 0; i < map->size; i++) {
         entry = *entries;
@@ -633,14 +602,14 @@ static lib_map_ventry_t* _map_ventry_find(lib_map_t* map, lib_value_t key) {
 }
 
 /*
-static lib_map_ventry_t* _map_ventry_print(lib_map_t* map, lib_value_t key) {
+static lib_ventry_t* _map_ventry_print(lib_map_t* map, lib_value_t key) {
 
     if (map->size == 0) {
         return NULL;
     }
 
-    lib_map_ventry_t** entries = map->entries;
-    lib_map_ventry_t* entry    = NULL;
+    lib_ventry_t** entries = map->entries;
+    lib_ventry_t* entry    = NULL;
     size_t i = 0;
     fprintf(stderr, "KEY: %lld\n", key.i_value);
 
@@ -661,9 +630,9 @@ static lib_map_ventry_t* _map_ventry_print(lib_map_t* map, lib_value_t key) {
 /**
  * Return V-Entry by key or create new if not found
  */
-static lib_map_ventry_t* _map_ventry_put(lib_map_t* map, lib_value_t key) {
+static lib_ventry_t* _map_ventry_put(lib_map_t* map, lib_value_t key) {
 
-    lib_map_ventry_t* entry = _map_ventry_find(map, key);
+    lib_ventry_t* entry = _map_ventry_find(map, key);
     if (entry) {
         // Found - Return
         return entry;
@@ -680,7 +649,7 @@ static lib_map_ventry_t* _map_ventry_put(lib_map_t* map, lib_value_t key) {
         return NULL;
     }
 
-    lib_map_ventry_t** entries = (lib_map_ventry_t**) map->entries;
+    lib_ventry_t** entries = (lib_ventry_t**) map->entries;
     entries[map->size++] = entry;
 
     return entry;
@@ -790,18 +759,18 @@ int main() {
     fprintf(stdout, "sizeof(long*)\t\t: %lu\n", sizeof(long*));
 
     fprintf(stdout, "sizeof(value_t*)\t: %lu\n", sizeof(lib_value_t*));
-    fprintf(stdout, "sizeof(map_sentry_t*)\t: %lu\n", sizeof(lib_map_sentry_t*));
-    fprintf(stdout, "sizeof(map_ventry_t*)\t: %lu\n", sizeof(lib_map_ventry_t*));
+    fprintf(stdout, "sizeof(entry_t*)\t: %lu\n", sizeof(lib_entry_t*));
+    fprintf(stdout, "sizeof(map_ventry_t*)\t: %lu\n", sizeof(lib_ventry_t*));
     
     fprintf(stdout, "sizeof(value_t)\t: %lu\n", sizeof(lib_value_t));
-    fprintf(stdout, "sizeof(map_sentry_t)\t: %lu\n", sizeof(lib_map_sentry_t));
-    fprintf(stdout, "sizeof(map_ventry_t)\t: %lu\n", sizeof(lib_map_ventry_t));
+    fprintf(stdout, "sizeof(entry_t)\t: %lu\n", sizeof(lib_entry_t));
+    fprintf(stdout, "sizeof(map_ventry_t)\t: %lu\n", sizeof(lib_ventry_t));
 
     int    ivalue = 10;
     double dvalue = 3.14;
 
-    lib_map_sentry_t entry_1;
-    lib_map_sentry_t entry_2;
+    lib_entry_t entry_1;
+    lib_entry_t entry_2;
     
     entry_1.key = (void*) 10;
     entry_1.value = (void*) (long) 3.14;

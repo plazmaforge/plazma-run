@@ -16,20 +16,55 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
+/**
+ * Variant Value 
+ */
+typedef union lib_value_t {
+    int64_t i_value;
+    double  f_value;
+    void*   p_value;
+} lib_value_t;
+
+/**
+ * Typed Variant Value 
+ */
+typedef struct lib_tvalue_t {
+    int8_t type;
+    lib_value_t value;
+} lib_tvalue_t;
+
+/**
+ * Tree Node
+ */
 typedef struct lib_node_t {
     void* value;
     struct lib_node_t* prev;
     struct lib_node_t* next;
 } lib_node_t;
 
+/**
+ * Map Entry (key, value)
+ */
 typedef struct lib_entry_t {
     void* key;
     void* value;
 } lib_entry_t;
 
+/**
+ * Map Variant Entry (key, value)
+ */
+typedef struct lib_ventry_t {
+    lib_value_t key;
+    lib_value_t value;
+} lib_ventry_t;
+
+/**
+ * Iterator
+ */
 typedef struct lib_iterator_t {
     void* data;
     void* offset;
@@ -39,6 +74,9 @@ typedef struct lib_iterator_t {
     int mem_type;
 } lib_iterator_t;
 
+/**
+ * Hash Bucket
+ */
 typedef struct lib_bucket_t {
     int hash;
     void* data;

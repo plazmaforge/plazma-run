@@ -103,6 +103,20 @@ static int _list_find(lib_list_t* list, void* value, size_t* index) {
 
 ////
 
+int lib_list_add(lib_list_t* list, void* value) {
+    if (!list || !list->data) {
+        return -1;
+    }
+
+    if (!_list_try_realloc(list)) {
+        return -1;
+    }
+
+    _list_set(list, list->size, value);
+    list->size++;    
+    return 0;
+}
+
 int lib_list_insert(lib_list_t* list, size_t index, void* value) {
     if (!list || !list->data || index >= list->size ) {
         return -1;
@@ -142,20 +156,6 @@ int lib_list_remove(lib_list_t* list, void* value) {
         return -1;
     }
     return lib_list_remove_index(list, index);
-}
-
-int lib_list_add(lib_list_t* list, void* value) {
-    if (!list || !list->data) {
-        return -1;
-    }
-
-    if (!_list_try_realloc(list)) {
-        return -1;
-    }
-
-    _list_set(list, list->size, value);
-    list->size++;    
-    return 0;
 }
 
 ////
