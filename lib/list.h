@@ -130,8 +130,27 @@ LIB_LIST_CLASS_REMOVE(C, S, T)                     \
 
 ////
 
+#define LIB_LIST_STATIC_CLASS(C, S, T)             \
+LIB_LIST_CLASS_STRUCT(S, T)                        \
+static LIB_LIST_CLASS_INIT(C, S, T)                \
+static LIB_LIST_CLASS_FREE(C, S, T)                \
+LIB_LIST_CLASS_PRIVATE(C, S, T)                    \
+static LIB_LIST_CLASS_GET(C, S, T)                 \
+static LIB_LIST_CLASS_SET(C, S, T)                 \
+static LIB_LIST_CLASS_ADD(C, S, T)                 \
+static LIB_LIST_CLASS_INSERT(C, S, T)              \
+static LIB_LIST_CLASS_REMOVE_INDEX(C, S, T)        \
+static LIB_LIST_CLASS_REMOVE(C, S, T)              \
+
+////
+
 #define LIB_LIST_TYPE(T) LIB_LIST_CLASS(lib_##T##_list, lib_##T##_list_t, T)
 #define LIB_LIST_TYPE_PTR(T) LIB_LIST_CLASS(lib_##T##_ptr_list, lib_##T##_ptr_list_t, T*)
+
+////
+
+#define LIB_LIST_STATIC_TYPE(T) LIB_LIST_STATIC_CLASS(lib_##T##_list, lib_##T##_list_t, T)
+#define LIB_LIST_STATIC_TYPE_PTR(T) LIB_LIST_STATIC_CLASS(lib_##T##_ptr_list, lib_##T##_ptr_list_t, T*)
 
 ////
 

@@ -19,9 +19,15 @@ void print_header(const char* str) {
 
 //// ARRAY ////
 
+lib_array_t empty_array() {
+    lib_array_t a;
+    return a;
+}
+
 void test_array_ptr() {
 
     print_test("array_ptr");
+    lib_array_t x = empty_array();
 
     lib_array_t array;
     lib_array_init_ptr(&array, 10);
@@ -237,6 +243,8 @@ void test_list_ptr() {
 
 LIB_LIST_TYPE(int)
 LIB_LIST_TYPE_PTR(int)
+
+LIB_LIST_STATIC_TYPE(double)
 
 void test_list_int() {
     lib_int_list_t list;
