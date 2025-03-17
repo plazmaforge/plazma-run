@@ -180,4 +180,4 @@ $CC $LDFLAGS strlib.o test_strlib.o -o test-strlib
 $CC $LDFLAGS test_buf.o -o test-buf
 $CC $LDFLAGS fsdirent.o test_scandir.o -o test-scandir
 $CC $LDFLAGS test_map.o -o test-map
-$CC $LDFLAGS memlib.o array.o list.o test_data.o -o test-data
+$CC $LDFLAGS memlib.o array.o list.o map.o test_data.o -o test-data

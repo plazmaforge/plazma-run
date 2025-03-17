@@ -5,6 +5,7 @@
 #include "memlib.h"
 #include "array.h"
 #include "list.h"
+#include "map.h"
 
 void print_test(const char* str) {
     fprintf(stdout, "============================\n");
@@ -272,6 +273,72 @@ void test_list_int() {
 
 ////
 
+void test_map_def() {
+
+    print_test("map_def");
+
+    lib_map_t map;
+    lib_map_init(&map, 10);
+    fprintf(stdout, "map_def: inited\n\n");
+
+    lib_map_add(&map, (void*) 100, "V-100");
+    lib_map_add(&map, (void*) 200, "V-200");
+    lib_map_add(&map, "300", "V-300");
+    lib_map_add(&map, "400", "V-400");
+    lib_map_add(&map, NULL, "V-NULL");
+    lib_map_add(&map, "500", "V-500");
+
+    print_header("Add entries");
+    fprintf(stdout, "map[100]   : %s\n", lib_map_get(&map, (void*) 100));
+    fprintf(stdout, "map[200]   : %s\n", lib_map_get(&map, (void*) 200));
+    fprintf(stdout, "map[\"300\"] : %s\n", lib_map_get(&map, "300"));
+    fprintf(stdout, "map[\"400\"] : %s\n", lib_map_get(&map, "400"));
+    fprintf(stdout, "map[NULL]  : %s\n", lib_map_get(&map, NULL));
+    fprintf(stdout, "map[\"500\"] : %s\n", lib_map_get(&map, "500"));
+    fprintf(stdout, "map[\"777\"] : %s\n", lib_map_get(&map, "777"));
+    fprintf(stdout, "\n");
+
+    print_header("Set new values");
+    lib_map_add(&map, (void*) 200, "N-200");
+    lib_map_add(&map, "300", "N-300");
+
+    fprintf(stdout, "map[100]   : %s\n", lib_map_get(&map, (void*) 100));
+    fprintf(stdout, "map[200]   : %s\n", lib_map_get(&map, (void*) 200));
+    fprintf(stdout, "map[\"300\"] : %s\n", lib_map_get(&map, "300"));
+    fprintf(stdout, "map[\"400\"] : %s\n", lib_map_get(&map, "400"));
+    fprintf(stdout, "map[NULL]  : %s\n", lib_map_get(&map, NULL));
+    fprintf(stdout, "map[\"500\"] : %s\n", lib_map_get(&map, "500"));
+    fprintf(stdout, "map[\"777\"] : %s\n", lib_map_get(&map, "777"));
+    fprintf(stdout, "\n");
+
+    print_header("Remove entities: [200, \"500\"]");
+    lib_map_remove(&map, (void*) 200);
+    lib_map_remove(&map, "500");
+
+    fprintf(stdout, "map[100]   : %s\n", lib_map_get(&map, (void*) 100));
+    fprintf(stdout, "map[200]   : %s\n", lib_map_get(&map, (void*) 200));
+    fprintf(stdout, "map[\"300\"] : %s\n", lib_map_get(&map, "300"));
+    fprintf(stdout, "map[\"400\"] : %s\n", lib_map_get(&map, "400"));
+    fprintf(stdout, "map[NULL]  : %s\n", lib_map_get(&map, NULL));
+    fprintf(stdout, "map[\"500\"] : %s\n", lib_map_get(&map, "500"));
+    fprintf(stdout, "map[\"777\"] : %s\n", lib_map_get(&map, "777"));
+    fprintf(stdout, "\n");
+
+    fprintf(stdout, "has[100]   : %d\n", lib_map_contains(&map, (void*) 100));
+    fprintf(stdout, "has[200]   : %d\n", lib_map_contains(&map, (void*) 200));
+    fprintf(stdout, "has[\"300\"] : %d\n", lib_map_contains(&map, "300"));
+    fprintf(stdout, "has[\"400\"] : %d\n", lib_map_contains(&map, "400"));
+    fprintf(stdout, "has[NULL]  : %d\n", lib_map_contains(&map, NULL));
+    fprintf(stdout, "has[\"500\"] : %d\n", lib_map_contains(&map, "500"));
+    fprintf(stdout, "has[\"777\"] : %d\n", lib_map_contains(&map, "777"));
+    fprintf(stdout, "\n");
+
+    lib_map_free(&map);
+
+}
+
+////
+
 void test_list() {
     test_list_ptr();
     //test_list_val();
@@ -279,9 +346,14 @@ void test_list() {
     test_list_int();
 }
 
+void test_map() {
+    test_map_def();
+}
+
 void test_data() {
     test_array();
     test_list();
+    test_map();
 }
 
 int main(int argc, char* argv[]) {
