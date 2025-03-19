@@ -337,6 +337,43 @@ void test_map_def() {
 
 }
 
+LIB_MAP_ENTRY_STRUCT(test_entry_t, int, char*)
+LIB_MAP_STRUCT(test_map_t, test_entry_t)
+
+LIB_MAP_CLASS_STRUCT(my_map_t, my_entry_t, int, char*)
+LIB_MAP_CLASS_INIT(lib_my_map, my_map_t, my_entry_t)
+LIB_MAP_CLASS_FREE(lib_my_map, my_map_t, my_entry_t)
+LIB_MAP_CLASS_PRIVATE(lib_my_map, my_map_t, my_entry_t, int, char*)
+
+void test_map_type() {
+
+    print_test("map_type");
+
+    // test map
+    test_entry_t test_entry;
+    test_entry.key = 100;
+    test_entry.value = "V-100";
+
+    test_map_t test_map;
+    test_map.size = 10;
+    test_map.capacity = 100;
+
+    // my map
+    my_entry_t my_entry;
+    my_entry.key = 100;
+    my_entry.value = "V-100";
+
+    my_map_t my_map;
+    lib_my_map_init(&my_map, 20);
+
+    fprintf(stdout, "my_map.size    : %lu\n", my_map.size);
+    fprintf(stdout, "my_map.capacity: %lu\n", my_map.capacity);
+    fprintf(stdout, "\n");
+
+    lib_my_map_free(&my_map);
+
+}
+
 ////
 
 void test_list() {
@@ -348,6 +385,7 @@ void test_list() {
 
 void test_map() {
     test_map_def();
+    test_map_type();
 }
 
 void test_data() {
