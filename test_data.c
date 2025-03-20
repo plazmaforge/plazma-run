@@ -347,8 +347,6 @@ LIB_MAP_CLASS_FREE(lib_my_map, my_map_t, my_entry_t)
 
 LIB_MAP_CLASS(ipc_map, ipc_map_t, ipc_entry_t, int, char*)
 
-LIB_MAP_TYPE(int, float)
-
 void test_map_type() {
 
     print_test("map_type");
@@ -414,7 +412,13 @@ void test_map_type() {
     fprintf(stdout, "map.size: %lu\n", map.size);
     fprintf(stdout, "\n");
 
+    ipc_map_free(&map);
+
+    print_header("ipc_map_free");
+
 }
+
+LIB_MAP_TYPE(int, float)
 
 void test_map_int_float() {
 
@@ -443,6 +447,45 @@ void test_map_int_float() {
     fprintf(stdout, "map[%d]: %f\n", 7777, lib_int_float_map_get(&map, 7777));
     fprintf(stdout, "\n");
 
+    lib_int_float_map_free(&map);
+
+    print_header("lib_int_float_map_free");
+
+}
+
+LIB_MAP_TYPE_NAME(x, int, float)
+
+void test_map_x() {
+
+    print_test("x_map");
+
+    x_map_t map;
+
+    x_map_init(&map, 10);
+
+    size_t count = 20;
+    for (size_t i = 0; i < count; i++) {
+        size_t key = (i + 1);
+        float value = key * 100;
+        x_map_add(&map, key, value);
+    }
+
+    for (size_t i = 0; i < count; i++) {
+        size_t key = (i + 1);
+        float value = key * 100;
+        fprintf(stdout, "map[%lu]: %f\n", key, x_map_get(&map, key));
+    }
+    fprintf(stdout, "\n");
+
+    fprintf(stdout, "map[%d]: %f\n", -100, x_map_get(&map, -100));
+    fprintf(stdout, "map[%d]: %f\n", -200, x_map_get(&map, -200));
+    fprintf(stdout, "map[%d]: %f\n", 7777, x_map_get(&map, 7777));
+    fprintf(stdout, "\n");
+
+    x_map_free(&map);
+
+    print_header("x_map_free");
+
 }
 
 ////
@@ -458,6 +501,7 @@ void test_map() {
     test_map_def();
     test_map_type();
     test_map_int_float();
+    test_map_x();
 }
 
 void test_data() {

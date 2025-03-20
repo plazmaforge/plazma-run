@@ -122,17 +122,25 @@ static void _map_free(lib_map_t* map) {
     return;
 }
 
+static void _map_entry_reset(lib_entry_t* entry) {
+    entry->key   = NULL;
+    entry->value = NULL;
+}
+
 static lib_entry_t* _map_entry_new() {
     lib_entry_t* entry = (lib_entry_t*) malloc(sizeof(lib_entry_t));
     if (!entry) {
         return NULL;
     }
-    entry->key   = NULL;
-    entry->value = NULL;
+    _map_entry_reset(entry);
     return entry;
 }
 
 static void _map_entry_free(lib_entry_t* entry) {
+    if (!entry) {
+        return;
+    }
+    _map_entry_reset(entry);
     free(entry);
 }
 

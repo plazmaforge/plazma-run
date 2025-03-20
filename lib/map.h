@@ -112,11 +112,17 @@ static V C##_get_value_zero() {                   \
     return v;                                     \
 }                                                 \
                                                   \
+static void C##_entry_reset(E* entry) {           \
+    entry->key   = C##_get_key_zero();            \
+    entry->value = C##_get_value_zero();          \
+}                                                 \
+                                                  \
 static E* C##_entry_new() {                       \
     E* entry = (E*) malloc(sizeof(E));            \
     if (!entry) {                                 \
         return NULL;                              \
     }                                             \
+    C##_entry_reset(entry);                       \
     return entry;                                 \
 }                                                 \
                                                   \
@@ -124,8 +130,7 @@ static void C##_entry_free(E* entry) {            \
     if (!entry) {                                 \
         return;                                   \
     }                                             \
-    entry->key   = C##_get_key_zero();            \
-    entry->value = C##_get_value_zero();          \
+    C##_entry_reset(entry);                       \
     free(entry);                                  \
 }                                                 \
                                                   \
@@ -211,6 +216,8 @@ LIB_MAP_CLASS_REMOVE(C, S, E, K, V)               \
 ////
 
 #define LIB_MAP_TYPE(K, V) LIB_MAP_CLASS(lib_##K##_##V##_map, lib_##K##_##V##_map_t, lib_##K##_##V##_entry_t, K, V)
+
+#define LIB_MAP_TYPE_NAME(N, K, V) LIB_MAP_CLASS(N##_map, N##_map_t, N##_entry_t, K, V)
 
 ////
 
