@@ -341,9 +341,13 @@ LIB_MAP_ENTRY_STRUCT(test_entry_t, int, char*)
 LIB_MAP_STRUCT(test_map_t, test_entry_t)
 
 LIB_MAP_CLASS_STRUCT(my_map_t, my_entry_t, int, char*)
+LIB_MAP_CLASS_PRIVATE(lib_my_map, my_map_t, my_entry_t, int, char*)
 LIB_MAP_CLASS_INIT(lib_my_map, my_map_t, my_entry_t)
 LIB_MAP_CLASS_FREE(lib_my_map, my_map_t, my_entry_t)
-LIB_MAP_CLASS_PRIVATE(lib_my_map, my_map_t, my_entry_t, int, char*)
+
+LIB_MAP_CLASS(ipc_map, ipc_map_t, ipc_entry_t, int, char*)
+
+LIB_MAP_TYPE(int, float)
 
 void test_map_type() {
 
@@ -368,9 +372,76 @@ void test_map_type() {
 
     fprintf(stdout, "my_map.size    : %lu\n", my_map.size);
     fprintf(stdout, "my_map.capacity: %lu\n", my_map.capacity);
+    fprintf(stdout, "my_map.entries : %p\n", my_map.entries);
     fprintf(stdout, "\n");
 
     lib_my_map_free(&my_map);
+
+    print_header("my_map_free");
+
+    fprintf(stdout, "my_map.entries : %p\n", my_map.entries);
+    fprintf(stdout, "\n");
+
+    ipc_map_t map;
+    ipc_map_init(&map, 10);
+    ipc_map_add(&map, 100, "VAL-100");
+    ipc_map_add(&map, 200, "VAL-200");
+    ipc_map_add(&map, 300, "VAL-300");
+    ipc_map_add(&map, 400, "VAL-400");
+    ipc_map_add(&map, 500, "VAL-500");
+
+    print_header("Add entities");
+    fprintf(stdout, "map[100]: %s\n", ipc_map_get(&map, 100));
+    fprintf(stdout, "map[200]: %s\n", ipc_map_get(&map, 200));
+    fprintf(stdout, "map[300]: %s\n", ipc_map_get(&map, 300));
+    fprintf(stdout, "map[400]: %s\n", ipc_map_get(&map, 400));
+    fprintf(stdout, "map[500]: %s\n", ipc_map_get(&map, 500));
+    fprintf(stdout, "map[777]: %s\n", ipc_map_get(&map, 777));
+    fprintf(stdout, "map.size: %lu\n", map.size);
+    fprintf(stdout, "\n");
+
+    ipc_map_remove(&map, 300);
+    ipc_map_remove(&map, 500);
+
+    print_header("Remove entities");
+
+    fprintf(stdout, "map[100]: %s\n", ipc_map_get(&map, 100));
+    fprintf(stdout, "map[200]: %s\n", ipc_map_get(&map, 200));
+    fprintf(stdout, "map[300]: %s\n", ipc_map_get(&map, 300));
+    fprintf(stdout, "map[400]: %s\n", ipc_map_get(&map, 400));
+    fprintf(stdout, "map[500]: %s\n", ipc_map_get(&map, 500));
+    fprintf(stdout, "map[777]: %s\n", ipc_map_get(&map, 777));
+    fprintf(stdout, "map.size: %lu\n", map.size);
+    fprintf(stdout, "\n");
+
+}
+
+void test_map_int_float() {
+
+    print_test("map_int_float");
+
+    lib_int_float_map_t map;
+
+    lib_int_float_map_init(&map, 10);
+
+    size_t count = 20;
+    for (size_t i = 0; i < count; i++) {
+        size_t key = (i + 1);
+        float value = key * 100;
+        lib_int_float_map_add(&map, key, value);
+    }
+
+    for (size_t i = 0; i < count; i++) {
+        size_t key = (i + 1);
+        float value = key * 100;
+        fprintf(stdout, "map[%lu]: %f\n", key, lib_int_float_map_get(&map, key));
+    }
+    fprintf(stdout, "\n");
+
+    fprintf(stdout, "map[%d]: %f\n", -100, lib_int_float_map_get(&map, -100));
+    fprintf(stdout, "map[%d]: %f\n", -200, lib_int_float_map_get(&map, -200));
+    fprintf(stdout, "map[%d]: %f\n", 7777, lib_int_float_map_get(&map, 7777));
+    fprintf(stdout, "\n");
 
 }
 
@@ -386,6 +457,7 @@ void test_list() {
 void test_map() {
     test_map_def();
     test_map_type();
+    test_map_int_float();
 }
 
 void test_data() {
@@ -394,7 +466,10 @@ void test_data() {
     test_map();
 }
 
+//#define assert_array(a) \
+//     (sizeof(char[1 - 2 * __builtin_types_compatible_p(typeof(a), typeof(&(a)[0]))]) - 1)
+
 int main(int argc, char* argv[]) {
-    test_data();
+    test_data();    
     return 0;
 }

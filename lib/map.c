@@ -107,7 +107,6 @@ static int _map_init(lib_map_t* map, size_t capacity, size_t key_size, size_t va
     map->capacity = LIB_MAX(LIB_DATA_CAPACITY_MIN, capacity);
     map->key_size = key_size;
     map->key_size = value_size;
-    //map->entries = lib_mallocz(capacity * sizeof(void*));
     map->entries = _map_entries_new(capacity);
     if (!map->entries) {
         return -1;

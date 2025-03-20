@@ -20,9 +20,9 @@ typedef struct S {                                 \
 LIB_MAP_ENTRY_STRUCT(E, K, V)                      \
 LIB_MAP_STRUCT(S, E)                               \
 
-#define LIB_TYPE_PRINT(T) fprintf(stdout, "TYPE-%s\n", #T)
+//#define LIB_TYPE_PRINT(T) fprintf(stdout, "TYPE-%s\n", #T)
 
-#define LIB_MAP_CLASS_INIT(C, S, E)               \
+#define LIB_MAP_CLASS_INIT(C, S, E)                \
 int C##_init(S* map, size_t capacity) {            \
     if (!map) {                                    \
         return -1;                                 \
@@ -33,12 +33,11 @@ int C##_init(S* map, size_t capacity) {            \
     if (!map->entries) {                           \
         return -1;                                 \
     }                                              \
-    LIB_TYPE_PRINT(C);                             \
     return 0;                                      \
 }                                                  \
 
 #define LIB_MAP_CLASS_FREE(C, S, E)                \
-static void C##_free(S* map) {                     \
+void C##_free(S* map) {                            \
     if (!map || !map->entries) {                   \
         return;                                    \
     }                                              \
@@ -48,19 +47,70 @@ static void C##_free(S* map) {                     \
                                                    \
     for (size_t i = 0; i < map->size; i++) {       \
         entry = *entries;                          \
-        free(entry);                               \
+        C##_entry_free(entry);                     \
         entries++;                                 \
     }                                              \
     map->entries = NULL;                           \
 }                                                  \
 
+////
+
+#define LIB_MAP_CLASS_GET(C, S, E, K, V)           \
+V C##_get(S* map, K key) {                         \
+    E* entry = C##_entry_find(map, key);           \
+    if (!entry) {                                  \
+        return C##_get_value_zero();               \
+    }                                              \
+    return entry->value;                           \
+}                                                  \
+
+#define LIB_MAP_CLASS_ADD(C, S, E, K, V)           \
+int C##_add(S* map, K key, V value) {              \
+    E* entry = C##_entry_put(map, key);            \
+    if (!entry) {                                  \
+        return -1;                                 \
+    }                                              \
+    entry->key   = key;                            \
+    entry->value = value;                          \
+    return 0;                                      \
+}                                                  \
+
+#define LIB_MAP_CLASS_REMOVE_INDEX(C, S, E, K, V)  \
+static int C##_remove_index(S* map, size_t index) {\
+    size_t value_size = sizeof(E*);                \
+    lib_data_move_prev(map->entries, map->size, value_size, index); \
+    lib_data_reset(map->entries, map->size - 1, value_size);        \
+                                                  \
+    map->size--;                                  \
+    return 0;                                     \
+}                                                 \
+
+#define LIB_MAP_CLASS_REMOVE(C, S, E, K, V)       \
+int C##_remove(S* map, K key) {                   \
+    size_t index;                                 \
+    E* entry = C##_entry_find_index(map, key, &index); \
+    if (!entry) {                                 \
+        return -1;                                \
+    }                                             \
+    C##_entry_free(entry);                        \
+    return C##_remove_index(map, index);          \
+}                                                 \
 
 ////
 
-//    entry->key   = NULL;                          \
-//    entry->value = NULL;                          \
-
 #define LIB_MAP_CLASS_PRIVATE(C, S, E, K, V)      \
+                                                  \
+static K C##_get_key_zero() {                     \
+    K k;                                          \
+    memset(&k, 0, sizeof(K));                     \
+    return k;                                     \
+}                                                 \
+                                                  \
+static V C##_get_value_zero() {                   \
+    V v;                                          \
+    memset(&v, 0, sizeof(V));                     \
+    return v;                                     \
+}                                                 \
                                                   \
 static E* C##_entry_new() {                       \
     E* entry = (E*) malloc(sizeof(E));            \
@@ -68,6 +118,15 @@ static E* C##_entry_new() {                       \
         return NULL;                              \
     }                                             \
     return entry;                                 \
+}                                                 \
+                                                  \
+static void C##_entry_free(E* entry) {            \
+    if (!entry) {                                 \
+        return;                                   \
+    }                                             \
+    entry->key   = C##_get_key_zero();            \
+    entry->value = C##_get_value_zero();          \
+    free(entry);                                  \
 }                                                 \
                                                   \
 static E** C##_entries_realloc(S* map, size_t size) {       \
@@ -136,6 +195,22 @@ static E* C##_entry_put(S* map, K key) {          \
                                                   \
     return entry;                                 \
 }                                                 \
+
+////
+
+#define LIB_MAP_CLASS(C, S, E, K, V)              \
+LIB_MAP_CLASS_STRUCT(S, E, K, V)                  \
+LIB_MAP_CLASS_PRIVATE(C, S, E, K, V)              \
+LIB_MAP_CLASS_INIT(C, S, E)                       \
+LIB_MAP_CLASS_FREE(C, S, E)                       \
+LIB_MAP_CLASS_GET(C, S, E, K, V)                  \
+LIB_MAP_CLASS_ADD(C, S, E, K, V)                  \
+LIB_MAP_CLASS_REMOVE_INDEX(C, S, E, K, V)         \
+LIB_MAP_CLASS_REMOVE(C, S, E, K, V)               \
+
+////
+
+#define LIB_MAP_TYPE(K, V) LIB_MAP_CLASS(lib_##K##_##V##_map, lib_##K##_##V##_map_t, lib_##K##_##V##_entry_t, K, V)
 
 ////
 
