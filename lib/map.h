@@ -185,13 +185,12 @@ static E* C##_entry_put(S* map, K key) {          \
         return entry;                             \
     }                                             \
                                                   \
-    entry = C##_entry_new();                      \
-    if (!entry) {                                 \
+    if (!C##_try_realloc(map)) {                  \
         return NULL;                              \
     }                                             \
                                                   \
-    if (!C##_try_realloc(map)) {                  \
-        free(entry);                              \
+    entry = C##_entry_new();                      \
+    if (!entry) {                                 \
         return NULL;                              \
     }                                             \
                                                   \
@@ -251,6 +250,10 @@ int lib_map_add(lib_map_t* map, void* key, void* value);
 void* lib_map_get(lib_map_t* map, void* key);
 
 int lib_map_remove(lib_map_t* map, void* key);
+
+bool lib_map_contains_key(lib_map_t* map, void* key);
+
+bool lib_map_contains_value(lib_map_t* map, void* value);
 
 bool lib_map_contains(lib_map_t* map, void* key);
 

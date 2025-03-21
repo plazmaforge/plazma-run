@@ -324,13 +324,13 @@ void test_map_def() {
     fprintf(stdout, "map[\"777\"] : %s\n", lib_map_get(&map, "777"));
     fprintf(stdout, "\n");
 
-    fprintf(stdout, "has[100]   : %d\n", lib_map_contains(&map, (void*) 100));
-    fprintf(stdout, "has[200]   : %d\n", lib_map_contains(&map, (void*) 200));
-    fprintf(stdout, "has[\"300\"] : %d\n", lib_map_contains(&map, "300"));
-    fprintf(stdout, "has[\"400\"] : %d\n", lib_map_contains(&map, "400"));
-    fprintf(stdout, "has[NULL]  : %d\n", lib_map_contains(&map, NULL));
-    fprintf(stdout, "has[\"500\"] : %d\n", lib_map_contains(&map, "500"));
-    fprintf(stdout, "has[\"777\"] : %d\n", lib_map_contains(&map, "777"));
+    fprintf(stdout, "has[100]   : %d\n", lib_map_contains_key(&map, (void*) 100));
+    fprintf(stdout, "has[200]   : %d\n", lib_map_contains_key(&map, (void*) 200));
+    fprintf(stdout, "has[\"300\"] : %d\n", lib_map_contains_key(&map, "300"));
+    fprintf(stdout, "has[\"400\"] : %d\n", lib_map_contains_key(&map, "400"));
+    fprintf(stdout, "has[NULL]  : %d\n", lib_map_contains_key(&map, NULL));
+    fprintf(stdout, "has[\"500\"] : %d\n", lib_map_contains_key(&map, "500"));
+    fprintf(stdout, "has[\"777\"] : %d\n", lib_map_contains_key(&map, "777"));
     fprintf(stdout, "\n");
 
     lib_map_free(&map);

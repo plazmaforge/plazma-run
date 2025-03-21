@@ -20,7 +20,13 @@ static lib_entry_t** _map_entries_realloc(lib_map_t* map, size_t size);
 
 static void _map_entries_free(lib_map_t* map);
 
-static lib_entry_t* _map_entry_find_index(lib_map_t* map, void* key, size_t* index);
+static lib_entry_t* _map_entry_find_key_index(lib_map_t* map, void* key, size_t* index);
+
+static lib_entry_t* _map_entry_find_value_index(lib_map_t* map, void* value, size_t* index);
+
+static lib_entry_t* _map_entry_find_key(lib_map_t* map, void* key);
+
+static lib_entry_t* _map_entry_find_value(lib_map_t* map, void* value);
 
 static lib_entry_t* _map_entry_find(lib_map_t* map, void* key);
 
@@ -89,12 +95,24 @@ int lib_map_remove(lib_map_t* map, void* key) {
     return _map_remove(map, key);
 }
 
-bool lib_map_contains(lib_map_t* map, void* key) {
+bool lib_map_contains_key(lib_map_t* map, void* key) {
     if (!map) {
         return false;
     }
-    lib_entry_t* entry = _map_entry_find(map, key);
+    lib_entry_t* entry = _map_entry_find_key(map, key);
     return entry != NULL;
+}
+
+bool lib_map_contains_value(lib_map_t* map, void* key) {
+    if (!map) {
+        return false;
+    }
+    lib_entry_t* entry = _map_entry_find_value(map, key);
+    return entry != NULL;
+}
+
+bool lib_map_contains(lib_map_t* map, void* key) {
+    return lib_map_contains_key(map, key);
 }
 
 ////
@@ -188,9 +206,33 @@ static bool _map_try_realloc(lib_map_t* map) {
     return _map_realloc(map);
 }
 
-////
+//// HASH_TYPE
 
-static lib_entry_t* _map_entry_find_index(lib_map_t* map, void* key, size_t* index) {
+static size_t _map_hash(void* key) {
+    return (size_t) key;
+}
+
+static size_t _map_hash2index(lib_map_t* map, size_t hash) {
+    return hash % map->size;
+}
+
+static lib_entry_t* _map_entry_find_hash_index(lib_map_t* map, void* key, size_t* index) {
+    
+    if (map->size == 0) {
+        return NULL;
+    }
+
+    size_t hash = _map_hash(key);
+    *index = _map_hash2index(map, hash);
+    lib_entry_t** entries = (lib_entry_t**) map->entries;
+    lib_entry_t* entry    = entries[*index];
+
+    return entry;
+}
+
+//// ARRAY_TYPE
+
+static lib_entry_t* _map_entry_find_key_index(lib_map_t* map, void* key, size_t* index) {
 
     if (map->size == 0) {
         return NULL;
@@ -214,9 +256,48 @@ static lib_entry_t* _map_entry_find_index(lib_map_t* map, void* key, size_t* ind
     return NULL;
 }
 
-static lib_entry_t* _map_entry_find(lib_map_t* map, void* key) {
-    return _map_entry_find_index(map, key, NULL);
+static lib_entry_t* _map_entry_find_value_index(lib_map_t* map, void* value, size_t* index) {
+
+    if (map->size == 0) {
+        return NULL;
+    }
+
+    lib_entry_t** entries = (lib_entry_t**) map->entries;
+    lib_entry_t* entry    = NULL;
+
+    for (size_t i = 0; i < map->size; i++) {
+        entry = *entries;
+        if (entry->value == value) {
+            // Found
+            if (index) {
+                *index = i;
+            }
+            return entry;
+        }
+        entries++;
+    }
+
+    return NULL;
 }
+
+////
+
+static lib_entry_t* _map_entry_find_key(lib_map_t* map, void* key) {
+    // ARRAY_TYPE
+    return _map_entry_find_key_index(map, key, NULL);
+}
+
+static lib_entry_t* _map_entry_find_value(lib_map_t* map, void* value) {
+    // ARRAY_TYPE
+    return _map_entry_find_value_index(map, value, NULL);
+}
+
+static lib_entry_t* _map_entry_find(lib_map_t* map, void* key) {
+    // ARRAY_TYPE
+    return _map_entry_find_key_index(map, key, NULL);
+}
+
+////
 
 static lib_entry_t* _map_entry_put(lib_map_t* map, void* key) {
 
@@ -226,17 +307,19 @@ static lib_entry_t* _map_entry_put(lib_map_t* map, void* key) {
         return entry;
     }
 
+    // ARRAY_TYPE
+    if (!_map_try_realloc(map)) {
+        //free(entry);
+        return NULL;
+    }
+
     // Not found - Create new
     entry = _map_entry_new();
     if (!entry) {
         return NULL;
     }
 
-    if (!_map_try_realloc(map)) {
-        free(entry);
-        return NULL;
-    }
-
+    // ARRAY_TYPE
     lib_entry_t** entries = (lib_entry_t**) map->entries;
     entries[map->size++] = entry;
 
@@ -272,18 +355,19 @@ static int _map_add(lib_map_t* map, void* key, void* value) {
     return 0;
 }
 
+// ARRAY_TYPE
 static int _map_remove_index(lib_map_t* map, size_t index) {
     size_t value_size = sizeof(lib_entry_t*);
     lib_data_move_prev(map->entries, map->size, value_size, index);
     lib_data_reset(map->entries, map->size - 1, value_size);
-
     map->size--;
     return 0;
 }
 
 static int _map_remove(lib_map_t* map, void* key) {
+    // ARRAY_TYPE
     size_t index;
-    lib_entry_t* entry = _map_entry_find_index(map, key, &index);
+    lib_entry_t* entry = _map_entry_find_key_index(map, key, &index);
     if (!entry) {
         return -1;
     }
