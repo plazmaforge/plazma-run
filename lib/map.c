@@ -103,16 +103,16 @@ bool lib_map_contains_key(lib_map_t* map, void* key) {
     return entry != NULL;
 }
 
-bool lib_map_contains_value(lib_map_t* map, void* key) {
+bool lib_map_contains_value(lib_map_t* map, void* value) {
     if (!map) {
         return false;
     }
-    lib_entry_t* entry = _map_entry_find_value(map, key);
+    lib_entry_t* entry = _map_entry_find_value(map, value);
     return entry != NULL;
 }
 
-bool lib_map_contains(lib_map_t* map, void* key) {
-    return lib_map_contains_key(map, key);
+bool lib_map_contains(lib_map_t* map, void* value) {
+    return lib_map_contains_value(map, value);
 }
 
 ////

@@ -255,6 +255,6 @@ bool lib_map_contains_key(lib_map_t* map, void* key);
 
 bool lib_map_contains_value(lib_map_t* map, void* value);
 
-bool lib_map_contains(lib_map_t* map, void* key);
+bool lib_map_contains(lib_map_t* map, void* value);
 
 #endif /* PLAZMA_LIB_MAP_H */
