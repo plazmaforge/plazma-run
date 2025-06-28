@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "getopt.h"
 #include "clilib.h"
@@ -132,6 +133,76 @@ static int _line_cmp(char* line1, size_t len1, char* line2, size_t len2) {
     return  0;
 } 
 
+#ifdef _WIN32
+#define GETLINE_MINSIZE 16
+int _getline_win(char** line, size_t* n, FILE* file) {
+    int ch;
+    int i = 0;
+    char free_on_err = 0;
+    char *p;
+
+    errno = 0;
+    if (line == NULL || n == NULL || file == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (*line == NULL) {
+        *n = GETLINE_MINSIZE;
+        *line = (char*) malloc( sizeof(char) * (*n));
+        if (*line == NULL) {
+            errno = ENOMEM;
+            return -1;
+        }
+        free_on_err = 1;
+    }
+
+    for (i = 0; ; i++) {
+        ch = fgetc(file);
+        while (i >= (*n) - 2) {
+            *n *= 2;
+            p = realloc(*line, sizeof(char) * (*n));
+            if (p == NULL) {
+                if (free_on_err)
+                    free(*line);
+                errno = ENOMEM;
+                return -1;
+            }
+            *line = p;
+        }
+        if (ch == EOF) {
+            if (i == 0) {
+                if (free_on_err)
+                     free(*line);
+                return -1;
+            }
+            (*line)[i] = '\0';
+            *n = i;
+            return i;
+        }
+
+        if (ch == '\n') {
+            (*line)[i] = '\n';
+            (*line)[i+1] = '\0';
+            *n = i+1;
+            return i+1;
+        }
+        (*line)[i] = (char)ch;
+    }
+}
+#else
+ssize_t _getline_nix(char** line, size_t* cap, FILE* file) {
+    return getline(line, cap, file);
+}
+#endif
+
+ssize_t _getline(char** line, size_t* cap, FILE* file) {
+    #ifdef _WIN32
+    return _getline_win(line, cap, file);
+    #else
+    return _getline_nix(line, cap, file);
+    #endif
+}
+
 int run_diff(const char* file_name1, const char* file_name2) {
 
     if (!file_name1 && !file_name2) {
@@ -174,7 +245,7 @@ int run_diff(const char* file_name1, const char* file_name2) {
     size_t len2   = 0;
     ssize_t read2 = 0;
 
-    while ( (read1 = getline(&line1, &cap1, file1)) != -1 ) {
+    while ( (read1 = _getline(&line1, &cap1, file1)) != -1 ) {
         //fprintf(stderr, "Retrived line of length: %lu, %lu \n", read1, len1);
         //fprintf(stderr, "%s \n", line1);
 
