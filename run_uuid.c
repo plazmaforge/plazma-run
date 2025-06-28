@@ -100,7 +100,7 @@ int run_uuid(int version, int format, /*lib_uuid_t nsid, char* name,*/ int count
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-uuid [-n] [-c count]\n");
+    fprintf(stderr, "Usage: run-uuid [-nlup] [-v version] [-c count]\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
     bool trailing = true; // '\n'
     bool upper    = is_upper_format_default();
     bool pack     = false;
-    while ((opt = lib_getopt(argc, argv, "nlupc:v:")) != -1) {
+    while ((opt = lib_getopt(argc, argv, "nlupv:c:")) != -1) {
         switch (opt) {
         case 'n':
             trailing = false;

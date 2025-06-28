@@ -82,7 +82,7 @@ int run_md_by_mode(lib_md_config_t* config, const char* file_name, const char* d
 }
 
 void run_md_usage(lib_md_config_t* config) {
-    fprintf(stderr, "Usage: %s [-tu] -s string | file ...\n", prog_name);
+    fprintf(stderr, "Usage: %s [-tlu] -s string | file ...\n", prog_name);
 }
 
 int run_md(lib_md_config_t* config, int argc, char* argv[]) {
@@ -99,16 +99,20 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
 
     config->mode = RUN_MD_BY_FILE; /* Set mode by file */
     config->is_title = false;
-    config->is_upper = false;
+    config->is_upper = false; // by default
 
     char* data = NULL;
     size_t size = 0;
 
-    while ((opt = lib_getopt(argc, argv, "tus:")) != -1) {
+    while ((opt = lib_getopt(argc, argv, "tlus:")) != -1) {
         switch (opt) {
         case 't':
             /* Set title option */
             config->is_title = true;
+            break;
+        case 'l':
+            /* Set lower case option */
+            config->is_upper = false;
             break;
         case 'u':
             /* Set upper case option */
