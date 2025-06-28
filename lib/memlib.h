@@ -40,10 +40,6 @@ void lib_memsetz(void* data, size_t size);
 
 ////
 
-void lib_memset0(void* data, size_t len);
-
-void lib_free0(void* data, size_t len);
-
 void lib_memreset(void* data, size_t len);
 
 void lib_freereset(void* data, size_t len);

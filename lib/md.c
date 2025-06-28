@@ -25,7 +25,6 @@
 #define MD_INFO(type, out_size, block_size) type, out_size,
 #endif
 
-
 #if defined(LIB_MD_CAN_MD5)
 static const lib_md_info_t lib_md5_info = {
     MD_INFO(LIB_MD_MD5, 16, 64)
@@ -80,7 +79,6 @@ const lib_md_info_t* lib_md_info_from_type(lib_md_type_t md_type) {
         case LIB_MD_SHA512:
             return &lib_sha512_info;
 #endif
-
         default:
             return NULL;
     }
@@ -144,13 +142,11 @@ void lib_md_free(lib_md_context_t *ctx) {
 
     #if defined(LIB_MD_C)
         if (ctx->hmac_ctx != NULL) {
-            //lib_zeroize_and_free(ctx->hmac_ctx, 2 * ctx->md_info->block_size);
-            lib_free0(ctx->hmac_ctx, 2 * ctx->md_info->block_size);
+            lib_freez(ctx->hmac_ctx, 2 * ctx->md_info->block_size);
         }
     #endif
 
-    //lib_platform_zeroize(ctx, sizeof(lib_md_context_t));
-    lib_memset0(ctx, sizeof(lib_md_context_t));
+    lib_memsetz(ctx, sizeof(lib_md_context_t));
 }
 
 #define ALLOC(type)                                                        \
@@ -497,9 +493,7 @@ int lib_md_hmac_starts(lib_md_context_t *ctx, const unsigned char *key, size_t k
     }
 
 cleanup:
-    //lib_platform_zeroize(sum, sizeof(sum));
-    lib_memset0(sum, sizeof(sum));
-
+    lib_memsetz(sum, sizeof(sum));
     return ret;
 }
 
@@ -557,8 +551,7 @@ int lib_md_hmac_reset(lib_md_context_t *ctx) {
 int lib_md_hmac(const lib_md_info_t *md_info,
                     const unsigned char *key, size_t keylen,
                     const unsigned char *input, size_t ilen,
-                    unsigned char *output)
-{
+                    unsigned char *output) {
     lib_md_context_t ctx;
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
 

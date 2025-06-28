@@ -23,16 +23,11 @@
 //#if !defined(LIB_MD5_ALT)
 
 void lib_md5_init(lib_md5_context_t* ctx) {
-    //memset(ctx, 0, sizeof(lib_md5_context_t));
-    lib_memset0(ctx, sizeof(lib_md5_context_t));
+    lib_memsetz(ctx, sizeof(lib_md5_context_t));
 }
 
 void lib_md5_free(lib_md5_context_t* ctx) {
-    //if (ctx == NULL) {
-    //    return;
-    //}
-    //lib_platform_zeroize(ctx, sizeof(lib_md5_context_t));
-    lib_memset0(ctx, sizeof(lib_md5_context_t)); /* WHY memset0 */
+    lib_memsetz(ctx, sizeof(lib_md5_context_t));
 }
 
 void lib_md5_clone(lib_md5_context_t* dst, const lib_md5_context_t* src) {
@@ -184,9 +179,7 @@ int lib_internal_md5_process(lib_md5_context_t* ctx,
     ctx->state[3] += local.D;
 
     /* Zeroise variables to clear sensitive data from memory. */
-    //lib_platform_zeroize(&local, sizeof(local));
-    lib_memset0(&local, sizeof(local));
-
+    lib_memsetz(&local, sizeof(local));
     return 0;
 }
 
