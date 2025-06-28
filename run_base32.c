@@ -129,7 +129,7 @@ int run_base32_decode_file(int type, const char* file_name) {
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-base32 [-base32 | -base32u | -base32l | zbase32 | base32hex | cbase32] [-D] -s string | file\n");
+    fprintf(stderr, "Usage: run-base32 [-base32 | -base32u | -base32l | -zbase32 | -base32hex | -cbase32] [-D] -s string | file\n");
 }
 
 int main(int argc, char* argv[]) {
