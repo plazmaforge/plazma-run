@@ -249,7 +249,7 @@ int run_diff(const char* file_name1, const char* file_name2) {
         //fprintf(stderr, "Retrived line of length: %lu, %lu \n", read1, len1);
         //fprintf(stderr, "%s \n", line1);
 
-        read2 = getline(&line2, &cap2, file2);
+        read2 = _getline(&line2, &cap2, file2);
 
         if (read2 == -1) {
             fprintf(stdout, "\n>>: %s\n", line1);
