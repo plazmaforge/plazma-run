@@ -276,7 +276,7 @@ static void format_uuid_v1(
 
 /* Make a UUID from a (pseudo)random 128-bit
    number */
-void format_uuid_v3or5(lib_uuid_t* uuid, unsigned char hash[16], int v) {
+void format_uuid_v3or5(lib_uuid_t* uuid, unsigned char hash[16], int version) {
 
 	/* convert UUID to local byte order */
 	memcpy(uuid, hash, sizeof(*uuid));
@@ -286,7 +286,7 @@ void format_uuid_v3or5(lib_uuid_t* uuid, unsigned char hash[16], int v) {
 
 	/* put in the variant and version bits */
 	uuid->time_hi_and_version &= 0x0FFF;
-	uuid->time_hi_and_version |= (v << 12);
+	uuid->time_hi_and_version |= (version << 12);
 	uuid->clock_seq_hi_and_reserved &= 0x3F;
 	uuid->clock_seq_hi_and_reserved |= 0x80;
 }
@@ -296,7 +296,7 @@ void format_uuid_v3or5(lib_uuid_t* uuid, unsigned char hash[16], int v) {
 /**
  * Generate UUID structure
  */
-int lib_uuid_gen_uuid_ver(int version, lib_uuid_t* uuid) {
+int lib_uuid_gen_uuid_v(lib_uuid_t* uuid, int version) {
   if (!uuid) {
     return -1;
   }
@@ -315,7 +315,7 @@ int lib_uuid_gen_uuid_ver(int version, lib_uuid_t* uuid) {
 /**
  * Generate UUID data
  */
-int lib_uuid_gen_data_ver(int version, unsigned char value[16]) {
+int lib_uuid_gen_data_v(unsigned char value[16], int version) {
   if (!value) {
     return -1;
   }
@@ -323,7 +323,7 @@ int lib_uuid_gen_data_ver(int version, unsigned char value[16]) {
     return -1;
   }
   lib_uuid_t uuid;
-  int retval = lib_uuid_gen_uuid_ver(version, &uuid);
+  int retval = lib_uuid_gen_uuid_v(&uuid, version);
   if (retval != 0) {
     return retval;
   }
@@ -334,49 +334,49 @@ int lib_uuid_gen_data_ver(int version, unsigned char value[16]) {
 /**
  * Generate UUID string
  */
-int lib_uuid_gen_str_ver(int version, char* str) {
-  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE, str);
+int lib_uuid_gen_str_v(char* str, int version) {
+  return lib_uuid_gen_strf_v(LIB_UUID_FORMAT_TYPE, str, version);
 }
 
 /**
  * Generate UUID string in lower case
  */
-int lib_uuid_gen_strl_ver(int version, char* str) {
-  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE_LOWER_PACK, str);
+int lib_uuid_gen_strl_v(char* str, int version) {
+  return lib_uuid_gen_strf_v(LIB_UUID_FORMAT_TYPE_LOWER_PACK, str, version);
 }
 
 /**
  * Generate UUID string in upper case
  */
-int lib_uuid_gen_stru_ver(int version, char* str) {
-  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE_UPPER_PACK, str);
+int lib_uuid_gen_stru_v(char* str, int version) {
+  return lib_uuid_gen_strf_v(LIB_UUID_FORMAT_TYPE_UPPER_PACK, str, version);
 }
 
 /**
  * Generate UUID pack (without '-') string
  */
-int lib_uuid_gen_pstr_ver(int version, char* str) {
-  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE_LOWER_PACK, str);
+int lib_uuid_gen_pstr_v(char* str, int version) {
+  return lib_uuid_gen_strf_v(LIB_UUID_FORMAT_TYPE_LOWER_PACK, str, version);
 }
 
 /**
  * Generate UUID pack (without '-') string in lower case
  */
-int lib_uuid_gen_pstrl_ver(int version, char* str) {
-  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE_LOWER_PACK, str);
+int lib_uuid_gen_pstrl_v(char* str, int version) {
+  return lib_uuid_gen_strf_v(LIB_UUID_FORMAT_TYPE_LOWER_PACK, str, version);
 }
 
 /**
  * Generate UUID pack (without '-') string in upper case
  */
-int lib_uuid_gen_pstru_ver(int version, char* str) {
-  return lib_uuid_gen_strf_ver(version, LIB_UUID_FORMAT_TYPE_UPPER_PACK, str);
+int lib_uuid_gen_pstru_v(char* str, int version) {
+  return lib_uuid_gen_strf_v(LIB_UUID_FORMAT_TYPE_UPPER_PACK, str, version);
 }
 
 /**
  * Generate UUID string by format type
  */
-int lib_uuid_gen_strf_ver(int version, int format, char* str) {
+int lib_uuid_gen_strf_v(int format, char* str, int version) {
   if (!str) {
     return -1;
   }
@@ -384,7 +384,7 @@ int lib_uuid_gen_strf_ver(int version, int format, char* str) {
     return -1;
   }
   lib_uuid_t uuid;
-  int retval = lib_uuid_gen_uuid_ver(version, &uuid);
+  int retval = lib_uuid_gen_uuid_v(&uuid, version);
   if (retval != 0) {
     return retval;
   }
@@ -504,12 +504,12 @@ void lib_uuid_hash(
 
 }
 
-void lib_uuid_create_v3or5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen, int v) {
+void lib_uuid_create_v3or5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen, int version) {
 	
   size_t count = 0;
-  if (v == LIB_UUID_TYPE_MD5) {
+  if (version == LIB_UUID_TYPE_MD5) {
     count = 16;
-  } else if (v == LIB_UUID_TYPE_SHA1) {
+  } else if (version == LIB_UUID_TYPE_SHA1) {
     count = 20;
   }
 
@@ -525,10 +525,10 @@ void lib_uuid_create_v3or5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t
 	net_nsid.time_mid = htons(net_nsid.time_mid);
 	net_nsid.time_hi_and_version = htons(net_nsid.time_hi_and_version);
 
-  lib_uuid_hash(v, hash, &net_nsid, sizeof(net_nsid), name, namelen);
+  lib_uuid_hash(version, hash, &net_nsid, sizeof(net_nsid), name, namelen);
 
 	/* the hash is in network byte order at this point */
-	format_uuid_v3or5(uuid, hash, v);
+	format_uuid_v3or5(uuid, hash, version);
 }
 
 /**

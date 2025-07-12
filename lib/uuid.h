@@ -102,47 +102,47 @@ size_t lib_uuid_get_format_size(int format);
 /**
  * Generate UUID structure
  */
-int lib_uuid_gen_uuid_ver(int version, lib_uuid_t* uuid);
+int lib_uuid_gen_uuid_v(lib_uuid_t* uuid, int version);
 
 /**
  * Generate UUID data
  */
-int lib_uuid_gen_data_ver(int version, unsigned char value[16]);
+int lib_uuid_gen_data_v(unsigned char value[16], int version);
 
 /**
  * Generate UUID string
  */
-int lib_uuid_gen_str_ver(int version, char* str);
+int lib_uuid_gen_str_v(char* str, int version);
 
 /**
  * Generate UUID string in lower case
  */
-int lib_uuid_gen_strl_ver(int version, char* str);
+int lib_uuid_gen_strl_v(char* str, int version);
 
 /**
  * Generate UUID string in upper case
  */
-int lib_uuid_gen_stru_ver(int version, char* str);
+int lib_uuid_gen_stru_v(char* str, int version);
 
 /**
  * Generate UUID pack (without '-') string
  */
-int lib_uuid_gen_pstr_ver(int version, char* str);
+int lib_uuid_gen_pstr_v(char* str, int version);
 
 /**
  * Generate UUID pack (without '-') string in lower case
  */
-int lib_uuid_gen_pstrl_ver(int version, char* str);
+int lib_uuid_gen_pstrl_v(char* str, int version);
 
 /**
  * Generate UUID pack (without '-') string in upper case
  */
-int lib_uuid_gen_pstru_ver(int version, char* str);
+int lib_uuid_gen_pstru_v(char* str, int version);
 
 /**
  * Generate UUID string by format type
  */
-int lib_uuid_gen_strf_ver(int version, int format, char* str);
+int lib_uuid_gen_strf_v(int format, char* str, int version);
 
 //// CREATE
 
