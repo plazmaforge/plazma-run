@@ -9,6 +9,7 @@
 #include <winsock.h>
 #else
 #include <sys/time.h>
+//#include <sys/sysinfo.h>
 #include <fcntl.h>  /* open */
 #include <unistd.h> /* read/write, close */
 #endif
@@ -117,6 +118,35 @@ static int get_random_native(char seed[16]) {
   return -1;
 }
 
+// https://www.ietf.org/rfc/rfc4122.txt
+// get random info
+
+/*
+void get_random_native_2(char seed[16]) {
+    //MD5_CTX c;
+    struct {
+        MEMORYSTATUS m;
+        SYSTEM_INFO s;
+        FILETIME t;
+        LARGE_INTEGER pc;
+        DWORD tc;
+        DWORD l;
+        char hostname[MAX_COMPUTERNAME_LENGTH + 1];
+    } r;
+
+    //MD5Init(&c);
+    GlobalMemoryStatus(&r.m);
+    GetSystemInfo(&r.s);
+    GetSystemTimeAsFileTime(&r.t);
+    QueryPerformanceCounter(&r.pc);
+    r.tc = GetTickCount();
+    r.l = MAX_COMPUTERNAME_LENGTH + 1;
+    GetComputerName(r.hostname, &r.l);
+    //MD5Update(&c, &r, sizeof r);
+    //MD5Final(seed, &c);
+}
+*/
+
 #else
 
 static void get_system_time(lib_uuid_time_t* uuid_time) {
@@ -133,6 +163,7 @@ static void get_system_time(lib_uuid_time_t* uuid_time) {
     + I64(0x01B21DD213814000);
 }
 
+// get random info
 static int get_random_native(char seed[16]) {
 
   /* we aren't all that picky, and we would rather not block so we
@@ -149,6 +180,24 @@ static int get_random_native(char seed[16]) {
   return -1;
 }
 
+// https://www.ietf.org/rfc/rfc4122.txt
+/*
+void get_random_native_2(char seed[16]) {
+    //MD5_CTX c;
+    struct {
+        struct sysinfo s;
+        struct timeval t;
+        char hostname[257];
+    } r;
+
+    //MD5Init(&c);
+    sysinfo(&r.s);
+    gettimeofday(&r.t, (struct timezone *)0);
+    gethostname(r.hostname, 256);
+    //MD5Update(&c, &r, sizeof r);
+    //MD5Final(seed, &c);
+}
+*/
 #endif
 
 //// COMMON
@@ -825,8 +874,8 @@ V7: void uuid_generate_time_v7(uuid_t out);
 */
 
 // https://www.ietf.org/rfc/rfc4122.txt
-// https://github.com/zhicheng/uuid/blob/master/uuid.c
 // https://github.com/HewlettPackard/netperf/blob/master/src/net_uuid.c
+// https://github.com/zhicheng/uuid/blob/master/uuid.c
 
 // time v6, v7, UUID v3, v5
 // https://github.com/util-linux/util-linux/blob/master/libuuid/src/gen_uuid.c
