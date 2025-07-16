@@ -276,7 +276,7 @@ static void format_uuid_v1(
 
 /* Make a UUID from a (pseudo)random 128-bit
    number */
-void format_uuid_v3or5(lib_uuid_t* uuid, unsigned char hash[16], int version) {
+static void format_uuid_v3or5(lib_uuid_t* uuid, unsigned char hash[16], int version) {
 
 	/* convert UUID to local byte order */
 	memcpy(uuid, hash, sizeof(*uuid));
@@ -476,19 +476,19 @@ void lib_uuid_create_v7(lib_uuid_t* uuid) {
     //return EXIT_SUCCESS;
 }
 
-void lib_uuid_hash(
-  int type,
+static void lib_uuid_hash_v(
   unsigned char* hash,
   lib_uuid_t* nsid, 
   size_t ssize, 
   void* name, 
-  size_t nsize) {
+  size_t nsize,
+  int version) {
 
   //// TODO: Stub
   size_t count = 0;
-  if (type == LIB_UUID_TYPE_MD5) {
+  if (version == LIB_UUID_TYPE_MD5) {
     count = 16;
-  } else if (type == LIB_UUID_TYPE_SHA1) {
+  } else if (version == LIB_UUID_TYPE_SHA1) {
     count = 20;
   }
   for (int i = 0; i < count; i++) {
@@ -504,7 +504,7 @@ void lib_uuid_hash(
 
 }
 
-void lib_uuid_create_v3or5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen, int version) {
+static void lib_uuid_create_v3or5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen, int version) {
 	
   size_t count = 0;
   if (version == LIB_UUID_TYPE_MD5) {
@@ -525,7 +525,7 @@ void lib_uuid_create_v3or5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t
 	net_nsid.time_mid = htons(net_nsid.time_mid);
 	net_nsid.time_hi_and_version = htons(net_nsid.time_hi_and_version);
 
-  lib_uuid_hash(version, hash, &net_nsid, sizeof(net_nsid), name, namelen);
+  lib_uuid_hash_v(hash, &net_nsid, sizeof(net_nsid), name, namelen, version);
 
 	/* the hash is in network byte order at this point */
 	format_uuid_v3or5(uuid, hash, version);
@@ -535,47 +535,11 @@ void lib_uuid_create_v3or5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t
  * Create a version 3 (MD5) UUID using a "name" from a "name space"
  */
 void lib_uuid_create_md5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
-
-  lib_uuid_create_v3or5(uuid, nsid, name, namelen, LIB_UUID_TYPE_MD5);
-	
-	// unsigned char hash[16];
-	// lib_uuid_t net_nsid;
-
-	// /*
-	//  * put name space ID in network byte order so it hashes the same no
-	//  * matter what endian machine we're on
-	//  */
-	// net_nsid = nsid;
-	// net_nsid.time_low = htonl(net_nsid.time_low);
-	// net_nsid.time_mid = htons(net_nsid.time_mid);
-	// net_nsid.time_hi_and_version = htons(net_nsid.time_hi_and_version);
-
-  // lib_uuid_hash(LIB_UUID_TYPE_MD5, hash, &net_nsid, sizeof(net_nsid), name, namelen);
-
-	// /* the hash is in network byte order at this point */
-	// format_uuid_v3or5(uuid, hash, 3);
+  lib_uuid_create_v3or5(uuid, nsid, name, namelen, LIB_UUID_TYPE_MD5);	
 }
 
 void lib_uuid_create_sha1(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
-
   lib_uuid_create_v3or5(uuid, nsid, name, namelen, LIB_UUID_TYPE_SHA1);
-
-	// unsigned char hash[20];
-	// lib_uuid_t net_nsid;
-
-	// /*
-	//  * put name space ID in network byte order so it hashes the same no
-	//  * matter what endian machine we're on
-	//  */
-	// net_nsid = nsid;
-	// net_nsid.time_low = htonl(net_nsid.time_low);
-	// net_nsid.time_mid = htons(net_nsid.time_mid);
-	// net_nsid.time_hi_and_version = htons(net_nsid.time_hi_and_version);
-
-  // lib_uuid_hash(LIB_UUID_TYPE_SHA1, hash, &net_nsid, sizeof(net_nsid), name, namelen);
-
-	// /* the hash is in network byte order at this point */
-	// format_uuid_v3or5(uuid, hash, 5);
 }
 
 ////
