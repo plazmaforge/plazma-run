@@ -18,10 +18,10 @@ static int uuid_create(int version, lib_uuid_t* uuid, lib_uuid_t nsid, void* nam
         lib_uuid_create_v1(uuid);
         return 0;
     } else if (version == 3) {
-        lib_uuid_create_v3(uuid, NameSpace_DNS, "www.widgets.com", 15);
+        lib_uuid_create_v3(uuid, NameSpace_DNS, name, namelen);
         return 0;
     } else if (version == 5) {
-        lib_uuid_create_v5(uuid, NameSpace_DNS, "www.widgets.com", 15);
+        lib_uuid_create_v5(uuid, NameSpace_DNS, name, namelen);
         return 0;
     } else if (version == 7) {
         lib_uuid_create_v7(uuid);

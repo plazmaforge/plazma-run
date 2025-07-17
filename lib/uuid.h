@@ -37,6 +37,7 @@ typedef struct {
 } lib_uuid_node_t;
 
 typedef struct {
+
   /* Time (64 bits / 8 bytes)  */
   uint32_t  time_low;
   uint16_t  time_mid;
@@ -50,6 +51,7 @@ typedef struct {
   uint8_t   node[6];
 
   /* Total 128 bits / 16 bytes */
+
 } lib_uuid_t;
 
 
@@ -153,9 +155,15 @@ void lib_uuid_create(lib_uuid_t* uuid);
 
 void lib_uuid_create_v1(lib_uuid_t* uuid);
 
+void lib_uuid_create_v2(lib_uuid_t* uuid); // Not implemnted yet
+
 void lib_uuid_create_v3(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
 
+void lib_uuid_create_v4(lib_uuid_t* uuid); // Not implemnted yet
+
 void lib_uuid_create_v5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
+
+void lib_uuid_create_v6(lib_uuid_t* uuid); // Not implemnted yet
 
 void lib_uuid_create_v7(lib_uuid_t* uuid);
 

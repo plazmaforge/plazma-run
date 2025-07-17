@@ -234,6 +234,14 @@ static uint16_t next_random() {
   return (uint16_t) rand();
 }
 
+static void fill_random(uint8_t* value, int num) {
+    uint8_t* out = value;
+    for (int i = 0; i < num; i++) {
+       *out = (uint8_t) next_random();
+       out++;
+    }
+}
+
 /**
  * Get time as 60-bit 100ns ticks since UUID epoch.
  * Compensate for the fact that real clock resolution is less than 100ns.
@@ -355,6 +363,21 @@ int lib_uuid_gen_uuid_v(lib_uuid_t* uuid, int version) {
   if (version == 1) {
     lib_uuid_create_v1(uuid);
   }
+  if (version == 2) {
+    lib_uuid_create_v2(uuid); // Not implemented yet
+  }
+  if (version == 3) {
+    lib_uuid_create_v3(uuid, NameSpace_DNS, "www.widgets.com", 15);
+  }
+  if (version == 4) {
+    lib_uuid_create_v4(uuid); // Not implemented yet
+  }
+  if (version == 5) {
+    lib_uuid_create_v5(uuid, NameSpace_DNS, "www.widgets.com", 15);
+  }
+  if (version == 6) {
+    lib_uuid_create_v6(uuid);  // Not implemented yet
+  }
   if (version == 7) {
     lib_uuid_create_v7(uuid);
   }
@@ -472,12 +495,24 @@ void lib_uuid_create_v1(lib_uuid_t* uuid) {
   format_uuid_v1(uuid, clock_seq, timestamp, node);
 }
 
+void lib_uuid_create_v2(lib_uuid_t* uuid) {
+  // Not implemnted yet
+} 
+
 void lib_uuid_create_v3(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
   lib_uuid_create_md5(uuid, nsid, name, namelen);
 }
 
+void lib_uuid_create_v4(lib_uuid_t* uuid) {
+  // Not implemnted yet
+} 
+
 void lib_uuid_create_v5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
   lib_uuid_create_sha1(uuid, nsid, name, namelen);
+}
+
+void lib_uuid_create_v6(lib_uuid_t* uuid) {
+  // Not implemented yet
 }
 
 ////
@@ -500,9 +535,9 @@ void lib_uuid_create_v7(lib_uuid_t* uuid) {
     //uint64_t timestamp = (uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 
     // TODO: Stub
-    for (int i = 0; i < 16; i++) {
-       value[i] = (uint8_t) next_random();
-    }
+    //for (int i = 0; i < 16; i++) {
+    //   value[i] = (uint8_t) next_random();
+    //}
 
     lib_uuid_time_t timestamp;
     get_current_time(&timestamp);
@@ -516,13 +551,14 @@ void lib_uuid_create_v7(lib_uuid_t* uuid) {
     value[4] = (timestamp >> 8) & 0xFF;
     value[5] = timestamp & 0xFF;
 
+    fill_random(value + 6, 10);
+
     // version and variant
     value[6] = (value[6] & 0x0F) | 0x70;
     value[8] = (value[8] & 0x3F) | 0x80;
-
+    
     lib_uuid_unpack(value, uuid);
 
-    //return EXIT_SUCCESS;
 }
 
 static void lib_uuid_hash_v(
