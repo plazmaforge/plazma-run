@@ -94,6 +94,24 @@ static int get_random_base(char seed[16]) {
 
 #ifdef WIN32
 
+static void gettimeofday(struct timeval *tv, void *dummy) {
+  FILETIME ftime;
+  uint64_t n;
+
+  GetSystemTimeAsFileTime (&ftime);
+  n = (((uint64_t) ftime.dwHighDateTime << 32)
+  + (uint64_t) ftime.dwLowDateTime);
+
+  if (n) {
+    n /= 10;
+    n -= ((369 * 365 + 89) * (uint64_t) 86400) * 1000000;
+  }
+
+  tv->tv_sec = n / 1000000;
+  tv->tv_usec = n % 1000000;
+
+}
+
 static void get_system_time(lib_uuid_time_t* uuid_time) {
 
   ULARGE_INTEGER time;
@@ -149,18 +167,40 @@ void get_random_native_2(char seed[16]) {
 
 #else
 
+/**
+ * Convert time to nano seconds 
+ */
+static uint64_t to_time_ns(struct timeval *tv) {
+  return ((uint64_t) tv->tv_sec * 1000000000)
+    + ((uint64_t) tv->tv_usec * 1000);
+}
+
+static uint64_t get_time_ns() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return to_time_ns(&tv);
+}
+
 static void get_system_time(lib_uuid_time_t* uuid_time) {
 
-  struct timeval tp;
-
-  gettimeofday(&tp, (struct timezone *) 0);
+  //struct timeval tp;
+  //gettimeofday(&tp, NULL);
 
   /* Offset between UUID formatted times and Unix formatted times.
      UUID UTC base time is October 15, 1582.
      Unix base time is January 1, 1970.*/
-  *uuid_time = ((uint64_t)tp.tv_sec * 10000000)
-    + ((uint64_t)tp.tv_usec * 10)
-    + I64(0x01B21DD213814000);
+
+  //*uuid_time = ((uint64_t) tp.tv_sec * 10000000)
+  //+ ((uint64_t) tp.tv_usec * 10)
+  //+ I64(0x01B21DD213814000);
+
+  //fprintf(stderr, "1: %llu\n", *uuid_time);
+
+  //*uuid_time = to_time_ns(&tp) / 100 + I64(0x01B21DD213814000);
+  *uuid_time = get_time_ns() / 100 + I64(0x01B21DD213814000);
+
+  //fprintf(stderr, "2: %llu\n", *uuid_time);
+  //fprintf(stderr, "\n");
 }
 
 // get random info
