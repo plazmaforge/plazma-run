@@ -90,46 +90,93 @@ static int get_random_base(char seed[16]) {
   return 0;
 }
 
+/* 
+ Difference between FILETIME (Windows) epoch and Unix epoch in seconds
+
+ FILETIME epoch: January 1, 1601
+ UNIX epoch:     January 1, 1970
+
+ 1970 year - 1601 year = 369 years
+ 1 year = 365 days
+ 1 day = 86400 seconds (24 hours * 60 minutes * 60 seconds)
+ 89 days - leap days
+
+ (369 years * 365 days + 89 days) * 86400 seconds = 11644473600 seconds
+*/
+const uint64_t FTIME_UTIME_EPOCH_OFFSET_SEC = 11644473600;
+
+/* 
+ Difference between Gregorian epoch and Unix epoch in seconds
+
+ Gregorian epoch: October 15, 1582
+ UNIX epoch:      January 1, 1970
+
+ 1970 year - 1582 year = 388 years - 1 year (1582) = 387 years
+ 1 year = 365 days
+ 1 day = 86400 seconds (24 hours * 60 minutes * 60 seconds)
+ 172 days - leap days
+
+ (387 years * 365 days + 172 days) * 86400 seconds = 12219292800 seconds
+*/
+const uint64_t GTIME_UTIME_EPOCH_OFFSET_SEC = 12219292800;
+
+/* Nanoseconds per microseconds */
+const uint64_t NSEC_PER_USEC = 1000;
+
+/* Microseconds per seconds */
+const uint64_t USEC_PER_SEC = 1000000;
+
+/* Nanoseconds per seconds */
+const uint64_t NSEC_PER_SEC = 1000000000;
+
 //// OS
 
 #ifdef WIN32
 
-static void gettimeofday(struct timeval *tv, void *dummy) {
-  FILETIME ftime;
-  uint64_t n;
+static void gettimeofday(struct timeval *tv, void *tz) {
 
-  GetSystemTimeAsFileTime (&ftime);
-  n = (((uint64_t) ftime.dwHighDateTime << 32)
+  FILETIME ftime; // Windows time in 100ns (1 unit of FILETIME is 100ns)
+  uint64_t time;  // Unix time in microseconds
+
+  GetSystemTimeAsFileTime(&ftime);
+
+  /* Set Windows time in 100ns */
+  time = (((uint64_t) ftime.dwHighDateTime << 32)
   + (uint64_t) ftime.dwLowDateTime);
 
-  if (n) {
-    n /= 10;
-    n -= ((369 * 365 + 89) * (uint64_t) 86400) * 1000000;
+  if (time) {
+
+    /* Convert Windows time to microseconds */    
+    time /= 10; 
+
+    /* Convert Windows time to Unix time */
+    time -= FTIME_UTIME_EPOCH_OFFSET_SEC * USEC_PER_SEC; 
   }
 
-  tv->tv_sec = n / 1000000;
-  tv->tv_usec = n % 1000000;
+  /* Set seconds and microseconds */
+  tv->tv_sec = time / USEC_PER_SEC;
+  tv->tv_usec = time % USEC_PER_SEC;
 
 }
 
-static void get_system_time(lib_uuid_time_t* uuid_time) {
+// static void get_system_time(lib_uuid_time_t* uuid_time) {
 
-  ULARGE_INTEGER time;
+//   ULARGE_INTEGER time;
 
-  /* NT keeps time in FILETIME format which is 100ns ticks since
-     Jan 1, 1601. 
+//   /* NT keeps time in FILETIME format which is 100ns ticks since
+//      Jan 1, 1601. 
      
-     UUIDs use time in 100ns ticks since Oct 15, 1582.
-     The difference is 17 Days in Oct + 30 (Nov) + 31 (Dec)
-     + 18 years and 5 leap days. */
-  GetSystemTimeAsFileTime((FILETIME*) &time);
-  time.QuadPart +=
+//      UUIDs use time in 100ns ticks since Oct 15, 1582.
+//      The difference is 17 Days in Oct + 30 (Nov) + 31 (Dec)
+//      + 18 years and 5 leap days. */
+//   GetSystemTimeAsFileTime((FILETIME*) &time);
+//   time.QuadPart +=
 
-    (unsigned __int64) (1000 * 1000 * 10)               // seconds
-    * (unsigned __int64) (60 * 60 * 24)                 // days
-    * (unsigned __int64) (17 + 30 + 31 + 365 * 18 + 5); // # of days
-  *uuid_time = time.QuadPart;
-}
+//     (unsigned __int64) (1000 * 1000 * 10)               // seconds
+//     * (unsigned __int64) (60 * 60 * 24)                 // days
+//     * (unsigned __int64) (17 + 30 + 31 + 365 * 18 + 5); // # of days
+//   *uuid_time = time.QuadPart;
+// }
 
 static int get_random_native(char seed[16]) {
   // TODO
@@ -166,42 +213,6 @@ void get_random_native_2(char seed[16]) {
 */
 
 #else
-
-/**
- * Convert time to nano seconds 
- */
-static uint64_t to_time_ns(struct timeval *tv) {
-  return ((uint64_t) tv->tv_sec * 1000000000)
-    + ((uint64_t) tv->tv_usec * 1000);
-}
-
-static uint64_t get_time_ns() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return to_time_ns(&tv);
-}
-
-static void get_system_time(lib_uuid_time_t* uuid_time) {
-
-  //struct timeval tp;
-  //gettimeofday(&tp, NULL);
-
-  /* Offset between UUID formatted times and Unix formatted times.
-     UUID UTC base time is October 15, 1582.
-     Unix base time is January 1, 1970.*/
-
-  //*uuid_time = ((uint64_t) tp.tv_sec * 10000000)
-  //+ ((uint64_t) tp.tv_usec * 10)
-  //+ I64(0x01B21DD213814000);
-
-  //fprintf(stderr, "1: %llu\n", *uuid_time);
-
-  //*uuid_time = to_time_ns(&tp) / 100 + I64(0x01B21DD213814000);
-  *uuid_time = get_time_ns() / 100 + I64(0x01B21DD213814000);
-
-  //fprintf(stderr, "2: %llu\n", *uuid_time);
-  //fprintf(stderr, "\n");
-}
 
 // get random info
 static int get_random_native(char seed[16]) {
@@ -241,6 +252,52 @@ void get_random_native_2(char seed[16]) {
 #endif
 
 //// COMMON
+
+/**
+ * Convert time to nano seconds 
+ */
+static uint64_t to_time_ns(struct timeval *tv) {
+  return ((uint64_t) tv->tv_sec * NSEC_PER_SEC)
+    + ((uint64_t) tv->tv_usec * NSEC_PER_USEC);
+}
+
+static uint64_t get_time_ns() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return to_time_ns(&tv);
+}
+
+static void get_system_time(lib_uuid_time_t* uuid_time) {
+
+
+  /* Offset between UUID formatted times and Unix formatted times.
+     UUID UTC base time is October 15, 1582.
+     Unix base time is January 1, 1970.*/
+
+  //struct timeval tv;
+  //gettimeofday(&tv, NULL);
+  //*uuid_time = ((uint64_t) tv.tv_sec * 10000000)
+  //+ ((uint64_t) tv.tv_usec * 10)
+  //+ I64(0x01B21DD213814000);
+
+  //fprintf(stderr, "0: %llu\n", *uuid_time);
+  //lib_uuid_time_t t = get_time_ns();
+
+  //*uuid_time = to_time_ns(&tv) / 100 + I64(0x01B21DD213814000);
+  //*uuid_time = get_time_ns() / 100 + I64(0x01B21DD213814000);
+  //fprintf(stderr, "1: %llu\n", *uuid_time);
+
+  //*uuid_time = to_time_ns(&tv) + (GTIME_UTIME_EPOCH_OFFSET_SEC * NSEC_PER_SEC);
+  //*uuid_time = get_time_ns() + (GTIME_UTIME_EPOCH_OFFSET_SEC * NSEC_PER_SEC);
+
+  /* Convert Unix time to Gregorian time */
+  *uuid_time = get_time_ns() + (GTIME_UTIME_EPOCH_OFFSET_SEC * NSEC_PER_SEC);
+
+  /* Convert to 100ns */
+  *uuid_time /= 100; 
+
+  //fprintf(stderr, "2: %llu\n", *uuid_time);
+}
 
 /* Sample code, not for use in production; see RFC 1750 */
 static int get_random(char seed[16]) {
