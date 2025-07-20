@@ -261,42 +261,32 @@ static uint64_t to_time_ns(struct timeval *tv) {
     + ((uint64_t) tv->tv_usec * NSEC_PER_USEC);
 }
 
+/**
+ * Get time in nanoseconds 
+ */
 static uint64_t get_time_ns() {
   struct timeval tv;
   gettimeofday(&tv, NULL);
   return to_time_ns(&tv);
 }
 
-static void get_system_time(lib_uuid_time_t* uuid_time) {
+/**
+ * Get UUID time in 100 nanoseconds 
+ */
+static void get_uuid_time(lib_uuid_time_t* uuid_time) {
 
-
-  /* Offset between UUID formatted times and Unix formatted times.
-     UUID UTC base time is October 15, 1582.
-     Unix base time is January 1, 1970.*/
-
-  //struct timeval tv;
-  //gettimeofday(&tv, NULL);
-  //*uuid_time = ((uint64_t) tv.tv_sec * 10000000)
-  //+ ((uint64_t) tv.tv_usec * 10)
-  //+ I64(0x01B21DD213814000);
-
-  //fprintf(stderr, "0: %llu\n", *uuid_time);
-  //lib_uuid_time_t t = get_time_ns();
-
-  //*uuid_time = to_time_ns(&tv) / 100 + I64(0x01B21DD213814000);
-  //*uuid_time = get_time_ns() / 100 + I64(0x01B21DD213814000);
-  //fprintf(stderr, "1: %llu\n", *uuid_time);
-
-  //*uuid_time = to_time_ns(&tv) + (GTIME_UTIME_EPOCH_OFFSET_SEC * NSEC_PER_SEC);
-  //*uuid_time = get_time_ns() + (GTIME_UTIME_EPOCH_OFFSET_SEC * NSEC_PER_SEC);
+  /* 
+   Offset between UUID time and Unix time.
+   UUID UTC base time is October 15, 1582.
+   Unix base time is January 1, 1970.
+  */
 
   /* Convert Unix time to Gregorian time */
   *uuid_time = get_time_ns() + (GTIME_UTIME_EPOCH_OFFSET_SEC * NSEC_PER_SEC);
 
-  /* Convert to 100ns */
+  /* Convert Gregorian time to 100ns */
   *uuid_time /= 100; 
 
-  //fprintf(stderr, "2: %llu\n", *uuid_time);
 }
 
 /* Sample code, not for use in production; see RFC 1750 */
@@ -316,12 +306,11 @@ static int get_random(char seed[16]) {
  */
 static uint16_t next_random() {
 
-  //static int inited_random = 0;
   lib_uuid_time_t time_now;
 
   if (!inited_random) {
     //fprintf(stderr, "Start init random...\n");
-    get_system_time(&time_now);
+    get_uuid_time(&time_now);
     time_now = time_now / LIB_UUIDS_PER_TICK;
     srand((unsigned int) (((time_now >> 32) ^ time_now) & 0xffffffff));
     inited_random = 1;
@@ -331,7 +320,7 @@ static uint16_t next_random() {
   return (uint16_t) rand();
 }
 
-static void fill_random(uint8_t* value, int num) {
+static void get_random_bytes(uint8_t* value, int num) {
     uint8_t* out = value;
     for (int i = 0; i < num; i++) {
        *out = (uint8_t) next_random();
@@ -343,19 +332,19 @@ static void fill_random(uint8_t* value, int num) {
  * Get time as 60-bit 100ns ticks since UUID epoch.
  * Compensate for the fact that real clock resolution is less than 100ns.
  */
-static void get_current_time(lib_uuid_time_t* timestamp) {
+static void get_uuid_time_tick(lib_uuid_time_t* time) {
 
   lib_uuid_time_t time_now;
 
   if (!inited_time) {
     //fprintf(stderr, "Start init time...\n");
-    get_system_time(&time_now);
+    get_uuid_time(&time_now);
     uuids_this_tick = LIB_UUIDS_PER_TICK;
     inited_time = 1;
   }
 
   for (;;) {
-    get_system_time(&time_now);
+    get_uuid_time(&time_now);
     //fprintf(stderr, "get_system_time-%d-%llu-%llu\n", i, time_now, time_last);
 
     /* if clock reading changed since last UUID generated, */    
@@ -383,7 +372,7 @@ static void get_current_time(lib_uuid_time_t* timestamp) {
   }
 
   /* add the count of uuids to low order bits of the clock reading */
-  *timestamp = time_now + uuids_this_tick;
+  *time = time_now + uuids_this_tick;
 }
 
 /**
@@ -581,7 +570,7 @@ void lib_uuid_create_v1(lib_uuid_t* uuid) {
   lib_uuid_node_t node;
 
   /* get time, node ID, saved state from non-volatile storage */
-  get_current_time(&timestamp);
+  get_uuid_time_tick(&timestamp);
   get_node_id(&node);
   //get_node_id(node); // ALT
 
@@ -615,7 +604,7 @@ void lib_uuid_create_v6(lib_uuid_t* uuid) {
 ////
 
 void lib_uuid_create_v7(lib_uuid_t* uuid) {
-    uint8_t value[16];
+    uint8_t out[16];
   
     // random bytes
     //int err = getentropy(value, 16);
@@ -623,38 +612,33 @@ void lib_uuid_create_v7(lib_uuid_t* uuid) {
     //    return EXIT_FAILURE;
     //}
 
-    // current timestamp in ms
+    // current time in ms
     //struct timespec ts;
     //int ok = timespec_get(&ts, TIME_UTC);
     //if (ok == 0) {
     //    return EXIT_FAILURE;
     //}
-    //uint64_t timestamp = (uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+    //uint64_t time = (uint64_t) ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 
-    // TODO: Stub
-    //for (int i = 0; i < 16; i++) {
-    //   value[i] = (uint8_t) next_random();
-    //}
+    lib_uuid_time_t time;
+    get_uuid_time_tick(&time); // in 100ns
+    time /= 10000; // convert to milliseconds (?)
 
-    lib_uuid_time_t timestamp;
-    get_current_time(&timestamp);
-    timestamp /= 10000; // convert to ns (?)
+    // time
+    out[0] = (time >> 40) & 0xFF;
+    out[1] = (time >> 32) & 0xFF;
+    out[2] = (time >> 24) & 0xFF;
+    out[3] = (time >> 16) & 0xFF;
+    out[4] = (time >> 8) & 0xFF;
+    out[5] = time & 0xFF;
 
-    // timestamp
-    value[0] = (timestamp >> 40) & 0xFF;
-    value[1] = (timestamp >> 32) & 0xFF;
-    value[2] = (timestamp >> 24) & 0xFF;
-    value[3] = (timestamp >> 16) & 0xFF;
-    value[4] = (timestamp >> 8) & 0xFF;
-    value[5] = timestamp & 0xFF;
-
-    fill_random(value + 6, 10);
+    get_random_bytes(out + 6, 10);
 
     // version and variant
-    value[6] = (value[6] & 0x0F) | 0x70;
-    value[8] = (value[8] & 0x3F) | 0x80;
+    out[6] = (out[6] & 0x0F) | 0x70;
+    out[8] = (out[8] & 0x3F) | 0x80;
     
-    lib_uuid_unpack(value, uuid);
+    lib_uuid_unpack(out, uuid);
 
 }
 
