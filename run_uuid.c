@@ -10,6 +10,7 @@ static bool supports_version(int version) {
     return (version == 1 
         || version == 3
         || version == 5
+        || version == 6
         || version == 7);
 }
 
@@ -23,6 +24,9 @@ static int uuid_create(int version, lib_uuid_t* uuid, lib_uuid_t nsid, void* nam
     } else if (version == 5) {
         lib_uuid_create_v5(uuid, NameSpace_DNS, name, namelen);
         return 0;
+    } else if (version == 6) {
+        lib_uuid_create_v6(uuid);
+        return 0;        
     } else if (version == 7) {
         lib_uuid_create_v7(uuid);
         return 0;

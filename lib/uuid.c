@@ -462,7 +462,7 @@ int lib_uuid_gen_uuid_v(lib_uuid_t* uuid, int version) {
     lib_uuid_create_v5(uuid, NameSpace_DNS, "www.widgets.com", 15);
   }
   if (version == 6) {
-    lib_uuid_create_v6(uuid);  // Not implemented yet
+    lib_uuid_create_v6(uuid);
   }
   if (version == 7) {
     lib_uuid_create_v7(uuid);
@@ -597,8 +597,36 @@ void lib_uuid_create_v5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t na
   lib_uuid_create_sha1(uuid, nsid, name, namelen);
 }
 
+/* Converts UUID version 1 to version 6 in place. */
+void uuidv1tov6(uint8_t u[16]) {
+
+  uint64_t ut;
+  unsigned char *up = (unsigned char *)u;
+
+  // load ut with the first 64 bits of the UUID
+  ut = ((uint64_t)ntohl(*((uint32_t*)up))) << 32;
+  ut |= ((uint64_t)ntohl(*((uint32_t*)&up[4])));
+
+  // dance the bit-shift...
+  ut =
+    ((ut >> 32) & 0x0FFF) | // 12 least significant bits
+    (0x6000) | // version number
+    ((ut >> 28) & 0x0000000FFFFF0000) | // next 20 bits
+    ((ut << 20) & 0x000FFFF000000000) | // next 16 bits
+    (ut << 52); // 12 most significant bits
+
+  // store back in UUID
+  *((uint32_t*)up) = htonl((uint32_t)(ut >> 32));
+  *((uint32_t*)&up[4]) = htonl((uint32_t)(ut));
+
+}
+
 void lib_uuid_create_v6(lib_uuid_t* uuid) {
-  // Not implemented yet
+  uint8_t out[16];
+  lib_uuid_create_v1(uuid);
+  lib_uuid_pack(uuid, out);
+  uuidv1tov6(out);
+  lib_uuid_unpack(out, uuid);
 }
 
 ////
