@@ -9,6 +9,7 @@
 static bool supports_version(int version) {
     return (version == 1 
         || version == 3
+        || version == 4
         || version == 5
         || version == 6
         || version == 7);
@@ -21,6 +22,9 @@ static int uuid_create(int version, lib_uuid_t* uuid, lib_uuid_t nsid, void* nam
     } else if (version == 3) {
         lib_uuid_create_v3(uuid, NameSpace_DNS, name, namelen);
         return 0;
+    } else if (version == 4) {
+        lib_uuid_create_v4(uuid);
+        return 0;        
     } else if (version == 5) {
         lib_uuid_create_v5(uuid, NameSpace_DNS, name, namelen);
         return 0;
@@ -67,27 +71,9 @@ int run_uuid(int version, int format, /*lib_uuid_t nsid, char* name,*/ int count
 
     for (int i = 0; i < count; i++) {
         lib_uuid_t uuid;
+
         uuid_create(version, &uuid, nsid, name, namelen);
-
         lib_uuid_printf(format, uuid);
-
-        ////
-        /*
-        unsigned char v[16];
-        lib_uuid_pack(&uuid, v);
-        printf("  ");
-        for (int i = 0; i < 16; i++) {
-            printf("%2.2x", v[i]);
-        }
-
-        lib_uuid_t x;
-        lib_uuid_unpack(v, &x);
-
-        printf("  ");
-        lib_uuid_print(x);
-        */
-
-        ////
 
         if (version == 1) {
             lib_uuid_reset(); // Why?

@@ -159,15 +159,17 @@ void lib_uuid_create_v2(lib_uuid_t* uuid); // Not implemnted yet
 
 void lib_uuid_create_v3(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
 
-void lib_uuid_create_v4(lib_uuid_t* uuid); // Not implemnted yet
+void lib_uuid_create_v4(lib_uuid_t* uuid);
 
 void lib_uuid_create_v5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
 
-void lib_uuid_create_v6(lib_uuid_t* uuid); // Not implemnted yet
+void lib_uuid_create_v6(lib_uuid_t* uuid);
 
 void lib_uuid_create_v7(lib_uuid_t* uuid);
 
 ////
+
+void lib_uuid_create_random(lib_uuid_t* uuid);
 
 void lib_uuid_create_md5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
 

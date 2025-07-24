@@ -456,7 +456,7 @@ int lib_uuid_gen_uuid_v(lib_uuid_t* uuid, int version) {
     lib_uuid_create_v3(uuid, NameSpace_DNS, "www.widgets.com", 15);
   }
   if (version == 4) {
-    lib_uuid_create_v4(uuid); // Not implemented yet
+    lib_uuid_create_v4(uuid);
   }
   if (version == 5) {
     lib_uuid_create_v5(uuid, NameSpace_DNS, "www.widgets.com", 15);
@@ -590,7 +590,7 @@ void lib_uuid_create_v3(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t na
 }
 
 void lib_uuid_create_v4(lib_uuid_t* uuid) {
-  // Not implemnted yet
+  lib_uuid_create_random(uuid);
 } 
 
 void lib_uuid_create_v5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
@@ -668,6 +668,24 @@ void lib_uuid_create_v7(lib_uuid_t* uuid) {
     
     lib_uuid_unpack(out, uuid);
 
+}
+
+static void uuid_generate_random(lib_uuid_t* uuid, int num) {
+  uint8_t buf[16];
+
+  for (int i = 0; i < num; i++) {
+    get_random_bytes(buf, sizeof(buf));
+    lib_uuid_unpack(buf, uuid);
+
+  }
+
+  uuid->clock_seq_low = (uuid->clock_seq_low & 0x3FFF) | 0x8000;
+  uuid->time_hi_and_version = (uuid->time_hi_and_version & 0x0FFF) | 0x4000;
+
+}
+
+void lib_uuid_create_random(lib_uuid_t* uuid) {
+  uuid_generate_random(uuid, 1);	
 }
 
 static void lib_uuid_hash_v(
