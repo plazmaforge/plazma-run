@@ -15,6 +15,7 @@
 #endif
 
 #include "uuid.h"
+#include "md5.h"
 
 /**
  * Set the following to the number of 100ns ticks of the actual
@@ -598,14 +599,14 @@ void lib_uuid_create_v5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t na
 }
 
 /* Converts UUID version 1 to version 6 in place. */
-void uuidv1tov6(uint8_t u[16]) {
+static void uuid_v1tov6(uint8_t u[16]) {
 
   uint64_t ut;
-  unsigned char *up = (unsigned char *)u;
+  uint8_t *up = (uint8_t*) u;
 
   // load ut with the first 64 bits of the UUID
-  ut = ((uint64_t)ntohl(*((uint32_t*)up))) << 32;
-  ut |= ((uint64_t)ntohl(*((uint32_t*)&up[4])));
+  ut = ((uint64_t) ntohl(*((uint32_t*) up))) << 32;
+  ut |= ((uint64_t) ntohl(*((uint32_t*) &up[4])));
 
   // dance the bit-shift...
   ut =
@@ -616,8 +617,8 @@ void uuidv1tov6(uint8_t u[16]) {
     (ut << 52); // 12 most significant bits
 
   // store back in UUID
-  *((uint32_t*)up) = htonl((uint32_t)(ut >> 32));
-  *((uint32_t*)&up[4]) = htonl((uint32_t)(ut));
+  *((uint32_t*) up) = htonl((uint32_t) (ut >> 32));
+  *((uint32_t*) &up[4]) = htonl((uint32_t) (ut));
 
 }
 
@@ -625,7 +626,7 @@ void lib_uuid_create_v6(lib_uuid_t* uuid) {
   uint8_t out[16];
   lib_uuid_create_v1(uuid);
   lib_uuid_pack(uuid, out);
-  uuidv1tov6(out);
+  uuid_v1tov6(out);
   lib_uuid_unpack(out, uuid);
 }
 
@@ -688,7 +689,7 @@ void lib_uuid_create_random(lib_uuid_t* uuid) {
   uuid_generate_random(uuid, 1);	
 }
 
-static void lib_uuid_hash_v(
+static void lib_uuid_hash_v3or5(
   unsigned char* hash,
   lib_uuid_t* nsid, 
   size_t ssize, 
@@ -697,15 +698,18 @@ static void lib_uuid_hash_v(
   int version) {
 
   //// TODO: Stub
-  size_t count = 0;
-  if (version == LIB_UUID_TYPE_MD5) {
-    count = 16;
-  } else if (version == LIB_UUID_TYPE_SHA1) {
-    count = 20;
-  }
-  for (int i = 0; i < count; i++) {
-    hash[i] = (unsigned char) next_random();
-  }
+  
+  //size_t count = 0;
+  //if (version == LIB_UUID_TYPE_MD5) {
+  //  count = 16;
+  //} else if (version == LIB_UUID_TYPE_SHA1) {
+  //  count = 20;
+  //}
+  
+  //for (int i = 0; i < count; i++) {
+  //  hash[i] = (unsigned char) next_random();
+  //}
+
   ////
 
   //HASH_CTX c;
@@ -713,6 +717,15 @@ static void lib_uuid_hash_v(
 	//HASH_Update(&c, &net_nsid, sizeof(net_nsid));
 	//HASH_Update(&c, name, namelen);
 	//HASH_Final(hash, &c);
+
+  lib_md5_context_t ctx;
+  lib_md5_init(&ctx);
+  lib_md5_starts(&ctx);
+  lib_md5_update(&ctx, (unsigned char*) &nsid, ssize);
+  lib_md5_update(&ctx, (unsigned char*) name, nsize);
+
+  lib_md5_finish(&ctx, hash);
+  lib_md5_free(&ctx);
 
 }
 
@@ -737,7 +750,7 @@ static void lib_uuid_create_v3or5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name,
 	net_nsid.time_mid = htons(net_nsid.time_mid);
 	net_nsid.time_hi_and_version = htons(net_nsid.time_hi_and_version);
 
-  lib_uuid_hash_v(hash, &net_nsid, sizeof(net_nsid), name, namelen, version);
+  lib_uuid_hash_v3or5(hash, &net_nsid, sizeof(net_nsid), name, namelen, version);
 
 	/* the hash is in network byte order at this point */
 	format_uuid_v3or5(uuid, hash, version);
