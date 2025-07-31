@@ -16,6 +16,7 @@
 
 #include "uuid.h"
 #include "md5.h"
+#include "sha1.h"
 
 /**
  * Set the following to the number of 100ns ticks of the actual
@@ -699,7 +700,7 @@ static void lib_uuid_hash_v3or5(
 
   // Convert structure to unsigned char array 
   // because we have some problems
-  // with 'md5_update' function for 'lib_uuid_t' stcture
+  // with 'md5_update' function for 'lib_uuid_t' structure
   // It doesn't work correctly
 
   unsigned char uuid[ssize];
@@ -722,16 +723,31 @@ static void lib_uuid_hash_v3or5(
 	//HASH_Update(&c, &net_nsid, sizeof(net_nsid));
 	//HASH_Update(&c, name, namelen);
 	//HASH_Final(hash, &c);
+
+  if (version == 3) {
+    lib_md5_context_t ctx;
+    lib_md5_init(&ctx);
+    lib_md5_starts(&ctx);
+
+    lib_md5_update(&ctx, uuid, ssize);
+    lib_md5_update(&ctx, (unsigned char*) name, nsize);
+
+    lib_md5_finish(&ctx, hash);
+    lib_md5_free(&ctx);
+
+  } else if (version == 5) {
+    lib_sha1_context_t ctx;
+    lib_sha1_init(&ctx);
+    lib_sha1_starts(&ctx);
+
+    lib_sha1_update(&ctx, uuid, ssize);
+    lib_sha1_update(&ctx, (unsigned char*) name, nsize);
+
+    lib_sha1_finish(&ctx, hash);
+    lib_sha1_free(&ctx);
+
+  }
     
-  lib_md5_context_t ctx;
-  lib_md5_init(&ctx);
-  lib_md5_starts(&ctx);
-
-  lib_md5_update(&ctx, uuid, ssize);
-  lib_md5_update(&ctx, (unsigned char*) name, nsize);
-
-  lib_md5_finish(&ctx, hash);
-  lib_md5_free(&ctx);
 
 }
 

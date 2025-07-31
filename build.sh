@@ -65,6 +65,7 @@ $CC $CFLAGS lib/map.c -o map.o
 
 $CC $CFLAGS lib/md.c -o md.o
 $CC $CFLAGS lib/md5.c -o md5.o
+$CC $CFLAGS lib/sha1.c -o sha1.o
 $CC $CFLAGS lib/sha256.c -o sha256.o
 $CC $CFLAGS lib/sha512.c -o sha512.o
 
@@ -168,7 +169,7 @@ $CC $LDFLAGS getopt.o iolib.o base32.o run_base32.o -o run-base32
 $CC $LDFLAGS getopt.o iolib.o base58.o run_base58.o -o run-base58
 $CC $LDFLAGS getopt.o iolib.o base64.o run_base64.o -o run-base64
 $CC $LDFLAGS getopt.o run_ascii.o -o run-ascii
-$CC $LDFLAGS getopt.o memlib.o md5.o uuid.o run_uuid.o -o run-uuid
+$CC $LDFLAGS getopt.o memlib.o md5.o sha1.o uuid.o run_uuid.o -o run-uuid
 $CC $LDFLAGS getopt.o run_diff.o -o run-diff
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt

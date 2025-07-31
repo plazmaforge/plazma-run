@@ -10,6 +10,11 @@
 #define LIB_CAN_MD5
 #define LIB_MD5_C
 
+/* SHA-1 */
+#define LIB_MD_CAN_SHA1
+#define LIB_CAN_SHA1
+#define LIB_SHA1_C
+
 /* SHA-224 */
 #define LIB_MD_CAN_SHA224
 #define LIB_CAN_SHA224
