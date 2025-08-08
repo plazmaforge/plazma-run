@@ -69,14 +69,3 @@ void lib_memsetz(void* data, size_t size) {
     }
     memset(data, 0, size);
 }
-
-////
-
-void lib_memreset(void* data, size_t len) {
-    lib_memsetz(data, len);
-}
-
-void lib_freereset(void* data, size_t len) {
-    lib_freez(data, len);
-}
-

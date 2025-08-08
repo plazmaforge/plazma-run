@@ -1,4 +1,3 @@
-
 #ifndef PLAZMA_SHA256_H
 #define PLAZMA_SHA256_H
 
@@ -13,9 +12,9 @@ extern "C" {
 #endif
 
 typedef struct lib_sha256_context_t {
-    unsigned char buffer[64];   /*!< The data block being processed. */
     uint32_t total[2];          /*!< The number of Bytes processed.  */
     uint32_t state[8];          /*!< The intermediate digest state.  */
+    unsigned char buffer[64];   /*!< The data block being processed. */
 #if defined(LIB_SHA224_C)
     int is224;                  /*!< Determines which function to use:
                                                     0: Use SHA-256, or 1: Use SHA-224. */
@@ -27,7 +26,7 @@ void lib_sha256_init(lib_sha256_context_t* ctx);
 
 void lib_sha256_free(lib_sha256_context_t* ctx);
 
-void lib_sha256_clone(lib_sha256_context_t *dst, const lib_sha256_context_t* src);
+void lib_sha256_clone(lib_sha256_context_t* dst, const lib_sha256_context_t* src);
 
 int lib_sha256_starts(lib_sha256_context_t* ctx, int is224);
 

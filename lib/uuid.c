@@ -706,18 +706,6 @@ static void lib_uuid_hash_v3or5(
   unsigned char uuid[ssize];
   lib_uuid_pack(nsid, uuid);
 
-  //// TODO: Stub  
-  //size_t count = 0;
-  //if (version == LIB_UUID_TYPE_MD5) {
-  //  count = 16;
-  //} else if (version == LIB_UUID_TYPE_SHA1) {
-  //  count = 20;
-  //}  
-  //for (int i = 0; i < count; i++) {
-  //  hash[i] = (unsigned char) next_random();
-  //}
-  ////
-
   //HASH_CTX c;
 	//HASH_Init(&c);
 	//HASH_Update(&c, &net_nsid, sizeof(net_nsid));

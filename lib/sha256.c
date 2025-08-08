@@ -494,8 +494,7 @@ static sha_test_sum_t sha256_test_sum[] =
 /*
  * Checkup routine
  */
-static int lib_sha256_common_self_test(int verbose, int is224)
-{
+static int lib_sha256_common_self_test(int verbose, int is224) {
     int i, buflen, ret = 0;
     unsigned char *buf;
     unsigned char sha256sum[32];

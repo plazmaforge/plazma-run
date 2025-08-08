@@ -38,10 +38,4 @@ void lib_freez(void* data, size_t size);
  */
 void lib_memsetz(void* data, size_t size);
 
-////
-
-void lib_memreset(void* data, size_t len);
-
-void lib_freereset(void* data, size_t len);
-
 #endif // PLAZMA_LIB_MEMLIB_H

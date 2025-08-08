@@ -15,8 +15,7 @@ typedef struct lib_sha1_context_t {
     uint32_t total[2];          /*!< The number of Bytes processed.  */
     uint32_t state[5];          /*!< The intermediate digest state.  */
     unsigned char buffer[64];   /*!< The data block being processed. */
-}
-lib_sha1_context_t;
+} lib_sha1_context_t;
 
 void lib_sha1_init(lib_sha1_context_t *ctx);
 
