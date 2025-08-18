@@ -22,9 +22,9 @@ typedef struct lib_sha256_context_t {
 } lib_sha256_context_t;
 
 
-void lib_sha256_init(lib_sha256_context_t* ctx);
+int lib_sha256_init(lib_sha256_context_t* ctx);
 
-void lib_sha256_free(lib_sha256_context_t* ctx);
+int lib_sha256_free(lib_sha256_context_t* ctx);
 
 void lib_sha256_clone(lib_sha256_context_t* dst, const lib_sha256_context_t* src);
 

@@ -23,16 +23,27 @@
 #include <stdio.h>
 #endif
 
-#if !defined(LIB_SHA256_ALT)
-
 #define SHA256_BLOCK_SIZE 64
 
-void lib_sha256_init(lib_sha256_context_t* ctx) {
+static void lib_sha256_zero(lib_sha256_context_t* ctx) {
     lib_memsetz(ctx, sizeof(lib_sha256_context_t));
 }
 
-void lib_sha256_free(lib_sha256_context_t *ctx) {
-    lib_memsetz(ctx, sizeof(lib_sha256_context_t));
+int lib_sha256_init(lib_sha256_context_t* ctx) {
+    if (!ctx) {
+        return 1;
+    }
+    lib_sha256_zero(ctx);
+    // start
+    return 0;
+}
+
+int lib_sha256_free(lib_sha256_context_t* ctx) {
+    if (!ctx) {
+        return 1;
+    }
+    lib_sha256_zero(ctx);
+    return 0;
 }
 
 void lib_sha256_clone(lib_sha256_context_t* dst, const lib_sha256_context_t* src) {
@@ -43,6 +54,9 @@ void lib_sha256_clone(lib_sha256_context_t* dst, const lib_sha256_context_t* src
  * SHA-256 context setup
  */
 int lib_sha256_starts(lib_sha256_context_t* ctx, int is224) {
+    if (!ctx) {
+        return 1;
+    }
 #if defined(LIB_SHA224_C) && defined(LIB_SHA256_C)
     if (is224 != 0 && is224 != 1) {
         return LIB_ERR_SHA256_BAD_INPUT_DATA;
@@ -267,9 +281,7 @@ static size_t lib_internal_sha256_process_many_c(lib_sha256_context_t* ctx, cons
 /*
  * SHA-256 process buffer
  */
-int lib_sha256_update(lib_sha256_context_t* ctx,
-                          const unsigned char* input,
-                          size_t ilen) {
+int lib_sha256_update(lib_sha256_context_t* ctx, const unsigned char* input, size_t ilen) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
     size_t fill;
     uint32_t left;
@@ -321,8 +333,7 @@ int lib_sha256_update(lib_sha256_context_t* ctx,
 /*
  * SHA-256 final digest
  */
-int lib_sha256_finish(lib_sha256_context_t* ctx,
-                          unsigned char* output) {
+int lib_sha256_finish(lib_sha256_context_t* ctx, unsigned char* output) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
     uint32_t used;
     uint32_t high, low;
@@ -388,12 +399,10 @@ exit:
     return ret;
 }
 
-#endif /* !LIB_SHA256_ALT */
-
 /*
  * output = SHA-256( input buffer )
  */
-int lib_sha256(const unsigned char *input, size_t ilen, unsigned char *output, int is224) {
+int lib_sha256(const unsigned char* input, size_t ilen, unsigned char *output, int is224) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
     lib_sha256_context_t ctx;
 

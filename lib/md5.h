@@ -8,8 +8,6 @@
 extern "C" {
 #endif
 
-#if !defined(LIB_MD5_ALT)
-
 typedef struct lib_md5_context_t {
     uint32_t total[2];          /*!< number of bytes processed  */
     uint32_t state[4];          /*!< intermediate digest state  */
@@ -17,13 +15,9 @@ typedef struct lib_md5_context_t {
 }
 lib_md5_context_t;
 
-#else  /* LIB_MD5_ALT */
-#include "md5_alt.h"
-#endif /* LIB_MD5_ALT */
+int lib_md5_init(lib_md5_context_t* ctx);
 
-void lib_md5_init(lib_md5_context_t* ctx);
-
-void lib_md5_free(lib_md5_context_t* ctx);
+int lib_md5_free(lib_md5_context_t* ctx);
 
 void lib_md5_clone(lib_md5_context_t* dst, const lib_md5_context_t* src);
 
@@ -35,7 +29,7 @@ int lib_md5_finish(lib_md5_context_t* ctx, unsigned char output[16]);
 
 int lib_internal_md5_process(lib_md5_context_t* ctx, const unsigned char data[64]);
 
-int lib_md5(const unsigned char *input, size_t ilen, unsigned char output[16]);
+int lib_md5(const unsigned char* input, size_t ilen, unsigned char output[16]);
 
 #if defined(LIB_SELF_TEST)
 

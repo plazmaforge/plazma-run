@@ -14,27 +14,41 @@
 #include <string.h>
 
 
-#if !defined(LIB_SHA1_ALT)
+//#if !defined(LIB_SHA1_ALT)
 
-void lib_sha1_init(lib_sha1_context_t *ctx) {
-    memset(ctx, 0, sizeof(lib_sha1_context_t));
-}
-
-void lib_sha1_free(lib_sha1_context_t *ctx) {
-    if (ctx == NULL) {
-        return;
-    }
+static void lib_sha1_zero(lib_sha1_context_t* ctx) {
     lib_memsetz(ctx, sizeof(lib_sha1_context_t));
 }
 
-void lib_sha1_clone(lib_sha1_context_t *dst, const lib_sha1_context_t *src) {
+int lib_sha1_init(lib_sha1_context_t* ctx) {
+    if (!ctx) {
+        return 1;
+    }
+    lib_sha1_zero(ctx);
+    //return lib_sha1_starts(ctx);
+    return 0;
+}
+
+int lib_sha1_free(lib_sha1_context_t* ctx) {
+    if (!ctx) {
+        return 1;
+    }
+    lib_sha1_zero(ctx);
+    return 0;
+}
+
+void lib_sha1_clone(lib_sha1_context_t* dst, const lib_sha1_context_t* src) {
     *dst = *src;
 }
 
 /*
  * SHA-1 context setup
  */
-int lib_sha1_starts(lib_sha1_context_t *ctx) {
+int lib_sha1_starts(lib_sha1_context_t* ctx) {
+    if (!ctx) {
+        return 1;
+    }
+
     ctx->total[0] = 0;
     ctx->total[1] = 0;
 
@@ -47,8 +61,8 @@ int lib_sha1_starts(lib_sha1_context_t *ctx) {
     return 0;
 }
 
-#if !defined(LIB_SHA1_PROCESS_ALT)
-int lib_internal_sha1_process(lib_sha1_context_t *ctx, const unsigned char data[64]) {
+//#if !defined(LIB_SHA1_PROCESS_ALT)
+int lib_internal_sha1_process(lib_sha1_context_t* ctx, const unsigned char data[64]) {
     struct {
         uint32_t temp, W[16], A, B, C, D, E;
     } local;
@@ -214,12 +228,12 @@ int lib_internal_sha1_process(lib_sha1_context_t *ctx, const unsigned char data[
     return 0;
 }
 
-#endif /* !LIB_SHA1_PROCESS_ALT */
+//#endif /* !LIB_SHA1_PROCESS_ALT */
 
 /*
  * SHA-1 process buffer
  */
-int lib_sha1_update(lib_sha1_context_t *ctx, const unsigned char *input, size_t ilen) {
+int lib_sha1_update(lib_sha1_context_t* ctx, const unsigned char* input, size_t ilen) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
     size_t fill;
     uint32_t left;
@@ -269,7 +283,7 @@ int lib_sha1_update(lib_sha1_context_t *ctx, const unsigned char *input, size_t 
 /*
  * SHA-1 final digest
  */
-int lib_sha1_finish(lib_sha1_context_t *ctx, unsigned char output[20]) {
+int lib_sha1_finish(lib_sha1_context_t* ctx, unsigned char output[20]) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
     uint32_t used;
     uint32_t high, low;
@@ -325,12 +339,12 @@ exit:
     return ret;
 }
 
-#endif /* !LIB_SHA1_ALT */
+//#endif /* !LIB_SHA1_ALT */
 
 /*
  * output = SHA-1( input buffer )
  */
-int lib_sha1(const unsigned char *input, size_t ilen, unsigned char output[20]) {
+int lib_sha1(const unsigned char* input, size_t ilen, unsigned char output[20]) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
     lib_sha1_context_t ctx;
 

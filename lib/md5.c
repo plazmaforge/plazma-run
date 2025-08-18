@@ -9,8 +9,6 @@
  *  https://cryptography.io/en/latest/development/test-vectors/
  */
 
-//#if defined(LIB_MD5_C)
-
 #include <string.h>
 #include <stdio.h>
 
@@ -20,14 +18,26 @@
 #include "memlib.h"
 #include "md5.h"
 
-//#if !defined(LIB_MD5_ALT)
-
-void lib_md5_init(lib_md5_context_t* ctx) {
+static void lib_md5_zero(lib_md5_context_t* ctx) {
     lib_memsetz(ctx, sizeof(lib_md5_context_t));
 }
 
-void lib_md5_free(lib_md5_context_t* ctx) {
-    lib_memsetz(ctx, sizeof(lib_md5_context_t));
+int lib_md5_init(lib_md5_context_t* ctx) {
+    if (!ctx) {
+        return 1;
+    }
+    lib_md5_zero(ctx);
+    // start
+    return 0;
+}
+
+int lib_md5_free(lib_md5_context_t* ctx) {
+    if (!ctx) {
+        return 1;
+    }
+    lib_md5_zero(ctx);
+    // start
+    return 0;
 }
 
 void lib_md5_clone(lib_md5_context_t* dst, const lib_md5_context_t* src) {
@@ -38,6 +48,11 @@ void lib_md5_clone(lib_md5_context_t* dst, const lib_md5_context_t* src) {
  * MD5 context setup
  */
 int lib_md5_starts(lib_md5_context_t* ctx) {
+
+    if (!ctx) {
+        return 1;
+    }
+
     ctx->total[0] = 0;
     ctx->total[1] = 0;
 
@@ -49,10 +64,7 @@ int lib_md5_starts(lib_md5_context_t* ctx) {
     return 0;
 }
 
-#if !defined(LIB_MD5_PROCESS_ALT)
-int lib_internal_md5_process(lib_md5_context_t* ctx,
-                                 const unsigned char data[64])
-{
+int lib_internal_md5_process(lib_md5_context_t* ctx, const unsigned char data[64]) {
     struct {
         uint32_t X[16], A, B, C, D;
     } local;
@@ -183,12 +195,10 @@ int lib_internal_md5_process(lib_md5_context_t* ctx,
     return 0;
 }
 
-#endif /* !LIB_MD5_PROCESS_ALT */
-
 /*
  * MD5 process buffer
  */
-int lib_md5_update(lib_md5_context_t* ctx, const unsigned char *input, size_t ilen) {
+int lib_md5_update(lib_md5_context_t* ctx, const unsigned char* input, size_t ilen) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
     size_t fill;
     uint32_t left;
@@ -292,12 +302,10 @@ exit:
     return ret;
 }
 
-//#endif /* !LIB_MD5_ALT */
-
 /*
  * output = MD5( input buffer )
  */
-int lib_md5(const unsigned char *input, size_t ilen, unsigned char output[16]) {
+int lib_md5(const unsigned char* input, size_t ilen, unsigned char output[16]) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
     lib_md5_context_t ctx;
 
