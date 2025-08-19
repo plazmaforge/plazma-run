@@ -11,6 +11,10 @@
 #include "md5.h"
 #endif
 
+#if defined(LIB_MD_CAN_SHA1)
+#include "sha1.h"
+#endif
+
 #if defined(LIB_MD_CAN_SHA256)
 #include "sha256.h"
 #endif
@@ -28,6 +32,12 @@
 #if defined(LIB_MD_CAN_MD5)
 static const lib_md_info_t lib_md5_info = {
     MD_INFO(LIB_MD_MD5, 16, 64)
+};
+#endif
+
+#if defined(LIB_MD_CAN_SHA1)
+static const lib_md_info_t lib_sha1_info = {
+    MD_INFO(LIB_MD_SHA1, 20, 64)
 };
 #endif
 
@@ -84,22 +94,22 @@ const lib_md_info_t* lib_md_info_from_type(lib_md_type_t md_type) {
     }
 }
 
-unsigned char lib_md_get_size(const lib_md_info_t *md_info) {
+unsigned char lib_md_get_size(const lib_md_info_t* md_info) {
     return md_info ? md_info->size : 0;
 }
 
-lib_md_type_t lib_md_get_type(const lib_md_info_t *md_info) {
+lib_md_type_t lib_md_get_type(const lib_md_info_t* md_info) {
     return md_info ? md_info->type : LIB_MD_NONE;
 }
 
 ////
 
-void lib_md_init(lib_md_context_t *ctx) {
+void lib_md_init(lib_md_context_t* ctx) {
     /* Note: this sets engine (if present) to lib_md_ENGINE_LEGACY */
     memset(ctx, 0, sizeof(lib_md_context_t));
 }
 
-void lib_md_free(lib_md_context_t *ctx) {
+void lib_md_free(lib_md_context_t* ctx) {
     if (ctx == NULL || ctx->md_info == NULL) {
         return;
     }
@@ -160,7 +170,7 @@ void lib_md_free(lib_md_context_t *ctx) {
 // lib_##type##_init(((lib_##type##_context_t*)) ctx->md_ctx);                                \
 // return LIB_ERR_MD_ALLOC_FAILED;
 
-int lib_md_setup(lib_md_context_t *ctx, const lib_md_info_t *md_info, int hmac) {
+int lib_md_setup(lib_md_context_t* ctx, const lib_md_info_t* md_info, int hmac) {
     
 #if defined(LIB_MD_C)
     if (ctx == NULL) {
@@ -234,7 +244,7 @@ int lib_md_setup(lib_md_context_t *ctx, const lib_md_info_t *md_info, int hmac) 
 
 ////
 
-int lib_md_start(lib_md_context_t *ctx) {
+int lib_md_start(lib_md_context_t* ctx) {
 #if defined(LIB_MD_C)
     if (ctx == NULL || ctx->md_info == NULL) {
         return LIB_ERR_MD_BAD_INPUT_DATA;
@@ -268,7 +278,7 @@ int lib_md_start(lib_md_context_t *ctx) {
     }
 }
 
-int lib_md_update(lib_md_context_t *ctx, const unsigned char *input, size_t ilen)  {
+int lib_md_update(lib_md_context_t* ctx, const unsigned char* idata, size_t isize)  {
 #if defined(LIB_MD_C)
     if (ctx == NULL || ctx->md_info == NULL) {
         return LIB_ERR_MD_BAD_INPUT_DATA;
@@ -278,23 +288,23 @@ int lib_md_update(lib_md_context_t *ctx, const unsigned char *input, size_t ilen
     switch (ctx->md_info->type) {
 #if defined(LIB_MD5_C)
         case LIB_MD_MD5:
-            return lib_md5_update((lib_md5_context_t*) ctx->md_ctx, input, ilen);
+            return lib_md5_update((lib_md5_context_t*) ctx->md_ctx, idata, isize);
 #endif
 #if defined(LIB_SHA224_C)
         case LIB_MD_SHA224:
-            return lib_sha256_update((lib_sha256_context_t*) ctx->md_ctx, input, ilen);
+            return lib_sha256_update((lib_sha256_context_t*) ctx->md_ctx, idata, isize);
 #endif
 #if defined(LIB_SHA256_C)
         case LIB_MD_SHA256:
-            return lib_sha256_update((lib_sha256_context_t*) ctx->md_ctx, input, ilen);
+            return lib_sha256_update((lib_sha256_context_t*) ctx->md_ctx, idata, isize);
 #endif
 #if defined(LIB_SHA384_C)
         case LIB_MD_SHA384:
-            return lib_sha512_update((lib_sha512_context_t*) ctx->md_ctx, input, ilen);
+            return lib_sha512_update((lib_sha512_context_t*) ctx->md_ctx, idata, isize);
 #endif
 #if defined(LIB_SHA512_C)
         case LIB_MD_SHA512:
-            return lib_sha512_update((lib_sha512_context_t*) ctx->md_ctx, input, ilen);
+            return lib_sha512_update((lib_sha512_context_t*) ctx->md_ctx, idata, isize);
 #endif
 
         default:
@@ -302,7 +312,7 @@ int lib_md_update(lib_md_context_t *ctx, const unsigned char *input, size_t ilen
     }
 }
 
-int lib_md_finish(lib_md_context_t *ctx, unsigned char *output) {
+int lib_md_finish(lib_md_context_t* ctx, unsigned char* odata) {
 #if defined(LIB_MD_C)
     if (ctx == NULL || ctx->md_info == NULL) {
         return LIB_ERR_MD_BAD_INPUT_DATA;
@@ -312,23 +322,23 @@ int lib_md_finish(lib_md_context_t *ctx, unsigned char *output) {
     switch (ctx->md_info->type) {
 #if defined(LIB_MD5_C)
         case LIB_MD_MD5:
-            return lib_md5_finish((lib_md5_context_t*) ctx->md_ctx, output);
+            return lib_md5_finish((lib_md5_context_t*) ctx->md_ctx, odata);
 #endif
 #if defined(LIB_SHA224_C)
         case LIB_MD_SHA224:
-            return lib_sha256_finish((lib_sha256_context_t*) ctx->md_ctx, output);
+            return lib_sha256_finish((lib_sha256_context_t*) ctx->md_ctx, odata);
 #endif
 #if defined(LIB_SHA256_C)
         case LIB_MD_SHA256:
-            return lib_sha256_finish((lib_sha256_context_t*) ctx->md_ctx, output);
+            return lib_sha256_finish((lib_sha256_context_t*) ctx->md_ctx, odata);
 #endif
 #if defined(LIB_SHA384_C)
         case LIB_MD_SHA384:
-            return lib_sha512_finish((lib_sha512_context_t*) ctx->md_ctx, output);
+            return lib_sha512_finish((lib_sha512_context_t*) ctx->md_ctx, odata);
 #endif
 #if defined(LIB_SHA512_C)
         case LIB_MD_SHA512:
-            return lib_sha512_finish((lib_sha512_context_t*) ctx->md_ctx, output);
+            return lib_sha512_finish((lib_sha512_context_t*) ctx->md_ctx, odata);
 #endif
 
         default:
@@ -336,8 +346,8 @@ int lib_md_finish(lib_md_context_t *ctx, unsigned char *output) {
     }
 }
 
-int lib_md(const lib_md_info_t *md_info, const unsigned char *input, size_t ilen, unsigned char *output) {
-    if (md_info == NULL) {
+int lib_md(const lib_md_info_t* md_info, const unsigned char* idata, size_t isize, unsigned char* odata) {
+    if (!md_info) {
         return LIB_ERR_MD_BAD_INPUT_DATA;
     }
 
@@ -345,23 +355,23 @@ int lib_md(const lib_md_info_t *md_info, const unsigned char *input, size_t ilen
 
 #if defined(LIB_MD5_C)
         case LIB_MD_MD5:
-            return lib_md5(input, ilen, output);
+            return lib_md5(idata, isize, odata);
 #endif
 #if defined(LIB_SHA224_C)
         case LIB_MD_SHA224:
-            return lib_sha256(input, ilen, output, 1);
+            return lib_sha256(idata, isize, odata, 1);
 #endif
 #if defined(LIB_SHA256_C)
         case LIB_MD_SHA256:
-            return lib_sha256(input, ilen, output, 0);
+            return lib_sha256(idata, isize, odata, 0);
 #endif
 #if defined(LIB_SHA384_C)
         case LIB_MD_SHA384:
-            return lib_sha512(input, ilen, output, 1);
+            return lib_sha512(idata, isize, odata, 1);
 #endif
 #if defined(LIB_SHA512_C)
         case LIB_MD_SHA512:
-            return lib_sha512(input, ilen, output, 0);
+            return lib_sha512(idata, isize, odata, 0);
 #endif
 
         default:
@@ -415,7 +425,7 @@ static const md_name_entry md_names[] = {
 };
 
 const lib_md_info_t* lib_md_info_from_string(const char* md_name) {
-    if (NULL == md_name) {
+    if (!md_name) {
         return NULL;
     }
 
@@ -428,12 +438,12 @@ const lib_md_info_t* lib_md_info_from_string(const char* md_name) {
     return lib_md_info_from_type(entry->md_type);
 }
 
-const char *lib_md_get_name(const lib_md_info_t *md_info) {
-    if (md_info == NULL) {
+const char* lib_md_get_name(const lib_md_info_t* md_info) {
+    if (!md_info) {
         return NULL;
     }
 
-    const md_name_entry *entry = md_names;
+    const md_name_entry* entry = md_names;
     while (entry->md_type != LIB_MD_NONE &&
            entry->md_type != md_info->type) {
         ++entry;
@@ -442,8 +452,8 @@ const char *lib_md_get_name(const lib_md_info_t *md_info) {
     return entry->md_name;
 }
 
-const lib_md_info_t *lib_md_info_from_ctx(const lib_md_context_t *ctx) {
-    if (ctx == NULL) {
+const lib_md_info_t* lib_md_info_from_ctx(const lib_md_context_t* ctx) {
+    if (!ctx) {
         return NULL;
     }
     return ctx->md_info;
@@ -451,44 +461,44 @@ const lib_md_info_t *lib_md_info_from_ctx(const lib_md_context_t *ctx) {
 
 //////
 
-int lib_md_hmac_start(lib_md_context_t* ctx, const unsigned char* key, size_t keylen) {
-    int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
-    unsigned char sum[LIB_MD_MAX_SIZE];
-    unsigned char *ipad, *opad;
+int lib_md_hmac_start(lib_md_context_t* ctx, const unsigned char* kdata, size_t ksize) {
 
     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
         return LIB_ERR_MD_BAD_INPUT_DATA;
     }
 
-    if (keylen > (size_t) ctx->md_info->block_size) {
+    int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
+    unsigned char sum[LIB_MD_MAX_SIZE];
+    unsigned char *ipad, *opad;
+
+    if (ksize > (size_t) ctx->md_info->block_size) {
         if ((ret = lib_md_start(ctx)) != 0) {
             goto cleanup;
         }
-        if ((ret = lib_md_update(ctx, key, keylen)) != 0) {
+        if ((ret = lib_md_update(ctx, kdata, ksize)) != 0) {
             goto cleanup;
         }
         if ((ret = lib_md_finish(ctx, sum)) != 0) {
             goto cleanup;
         }
 
-        keylen = ctx->md_info->size;
-        key = sum;
+        ksize = ctx->md_info->size;
+        kdata = sum;
     }
 
-    ipad = (unsigned char *) ctx->hmac_ctx;
-    opad = (unsigned char *) ctx->hmac_ctx + ctx->md_info->block_size;
+    ipad = (unsigned char*) ctx->hmac_ctx;
+    opad = (unsigned char*) ctx->hmac_ctx + ctx->md_info->block_size;
 
     memset(ipad, 0x36, ctx->md_info->block_size);
     memset(opad, 0x5C, ctx->md_info->block_size);
 
-    lib_xor(ipad, ipad, key, keylen);
-    lib_xor(opad, opad, key, keylen);
+    lib_xor(ipad, ipad, kdata, ksize);
+    lib_xor(opad, opad, kdata, ksize);
 
     if ((ret = lib_md_start(ctx)) != 0) {
         goto cleanup;
     }
-    if ((ret = lib_md_update(ctx, ipad,
-                                 ctx->md_info->block_size)) != 0) {
+    if ((ret = lib_md_update(ctx, ipad, ctx->md_info->block_size)) != 0) {
         goto cleanup;
     }
 
@@ -497,23 +507,24 @@ cleanup:
     return ret;
 }
 
-int lib_md_hmac_update(lib_md_context_t *ctx, const unsigned char *input, size_t ilen) {
+int lib_md_hmac_update(lib_md_context_t* ctx, const unsigned char* idata, size_t isize) {
     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
         return LIB_ERR_MD_BAD_INPUT_DATA;
     }
-    return lib_md_update(ctx, input, ilen);
+    return lib_md_update(ctx, idata, isize);
 }
 
-int lib_md_hmac_finish(lib_md_context_t *ctx, unsigned char *output) {
-    int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
-    unsigned char tmp[LIB_MD_MAX_SIZE];
-    unsigned char *opad;
+int lib_md_hmac_finish(lib_md_context_t* ctx, unsigned char* odata) {
 
     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
         return LIB_ERR_MD_BAD_INPUT_DATA;
     }
 
-    opad = (unsigned char *) ctx->hmac_ctx + ctx->md_info->block_size;
+    int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
+    unsigned char tmp[LIB_MD_MAX_SIZE];
+    unsigned char* opad;
+
+    opad = (unsigned char*) ctx->hmac_ctx + ctx->md_info->block_size;
 
     if ((ret = lib_md_finish(ctx, tmp)) != 0) {
         return ret;
@@ -521,26 +532,25 @@ int lib_md_hmac_finish(lib_md_context_t *ctx, unsigned char *output) {
     if ((ret = lib_md_start(ctx)) != 0) {
         return ret;
     }
-    if ((ret = lib_md_update(ctx, opad,
-                                 ctx->md_info->block_size)) != 0) {
+    if ((ret = lib_md_update(ctx, opad, ctx->md_info->block_size)) != 0) {
         return ret;
     }
-    if ((ret = lib_md_update(ctx, tmp,
-                                 ctx->md_info->size)) != 0) {
+    if ((ret = lib_md_update(ctx, tmp, ctx->md_info->size)) != 0) {
         return ret;
     }
-    return lib_md_finish(ctx, output);
+    return lib_md_finish(ctx, odata);
 }
 
-int lib_md_hmac_reset(lib_md_context_t *ctx) {
-    int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
-    unsigned char *ipad;
+int lib_md_hmac_reset(lib_md_context_t* ctx) {
 
     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
         return LIB_ERR_MD_BAD_INPUT_DATA;
     }
 
-    ipad = (unsigned char *) ctx->hmac_ctx;
+    int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
+    unsigned char *ipad;
+
+    ipad = (unsigned char*) ctx->hmac_ctx;
 
     if ((ret = lib_md_start(ctx)) != 0) {
         return ret;
@@ -548,16 +558,17 @@ int lib_md_hmac_reset(lib_md_context_t *ctx) {
     return lib_md_update(ctx, ipad, ctx->md_info->block_size);
 }
 
-int lib_md_hmac(const lib_md_info_t *md_info,
-                    const unsigned char *key, size_t keylen,
-                    const unsigned char *input, size_t ilen,
-                    unsigned char *output) {
-    lib_md_context_t ctx;
-    int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
+int lib_md_hmac(const lib_md_info_t* md_info,
+                    const unsigned char* kdata, size_t ksize,
+                    const unsigned char* idata, size_t isize,
+                    unsigned char* odata) {
 
-    if (md_info == NULL) {
+    if (!md_info) {
         return LIB_ERR_MD_BAD_INPUT_DATA;
     }
+
+    lib_md_context_t ctx;
+    int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
 
     lib_md_init(&ctx);
 
@@ -565,13 +576,15 @@ int lib_md_hmac(const lib_md_info_t *md_info,
         goto cleanup;
     }
 
-    if ((ret = lib_md_hmac_start(&ctx, key, keylen)) != 0) {
+    if ((ret = lib_md_hmac_start(&ctx, kdata, ksize)) != 0) {
         goto cleanup;
     }
-    if ((ret = lib_md_hmac_update(&ctx, input, ilen)) != 0) {
+
+    if ((ret = lib_md_hmac_update(&ctx, idata, isize)) != 0) {
         goto cleanup;
     }
-    if ((ret = lib_md_hmac_finish(&ctx, output)) != 0) {
+
+    if ((ret = lib_md_hmac_finish(&ctx, odata)) != 0) {
         goto cleanup;
     }
 

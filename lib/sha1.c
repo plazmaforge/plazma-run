@@ -13,9 +13,6 @@
 #include "sha1.h"
 #include <string.h>
 
-
-//#if !defined(LIB_SHA1_ALT)
-
 static void lib_sha1_zero(lib_sha1_context_t* ctx) {
     lib_memsetz(ctx, sizeof(lib_sha1_context_t));
 }
@@ -61,7 +58,6 @@ int lib_sha1_start(lib_sha1_context_t* ctx) {
     return 0;
 }
 
-//#if !defined(LIB_SHA1_PROCESS_ALT)
 int lib_internal_sha1_process(lib_sha1_context_t* ctx, const unsigned char data[64]) {
     struct {
         uint32_t temp, W[16], A, B, C, D, E;
@@ -227,8 +223,6 @@ int lib_internal_sha1_process(lib_sha1_context_t* ctx, const unsigned char data[
 
     return 0;
 }
-
-//#endif /* !LIB_SHA1_PROCESS_ALT */
 
 /*
  * SHA-1 process buffer

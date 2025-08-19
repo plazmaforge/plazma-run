@@ -139,11 +139,11 @@ int lib_md_setup(lib_md_context_t* ctx, const lib_md_info_t* md_info, int hmac);
 
 int lib_md_start(lib_md_context_t* ctx);
 
-int lib_md_update(lib_md_context_t* ctx, const unsigned char* input, size_t ilen);
+int lib_md_update(lib_md_context_t* ctx, const unsigned char* idata, size_t isize);
 
-int lib_md_finish(lib_md_context_t *ctx, unsigned char* output);
+int lib_md_finish(lib_md_context_t* ctx, unsigned char* odata);
 
-int lib_md(const lib_md_info_t* md_info, const unsigned char* input, size_t ilen, unsigned char *output);
+int lib_md(const lib_md_info_t* md_info, const unsigned char* idata, size_t isize, unsigned char* odata);
 
 //////
 
@@ -151,20 +151,21 @@ const lib_md_info_t* lib_md_info_from_string(const char* md_name);
 
 const char* lib_md_get_name(const lib_md_info_t* md_info);
 
-const lib_md_info_t* lib_md_info_from_ctx(const lib_md_context_t *ctx);
+const lib_md_info_t* lib_md_info_from_ctx(const lib_md_context_t* ctx);
 
 /////
 
-int lib_md_hmac_start(lib_md_context_t* ctx, const unsigned char* key, size_t keylen);
+int lib_md_hmac_start(lib_md_context_t* ctx, const unsigned char* kdata, size_t ksize);
 
-int lib_md_hmac_update(lib_md_context_t* ctx, const unsigned char* input, size_t ilen);
+int lib_md_hmac_update(lib_md_context_t* ctx, const unsigned char* idata, size_t isize);
 
-int lib_md_hmac_finish(lib_md_context_t* ctx, unsigned char* output);
+int lib_md_hmac_finish(lib_md_context_t* ctx, unsigned char* odata);
 
 int lib_md_hmac_reset(lib_md_context_t* ctx);
 
-int lib_md_hmac(const lib_md_info_t* md_info, const unsigned char* key, size_t keylen,
-                    const unsigned char* input, size_t ilen,
-                    unsigned char* output);
+int lib_md_hmac(const lib_md_info_t* md_info, 
+const unsigned char* kdata, size_t ksize, 
+const unsigned char* idata, size_t isize, 
+unsigned char* odata);
 
 #endif /* PLAZMA_LIB_MD_H */
