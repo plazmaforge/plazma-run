@@ -53,7 +53,7 @@ void lib_sha256_clone(lib_sha256_context_t* dst, const lib_sha256_context_t* src
 /*
  * SHA-256 context setup
  */
-int lib_sha256_starts(lib_sha256_context_t* ctx, int is224) {
+int lib_sha256_start(lib_sha256_context_t* ctx, int is224) {
     if (!ctx) {
         return 1;
     }
@@ -422,7 +422,7 @@ int lib_sha256(const unsigned char* input, size_t ilen, unsigned char *output, i
 
     lib_sha256_init(&ctx);
 
-    if ((ret = lib_sha256_starts(&ctx, is224)) != 0) {
+    if ((ret = lib_sha256_start(&ctx, is224)) != 0) {
         goto exit;
     }
 
@@ -532,7 +532,7 @@ static int lib_sha256_common_self_test(int verbose, int is224) {
             /*lib*/ printf("  SHA-%d test #%d: ", 256 - is224 * 32, i + 1);
         }
 
-        if ((ret = lib_sha256_starts(&ctx, is224)) != 0) {
+        if ((ret = lib_sha256_start(&ctx, is224)) != 0) {
             goto fail;
         }
 

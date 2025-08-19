@@ -23,7 +23,7 @@ int lib_sha1_free(lib_sha1_context_t* ctx);
 
 void lib_sha1_clone(lib_sha1_context_t* dst, const lib_sha1_context_t* src);
 
-int lib_sha1_starts(lib_sha1_context_t* ctx);
+int lib_sha1_start(lib_sha1_context_t* ctx);
 
 int lib_sha1_update(lib_sha1_context_t* ctx, const unsigned char* input, size_t ilen);
 

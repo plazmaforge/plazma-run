@@ -234,7 +234,7 @@ int lib_md_setup(lib_md_context_t *ctx, const lib_md_info_t *md_info, int hmac) 
 
 ////
 
-int lib_md_starts(lib_md_context_t *ctx) {
+int lib_md_start(lib_md_context_t *ctx) {
 #if defined(LIB_MD_C)
     if (ctx == NULL || ctx->md_info == NULL) {
         return LIB_ERR_MD_BAD_INPUT_DATA;
@@ -244,23 +244,23 @@ int lib_md_starts(lib_md_context_t *ctx) {
     switch (ctx->md_info->type) {
 #if defined(LIB_MD5_C)
         case LIB_MD_MD5:
-            return lib_md5_starts((lib_md5_context_t*) ctx->md_ctx);
+            return lib_md5_start((lib_md5_context_t*) ctx->md_ctx);
 #endif
 #if defined(LIB_SHA224_C)
         case LIB_MD_SHA224:
-            return lib_sha256_starts((lib_sha256_context_t*) ctx->md_ctx, 1);
+            return lib_sha256_start((lib_sha256_context_t*) ctx->md_ctx, 1);
 #endif
 #if defined(LIB_SHA256_C)
         case LIB_MD_SHA256:
-            return lib_sha256_starts((lib_sha256_context_t*) ctx->md_ctx, 0);
+            return lib_sha256_start((lib_sha256_context_t*) ctx->md_ctx, 0);
 #endif
 #if defined(LIB_SHA384_C)
         case LIB_MD_SHA384:
-            return lib_sha512_starts((lib_sha512_context_t*) ctx->md_ctx, 1);
+            return lib_sha512_start((lib_sha512_context_t*) ctx->md_ctx, 1);
 #endif
 #if defined(LIB_SHA512_C)
         case LIB_MD_SHA512:
-            return lib_sha512_starts((lib_sha512_context_t*) ctx->md_ctx, 0);
+            return lib_sha512_start((lib_sha512_context_t*) ctx->md_ctx, 0);
 #endif
 
         default:
@@ -451,7 +451,7 @@ const lib_md_info_t *lib_md_info_from_ctx(const lib_md_context_t *ctx) {
 
 //////
 
-int lib_md_hmac_starts(lib_md_context_t *ctx, const unsigned char *key, size_t keylen) {
+int lib_md_hmac_start(lib_md_context_t* ctx, const unsigned char* key, size_t keylen) {
     int ret = LIB_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char sum[LIB_MD_MAX_SIZE];
     unsigned char *ipad, *opad;
@@ -461,7 +461,7 @@ int lib_md_hmac_starts(lib_md_context_t *ctx, const unsigned char *key, size_t k
     }
 
     if (keylen > (size_t) ctx->md_info->block_size) {
-        if ((ret = lib_md_starts(ctx)) != 0) {
+        if ((ret = lib_md_start(ctx)) != 0) {
             goto cleanup;
         }
         if ((ret = lib_md_update(ctx, key, keylen)) != 0) {
@@ -484,7 +484,7 @@ int lib_md_hmac_starts(lib_md_context_t *ctx, const unsigned char *key, size_t k
     lib_xor(ipad, ipad, key, keylen);
     lib_xor(opad, opad, key, keylen);
 
-    if ((ret = lib_md_starts(ctx)) != 0) {
+    if ((ret = lib_md_start(ctx)) != 0) {
         goto cleanup;
     }
     if ((ret = lib_md_update(ctx, ipad,
@@ -518,7 +518,7 @@ int lib_md_hmac_finish(lib_md_context_t *ctx, unsigned char *output) {
     if ((ret = lib_md_finish(ctx, tmp)) != 0) {
         return ret;
     }
-    if ((ret = lib_md_starts(ctx)) != 0) {
+    if ((ret = lib_md_start(ctx)) != 0) {
         return ret;
     }
     if ((ret = lib_md_update(ctx, opad,
@@ -542,7 +542,7 @@ int lib_md_hmac_reset(lib_md_context_t *ctx) {
 
     ipad = (unsigned char *) ctx->hmac_ctx;
 
-    if ((ret = lib_md_starts(ctx)) != 0) {
+    if ((ret = lib_md_start(ctx)) != 0) {
         return ret;
     }
     return lib_md_update(ctx, ipad, ctx->md_info->block_size);
@@ -565,7 +565,7 @@ int lib_md_hmac(const lib_md_info_t *md_info,
         goto cleanup;
     }
 
-    if ((ret = lib_md_hmac_starts(&ctx, key, keylen)) != 0) {
+    if ((ret = lib_md_hmac_start(&ctx, key, keylen)) != 0) {
         goto cleanup;
     }
     if ((ret = lib_md_hmac_update(&ctx, input, ilen)) != 0) {

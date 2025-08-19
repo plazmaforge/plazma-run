@@ -47,7 +47,7 @@ void lib_md5_clone(lib_md5_context_t* dst, const lib_md5_context_t* src) {
 /*
  * MD5 context setup
  */
-int lib_md5_starts(lib_md5_context_t* ctx) {
+int lib_md5_start(lib_md5_context_t* ctx) {
 
     if (!ctx) {
         return 1;
@@ -311,7 +311,7 @@ int lib_md5(const unsigned char* input, size_t ilen, unsigned char output[16]) {
 
     lib_md5_init(&ctx);
 
-    if ((ret = lib_md5_starts(&ctx)) != 0) {
+    if ((ret = lib_md5_start(&ctx)) != 0) {
         goto exit;
     }
 

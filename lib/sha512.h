@@ -27,7 +27,7 @@ int lib_sha512_free(lib_sha512_context_t* ctx);
 
 void lib_sha512_clone(lib_sha512_context_t* dst, const lib_sha512_context_t *src);
 
-int lib_sha512_starts(lib_sha512_context_t* ctx, int is384);
+int lib_sha512_start(lib_sha512_context_t* ctx, int is384);
 
 int lib_sha512_update(lib_sha512_context_t* ctx, const unsigned char* input, size_t ilen);
 

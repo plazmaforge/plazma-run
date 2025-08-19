@@ -137,7 +137,7 @@ void lib_md_free(lib_md_context_t* ctx);
 
 int lib_md_setup(lib_md_context_t* ctx, const lib_md_info_t* md_info, int hmac);
 
-int lib_md_starts(lib_md_context_t* ctx);
+int lib_md_start(lib_md_context_t* ctx);
 
 int lib_md_update(lib_md_context_t* ctx, const unsigned char* input, size_t ilen);
 
@@ -155,7 +155,7 @@ const lib_md_info_t* lib_md_info_from_ctx(const lib_md_context_t *ctx);
 
 /////
 
-int lib_md_hmac_starts(lib_md_context_t* ctx, const unsigned char* key, size_t keylen);
+int lib_md_hmac_start(lib_md_context_t* ctx, const unsigned char* key, size_t keylen);
 
 int lib_md_hmac_update(lib_md_context_t* ctx, const unsigned char* input, size_t ilen);
 

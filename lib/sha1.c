@@ -44,7 +44,7 @@ void lib_sha1_clone(lib_sha1_context_t* dst, const lib_sha1_context_t* src) {
 /*
  * SHA-1 context setup
  */
-int lib_sha1_starts(lib_sha1_context_t* ctx) {
+int lib_sha1_start(lib_sha1_context_t* ctx) {
     if (!ctx) {
         return 1;
     }
@@ -350,7 +350,7 @@ int lib_sha1(const unsigned char* input, size_t ilen, unsigned char output[20]) 
 
     lib_sha1_init(&ctx);
 
-    if ((ret = lib_sha1_starts(&ctx)) != 0) {
+    if ((ret = lib_sha1_start(&ctx)) != 0) {
         goto exit;
     }
 

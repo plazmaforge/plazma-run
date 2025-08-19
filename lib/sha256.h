@@ -28,7 +28,7 @@ int lib_sha256_free(lib_sha256_context_t* ctx);
 
 void lib_sha256_clone(lib_sha256_context_t* dst, const lib_sha256_context_t* src);
 
-int lib_sha256_starts(lib_sha256_context_t* ctx, int is224);
+int lib_sha256_start(lib_sha256_context_t* ctx, int is224);
 
 int lib_sha256_update(lib_sha256_context_t* ctx, const unsigned char* input, size_t ilen);
  

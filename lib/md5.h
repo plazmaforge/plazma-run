@@ -21,7 +21,7 @@ int lib_md5_free(lib_md5_context_t* ctx);
 
 void lib_md5_clone(lib_md5_context_t* dst, const lib_md5_context_t* src);
 
-int lib_md5_starts(lib_md5_context_t* ctx);
+int lib_md5_start(lib_md5_context_t* ctx);
 
 int lib_md5_update(lib_md5_context_t* ctx, const unsigned char *input, size_t ilen);
 

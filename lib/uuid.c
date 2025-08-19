@@ -715,7 +715,7 @@ static void lib_uuid_hash_v3or5(
   if (version == 3) {
     lib_md5_context_t ctx;
     lib_md5_init(&ctx);
-    lib_md5_starts(&ctx);
+    lib_md5_start(&ctx);
 
     lib_md5_update(&ctx, uuid, ssize);
     lib_md5_update(&ctx, (unsigned char*) name, nsize);
@@ -726,7 +726,7 @@ static void lib_uuid_hash_v3or5(
   } else if (version == 5) {
     lib_sha1_context_t ctx;
     lib_sha1_init(&ctx);
-    lib_sha1_starts(&ctx);
+    lib_sha1_start(&ctx);
 
     lib_sha1_update(&ctx, uuid, ssize);
     lib_sha1_update(&ctx, (unsigned char*) name, nsize);
@@ -735,7 +735,6 @@ static void lib_uuid_hash_v3or5(
     lib_sha1_free(&ctx);
 
   }
-    
 
 }
 

@@ -67,7 +67,7 @@ void lib_sha512_clone(lib_sha512_context_t* dst, const lib_sha512_context_t* src
 /*
  * SHA-512 context setup
  */
-int lib_sha512_starts(lib_sha512_context_t* ctx, int is384) {
+int lib_sha512_start(lib_sha512_context_t* ctx, int is384) {
     if (!ctx) {
         return 1;
     }
@@ -433,7 +433,7 @@ int lib_sha512(const unsigned char* input, size_t ilen, unsigned char* output, i
 
     lib_sha512_init(&ctx);
 
-    if ((ret = lib_sha512_starts(&ctx, is384)) != 0) {
+    if ((ret = lib_sha512_start(&ctx, is384)) != 0) {
         goto exit;
     }
 
@@ -562,7 +562,7 @@ static int lib_sha512_common_self_test(int verbose, int is384) {
             printf("  SHA-%d test #%d: ", 512 - is384 * 128, i + 1);
         }
 
-        if ((ret = lib_sha512_starts(&ctx, is384)) != 0) {
+        if ((ret = lib_sha512_start(&ctx, is384)) != 0) {
             goto fail;
         }
 
