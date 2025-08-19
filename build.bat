@@ -82,6 +82,7 @@ rem compile
 %CC% %CFLAGS% run_mdlib.c -o run_mdlib.o
 
 %CC% %CFLAGS% run_md5.c -o run_md5.o
+%CC% %CFLAGS% run_sha1.c -o run_sha1.o
 %CC% %CFLAGS% run_sha224.c -o run_sha224.o
 %CC% %CFLAGS% run_sha256.c -o run_sha256.o
 %CC% %CFLAGS% run_sha384.c -o run_sha384.o
@@ -137,6 +138,7 @@ rem link
 %CC% %LDFLAGS% common.o debug.o iodef.o strlib.o socketlib.o nflib.o run_get.o -o run-get.exe %LIBS%
 
 %CC% %LDFLAGS% getopt.o common.o memlib.o iolib.o run_mdlib.o md5.o run_md5.o -o run-md5.exe
+%CC% %LDFLAGS% getopt.o common.o memlib.o iolib.o run_mdlib.o sha1.o run_sha1.o -o run-sha1
 %CC% %LDFLAGS% getopt.o common.o memlib.o iolib.o run_mdlib.o sha256.o run_sha224.o -o run-sha224.exe
 %CC% %LDFLAGS% getopt.o common.o memlib.o iolib.o run_mdlib.o sha256.o run_sha256.o -o run-sha256.exe
 %CC% %LDFLAGS% getopt.o common.o memlib.o iolib.o run_mdlib.o sha512.o run_sha384.o -o run-sha384.exe

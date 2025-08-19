@@ -29,6 +29,7 @@ Plazma Run is cross-platform command line utilities
 | run-realpath | Print canonicalized absolute path name
 | run-rm       | Remove files
 | run-rmdir    | Remove directories
+| run-sha1     | Calculate SHA-1 hash
 | run-sha224   | Calculate SHA-224 hash
 | run-sha256   | Calculate SHA-256 hash
 | run-sha384   | Calculate SHA-384 hash

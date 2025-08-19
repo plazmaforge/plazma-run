@@ -333,8 +333,6 @@ exit:
     return ret;
 }
 
-//#endif /* !LIB_SHA1_ALT */
-
 /*
  * output = SHA-1( input buffer )
  */
