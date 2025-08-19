@@ -1,8 +1,14 @@
-#ifndef PLAZMA_SHA256_H
-#define PLAZMA_SHA256_H
+#ifndef PLAZMA_LIB_SHA256_H
+#define PLAZMA_LIB_SHA256_H
 
 #include <stddef.h>
 #include <stdint.h>
+
+#define LIB_MD_SHA224_NAME "SHA224"
+#define LIB_MD_SHA224_SIZE 28
+
+#define LIB_MD_SHA256_NAME "SHA256"
+#define LIB_MD_SHA256_SIZE 32
 
 /** SHA-256 input data was malformed. */
 #define LIB_ERR_SHA256_BAD_INPUT_DATA                 -0x0074
@@ -54,4 +60,4 @@ int lib_sha256_self_test(int verbose);
 }
 #endif
 
-#endif /* PLAZMA_SHA256_H */
+#endif /* PLAZMA_LIB_SHA256_H */

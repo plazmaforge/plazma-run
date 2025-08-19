@@ -1,8 +1,8 @@
 #include "md5.h"
 #include "run_mdlib.h"
 
-#define MD_NAME "MD5"
-#define MD_SIZE 16
+#define MD_NAME LIB_MD_MD5_NAME // "MD5"
+#define MD_SIZE LIB_MD_MD5_SIZE // 16
 
 int main(int argc, char* argv[]) {
  

@@ -1,11 +1,11 @@
 #include "sha512.h"
 #include "run_mdlib.h"
 
-#define MD_NAME "SHA384"
-#define MD_SIZE 48
+#define MD_NAME LIB_MD_SHA384_NAME // "SHA384"
+#define MD_SIZE LIB_MD_SHA384_SIZE // 48
 
-int _lib_sha384(const unsigned char *input, size_t ilen, unsigned char *output) {
-    return lib_sha512(input, ilen, output, 1);
+int _lib_sha384(const unsigned char* idata, size_t isize, unsigned char* odata) {
+    return lib_sha512(idata, isize, odata, 1);
 }
 
 int main(int argc, char* argv[]) {

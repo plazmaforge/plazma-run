@@ -1,8 +1,14 @@
-#ifndef PLAZMA_SHA512_H
-#define PLAZMA_SHA512_H
+#ifndef PLAZMA_LIB_SHA512_H
+#define PLAZMA_LIB_SHA512_H
 
 #include <stddef.h>
 #include <stdint.h>
+
+#define LIB_MD_SHA384_NAME "SHA384"
+#define LIB_MD_SHA384_SIZE 48
+
+#define LIB_MD_SHA512_NAME "SHA512"
+#define LIB_MD_SHA512_SIZE 64
 
 /** SHA-512 input data was malformed. */
 #define LIB_ERR_SHA512_BAD_INPUT_DATA                 -0x0075
@@ -53,4 +59,4 @@ int lib_sha512_self_test(int verbose);
 }
 #endif
 
-#endif /* PLAZMA_SHA512_H */
+#endif /* PLAZMA_LIB_SHA512_H */

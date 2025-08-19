@@ -1,8 +1,8 @@
 #include "sha1.h"
 #include "run_mdlib.h"
 
-#define MD_NAME "SHA1"
-#define MD_SIZE 20
+#define MD_NAME LIB_MD_SHA1_NAME // "SHA1"
+#define MD_SIZE LIB_MD_SHA1_SIZE // 20
 
 int main(int argc, char* argv[]) {
 

@@ -1,11 +1,11 @@
 #include "sha256.h"
 #include "run_mdlib.h"
 
-#define MD_NAME "SHA256"
-#define MD_SIZE 32
+#define MD_NAME LIB_MD_SHA256_NAME // "SHA256"
+#define MD_SIZE LIB_MD_SHA256_SIZE // 32
 
-int _lib_sha256(const unsigned char *input, size_t ilen, unsigned char *output) {
-    return lib_sha256(input, ilen, output, 0);
+int _lib_sha256(const unsigned char* idata, size_t isize, unsigned char* odata) {
+    return lib_sha256(idata, isize, odata, 0);
 }
 
 int main(int argc, char* argv[]) {

@@ -1,8 +1,11 @@
-#ifndef PLAZMA_SHA1_H
-#define PLAZMA_SHA1_H
+#ifndef PLAZMA_LIB_SHA1_H
+#define PLAZMA_LIB_SHA1_H
 
 #include <stddef.h>
 #include <stdint.h>
+
+#define LIB_MD_SHA1_NAME "SHA1"
+#define LIB_MD_SHA1_SIZE 20
 
 /** SHA-1 input data was malformed. */
 #define LIB_ERR_SHA1_BAD_INPUT_DATA                   -0x0073
@@ -43,4 +46,4 @@ int lib_sha1_self_test(int verbose);
 }
 #endif
 
-#endif /* PLAZMA_SHA1_H */
+#endif /* PLAZMA_LIB_SHA1_H */

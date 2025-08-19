@@ -6,7 +6,7 @@
 #define RUN_MD_BY_FILE   2
 
 /* md function */
-typedef int (*lib_md_func) (const unsigned char *input, size_t ilen, unsigned char output[]);
+typedef int (*lib_md_func) (const unsigned char* idata, size_t isize, unsigned char odata[]);
 
 /* run md configuration */
 typedef struct lib_md_config_t {

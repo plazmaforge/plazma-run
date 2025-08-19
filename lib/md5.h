@@ -4,6 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define LIB_MD_MD5_NAME "MD5"
+#define LIB_MD_MD5_SIZE 16
+
 #ifdef __cplusplus
 extern "C" {
 #endif
