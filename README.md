@@ -37,3 +37,4 @@ Plazma Run is cross-platform command line utilities
 | run-sha512   | Calculate SHA-512 hash
 | run-sysinfo  | Print system info
 | run-unimap   | Print Unicode char map
+| run-uuid     | Generate UUID (v1, v3 - v7)
