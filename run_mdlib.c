@@ -97,9 +97,9 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
     int error = 0;
     int opt;
 
-    config->mode = RUN_MD_BY_FILE; /* Set mode by file */
+    config->mode = RUN_MD_BY_FILE; // Set mode by file
     config->is_title = false;
-    config->is_upper = false; // by default
+    config->is_upper = false;      // by default
 
     char* data = NULL;
     size_t size = 0;
