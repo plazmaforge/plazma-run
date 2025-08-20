@@ -19,6 +19,7 @@ Plazma Run is cross-platform command line utilities
 | run-echo     | Print a string
 | run-find     | Find files
 | run-get      | Get data from a file (http, ftp, file)
+| run-hash     | Calculate hash (MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512)
 | run-hex2dat  | Convert hex text to byte data
 | run-iconv    | Convert text from one encoding to another encoding
 | run-ls       | List directory entries

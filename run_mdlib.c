@@ -67,6 +67,12 @@ static void _calc_error(lib_md_config_t* config, const char* file_name, const ch
     _get_mode_input(config, file_name, data));
 }
 
+static void _algo_error(lib_md_config_t* config, const char* algo_name) {    
+    fprintf(stderr, "%s: %s: %s\n", prog_name, "Unsupported algorithm", algo_name);
+}
+
+////
+
 int run_md_by_mode(lib_md_config_t* config, const char* file_name, const char* data, size_t size) {
     if (!data) {
         _data_error(config, file_name);
@@ -82,14 +88,39 @@ int run_md_by_mode(lib_md_config_t* config, const char* file_name, const char* d
 }
 
 void run_md_usage(lib_md_config_t* config) {
-    fprintf(stderr, "Usage: %s [-tlu] -s string | file ...\n", prog_name);
+    if (config->md_init) {
+        fprintf(stderr, "Usage: %s [-tlui] -a algo -s string | file ...\n", prog_name);
+    } else {
+        fprintf(stderr, "Usage: %s [-tlu] -s string | file ...\n", prog_name);
+    }        
+}
+
+void run_md_list(lib_md_config_t* config) {
+    fprintf(stderr, "Supported algorithms:\n");
+    fprintf(stderr, " MD5\n");
+    fprintf(stderr, " SHA1\n");
+    fprintf(stderr, " SHA224\n");
+    fprintf(stderr, " SHA256\n");
+    fprintf(stderr, " SHA384\n");
+    fprintf(stderr, " SHA512\n");
 }
 
 int run_md(lib_md_config_t* config, int argc, char* argv[]) {
 
     prog_name = lib_cli_prog_name(argv);
+    bool use_algo = config->md_init;
+    int maxarg = 0;
+    const char* short_option = NULL;
 
-    if (argc < 2) {
+    if (use_algo) {
+        maxarg = 2;
+        short_option = "tluis:a:";
+    } else {
+        maxarg = 1;
+        short_option = "tlus:";
+    }
+
+    if (argc < maxarg - 1) {
         run_md_usage(config);
         return 1;
     }
@@ -104,7 +135,7 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
     char* data = NULL;
     size_t size = 0;
 
-    while ((opt = lib_getopt(argc, argv, "tlus:")) != -1) {
+    while ((opt = lib_getopt(argc, argv, short_option)) != -1) {
         switch (opt) {
         case 't':
             /* Set title option */
@@ -129,6 +160,23 @@ int run_md(lib_md_config_t* config, int argc, char* argv[]) {
         case ':':
             error = 1;
             break;
+        }
+
+        if (use_algo) {
+            switch (opt) {
+            case 'a':
+                /* Set algoritm by name */
+                config->md_init(config, optarg);
+                if (!config->md_func) {
+                    _algo_error(config, optarg);
+                    error = 1;
+                }
+                break;
+            case 'i':
+                /* List algoritms */
+                run_md_list(config);
+                return 0;
+            }
         }
     }
 

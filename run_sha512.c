@@ -11,6 +11,7 @@ int main(int argc, char* argv[]) {
     config.md_name = LIB_MD_SHA512_NAME; // "SHA512"
     config.md_size = LIB_MD_SHA512_SIZE; // 64;
     config.md_func = _lib_sha512;
+    config.md_init = NULL;
 
     return run_md(&config, argc, argv);
 }

@@ -11,6 +11,7 @@ int main(int argc, char* argv[]) {
     config.md_name = LIB_MD_SHA256_NAME; // "SHA256";
     config.md_size = LIB_MD_SHA256_SIZE; // 32;
     config.md_func = _lib_sha256;
+    config.md_init = NULL;
 
     return run_md(&config, argc, argv);
 
