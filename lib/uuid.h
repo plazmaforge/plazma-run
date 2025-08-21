@@ -148,32 +148,70 @@ int lib_uuid_gen_strf_v(int format, char* str, int version);
 
 //// CREATE
 
+bool lib_uuid_supports_version(int version);
+
 /**
- * Generator a UUID
+ * Generator a UUID by default version
  */
-void lib_uuid_create(lib_uuid_t* uuid);
+int lib_uuid_create(lib_uuid_t* uuid);
 
-void lib_uuid_create_v1(lib_uuid_t* uuid);
+/**
+ * Create UUID by version with name space ID and name
+ */
+int lib_uuid_create_vx(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, int version);
 
-void lib_uuid_create_v2(lib_uuid_t* uuid); // Not implemnted yet
+/**
+ * Create UUID by version with name space and name
+ */
+int lib_uuid_create_vn(lib_uuid_t* uuid, const char* ns, void* name, int version);
 
-void lib_uuid_create_v3(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
+/**
+ * Create UUID by version withot v3 and v5
+ */
+int lib_uuid_create_v(lib_uuid_t* uuid, int version);
 
-void lib_uuid_create_v4(lib_uuid_t* uuid);
+/**
+ * Create UUID v1
+ */
+int lib_uuid_create_v1(lib_uuid_t* uuid);
 
-void lib_uuid_create_v5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
+/**
+ * Create UUID v2
+ */
+int lib_uuid_create_v2(lib_uuid_t* uuid); // Not implemnted yet
 
-void lib_uuid_create_v6(lib_uuid_t* uuid);
+/**
+ * Create UUID v3
+ */
+int lib_uuid_create_v3(lib_uuid_t* uuid, lib_uuid_t nsid, void* name);
 
-void lib_uuid_create_v7(lib_uuid_t* uuid);
+/**
+ * Create UUID v4
+ */
+int lib_uuid_create_v4(lib_uuid_t* uuid);
+
+/**
+ * Create UUID v5
+ */
+int lib_uuid_create_v5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name);
+
+/**
+ * Create UUID v6
+ */
+int lib_uuid_create_v6(lib_uuid_t* uuid);
+
+/**
+ * Create UUID v7
+ */
+int lib_uuid_create_v7(lib_uuid_t* uuid);
 
 ////
 
-void lib_uuid_create_random(lib_uuid_t* uuid);
+int lib_uuid_create_random(lib_uuid_t* uuid);
 
-void lib_uuid_create_md5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
+int lib_uuid_create_md5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name);
 
-void lib_uuid_create_sha1(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen);
+int lib_uuid_create_sha1(lib_uuid_t* uuid, lib_uuid_t nsid, void* name);
 
 void lib_uuid_reset();
 

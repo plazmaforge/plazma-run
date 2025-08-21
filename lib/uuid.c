@@ -406,8 +406,8 @@ static void format_uuid_v1(
   lib_uuid_time_t timestamp,
   lib_uuid_node_t node) {
 
-  /* Construct a version 1 uuid with the information we've gathered
-     plus a few constants. */
+  /* Construct a version 1 uuid with the information 
+     we've gathered plus a few constants. */
   uuid->time_low = (unsigned long) (timestamp & 0xFFFFFFFF);
   uuid->time_mid = (unsigned short) ((timestamp >> 32) & 0xFFFF);
   uuid->time_hi_and_version = (unsigned short) ((timestamp >> 48) & 0x0FFF);
@@ -419,8 +419,7 @@ static void format_uuid_v1(
   memcpy(&uuid->node, &node, sizeof(uuid->node));
 }
 
-/* Make a UUID from a (pseudo)random 128-bit
-   number */
+/* Make a UUID from a (pseudo)random 128-bit number */
 static void format_uuid_v3or5(lib_uuid_t* uuid, unsigned char hash[16], int version) {
 
 	/* convert UUID to local byte order */
@@ -436,40 +435,92 @@ static void format_uuid_v3or5(lib_uuid_t* uuid, unsigned char hash[16], int vers
 	uuid->clock_seq_hi_and_reserved |= 0x80;
 }
 
+//// CREATE
+
+bool lib_uuid_supports_version(int version) {
+    return (version == 1 
+        || version == 3
+        || version == 4
+        || version == 5
+        || version == 6
+        || version == 7);
+}
+
+int lib_uuid_create_vx(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, int version) {
+    if (!uuid) {
+      return -1;
+    }
+
+    if (version <= 0) {
+      // Unsupported version
+      return 1;
+    }
+
+    if (version == 1) {
+        return lib_uuid_create_v1(uuid);
+    } else if (version == 2) {
+        return lib_uuid_create_v2(uuid);  // Not implemented yet
+    } else if (version == 3) {
+        return lib_uuid_create_v3(uuid, nsid, name);
+    } else if (version == 4) {
+        return lib_uuid_create_v4(uuid);
+    } else if (version == 5) {
+        return lib_uuid_create_v5(uuid, nsid, name);
+    } else if (version == 6) {
+        return lib_uuid_create_v6(uuid);
+    } else if (version == 7) {
+        return lib_uuid_create_v7(uuid);
+    }
+    return 1;
+}
+
+static lib_uuid_t lib_uuid_get_nsid(const char* ns) {
+  lib_uuid_t nsid;
+  nsid.time_low = 0;
+  nsid.time_mid = 0;
+  nsid.time_hi_and_version = 0;
+
+  if (!ns) {
+    return nsid;
+  }
+
+  if (strcmp(ns, "DNS") == 0) {
+    return NameSpace_DNS;
+  } else if (strcmp(ns, "URL") == 0) {
+    return NameSpace_URL;
+  } else if (strcmp(ns, "OID") == 0) {
+    return NameSpace_OID;
+  } else if (strcmp(ns, "X500") == 0) {
+    return NameSpace_X500;
+  }
+
+  return nsid;
+
+}
+
+int lib_uuid_create_vn(lib_uuid_t* uuid, const char* ns, void* name, int version) {
+    lib_uuid_t nsid;
+    if (version == 3 || version == 5) {
+        nsid = lib_uuid_get_nsid(ns);
+        if (nsid.time_hi_and_version == 0) {
+          return -1;
+        }
+    }
+
+    return lib_uuid_create_vx(uuid, nsid, name, version);
+}
+
+int lib_uuid_create_v(lib_uuid_t* uuid, int version) {
+  return lib_uuid_create_vx(uuid, NameSpace_DNS, NULL, version);
+}
+
 //// GEN
 
 /**
  * Generate UUID structure
  */
 int lib_uuid_gen_uuid_v(lib_uuid_t* uuid, int version) {
-  if (!uuid) {
-    return -1;
-  }
-  if (version <= 0) {
-    return -1;
-  }
-  if (version == 1) {
-    lib_uuid_create_v1(uuid);
-  }
-  if (version == 2) {
-    lib_uuid_create_v2(uuid); // Not implemented yet
-  }
-  if (version == 3) {
-    lib_uuid_create_v3(uuid, NameSpace_DNS, "www.widgets.com", 15);
-  }
-  if (version == 4) {
-    lib_uuid_create_v4(uuid);
-  }
-  if (version == 5) {
-    lib_uuid_create_v5(uuid, NameSpace_DNS, "www.widgets.com", 15);
-  }
-  if (version == 6) {
-    lib_uuid_create_v6(uuid);
-  }
-  if (version == 7) {
-    lib_uuid_create_v7(uuid);
-  }
-  return -1;  
+  return lib_uuid_create_v(uuid, version);
 }
 
 /**
@@ -480,7 +531,8 @@ int lib_uuid_gen_data_v(unsigned char value[16], int version) {
     return -1;
   }
   if (version <= 0) {
-    return -1;
+    // Unsupported version    
+    return 1;
   }
   lib_uuid_t uuid;
   int retval = lib_uuid_gen_uuid_v(&uuid, version);
@@ -541,7 +593,8 @@ int lib_uuid_gen_strf_v(int format, char* str, int version) {
     return -1;
   }
   if (version <= 0) {
-    return -1;
+    // Unsupported version
+    return 1;
   }
   lib_uuid_t uuid;
   int retval = lib_uuid_gen_uuid_v(&uuid, version);
@@ -551,21 +604,24 @@ int lib_uuid_gen_strf_v(int format, char* str, int version) {
   size_t size = lib_uuid_get_format_size(format);
   retval = lib_uuid_snprintf(format, str, size + 1, uuid);
   if (retval <= 0) {
-    return -1;
+    return 1;
   }
   return 0;
 }
 
 //// CREATE
 
-void lib_uuid_create(lib_uuid_t* uuid) {
-  lib_uuid_create_v1(uuid); // by default
+int lib_uuid_create(lib_uuid_t* uuid) {
+  return lib_uuid_create_v1(uuid); // by default
 }
 
 /**
  * Generator a UUID
  */
-void lib_uuid_create_v1(lib_uuid_t* uuid) {
+int lib_uuid_create_v1(lib_uuid_t* uuid) {
+  if (!uuid) {
+    return -1;
+  }
 
   lib_uuid_time_t timestamp;
   uint16_t clock_seq;
@@ -581,22 +637,28 @@ void lib_uuid_create_v1(lib_uuid_t* uuid) {
 
   /* stuff fields into the UUID */
   format_uuid_v1(uuid, clock_seq, timestamp, node);
+
+  return 0;
 }
 
-void lib_uuid_create_v2(lib_uuid_t* uuid) {
+int lib_uuid_create_v2(lib_uuid_t* uuid) {
+  if (!uuid) {
+    return -1;
+  }
   // Not implemnted yet
+  return 1;
 } 
 
-void lib_uuid_create_v3(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
-  lib_uuid_create_md5(uuid, nsid, name, namelen);
+int lib_uuid_create_v3(lib_uuid_t* uuid, lib_uuid_t nsid, void* name) {
+  return lib_uuid_create_md5(uuid, nsid, name);
 }
 
-void lib_uuid_create_v4(lib_uuid_t* uuid) {
-  lib_uuid_create_random(uuid);
+int lib_uuid_create_v4(lib_uuid_t* uuid) {
+  return lib_uuid_create_random(uuid);
 } 
 
-void lib_uuid_create_v5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
-  lib_uuid_create_sha1(uuid, nsid, name, namelen);
+int lib_uuid_create_v5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name) {
+  return lib_uuid_create_sha1(uuid, nsid, name);
 }
 
 /* Converts UUID version 1 to version 6 in place. */
@@ -623,18 +685,24 @@ static void uuid_v1tov6(uint8_t u[16]) {
 
 }
 
-void lib_uuid_create_v6(lib_uuid_t* uuid) {
+int lib_uuid_create_v6(lib_uuid_t* uuid) {
+  int retval = lib_uuid_create_v1(uuid);
+  if (retval != 0) {
+    return retval;
+  }
   uint8_t out[16];
-  lib_uuid_create_v1(uuid);
   lib_uuid_pack(uuid, out);
   uuid_v1tov6(out);
   lib_uuid_unpack(out, uuid);
+  return 0;
 }
 
 ////
 
-void lib_uuid_create_v7(lib_uuid_t* uuid) {
-    uint8_t out[16];
+int lib_uuid_create_v7(lib_uuid_t* uuid) {    
+    if (!uuid) {
+      return -1;
+    }
   
     // random bytes
     //int err = getentropy(value, 16);
@@ -650,6 +718,7 @@ void lib_uuid_create_v7(lib_uuid_t* uuid) {
     //}
     //uint64_t time = (uint64_t) ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 
+    uint8_t out[16];
     lib_uuid_time_t time;
     get_uuid_time_tick(&time); // in 100ns
     time /= 10000; // convert to milliseconds (?)
@@ -670,6 +739,7 @@ void lib_uuid_create_v7(lib_uuid_t* uuid) {
     
     lib_uuid_unpack(out, uuid);
 
+    return 0;
 }
 
 static void uuid_generate_random(lib_uuid_t* uuid, int num) {
@@ -686,11 +756,15 @@ static void uuid_generate_random(lib_uuid_t* uuid, int num) {
 
 }
 
-void lib_uuid_create_random(lib_uuid_t* uuid) {
-  uuid_generate_random(uuid, 1);	
+int lib_uuid_create_random(lib_uuid_t* uuid) {
+  if (!uuid) {
+    return -1;
+  }
+  uuid_generate_random(uuid, 1);
+  return 0;
 }
 
-static void lib_uuid_hash_v3or5(
+static int lib_uuid_hash_v3or5(
   unsigned char* hash,
   lib_uuid_t* nsid, 
   size_t ssize, 
@@ -723,6 +797,8 @@ static void lib_uuid_hash_v3or5(
     lib_md5_finish(&ctx, hash);
     lib_md5_free(&ctx);
 
+    return 0;
+
   } else if (version == 5) {
     lib_sha1_context_t ctx;
     lib_sha1_init(&ctx);
@@ -734,17 +810,28 @@ static void lib_uuid_hash_v3or5(
     lib_sha1_finish(&ctx, hash);
     lib_sha1_free(&ctx);
 
+    return 0;
+
   }
+
+  return -1;
 
 }
 
-static void lib_uuid_create_v3or5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen, int version) {
+static int lib_uuid_create_v3or5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, int version) {
 	
+  if (!uuid || !name) {
+    return -1;
+  }
+
   size_t count = 0;
   if (version == LIB_UUID_TYPE_MD5) {
     count = 16;
   } else if (version == LIB_UUID_TYPE_SHA1) {
     count = 20;
+  } else {
+    // Unsupported version int this case
+    return 2;
   }
 
 	unsigned char hash[count];
@@ -759,21 +846,26 @@ static void lib_uuid_create_v3or5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name,
 	net_nsid.time_mid = htons(net_nsid.time_mid);
 	net_nsid.time_hi_and_version = htons(net_nsid.time_hi_and_version);
 
-  lib_uuid_hash_v3or5(hash, &net_nsid, sizeof(net_nsid), name, namelen, version);
+  int retval = lib_uuid_hash_v3or5(hash, &net_nsid, sizeof(net_nsid), name, strlen(name), version);
+  if (retval != 0) {
+    return retval;
+  }
 
 	/* the hash is in network byte order at this point */
 	format_uuid_v3or5(uuid, hash, version);
+
+  return 0;
 }
 
 /**
  * Create a version 3 (MD5) UUID using a "name" from a "name space"
  */
-void lib_uuid_create_md5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
-  lib_uuid_create_v3or5(uuid, nsid, name, namelen, LIB_UUID_TYPE_MD5);	
+int lib_uuid_create_md5(lib_uuid_t* uuid, lib_uuid_t nsid, void* name) {
+  return lib_uuid_create_v3or5(uuid, nsid, name, LIB_UUID_TYPE_MD5);	
 }
 
-void lib_uuid_create_sha1(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
-  lib_uuid_create_v3or5(uuid, nsid, name, namelen, LIB_UUID_TYPE_SHA1);
+int lib_uuid_create_sha1(lib_uuid_t* uuid, lib_uuid_t nsid, void* name) {
+  return lib_uuid_create_v3or5(uuid, nsid, name, LIB_UUID_TYPE_SHA1);
 }
 
 ////

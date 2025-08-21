@@ -6,38 +6,6 @@
 #include "clilib.h"
 #include "uuid.h"
 
-static bool supports_version(int version) {
-    return (version == 1 
-        || version == 3
-        || version == 4
-        || version == 5
-        || version == 6
-        || version == 7);
-}
-
-static int uuid_create(int version, lib_uuid_t* uuid, lib_uuid_t nsid, void* name, size_t namelen) {
-    if (version == 1) {
-        lib_uuid_create_v1(uuid);
-        return 0;
-    } else if (version == 3) {
-        lib_uuid_create_v3(uuid, NameSpace_DNS, name, namelen);
-        return 0;
-    } else if (version == 4) {
-        lib_uuid_create_v4(uuid);
-        return 0;        
-    } else if (version == 5) {
-        lib_uuid_create_v5(uuid, NameSpace_DNS, name, namelen);
-        return 0;
-    } else if (version == 6) {
-        lib_uuid_create_v6(uuid);
-        return 0;        
-    } else if (version == 7) {
-        lib_uuid_create_v7(uuid);
-        return 0;
-    }
-    return -1;
-}
-
 static int get_format(bool upper, bool pack) {
     if (upper && pack) {
         return LIB_UUID_FORMAT_TYPE_UPPER_PACK;
@@ -59,27 +27,29 @@ static bool is_upper_format_default() {
     || LIB_UUID_FORMAT_TYPE == LIB_UUID_FORMAT_TYPE_UPPER_PACK);
 }
 
-int run_uuid(int version, int format, /*lib_uuid_t nsid, char* name,*/ int count, bool trailing) {
-    if (!supports_version(version)) {
-        return -1;
+int run_uuid(int version, int format, lib_uuid_t nsid, char* name, int count, bool trailing) {
+    if (!lib_uuid_supports_version(version)) {
+        return 1;
     }
 
-    //NameSpace_DNS, "www.widgets.com"
-    lib_uuid_t nsid = NameSpace_DNS;
-    void* name = "www.widgets.com";
-    size_t namelen = 15;
-
+    int error = 0;
+    
     for (int i = 0; i < count; i++) {
         lib_uuid_t uuid;
 
-        uuid_create(version, &uuid, nsid, name, namelen);
-        lib_uuid_printf(format, uuid);
-
-        if (version == 1) {
-            lib_uuid_reset(); // Why?
+        error = lib_uuid_create_vx(&uuid, nsid, name, version);
+        if (error != 0) {
+            fprintf(stderr, "%s: Error generation UUID: version=%d\n", prog_name, version);
+            break;
         }
+
+        lib_uuid_printf(format, uuid);
         if (count > 1 && i < count - 1) {
             printf("\n");
+        }
+ 
+        if (version == 1) {
+            lib_uuid_reset(); // Why?
         }
     }
 
@@ -105,6 +75,10 @@ int main(int argc, char* argv[]) {
     bool trailing = true; // '\n'
     bool upper    = is_upper_format_default();
     bool pack     = false;
+
+    lib_uuid_t nsid = NameSpace_DNS;
+    char* name = "www.widgets.com";
+ 
     while ((opt = lib_getopt(argc, argv, "nlupv:c:")) != -1) {
         switch (opt) {
         case 'n':
@@ -124,7 +98,7 @@ int main(int argc, char* argv[]) {
             if (version == 0) {
                 fprintf(stderr, "%s: Incorrect version: %s\n", prog_name, optarg);
                 error = 1;
-            } else if (!supports_version(version)) {
+            } else if (!lib_uuid_supports_version(version)) {
                 fprintf(stderr, "%s: Unsupported version: %s\n", prog_name, optarg);
                 error = 1;
             }
@@ -147,7 +121,7 @@ int main(int argc, char* argv[]) {
 
     if (error) {
         usage();
-        return 0;
+        return 1;
     }
 
     // if (argc - optind < min_arg) {
@@ -161,7 +135,10 @@ int main(int argc, char* argv[]) {
     }
 
     format = get_format(upper, pack);
-    run_uuid(version, format, count, trailing);
+    error = run_uuid(version, format, nsid, name, count, trailing);
+    if (error != 0) {
+        return 1;
+    }
     
     return 0;
 }
