@@ -150,6 +150,9 @@ int lib_uuid_gen_strf_v(int format, char* str, int version);
 
 bool lib_uuid_supports_version(int version);
 
+bool lib_uuid_supports_ns_version(int version);
+
+lib_uuid_t lib_uuid_get_nsid(const char* ns);
 /**
  * Generator a UUID by default version
  */

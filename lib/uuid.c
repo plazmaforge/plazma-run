@@ -446,6 +446,10 @@ bool lib_uuid_supports_version(int version) {
         || version == 7);
 }
 
+bool lib_uuid_supports_ns_version(int version) {
+    return (version == 3 || version == 5);
+}
+
 int lib_uuid_create_vx(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, int version) {
     if (!uuid) {
       return -1;
@@ -474,7 +478,7 @@ int lib_uuid_create_vx(lib_uuid_t* uuid, lib_uuid_t nsid, void* name, int versio
     return 1;
 }
 
-static lib_uuid_t lib_uuid_get_nsid(const char* ns) {
+lib_uuid_t lib_uuid_get_nsid(const char* ns) {
   lib_uuid_t nsid;
   nsid.time_low = 0;
   nsid.time_mid = 0;
