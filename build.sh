@@ -115,6 +115,8 @@ $CC $CFLAGS run_base16.c -o run_base16.o
 $CC $CFLAGS run_base32.c -o run_base32.o
 $CC $CFLAGS run_base58.c -o run_base58.o
 $CC $CFLAGS run_base64.c -o run_base64.o
+$CC $CFLAGS run_encode.c -o run_encode.o
+
 $CC $CFLAGS run_ascii.c -o run_ascii.o
 $CC $CFLAGS run_uuid.c -o run_uuid.o
 $CC $CFLAGS run_diff.c -o run_diff.o
@@ -172,6 +174,8 @@ $CC $LDFLAGS getopt.o iolib.o base16.o run_base16.o -o run-base16
 $CC $LDFLAGS getopt.o iolib.o base32.o run_base32.o -o run-base32
 $CC $LDFLAGS getopt.o iolib.o base58.o run_base58.o -o run-base58
 $CC $LDFLAGS getopt.o iolib.o base64.o run_base64.o -o run-base64
+$CC $LDFLAGS getopt.o iolib.o base16.o base32.o base58.o base64.o run_encode.o -o run-encode
+
 $CC $LDFLAGS getopt.o run_ascii.o -o run-ascii
 $CC $LDFLAGS getopt.o memlib.o md5.o sha1.o uuid.o run_uuid.o -o run-uuid
 $CC $LDFLAGS getopt.o run_diff.o -o run-diff

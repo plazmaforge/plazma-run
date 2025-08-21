@@ -105,6 +105,8 @@ rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 %CC% %CFLAGS% run_base32.c -o run_base32.o
 %CC% %CFLAGS% run_base58.c -o run_base58.o
 %CC% %CFLAGS% run_base64.c -o run_base64.o
+%CC% %CFLAGS% run_encode.c -o run_encode.o
+
 %CC% %CFLAGS% run_ascii.c -o run_ascii.o
 %CC% %CFLAGS% run_uuid.c -o run_uuid.o
 %CC% %CFLAGS% run_diff.c -o run_diff.o
@@ -162,13 +164,15 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 %CC% %LDFLAGS% getopt.o iolib.o base32.o run_base32.o -o run-base32.exe
 %CC% %LDFLAGS% getopt.o iolib.o base58.o run_base58.o -o run-base58.exe
 %CC% %LDFLAGS% getopt.o iolib.o base64.o run_base64.o -o run-base64.exe
+%CC% %LDFLAGS% getopt.o iolib.o base16.o base32.o base58.o base64.o run_encode.o -o run-encode.exe
+
 %CC% %LDFLAGS% getopt.o run_ascii.o -o run-ascii.exe
 %CC% %LDFLAGS% getopt.o memlib.o md5.o sha1.o uuid.o run_uuid.o -o run-uuid.exe %LIBS%
 %CC% %LDFLAGS% getopt.o run_diff.o -o run-diff.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
-%CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_locale.o -o test-locale
+%CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_locale.o -o test-locale.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o utf8lib.o test_utf8.o -o test-utf8.exe
 %CC% %LDFLAGS% encdef.o test_enc.o -o test-enc.exe
 %CC% %LDFLAGS% strlib.o test_strlib.o -o test-strlib.exe
