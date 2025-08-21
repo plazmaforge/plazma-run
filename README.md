@@ -7,16 +7,17 @@ Plazma Run is cross-platform command line utilities
 | run-ascii    | Print ASCII table |
 | run-ask      | Find data in files |
 | run-cat      | Concatenate and print files |
-| run-base16   | Encode and decode using Base16 representation |
-| run-base32   | Encode and decode using Base32/Z-Base32/Base32Hex/Crockford’s Base32 representation |
-| run-base58   | Encode and decode using Base58 representation |
-| run-base64   | Encode and decode using Base64 representation |
+| run-base16   | Encode/Decode Base16 |
+| run-base32   | Encode/Decode Base32, Z-Base32, Base32Hex, Crockford’s Base32 |
+| run-base58   | Encode/Decode Base58 |
+| run-base64   | Encode/Decode Base64 |
 | run-basename | Print base file name of a path |
 | run-cp       | Copy files
 | run-ctype    | Print "C" type info
 | run-dirname  | Print directory name of a path |
 | run-dump     | Dump data from a file
 | run-echo     | Print a string
+| run-encode   | Encode Base32, Z-Base32, Base32Hex, Crockford’s Base32
 | run-find     | Find files
 | run-get      | Get data from a file (http, ftp, file)
 | run-hash     | Calculate hash (MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512)
@@ -37,4 +38,4 @@ Plazma Run is cross-platform command line utilities
 | run-sha512   | Calculate SHA-512 hash
 | run-sysinfo  | Print system info
 | run-unimap   | Print Unicode char map
-| run-uuid     | Generate UUID (v1, v3 - v7)
+| run-uuid     | Generate UUID (version 1, 3-7)
