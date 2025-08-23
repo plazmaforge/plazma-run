@@ -18,22 +18,41 @@
 #include "base64.h"
 
 #include "iolib.h"
+#include "run_enclib.h"
+
+static const char* _to_message(const char* message) {
+    return (message ? message : "Unknown");
+}
+
+static void _error(const char* title, const char* message) {
+    if (title) {
+        fprintf(stderr, "%s: %s: %s\n", prog_name, title, _to_message(message));        
+    } else {
+        fprintf(stderr, "%s: %s\n", prog_name, _to_message(message));        
+    }
+}
+
+static void _error_message(const char* message) {
+    _error(NULL, message);
+}
 
 static void _file_error(const char* file_name) {
-    fprintf(stderr, "%s: %s: %s\n", prog_name, file_name, strerror(errno));
+    _error(file_name, strerror(errno));
 }
 
 static void _encode_error(const char* message) {
-    fprintf(stderr, "%s: Encode error: %s\n", prog_name, (message ? message : "Unknown"));
+    _error("Encode error", message);
 }
 
 static void _decode_error(const char* message) {
-    fprintf(stderr, "%s: Decode error: %s\n", prog_name, (message ? message : "Unknown"));
+    _error("Decode error", message);
 }
 
-// static void _decode_input_error() {
-//     fprintf(stderr, "%s: Decode error: %s\n", prog_name, "Invalid character in input stream");
-// }
+////
+
+static void _init_prog_name(char* const argv[]) {
+    prog_name = lib_cli_prog_name(argv);
+}
 
 ////
 
@@ -265,7 +284,9 @@ void usage() {
 
 int main(int argc, char* argv[]) {
 
-    prog_name = lib_cli_prog_name(argv);
+    //prog_name = lib_cli_prog_name(argv);
+    _init_prog_name(argv);
+    
     int error = 0;
     int opt;
     int long_ind;
@@ -306,7 +327,8 @@ int main(int argc, char* argv[]) {
             //fprintf(stderr, "%s: Flag 'a': %s\n", prog_name, optarg);
             algo = _get_algo(optarg);
             if (algo <= 0) {
-                fprintf(stderr, "%s: Unsupported algorithm: %s\n", prog_name, optarg);
+                //fprintf(stderr, "%s: Unsupported algorithm: %s\n", prog_name, optarg);
+                _error("Unsupported algorithm", optarg);
                 error = 1;
             }
             break;
@@ -329,7 +351,8 @@ int main(int argc, char* argv[]) {
 
     if (!flag_list) {
         if (algo <= 0) {
-            fprintf(stderr, "%s: Algorithm is required\n", prog_name);
+            //fprintf(stderr, "%s: Algorithm is required\n", prog_name);
+            _error(NULL, "Algorithm is required");
             error = 1;
         }
     }
@@ -356,7 +379,8 @@ int main(int argc, char* argv[]) {
 
     if (flag_string) {
         if (!data) {
-            fprintf(stderr, "%s: %s\n", prog_name, "Input string is required\n");
+            //fprintf(stderr, "%s: %s\n", prog_name, "Input string is required\n");
+            _error(NULL, "Input string is required");
             return 1;
         }
         if (flag_decode) {
@@ -366,7 +390,8 @@ int main(int argc, char* argv[]) {
         }        
     } else {
         if (optind >= argc) {
-            fprintf(stderr, "%s: %s\n", prog_name, "File name is required");
+            //fprintf(stderr, "%s: %s\n", prog_name, "File name is required");
+            _error(NULL, "File name is required");
             usage();
             return 1;
         }
