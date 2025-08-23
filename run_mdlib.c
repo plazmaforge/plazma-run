@@ -96,7 +96,6 @@ void run_md_usage(lib_md_config_t* config) {
 }
 
 void run_md_list(lib_md_config_t* config) {
-    fprintf(stderr, "Supported algorithms:\n");
     fprintf(stderr, " MD5\n");
     fprintf(stderr, " SHA1\n");
     fprintf(stderr, " SHA224\n");

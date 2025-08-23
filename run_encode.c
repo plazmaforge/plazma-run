@@ -23,13 +23,17 @@ static void _file_error(const char* file_name) {
     fprintf(stderr, "%s: %s: %s\n", prog_name, file_name, strerror(errno));
 }
 
-static void _encode_error() {
-    fprintf(stderr, "%s: %s\n", prog_name, "Encoding error");
+static void _encode_error(const char* message) {
+    fprintf(stderr, "%s: Encode error: %s\n", prog_name, (message ? message : "Unknown"));
 }
 
-static void _decode_error() {
-    fprintf(stderr, "%s: %s\n", prog_name, "Invalid character in input stream");
+static void _decode_error(const char* message) {
+    fprintf(stderr, "%s: Decode error: %s\n", prog_name, (message ? message : "Unknown"));
 }
+
+// static void _decode_input_error() {
+//     fprintf(stderr, "%s: Decode error: %s\n", prog_name, "Invalid character in input stream");
+// }
 
 ////
 
@@ -75,17 +79,20 @@ int run_encode_data(int algo, const char* idata, size_t isize) {
     char* odata = NULL;
     size_t osize = 0;
 
-    int retval = _encode_algo(algo, idata, isize, &odata, &osize);
-    if (retval != 0) {
-        free(odata);
-        _encode_error();
+    int error = _encode_algo(algo, idata, isize, &odata, &osize);
+    if (error != 0) {
+        if (odata) {
+            free(odata);
+        }
+        _encode_error(NULL);
         return 1;
     }
 
     if (!odata) {
-        _encode_error();
+        _encode_error("Output data is empty");
         return 1;
     }
+
     for (size_t i = 0; i < osize; i++) {
         fprintf(stdout, "%c", odata[i]);
     }
@@ -101,17 +108,20 @@ int run_decode_data(int algo, const char* idata, size_t isize) {
     char* odata = NULL;
     size_t osize = 0;
 
-    int retval = _decode_algo(algo, idata, isize, &odata, &osize);
-    if (retval != 0) {
-        free(odata);
-        _encode_error();
+    int error = _decode_algo(algo, idata, isize, &odata, &osize);
+    if (error != 0) {
+        if (odata) {
+            free(odata);
+        }
+        _decode_error("Invalid character in input stream");
         return 1;
     }
 
     if (!odata) {
-        _decode_error();
+        _decode_error("Output data is empty");
         return 1;
     }
+
     //fprintf(stdout, "%s", odata);
     for (size_t i = 0; i < osize; i++) {
         fprintf(stdout, "%c", odata[i]);
@@ -128,8 +138,8 @@ int run_encode_file(int algo, const char* file_name) {
 
     char* idata = NULL;
     size_t isize = 0;
-    int retval = lib_io_read_all_bytes(file_name, &idata, &isize);
-    if (retval < 0) {
+    int error = lib_io_read_all_bytes(file_name, &idata, &isize);
+    if (error != 0) {
 
         // error
         if (idata) {
@@ -138,11 +148,11 @@ int run_encode_file(int algo, const char* file_name) {
         _file_error(file_name);
         return 1;
     }
-    retval = run_encode_data(algo, idata, isize);
+    error = run_encode_data(algo, idata, isize);
     if (idata) {
         free(idata);
     }
-    return retval;
+    return error;
 }
 
 int run_decode_file(int algo, const char* file_name) {
@@ -152,8 +162,8 @@ int run_decode_file(int algo, const char* file_name) {
 
     char* idata = NULL;
     size_t isize = 0;
-    int retval = lib_io_read_all_bytes(file_name, &idata, &isize);
-    if (retval < 0) {
+    int error = lib_io_read_all_bytes(file_name, &idata, &isize);
+    if (error != 0) {
 
         // error
         if (idata) {
@@ -162,15 +172,11 @@ int run_decode_file(int algo, const char* file_name) {
         _file_error(file_name);
         return 1;
     }
-    retval = run_decode_data(algo, idata, isize);
+    error = run_decode_data(algo, idata, isize);
     if (idata) {
         free(idata);
     }
-    return retval;
-}
-
-void usage() {
-    fprintf(stderr, "Usage: run-encode [-Dl] -a algo -s string | file\n");
+    return error;
 }
 
 static int _lib_stricmp(const char* str1, const char* str2) {
@@ -239,7 +245,22 @@ static int _get_algo(char* name) {
     }
 
     return 0;
+}
 
+static void _list_algo() {
+    fprintf(stderr, "base16\n");
+    fprintf(stderr, "base32\n");
+    fprintf(stderr, "base32u\n");
+    fprintf(stderr, "base32l\n");
+    fprintf(stderr, "zbase32\n");
+    fprintf(stderr, "base32hex\n");
+    fprintf(stderr, "cbase32\n");
+    fprintf(stderr, "base58\n");
+    fprintf(stderr, "base64\n");
+}
+
+void usage() {
+    fprintf(stderr, "Usage: run-encode [-Dl] -a algo -s string | file\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -257,7 +278,7 @@ int main(int argc, char* argv[]) {
     int algo         = 0;
 
     if (argc < min_arg + 1) {
-        fprintf(stderr, "%s: Minimum required arguments: %d\n", prog_name, min_arg);
+        //fprintf(stderr, "%s: Minimum required arguments: %d\n", prog_name, min_arg);
         usage();
         return 1;
     }
@@ -306,21 +327,20 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    if (!flag_list) {
+        if (algo <= 0) {
+            fprintf(stderr, "%s: Algorithm is required\n", prog_name);
+            error = 1;
+        }
+    }
+
     if (error) {
         usage();
         return 1;
     }
 
     if (flag_list) {
-        fprintf(stderr, "base16\n");
-        fprintf(stderr, "base32\n");
-        fprintf(stderr, "base32u\n");
-        fprintf(stderr, "base32l\n");
-        fprintf(stderr, "zbase32\n");
-        fprintf(stderr, "base32hex\n");
-        fprintf(stderr, "cbase32\n");
-        fprintf(stderr, "base58\n");
-        fprintf(stderr, "base64\n");
+        _list_algo();
         return 0;
     }
 
@@ -336,7 +356,7 @@ int main(int argc, char* argv[]) {
 
     if (flag_string) {
         if (!data) {
-            fprintf(stderr, "%s: %s\n", prog_name, "Empty input string");
+            fprintf(stderr, "%s: %s\n", prog_name, "Input string is required\n");
             return 1;
         }
         if (flag_decode) {
@@ -346,7 +366,7 @@ int main(int argc, char* argv[]) {
         }        
     } else {
         if (optind >= argc) {
-            fprintf(stderr, "%s: File name is required\n", prog_name);
+            fprintf(stderr, "%s: %s\n", prog_name, "File name is required");
             usage();
             return 1;
         }
