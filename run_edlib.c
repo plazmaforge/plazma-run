@@ -11,7 +11,7 @@
 #include "clilib.h"
 #include "iolib.h"
 
-#include "run_enclib.h"
+#include "run_edlib.h"
 
 static const char* _to_message(const char* message) {
     return (message ? message : "Unknown");

@@ -17,7 +17,7 @@
 #include "base64.h"
 
 #include "iolib.h"
-#include "run_enclib.h"
+#include "run_edlib.h"
 
 static int _encode_algo(int algo, const char* idata, size_t isize, char** odata, size_t* osize) {
     if (algo == LIB_BASE16) {

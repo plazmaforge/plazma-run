@@ -102,7 +102,7 @@ rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 %CC% %CFLAGS% run_realpath.c -o run_realpath.o
 %CC% %CFLAGS% run_pwd.c -o run_pwd.o
 
-%CC% %CFLAGS% run_enclib.c -o run_enclib.o
+%CC% %CFLAGS% run_edlib.c -o run_edlib.o
 
 %CC% %CFLAGS% run_base16.c -o run_base16.o
 %CC% %CFLAGS% run_base32.c -o run_base32.o
@@ -167,7 +167,7 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 %CC% %LDFLAGS% getopt.o iolib.o base32.o run_base32.o -o run-base32.exe
 %CC% %LDFLAGS% getopt.o iolib.o base58.o run_base58.o -o run-base58.exe
 %CC% %LDFLAGS% getopt.o iolib.o base64.o run_base64.o -o run-base64.exe
-%CC% %LDFLAGS% getopt.o iolib.o base16.o base32.o base58.o base64.o run_enclib.o run_encode.o -o run-encode.exe
+%CC% %LDFLAGS% getopt.o iolib.o base16.o base32.o base58.o base64.o run_edlib.o run_encode.o -o run-encode.exe
 
 %CC% %LDFLAGS% getopt.o run_ascii.o -o run-ascii.exe
 %CC% %LDFLAGS% getopt.o memlib.o md5.o sha1.o uuid.o run_uuid.o -o run-uuid.exe %LIBS%
