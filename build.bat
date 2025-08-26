@@ -163,10 +163,10 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 %CC% %LDFLAGS% getopt.o pathlib.o run_dirname.o -o run-dirname.exe
 %CC% %LDFLAGS% getopt.o wstrlib.o fspath.o run_realpath.o -o run-realpath.exe
 %CC% %LDFLAGS% getopt.o wstrlib.o fspath.o run_pwd.o -o run-pwd.exe
-%CC% %LDFLAGS% getopt.o iolib.o base16.o run_base16.o -o run-base16.exe
+%CC% %LDFLAGS% getopt.o iolib.o base16.o run_edlib.o run_base16.o -o run-base16.exe
 %CC% %LDFLAGS% getopt.o iolib.o base32.o run_edlib.o run_base32.o -o run-base32.exe
-%CC% %LDFLAGS% getopt.o iolib.o base58.o run_base58.o -o run-base58.exe
-%CC% %LDFLAGS% getopt.o iolib.o base64.o run_base64.o -o run-base64.exe
+%CC% %LDFLAGS% getopt.o iolib.o base58.o run_edlib.o run_base58.o -o run-base58.exe
+%CC% %LDFLAGS% getopt.o iolib.o base64.o run_edlib.o run_base64.o -o run-base64.exe
 %CC% %LDFLAGS% getopt.o iolib.o base16.o base32.o base58.o base64.o run_edlib.o run_encode.o -o run-encode.exe
 
 %CC% %LDFLAGS% getopt.o run_ascii.o -o run-ascii.exe

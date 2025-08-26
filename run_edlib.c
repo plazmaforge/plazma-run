@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
 
@@ -310,7 +311,8 @@ int run_ed(lib_ed_config_t* config, int argc, char* argv[]) {
 
     }
 
-    if (!flag_list) {
+    // For multi algorithms mode only
+    if (config->get_func && !flag_list) {
         if (algo == 0) {
             _error(NULL, "Algorithm is required");
             error = 1;

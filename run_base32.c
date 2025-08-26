@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <ctype.h>
-#include <string.h>
+
+//#include <ctype.h>
+//#include <string.h>
 
 #include "getopt.h"
-
 #include "base32.h"
 #include "iolib.h"
 #include "run_edlib.h"
@@ -66,8 +66,4 @@ int main(int argc, char* argv[]) {
 
     return run_ed(&config, argc, argv);
 }
-
-// void usage() {
-//     fprintf(stderr, "Usage: run-base32 [-Dl] -a algo -s string | file\n");
-// }
  

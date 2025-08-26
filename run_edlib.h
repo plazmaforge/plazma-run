@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 
 #define RUN_ED_BY_STRING 1
 #define RUN_ED_BY_FILE   2
