@@ -123,6 +123,7 @@ $CC $CFLAGS run_encode.c -o run_encode.o
 $CC $CFLAGS run_ascii.c -o run_ascii.o
 $CC $CFLAGS run_uuid.c -o run_uuid.o
 $CC $CFLAGS run_diff.c -o run_diff.o
+$CC $CFLAGS run_tok.c -o run_tok.o
 
 $CC $CFLAGS test_getopt.c -o test_getopt.o
 $CC $CFLAGS test_echo.c -o test_echo.o
@@ -182,6 +183,7 @@ $CC $LDFLAGS getopt.o iolib.o base16.o base32.o base58.o base64.o run_edlib.o ru
 $CC $LDFLAGS getopt.o run_ascii.o -o run-ascii
 $CC $LDFLAGS getopt.o memlib.o md5.o sha1.o uuid.o run_uuid.o -o run-uuid
 $CC $LDFLAGS getopt.o run_diff.o -o run-diff
+$CC $LDFLAGS getopt.o iolib.o run_tok.o -o run-tok
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo

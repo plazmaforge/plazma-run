@@ -113,6 +113,7 @@ rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 %CC% %CFLAGS% run_ascii.c -o run_ascii.o
 %CC% %CFLAGS% run_uuid.c -o run_uuid.o
 %CC% %CFLAGS% run_diff.c -o run_diff.o
+%CC% %CFLAGS% run_tok.c -o run_tok.o
 
 %CC% %CFLAGS% test_getopt.c -o test_getopt.o
 %CC% %CFLAGS% test_echo.c -o test_echo.o
@@ -172,6 +173,7 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 %CC% %LDFLAGS% getopt.o run_ascii.o -o run-ascii.exe
 %CC% %LDFLAGS% getopt.o memlib.o md5.o sha1.o uuid.o run_uuid.o -o run-uuid.exe %LIBS%
 %CC% %LDFLAGS% getopt.o run_diff.o -o run-diff.exe
+%CC% %LDFLAGS% getopt.o iolib.o run_tok.o -o run-tok.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
