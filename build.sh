@@ -174,7 +174,7 @@ $CC $LDFLAGS getopt.o pathlib.o run_dirname.o -o run-dirname
 $CC $LDFLAGS getopt.o fspath.o run_realpath.o -o run-realpath
 $CC $LDFLAGS getopt.o fspath.o run_pwd.o -o run-pwd
 $CC $LDFLAGS getopt.o iolib.o base16.o run_base16.o -o run-base16
-$CC $LDFLAGS getopt.o iolib.o base32.o run_base32.o -o run-base32
+$CC $LDFLAGS getopt.o iolib.o base32.o run_edlib.o run_base32.o -o run-base32
 $CC $LDFLAGS getopt.o iolib.o base58.o run_base58.o -o run-base58
 $CC $LDFLAGS getopt.o iolib.o base64.o run_base64.o -o run-base64
 $CC $LDFLAGS getopt.o iolib.o base16.o base32.o base58.o base64.o run_edlib.o run_encode.o -o run-encode

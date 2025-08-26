@@ -4,11 +4,6 @@
 #include <ctype.h>
 #include <string.h>
 
-#ifdef _WIN32
-#include <fcntl.h>
-#include <io.h>
-#endif
-
 #include "getopt.h"
 
 #include "base16.h"
@@ -94,11 +89,12 @@ static void _list_algo() {
 int main(int argc, char* argv[]) {
 
     lib_ed_config_t config;
-    config.name        = NULL;
+    config.name        = "encode";
     config.encode_func = _encode_algo;
     config.decode_func = _decode_algo;
     config.get_func    = _get_algo;
     config.list_func   = _list_algo;
+    config.def_algo    = 0;
 
     return run_ed(&config, argc, argv);
 }

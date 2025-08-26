@@ -217,8 +217,12 @@ int _lib_stricmp(const char* str1, const char* str2) {
   return 0;
 }
 
-static void usage() {
-    fprintf(stderr, "Usage: run-encode [-Dl] -a algo -s string | file\n");
+void run_ed_usage(lib_ed_config_t* config) {
+    if (config->get_func) {
+        fprintf(stderr, "Usage: %s [-Dl] -a algo -s string | file\n", prog_name);
+    } else {
+        fprintf(stderr, "Usage: %s [-D] -s string | file\n", prog_name);
+    }        
 }
 
 int run_ed(lib_ed_config_t* config, int argc, char* argv[]) {
@@ -234,41 +238,39 @@ int run_ed(lib_ed_config_t* config, int argc, char* argv[]) {
     bool flag_list   = false;
     bool flag_string = false;
     char* data       = NULL;
-    int algo         = 0;
+    int algo         = config->def_algo;
+
+    const char* short_option       = NULL;
+    const lib_option* long_option  = NULL;
+
 
     if (argc < min_arg + 1) {
         //fprintf(stderr, "%s: Minimum required arguments: %d\n", prog_name, min_arg);
-        usage();
+        run_ed_usage(config);
         return 1;
     }
 
-    static lib_option long_options[] = {
+    if (config->get_func) {
+        short_option = "Dla:s:";
+        lib_option long_options[] = {
           {"list",    no_argument,       0, 'l'},
-          {"algo",    required_argument, 0, 'a'},          
+          {"algo",    required_argument, 0, 'a'},
           {NULL,      0,                 0, 0}
-    };
+        };
+        long_option = long_options;
+    } else {
+        short_option = "Ds:";
+    }
 
-    while ((opt = lib_getopt_long(argc, argv, "Dla:s:", long_options, &long_ind)) != -1) {
+    while ((opt = lib_getopt_long(argc, argv, short_option, long_option, &long_ind)) != -1) {
+
+        // For all modes
         switch (opt) {
         case 'D':
             /* Set decode flag */
             flag_decode = true;
             //fprintf(stderr, "%s: Flag 'D'\n", prog_name);
-            break;
-        case 'l':
-            /* Set list mode */
-            flag_list = true;
-            //fprintf(stderr, "%s: Flag 'l'\n", prog_name);
-            break;
-        case 'a':
-            /* Set algorithm */
-            //fprintf(stderr, "%s: Flag 'a': %s\n", prog_name, optarg);
-            algo = config->get_func(optarg); // _get_algo(optarg);
-            if (algo <= 0) {
-                _error("Unsupported algorithm", optarg);
-                error = 1;
-            }
-            break;
+            break;        
         case 's':
             /* Set mode by string */
             //fprintf(stderr, "%s: Flag 's': %s\n", prog_name, optarg);
@@ -284,6 +286,28 @@ int run_ed(lib_ed_config_t* config, int argc, char* argv[]) {
             error = 1;
             break;
         }
+
+
+        // For multi algorithms mode only
+        if (config->get_func) {
+            switch (opt) {
+            case 'l':
+                /* Set list mode */
+                flag_list = true;
+                //fprintf(stderr, "%s: Flag 'l'\n", prog_name);
+                break;
+            case 'a':
+                /* Set algorithm */
+                //fprintf(stderr, "%s: Flag 'a': %s\n", prog_name, optarg);
+                algo = config->get_func(optarg); // _get_algo(optarg);
+                if (algo <= 0) {
+                    _error("Unsupported algorithm", optarg);
+                    error = 1;
+                }
+                break;
+            }
+        }
+
     }
 
     if (!flag_list) {
@@ -294,7 +318,7 @@ int run_ed(lib_ed_config_t* config, int argc, char* argv[]) {
     }
 
     if (error) {
-        usage();
+        run_ed_usage(config);
         return 1;
     }
 
@@ -318,6 +342,13 @@ int run_ed(lib_ed_config_t* config, int argc, char* argv[]) {
             _error(NULL, "Input string is required");
             return 1;
         }
+
+        // size_t size = strlen(data);
+        // if (size == 0) {
+        //     fprintf(stderr, "%s: %s\n", prog_name, "Empty input string");
+        //     return 1;
+        // }
+
         if (flag_decode) {
             return run_decode_data(config, algo, data, strlen(data));
         } else {
@@ -326,7 +357,7 @@ int run_ed(lib_ed_config_t* config, int argc, char* argv[]) {
     } else {
         if (optind >= argc) {
             _error(NULL, "File name is required");
-            usage();
+            run_ed_usage(config);
             return 1;
         }
         char* file_name = argv[optind];
