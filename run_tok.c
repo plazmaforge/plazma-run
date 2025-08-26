@@ -7,11 +7,26 @@
 #include "clilib.h"
 #include "iolib.h"
 
+#define RUN_TOK_DELIM " ,.:;"
+
+typedef struct run_tok_config_t {
+    int format;
+    const char* delim;
+    size_t delim_size;
+    const char* delim_str;  // Not implemented yet
+    size_t delim_str_size;  // Not implemented yet
+    bool skip_ws;
+    bool skip_ln;
+    bool ignore_delim;
+} run_tok_config_t;
+
+////
+
 static int _get_format(const char* name) {
     if (!name) {
         return -1;
     }
-    // stub
+    //  // Not implemented yet
     return -1;
 }
 
@@ -35,14 +50,15 @@ static bool _is_delim(char ch, const char* delim, size_t size) {
     return false;
 }
 
-#define RUN_TOK_DELIM " ,.:;"
-
-typedef struct run_tok_config_t {
-    int format;
-    const char* delim;
-    bool ignore_ws;
-    bool ignore_ln;
-} run_tok_config_t;
+static bool _is_skip(run_tok_config_t* config, char ch) {
+    if (config->skip_ws && _is_witespace(ch)) {
+        return true;
+    }
+    if (config->skip_ln && _is_line(ch)) {
+        return true;
+    }
+    return false;
+}
 
 int run_tok_data(run_tok_config_t* config, const char* data, size_t size) {
     if (!data) {
@@ -54,9 +70,7 @@ int run_tok_data(run_tok_config_t* config, const char* data, size_t size) {
 
     int format = config->format; 
     const char* delim = config->delim;
-    //bool ignore_ws = config->ignore_ws;
-
-    size_t delim_size = delim ? strlen(delim) : 0;
+    size_t delim_size = config->delim_size;
 
     //fprintf(stderr, ">> delim      : %s\n", delim);
     //fprintf(stderr, ">> delim_size : %lu\n", delim_size);
@@ -67,10 +81,7 @@ int run_tok_data(run_tok_config_t* config, const char* data, size_t size) {
     if (delim_size == 0) {
         for (size_t i = 0; i < size; i++) {
             ch = data[i];
-            if (config->ignore_ws && _is_witespace(ch)) {
-                continue;
-            }
-            if (config->ignore_ln && _is_line(ch)) {
+            if (_is_skip(config, ch)) {
                 continue;
             }
             fprintf(stdout, "%c", ch);
@@ -79,19 +90,37 @@ int run_tok_data(run_tok_config_t* config, const char* data, size_t size) {
         return 0;
     }
 
+    bool token_break   = false;
+    size_t token_count = 0;
+
     for (size_t i = 0; i < size; i++) {
         ch = data[i];
         //fprintf(stderr, ">> ch         : %c\n", ch);
+
+        if (_is_skip(config, ch)) {
+            continue;
+        }
+        
         if (_is_delim(ch, delim, delim_size)) {
-            fprintf(stdout, "\n");
+            token_break = true;            // SET TOKEN BREAK
+            if (!config->ignore_delim) {
+                if (token_count > 0) {
+                    fprintf(stdout, "\n"); // PRINT TOKEN BREAK
+                }
+                fprintf(stdout, "%c", ch);
+                token_count++;
+            }            
             continue;
         }
-        if (config->ignore_ws && _is_witespace(ch)) {
-            continue;
+        
+        if (token_break) {
+            token_break = false;       // RESET TOKEN BREAK
+            if (token_count > 0) {
+                fprintf(stdout, "\n"); // PRINT TOKEN BREAK
+            }
         }
-        if (config->ignore_ln && _is_line(ch)) {
-            continue;
-        }
+        token_count++;
+        
         fprintf(stdout, "%c", ch);
     }
 
@@ -136,39 +165,29 @@ int main(int argc, char* argv[]) {
     int long_ind;
     int min_arg = 1;
 
-    bool flag_list        = false;
-    bool flag_string      = false;
-    bool flag_ignore_ws   = false;
-    bool flag_ignore_ln   = false;
-    const char* delim     = NULL;
-    const char* data      = NULL;
-    size_t size           = 0;
-    const char* file_name = NULL;
-    int format            = 0;
+    bool flag_string       = false;
+    bool flag_skip_ws      = false;
+    bool flag_skip_ln      = false;
+    bool flag_ignore_delim = true; // It is not skip: output line separator
+    const char* delim      = NULL;
+    const char* delim_str  = NULL; // Not implemented yet
+    const char* data       = NULL;
+    size_t data_size       = 0;
+    const char* file_name  = NULL;
+    int format             = 0;    // Not implemented yet
 
     static lib_option long_option[] = {
-          //{"list",   no_argument,       0, 'l'},
-          //{"format", required_argument, 0, 'f'},
-          {"ws",     no_argument, 0, 1001},
-          {"ln",     no_argument, 0, 1002},
-          {NULL,     0,           0, 0 }
+          //{"format",     required_argument, 0, 'f'},
+          {"ws",           no_argument,       0, 1001},
+          {"ln",           no_argument,       0, 1002},
+          //{"ds",           required_argument, 0, 1003},
+          {"ignore-delim", optional_argument,  0, 1004},
+          {NULL,     0,                 0, 0 }
     };
 
     while ((opt = lib_getopt_long(argc, argv, "d:s:" /*"ld:f:s:"*/, long_option, &long_ind)) != -1) {
         
         switch (opt) {
-        // case 'l':
-        //     flag_list = true;
-        //     break;
-        case 1001:
-            flag_ignore_ws = true;
-            break;
-        case 1002:
-            flag_ignore_ln = true;
-            break;
-        case 'd':
-            delim = optarg;
-            break;
         // case 'f':
         //     format = _get_format(optarg);
         //     if (format <= 0) {
@@ -176,6 +195,36 @@ int main(int argc, char* argv[]) {
         //         error = 1;
         //     }
         //     break;
+        case 1001:
+            flag_skip_ws = true;
+            break;
+        case 1002:
+            flag_skip_ln = true;
+            break;
+        case 'd':
+            delim = optarg;
+            break;
+        //case 1003:
+        //    delim_str = optarg;
+        //    break;
+        case 1004:           
+           fprintf(stderr, ">> optarg      : %s\n", optarg);
+           //fprintf(stderr, ">> strcmp      : %s\n", strcmp(optarg, "false"));
+           if (optarg) {
+               flag_ignore_delim = optarg ? !(strcmp(optarg, "false") == 0) : true;
+               if (strcmp(optarg, "false") == 0) {
+                   flag_ignore_delim = false;
+               } else if (strcmp(optarg, "true") == 0) {
+                   flag_ignore_delim = true;
+               } else {
+                  fprintf(stderr, "%s: Incorrect value of 'ignore-delim'. Value must be 'true' or 'false'\n", prog_name);
+                  error = 1;
+               }               
+           } else {
+               flag_ignore_delim = true;
+           }
+           fprintf(stderr, ">> ignore-delim: %s\n", (flag_ignore_delim ? "true" : "false"));
+           break;
         case 's':
             flag_string = true;
             data = optarg;
@@ -200,8 +249,8 @@ int main(int argc, char* argv[]) {
             fprintf(stderr, "%s: Input string is required\n", prog_name);
             error = 1;
         } else {
-            size = strlen(data);
-            if (size == 0) {
+            data_size = strlen(data);
+            if (data_size == 0) {
                 fprintf(stderr, "%s: Input string is empty\n", prog_name);
                 error = 1;
             }
@@ -226,13 +275,17 @@ int main(int argc, char* argv[]) {
 
     run_tok_config_t config;
 
-    config.format = format; 
-    config.delim = delim;
-    config.ignore_ws = flag_ignore_ws;
-    config.ignore_ln = flag_ignore_ln;
+    config.format         = format; // Not implemented yet 
+    config.delim          = delim;
+    config.delim_size     = delim ? strlen(delim) : 0;
+    config.delim_str      = NULL;   // Not implemented yet
+    config.delim_str_size = 0;      // Not implemented yet
+    config.skip_ws        = flag_skip_ws;
+    config.skip_ln        = flag_skip_ln;
+    config.ignore_delim   = flag_ignore_delim;
 
     if (flag_string) {
-        error = run_tok_data(&config, data, size);
+        error = run_tok_data(&config, data, data_size);
     } else {
         error = run_tok_file(&config, file_name);
     }
