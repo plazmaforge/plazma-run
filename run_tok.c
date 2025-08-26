@@ -124,7 +124,8 @@ static int run_tok_file(run_tok_config_t* config, const char* file_name) {
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-tok [-lw] [-d delim] [-f format] -s string | file\n");
+    //fprintf(stderr, "Usage: run-tok [-l] [-ws] [-ln] [-d delim] [-f format] -s string | file\n");
+    fprintf(stderr, "Usage: run-tok [-ws] [-ln] [-d delim] -s string | file\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -146,19 +147,19 @@ int main(int argc, char* argv[]) {
     int format            = 0;
 
     static lib_option long_option[] = {
-          {"list",   no_argument,       0, 'l'},
-          {"format", required_argument, 0, 'f'},
+          //{"list",   no_argument,       0, 'l'},
+          //{"format", required_argument, 0, 'f'},
           {"ws",     no_argument, 0, 1001},
           {"ln",     no_argument, 0, 1002},
           {NULL,     0,           0, 0 }
     };
 
-    while ((opt = lib_getopt_long(argc, argv, "ld:f:s:", long_option, &long_ind)) != -1) {
+    while ((opt = lib_getopt_long(argc, argv, "d:s:" /*"ld:f:s:"*/, long_option, &long_ind)) != -1) {
         
         switch (opt) {
-        case 'l':
-            flag_list = true;
-            break;
+        // case 'l':
+        //     flag_list = true;
+        //     break;
         case 1001:
             flag_ignore_ws = true;
             break;
@@ -168,13 +169,13 @@ int main(int argc, char* argv[]) {
         case 'd':
             delim = optarg;
             break;
-        case 'f':
-            format = _get_format(optarg);
-            if (format <= 0) {
-                fprintf(stderr, "%s: Incorrect format: %s\n", prog_name, optarg);
-                error = 1;
-            }
-            break;
+        // case 'f':
+        //     format = _get_format(optarg);
+        //     if (format <= 0) {
+        //         fprintf(stderr, "%s: Incorrect format: %s\n", prog_name, optarg);
+        //         error = 1;
+        //     }
+        //     break;
         case 's':
             flag_string = true;
             data = optarg;
