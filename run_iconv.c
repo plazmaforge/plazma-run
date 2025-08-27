@@ -7,6 +7,9 @@
 #include "iolib.h"
 #include "enclib.h"
 
+#define RUN_ICONV_ERR_INPUT_DATA  1
+#define RUN_ICONV_ERR_OUTPUT_DATA 2
+
 static void _conv_error(int error, char* from_code, char* to_code) {
     if (error == LIB_ENC_ERR_CONV_FROM_USUPPORTED || error == LIB_UNIMAP_ERR_CONV_FROM_USUPPORTED) {
         fprintf(stderr, "%s: Conversion from %s unsupported\n", prog_name, from_code);
@@ -29,11 +32,11 @@ static void _file_error(int error, const char* file_name) {
 }
 
 static void _data_error(int error) {
-    if (error == 1) {
+    if (error == RUN_ICONV_ERR_INPUT_DATA) {
         fprintf(stderr, "%s: No input data\n", prog_name);
         return;
     }    
-    if (error == 2) {
+    if (error == RUN_ICONV_ERR_OUTPUT_DATA) {
         fprintf(stderr, "%s: No output data\n", prog_name);
         return;
     }
@@ -93,7 +96,7 @@ int main(int argc, char* argv[]) {
     char* to_code   = NULL;
     bool opt_list   = false;
 
-    while ((opt = lib_getopt(argc, argv, "f:t:l")) != -1) {
+    while ((opt = lib_getopt(argc, argv, "lf:t:")) != -1) {
         switch (opt) {
         case 'l':
             opt_list = true;
@@ -174,27 +177,32 @@ int main(int argc, char* argv[]) {
     char* to_data    = NULL;
     size_t to_size   = 0;
 
-    int retval = lib_io_read_all_bytes(file_name, &from_data, &from_size);
-    if (retval < 0) {
-        _file_error(retval, file_name);
+    // Read all bytes from input data
+    error = lib_io_read_all_bytes(file_name, &from_data, &from_size);
+    if (error != 0) {
+        _file_error(error, file_name);
         _data_free(from_data, to_data);
         return 1;
     }
 
+    // Check input data
     if (_is_empty_data(from_data, from_size)) {
-        _data_error(1);
+        _data_error(RUN_ICONV_ERR_INPUT_DATA);
         _data_free(from_data, to_data);
         return 1;
     }
     
-    retval = lib_enc_conv_by_id(from_id, to_id, from_data, from_size, &to_data, &to_size);
-    if (retval != 0) {
-        _conv_error(retval, from_code, to_code);
+    // Convert data
+    error = lib_enc_conv_by_id(from_id, to_id, from_data, from_size, &to_data, &to_size);
+    if (error != 0) {
+        _conv_error(error, from_code, to_code);
         _data_free(from_data, to_data);
         return 1;
     }
+
+    // Check output data
     if (_is_empty_data(to_data, to_size)) {
-        _data_error(2);
+        _data_error(RUN_ICONV_ERR_OUTPUT_DATA);
         _data_free(from_data, to_data);
         return 1;
     }
