@@ -11,7 +11,7 @@ static const lib_encoding_t lib_encodings[] = {
       ISO-8859
     */
 
-    {28591,   "ISO-8859-1", "Latin-1",                "ISO-IR-100 ISO8859-1  ISO_8859-1  ISO_8859-1:1987  L1 LATIN1 CSISOLATIN1 CP819 IBM819"},
+    {28591,   "ISO-8859-1", "Latin-1",                "ISO-IR-100 ISO8859-1  ISO_8859-1  ISO_8859-1:1987  L1  LATIN1 CSISOLATIN1 CP819 IBM819"},
     {28592,   "ISO-8859-2", "Latin-2",                "ISO-IR-101 ISO8859-2  ISO_8859-2  ISO_8859-2:1987  L2  LATIN2 CSISOLATIN2"},
     {28593,   "ISO-8859-3", "Latin-3/South European", "ISO-IR-109 ISO8859-3  ISO_8859-3  ISO_8859-3:1988  L3  LATIN3 CSISOLATIN3"},
     {28594,   "ISO-8859-4", "Latin-4/North European", "ISO-IR-110 ISO8859-4  ISO_8859-4  ISO_8859-4:1988  L4  LATIN4 CSISOLATIN4"},
@@ -310,14 +310,54 @@ bool _lib_enc_equals(const char* name, lib_encoding_t* encoding) {
   if (len == 0) {
     return false;
   }
+
   // Convert encoding name to upper case
   char uname[len + 1];
   strcpy(uname, name);
   uname[len] = '\0';
-
-  //char* uname = _to_case(1, (char*) name);
   _to_case(1, uname);
-  return strcmp(uname, encoding->name) == 0;
+
+
+  // Search by name
+  if (encoding->name && strcmp(uname, encoding->name) == 0) {
+    return true;
+  }
+
+  // Search by alias
+  if (encoding->alias) {
+    const char* alias = encoding->alias;
+    const char* s = strstr(alias, uname);
+    if (!s) {
+      return false;
+    }
+
+    int start = (int) (s - alias);
+    int end   = start + len - 1;
+
+    //fprintf(stderr, ">> name     : %s\n", uname);
+    //fprintf(stderr, ">> alias    : %s\n", alias);
+    //fprintf(stderr, ">> start    : %d\n", start);
+    //fprintf(stderr, ">> end      : %d\n", end);
+    //fprintf(stderr, ">> alias[%d]: %c\n", start, alias[start]);
+    //fprintf(stderr, ">> alias[%d]: %c\n", end, alias[end]);
+
+    bool is_start = false;
+    bool is_end = false;
+
+    if (start == 0 || alias[start - 1] == ' ') {
+      is_start = true;
+    }
+    if (end == strlen(alias) - 1 || alias[end + 1] == ' ') {
+      is_end = true;
+    }
+
+    //fprintf(stderr, ">> is_start : %d\n", is_start);
+    //fprintf(stderr, ">> is_end   : %d\n", is_end);
+
+    return is_start && is_end;
+  }
+
+  return false;
 }
 
 /**
