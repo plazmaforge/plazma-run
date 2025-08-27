@@ -116,6 +116,20 @@ static const int unimap_iso8859_5[] = {
 };
 
 /* ISO_8859-6 */
+static const int unimap_iso8859_6[] = {
+  0x00a0, NO_CHR, NO_CHR, NO_CHR, 0x00a4, NO_CHR, NO_CHR, NO_CHR, /* 0xa0 */
+  NO_CHR, NO_CHR, NO_CHR, NO_CHR, 0x060c, 0x00ad, NO_CHR, NO_CHR, /* 0xa8 */
+  NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, /* 0xb0 */
+  NO_CHR, NO_CHR, NO_CHR, 0x061b, NO_CHR, NO_CHR, NO_CHR, 0x061f, /* 0xb8 */
+  NO_CHR, 0x0621, 0x0622, 0x0623, 0x0624, 0x0625, 0x0626, 0x0627, /* 0xc0 */
+  0x0628, 0x0629, 0x062a, 0x062b, 0x062c, 0x062d, 0x062e, 0x062f, /* 0xc8 */
+  0x0630, 0x0631, 0x0632, 0x0633, 0x0634, 0x0635, 0x0636, 0x0637, /* 0xd0 */
+  0x0638, 0x0639, 0x063a, NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, /* 0xd8 */
+  0x0640, 0x0641, 0x0642, 0x0643, 0x0644, 0x0645, 0x0646, 0x0647, /* 0xe0 */
+  0x0648, 0x0649, 0x064a, 0x064b, 0x064c, 0x064d, 0x064e, 0x064f, /* 0xe8 */
+  0x0650, 0x0651, 0x0652, NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, /* 0xf0 */
+  NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR  /* 0xf8 */
+};
 
 /* ISO_8859-7 */
 
@@ -669,7 +683,8 @@ int* _lib_unimap_get_map_by_id(int id) {
         return (int*) unimap_iso8859_4;
     } else if (id == 28595) {
         return (int*) unimap_iso8859_5;
-    /* 28596 */
+    } else if (id == 28596) {
+        return (int*) unimap_iso8859_6;
     /* 28597 */
     /* 28598 */
     } else if (id == 28599) {
@@ -785,7 +800,7 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int id) {
        || id == 28593
        || id == 28594
        || id == 28595
-       /* 28596 */
+       || id == 28596
        /* 28597 */
        /* 28598 */
        || id == 28599
