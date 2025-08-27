@@ -406,6 +406,6 @@ void lib_enc_print_encodings() {
     for (size_t i = 0; i < size; i++) {
         lib_encoding_t e = lib_encodings[i];
         //printf("%s   \t%s\t\t %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id));
-        printf("%-15s %-25s %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id));
+        printf("%-15s %-25s %-15s %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id), e.alias);
     }
 }
