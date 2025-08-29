@@ -55,7 +55,6 @@ static const lib_encoding_t lib_encodings[] = {
     {866,     "CP866",       "DOS Cyrillic Russian",  "866 IBM866 CSIBM866"},
     {869,     "CP869",       "DOS Greek 2",           "869 IBM869 CSIBM869 CP-GR"},
 
-
     /*
       WINDOWS
     */
@@ -69,6 +68,8 @@ static const lib_encoding_t lib_encodings[] = {
     {1256,    "CP1256",      "Windows Arabic",        "1256 WINDOWS-1256 MS-ARAB"},
     {1257,    "CP1257",      "Windows Baltic",        "1257 WINDOWS-1257 WINBALTRIM"},
     {1258,    "CP1258",      "Windows Vietnamese",    "1258 WINDOWS-1258"},
+
+    {874,     "CP874",      "Windows Thai",           "874 WINDOWS-874"},
 
     /*
       Unicode
@@ -153,7 +154,12 @@ bool lib_enc_is_win_encoding(int id) {
           || id == 1255
           || id == 1256
           || id == 1257
-          || id == 1258);
+          || id == 1258
+
+          /* CP874 */ /* WINDOWS-874 ?*/
+          || id == 874
+          
+          );
 }
 
 /**

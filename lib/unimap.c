@@ -497,7 +497,7 @@ static const int unimap_cp869[] = {
   0x00b0, 0x00a8, 0x03c9, 0x03cb, 0x03b0, 0x03ce, 0x25a0, 0x00a0  /* 0xf8 */
 };
 
-/* CP874 */
+/* CP874 */ /* WINDOWS-874 ? */
 static const int unimap_cp874[] = {
   0x20ac, NO_CHR, NO_CHR, NO_CHR, NO_CHR, 0x2026, NO_CHR, NO_CHR, /* 0x80 */
   NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, NO_CHR, /* 0x88 */
@@ -756,6 +756,8 @@ int* _lib_unimap_get_map_by_id(int id) {
 
     } else if (id == 869) {
         return (int*) unimap_cp869;
+        
+    /* CP874 */ /* WINDOWS-874 ? */    
     } else if (id == 874) {
         return (int*) unimap_cp874;
     }
