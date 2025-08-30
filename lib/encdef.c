@@ -5,30 +5,64 @@
 
 #include "encdef.h"
 
+/*
+  Character encoding mappings and related files
+  https://www.unicode.org/L2/L1999/99325-E.htm
+  http://www.unicode.org/Public/MAPPINGS/
+
+  Code Pages
+  https://en.wikipedia.org/wiki/Code_page
+  https://en.wikipedia.org/wiki/ISO/IEC_8859#The_parts_of_ISO/IEC_8859
+
+  Java Encodings
+  https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
+
+  Mozilla Encodings
+  https://developer.mozilla.org/en-US/docs/Web/API/Encoding_API/Encodings
+
+  W3C Encodings
+  https://www.w3.org/International/docs/encoding/
+
+  File.encoding values and IBM i CCSID
+  https://www.ibm.com/docs/en/i/7.4.0?topic=encodings-fileencoding-values-i-ccsid
+
+  CCSID values defined on IBM i
+  https://www.ibm.com/docs/en/i/7.4.0?topic=information-ccsid-values-defined-i
+
+  INA Character Sets
+  https://www.iana.org/assignments/character-sets/character-sets.xhtml
+
+  Microsoft Code Pages
+  https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+*/
+
 static const lib_encoding_t lib_encodings[] = {
 
     /*
       ISO-8859
+
+      CE European: Central or Eastern European
+      SE European: South or Eastern European
     */
 
-    {28591,   "ISO-8859-1", "Latin-1",                "ISO-IR-100 ISO8859-1  ISO_8859-1  ISO_8859-1:1987  L1  LATIN1 CSISOLATIN1 CP819 IBM819"},
-    {28592,   "ISO-8859-2", "Latin-2",                "ISO-IR-101 ISO8859-2  ISO_8859-2  ISO_8859-2:1987  L2  LATIN2 CSISOLATIN2"},
-    {28593,   "ISO-8859-3", "Latin-3/South European", "ISO-IR-109 ISO8859-3  ISO_8859-3  ISO_8859-3:1988  L3  LATIN3 CSISOLATIN3"},
-    {28594,   "ISO-8859-4", "Latin-4/North European", "ISO-IR-110 ISO8859-4  ISO_8859-4  ISO_8859-4:1988  L4  LATIN4 CSISOLATIN4"},
+    {28591,   "ISO-8859-1", "Latin-1//Western European",        "ISO-IR-100 ISO8859-1   ISO_8859-1  ISO_8859-1:1987  L1  LATIN1  LATIN-1  CSISOLATIN1  CSISO88591  ISO_8859-1:1998 CP819 IBM819"},
+    {28592,   "ISO-8859-2", "Latin-2/Central-Eastern European", "ISO-IR-101 ISO8859-2   ISO_8859-2  ISO_8859-2:1987  L2  LATIN2  LATIN-2  CSISOLATIN2  CSISO88592  ISO_8859-2:1999"},
+    {28593,   "ISO-8859-3", "Latin-3/South European",           "ISO-IR-109 ISO8859-3   ISO_8859-3  ISO_8859-3:1988  L3  LATIN3  LATIN-3  CSISOLATIN3  CSISO88593  ISO_8859-3:1999"},
+    {28594,   "ISO-8859-4", "Latin-4/North European",           "ISO-IR-110 ISO8859-4   ISO_8859-4  ISO_8859-4:1988  L4  LATIN4  LATIN-4  CSISOLATIN4  CSISO88594  ISO_8859-4:1998"},
 
-    {28595,   "ISO-8859-5", "Latin/Cyrillic",         "ISO-IR-144 ISO8859-5  ISO_8859-5  ISO_8859-5:1988  CYRILLIC   CSISOLATINCYRILLIC"},
-    {28596,   "ISO-8859-6", "Latin/Arabic",           "ISO-IR-127 ISO8859-6  ISO_8859-6  ISO_8859-6:1987  ARABIC     CSISOLATINARABIC ECMA-114 ASMO-708"}, 
-    {28597,   "ISO-8859-7", "Latin/Greek",            "ISO-IR-126 ISO8859-7  ISO_8859-7  ISO_8859-7:1987  GREEK      CSISOLATINGREEK ECMA-118 ELOT_928 GREEK8 ISO_8859-7:2003"},
-    {28598,   "ISO-8859-8", "Latin/Hebrew",           "ISO-IR-138 ISO8859-8  ISO_8859-8  ISO_8859-8:1988  HEBREW     CSISOLATINHEBREW"},
-    {28599,   "ISO-8859-9", "Latin-5/Turkish",        "ISO-IR-148 ISO8859-9  ISO_8859-9  ISO_8859-9:1989  L5  LATIN5 CSISOLATIN5"},
+    {28595,   "ISO-8859-5", "Latin/Cyrillic",                   "ISO-IR-144 ISO8859-5   ISO_8859-5  ISO_8859-5:1988  CYRILLIC    CSISOLATINCYRILLIC    CSISO88595  ISO_8859-5:1999"},
+    {28596,   "ISO-8859-6", "Latin/Arabic",                     "ISO-IR-127 ISO8859-6   ISO_8859-6  ISO_8859-6:1987  ARABIC      CSISOLATINARABIC      CSISO88596  ISO_8859-6:1999 ECMA-114 ASMO-708"}, 
+    {28597,   "ISO-8859-7", "Latin/Greek",                      "ISO-IR-126 ISO8859-7   ISO_8859-7  ISO_8859-7:1987  GREEK       CSISOLATINGREEK       CSISO88597  ISO_8859-7:2003 ECMA-118 ELOT_928 GREEK8"},
+    {28598,   "ISO-8859-8", "Latin/Hebrew",                     "ISO-IR-138 ISO8859-8   ISO_8859-8  ISO_8859-8:1988  HEBREW      CSISOLATINHEBREW      CSISO88598  ISO_8859-8:1999"},
+    {28599,   "ISO-8859-9", "Latin-5/Turkish",                  "ISO-IR-148 ISO8859-9   ISO_8859-9  ISO_8859-9:1989  L5  LATIN5  LATIN-5  CSISOLATIN5  CSISO88599  ISO_8859-9:1999"},
 
-    {28600,   "ISO-8859-10", "Latin-6/Nordic",        "ISO-IR-157 ISO8859-10 ISO_8859-10 ISO_8859-10:1992 L6  LATIN6 CSISOLATIN6"},
-    {28601,   "ISO-8859-11", "Latin/Thai",            "ISO8859-11 ISO_8859-11"},
+    {28600,   "ISO-8859-10", "Latin-6/Nordic",                  "ISO-IR-157 ISO8859-10  ISO_8859-10 ISO_8859-10:1992 L6  LATIN6  LATIN-6  CSISOLATIN6  CSISO885910 ISO_8859-10:1998"},
+    {28601,   "ISO-8859-11", "Latin/Thai",                      "           ISO8859-11  ISO_8859-11 ISO_8859-11:2001                                   CSISO885911"},
 
-    {28603,   "ISO-8859-13", "Latin-7/Baltic Rim",    "ISO-IR-179 ISO8859-13 ISO_8859-13                  L7  LATIN7"},
-    {28604,   "ISO-8859-14", "Latin-8/Celtic",        "ISO-IR-199 ISO8859-14 ISO_8859-14 ISO_8859-14:1998 L8  LATIN8 ISO-CELTIC"},
-    {28605,   "ISO-8859-15", "Latin-9",               "ISO-IR-203 ISO8859-15 ISO_8859-15 ISO_8859-15:1998 L9  LATIN9"},
-    {28606,   "ISO-8859-16", "Latin-10/SE European",  "ISO-IR-226 ISO8859-16 ISO_8859-16 ISO_8859-16:2001 L10 LATIN10"},
+    {28603,   "ISO-8859-13", "Latin-7/Baltic Rim",              "ISO-IR-179 ISO8859-13  ISO_8859-13 ISO_8859-13:1998 L7  LATIN7  LATIN-7  CSISOLATIN7  CSISO885913"}, // WINDOWS-1257
+    {28604,   "ISO-8859-14", "Latin-8/Celtic",                  "ISO-IR-199 ISO8859-14  ISO_8859-14 ISO_8859-14:1998 L8  LATIN8  LATIN-8  CSISOLATIN8  CSISO885914 ISO-CELTIC"},
+    {28605,   "ISO-8859-15", "Latin-9/Western European",        "ISO-IR-203 ISO8859-15  ISO_8859-15 ISO_8859-15:1999 L9  LATIN9  LATIN-9  CSISOLATIN9  CSISO885915 LATIN0 LATIN-0"},
+    {28606,   "ISO-8859-16", "Latin-10/South-Eastern European", "ISO-IR-226 ISO8859-16  ISO_8859-16 ISO_8859-16:2001 L10 LATIN10 LATIN-10 CSISOLATIN10 CSISO885916"},
 
 
     /*
@@ -39,37 +73,37 @@ static const lib_encoding_t lib_encodings[] = {
       >> CP874 WINDOWS-874
     */
 
-    {437,     "CP437",       "DOS Latin US",          "437 IBM437 CSPC8CODEPAGE437"},
-    {737,     "CP737",       "DOS Greek 1",           "737 IBM737"},
-    {775,     "CP775",       "DOS Baltic Rim",        "775 IBM775 CSPC775BALTIC"},
-    {850,     "CP850",       "DOS Latin 1",           "850 IBM850 CSPC850MULTILINGUAL"},
-    {852,     "CP852",       "DOS Latin 2",           "852 IBM852 CSPCP852"},
-    {855,     "CP855",       "DOS Cyrillic",          "855 IBM855 CSIBM855"},
-    {857,     "CP857",       "DOS Turkish",           "857 IBM857 CSIBM857"},
-    {860,     "CP860",       "DOS Portuguese",        "860 IBM860 CSIBM860"},
-    {861,     "CP861",       "DOS Icelandic",         "861 IBM861 CSIBM861 CP-IS"},
-    {862,     "CP862",       "DOS Hebrew",            "862 IBM862 CSPC862LATINHEBREW"},
-    {863,     "CP863",       "DOS French Canada",     "863 IBM863 CSIBM863"},
-    {864,     "CP864",       "DOS Arabic",            "864 IBM864 CSIBM864"},
-    {865,     "CP865",       "DOS Nordic",            "865 IBM865 CSIBM865"},
-    {866,     "CP866",       "DOS Cyrillic Russian",  "866 IBM866 CSIBM866"},
-    {869,     "CP869",       "DOS Greek 2",           "869 IBM869 CSIBM869 CP-GR"},
+    {437,     "CP437",       "DOS Latin US",                             "437  IBM437 CSPC8CODEPAGE437"},
+    {737,     "CP737",       "DOS Greek 1",                              "737  IBM737"},
+    {775,     "CP775",       "DOS Baltic Rim",                           "775  IBM775 CSPC775BALTIC"},
+    {850,     "CP850",       "DOS Latin 1",                              "850  IBM850 CSPC850MULTILINGUAL"},
+    {852,     "CP852",       "DOS Latin 2",                              "852  IBM852 CSPCP852"},
+    {855,     "CP855",       "DOS Cyrillic",                             "855  IBM855 CSIBM855"},
+    {857,     "CP857",       "DOS Turkish",                              "857  IBM857 CSIBM857"},
+    {860,     "CP860",       "DOS Portuguese",                           "860  IBM860 CSIBM860"},
+    {861,     "CP861",       "DOS Icelandic",                            "861  IBM861 CSIBM861 CP-IS"},
+    {862,     "CP862",       "DOS Hebrew",                               "862  IBM862 CSPC862LATINHEBREW"},
+    {863,     "CP863",       "DOS French Canada",                        "863  IBM863 CSIBM863"},
+    {864,     "CP864",       "DOS Arabic",                               "864  IBM864 CSIBM864"},
+    {865,     "CP865",       "DOS Nordic",                               "865  IBM865 CSIBM865"},
+    {866,     "CP866",       "DOS Cyrillic",                             "866  IBM866 CSIBM866"},
+    {869,     "CP869",       "DOS Greek 2",                              "869  IBM869 CSIBM869 CP-GR"},
 
     /*
       WINDOWS
     */
 
-    {1250,    "CP1250",      "Windows Latin 2, CE",   "1250 WINDOWS-1250 MS-EE"},
-    {1251,    "CP1251",      "Windows Cyrillic",      "1251 WINDOWS-1251 MS-CYRL"},
-    {1252,    "CP1252",      "Windows Latin 1, WE",   "1252 WINDOWS-1252 MS-ANSI"},
-    {1253,    "CP1253",      "Windows Greek",         "1253 WINDOWS-1253 MS-GREEK"},
-    {1254,    "CP1254",      "Windows Turkish",       "1254 WINDOWS-1254 MS-TURK"},
-    {1255,    "CP1255",      "Windows Hebrew",        "1255 WINDOWS-1255 MS-HEBR"},
-    {1256,    "CP1256",      "Windows Arabic",        "1256 WINDOWS-1256 MS-ARAB"},
-    {1257,    "CP1257",      "Windows Baltic",        "1257 WINDOWS-1257 WINBALTRIM"},
-    {1258,    "CP1258",      "Windows Vietnamese",    "1258 WINDOWS-1258"},
+    {1250,    "CP1250",      "Windows Latin 2/Central-Eastern European", "1250 WINDOWS-1250 MS-EE"},
+    {1251,    "CP1251",      "Windows Cyrillic",                         "1251 WINDOWS-1251 MS-CYRL"},
+    {1252,    "CP1252",      "Windows Latin 1/Western European",         "1252 WINDOWS-1252 MS-ANSI"},
+    {1253,    "CP1253",      "Windows Greek",                            "1253 WINDOWS-1253 MS-GREEK"},
+    {1254,    "CP1254",      "Windows Turkish",                          "1254 WINDOWS-1254 MS-TURK"},
+    {1255,    "CP1255",      "Windows Hebrew",                           "1255 WINDOWS-1255 MS-HEBR"},
+    {1256,    "CP1256",      "Windows Arabic",                           "1256 WINDOWS-1256 MS-ARAB"},
+    {1257,    "CP1257",      "Windows Baltic",                           "1257 WINDOWS-1257 WINBALTRIM"},
+    {1258,    "CP1258",      "Windows Vietnamese",                       "1258 WINDOWS-1258"},
 
-    {874,     "CP874",      "Windows Thai",           "874 WINDOWS-874"},
+    {874,     "CP874",      "Windows Thai",                              "874  WINDOWS-874"},
 
     /*
       Unicode
@@ -412,6 +446,6 @@ void lib_enc_print_encodings() {
     for (size_t i = 0; i < size; i++) {
         lib_encoding_t e = lib_encodings[i];
         //printf("%s   \t%s\t\t %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id));
-        printf("%-15s %-25s %-15s %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id), e.alias);
+        printf("%-15s %-45s %-15s %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id), e.alias);
     }
 }

@@ -10,6 +10,37 @@
 #define NO_CHR 0xFFFD
 #define NO_DAT '?'
 
+/*
+  Character encoding mappings and related files
+  https://www.unicode.org/L2/L1999/99325-E.htm
+  http://www.unicode.org/Public/MAPPINGS/
+
+  Code Pages
+  https://en.wikipedia.org/wiki/Code_page
+  https://en.wikipedia.org/wiki/ISO/IEC_8859#The_parts_of_ISO/IEC_8859
+
+  Java Encodings
+  https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
+
+  Mozilla Encodings
+  https://developer.mozilla.org/en-US/docs/Web/API/Encoding_API/Encodings
+
+  W3C Encodings
+  https://www.w3.org/International/docs/encoding/
+
+  File.encoding values and IBM i CCSID
+  https://www.ibm.com/docs/en/i/7.4.0?topic=encodings-fileencoding-values-i-ccsid
+
+  CCSID values defined on IBM i
+  https://www.ibm.com/docs/en/i/7.4.0?topic=information-ccsid-values-defined-i
+
+  INA Character Sets
+  https://www.iana.org/assignments/character-sets/character-sets.xhtml
+
+  Microsoft Code Pages
+  https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+*/
+
 /* ISO        */
 
 /* ISO_8859-1 */
@@ -799,11 +830,22 @@ int* _lib_unimap_get_map_by_id(int id) {
         return (int*) unimap_iso8859_7;
     } else if (id == 28598) {
         return (int*) unimap_iso8859_8;            
-    } else if (id == 28599) {
+    } else if (id == 28599) {        
         return (int*) unimap_iso8859_9;
+
     } else if (id == 28600) {
         return (int*) unimap_iso8859_10;
+    } else if (id == 28601) {
+        return (int*) unimap_iso8859_11;
 
+    } else if (id == 28603) {
+        return (int*) unimap_iso8859_13;
+    } else if (id == 28604) {
+        return (int*) unimap_iso8859_14;
+    } else if (id == 28605) {
+        return (int*) unimap_iso8859_15;
+    } else if (id == 28606) {
+        return (int*) unimap_iso8859_16;
 
     // DOS
     } else if (id == 437) {
@@ -918,7 +960,15 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int id) {
        || id == 28597
        || id == 28598
        || id == 28599
+
        || id == 28600
+       || id == 28601
+
+       || id == 28603
+       || id == 28604
+       || id == 28605
+       || id == 28606
+
        ) {
 
         // Shift for ISO-8859 only
@@ -1159,4 +1209,3 @@ int lib_unimap_conv_icode(lib_unimap_t* conv_map, int icode) {
 int lib_unimap_conv_ucode(lib_unimap_t* conv_map, int ucode) {
     return _lib_unimap_conv_ucode(conv_map, ucode);
 }
-

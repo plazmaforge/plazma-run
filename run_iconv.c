@@ -72,7 +72,7 @@ void _print_encodings() {
         if (!lib_enc_supports_conv(e.id)) {
             continue;
         }
-        printf("%-15s %-25s %-15s %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id), e.alias);
+        printf("%-15s %-45s %-15s %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id), e.alias);
     }
 }
 
