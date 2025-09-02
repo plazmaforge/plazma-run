@@ -47,4 +47,6 @@ int lib_enc_conv_to_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data, 
 int lib_enc_conv_from_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data, size_t from_len, 
     char** to_data, size_t* to_len);
 
+int lib_enc_test();
+
 #endif // PLAZMA_LIB_ENCLIB_H

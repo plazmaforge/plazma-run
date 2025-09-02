@@ -521,3 +521,35 @@ int lib_enc_conv_from_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data
 
     return 0;
 }
+
+int lib_enc_test() {
+    
+    // 128640
+    // 1F680
+    // U+0001F680
+    // -----------
+    // 00 01 F6 80
+
+    //int cp = 128640;
+    int cp = 0x10437;
+    char buf[5];
+
+    lib_utf32_to_char(buf, cp);
+
+    printf("%02X\n", (unsigned char) buf[0]);
+    printf("%02X\n", (unsigned char) buf[1]);
+    printf("%02X\n", (unsigned char) buf[2]);
+    printf("%02X\n", (unsigned char) buf[3]);
+
+    lib_utf16_to_char(buf, cp);
+
+    printf("\n");
+
+
+    printf("%02X\n", (unsigned char) buf[0]);
+    printf("%02X\n", (unsigned char) buf[1]);
+    printf("%02X\n", (unsigned char) buf[2]);
+    printf("%02X\n", (unsigned char) buf[3]);
+
+    return 0;
+}

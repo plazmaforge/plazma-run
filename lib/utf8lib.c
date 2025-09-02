@@ -1485,6 +1485,85 @@ bool lib_utf8_strieq(const char* str1, const char* str2) {
 
 //// alt: end ////
 
+
+/**
+ * Convert UTF-16 char to the codepoint
+ */
+int _lib_utf16_to_code(const char* str, int len) {
+    // TODO
+    return 0;
+}
+
+/**
+ * Convert the codepoint to UTF-16 char.
+ * Store the result ot the buffer.
+ */
+int _lib_utf16_to_char(char* buf, int cp, int len) {
+    if (cp < 0 || cp > 0x10FFFF) {
+        return -1;
+    }
+    if(cp < 0xD800 || (cp > 0xDFFF && cp < 0x10000)) {
+        buf[0] = (cp >> 8) & 0xFF;
+        buf[1] = cp & 0xFF;
+        buf[2] = 0;
+        buf[3] = 0;
+        return 1;
+    }
+
+    cp -= 0x010000;
+
+    int hs = (cp >> 10) + 0xD800;
+    int ls = (cp & 0x03FF) + 0xDC00;
+
+    buf[0] = (hs >> 8) & 0xFF;
+    buf[1] = hs & 0xFF;
+    buf[2] = (ls >> 8) & 0xFF;;
+    buf[3] = ls & 0xFF;;
+
+    return 0;
+}
+
+/**
+ * Convert UTF-32 char to the codepoint
+ */
+int _lib_utf32_to_code(const char* str) {
+    // TODO
+    return 0;
+}
+
+/**
+ * Convert the codepoint to UTF-32 char.
+ * Store the result ot the buffer.
+ */
+int _lib_utf32_to_char(char* buf, int cp) {
+    if (cp < 0 || cp > 0x10FFFF) {
+        return -1;
+    }
+
+    // 128640
+    // 1F680
+    // U+0001F680
+    // -----------
+    // 00 01 F6 80
+
+    buf[0] = (cp >> 24) & 0xFF;
+    buf[1] = (cp >> 16) & 0xFF;
+    buf[2] = (cp >> 8) & 0xFF;
+    buf[3] = cp & 0xFF;
+
+    return 0;
+}
+
+////
+
+int lib_utf16_to_char(char* buf, int cp) {
+   return _lib_utf16_to_char(buf, cp, 0);
+}
+
+int lib_utf32_to_char(char* buf, int cp) {
+   return _lib_utf32_to_char(buf, cp);
+}
+
 /*
 
 https://github.com/benkasminbullock/unicode-c/blob/master/unicode.c
