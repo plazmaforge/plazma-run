@@ -1485,20 +1485,32 @@ bool lib_utf8_strieq(const char* str1, const char* str2) {
 
 //// alt: end ////
 
+// https://stackoverflow.com/questions/43564445/how-to-map-unicode-codepoints-from-an-utf-16-file-using-c
 
 /**
  * Convert UTF-16 char to the codepoint
  */
-int _lib_utf16_to_code(const char* str, int len) {
-    // TODO
-    return 0;
+int _lib_utf16_to_code(const char* str) {
+    uint8_t b1 = (uint8_t) str[0];
+    uint8_t b2 = (uint8_t) str[1];
+
+    uint16_t c1 = (b1 << 8) | b2;
+
+    if (c1 >= 0xD800 && c1 < 0xDC00) {
+        b1 = (uint8_t) str[2];
+        b2 = (uint8_t) str[3];
+        uint16_t c2 = (b1 << 8) | b2;
+        return ((c1 & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
+    }
+
+    return c1;
 }
 
 /**
  * Convert the codepoint to UTF-16 char.
  * Store the result ot the buffer.
  */
-int _lib_utf16_to_char(char* buf, int cp, int len) {
+int _lib_utf16_to_char(char* buf, int cp) {
     if (cp < 0 || cp > 0x10FFFF) {
         return -1;
     }
@@ -1506,19 +1518,19 @@ int _lib_utf16_to_char(char* buf, int cp, int len) {
         buf[0] = (cp >> 8) & 0xFF;
         buf[1] = cp & 0xFF;
         buf[2] = 0;
-        buf[3] = 0;
+        buf[3] = 0;            
         return 1;
     }
 
     cp -= 0x010000;
 
-    int hs = (cp >> 10) + 0xD800;
-    int ls = (cp & 0x03FF) + 0xDC00;
+    uint16_t hi = (cp >> 10) + 0xD800;
+    uint16_t lo = (cp & 0x03FF) + 0xDC00;
 
-    buf[0] = (hs >> 8) & 0xFF;
-    buf[1] = hs & 0xFF;
-    buf[2] = (ls >> 8) & 0xFF;;
-    buf[3] = ls & 0xFF;;
+    buf[0] = (hi >> 8) & 0xFF;
+    buf[1] = hi & 0xFF;
+    buf[2] = (lo >> 8) & 0xFF;;
+    buf[3] = lo & 0xFF;;
 
     return 0;
 }
@@ -1527,8 +1539,11 @@ int _lib_utf16_to_char(char* buf, int cp, int len) {
  * Convert UTF-32 char to the codepoint
  */
 int _lib_utf32_to_code(const char* str) {
-    // TODO
-    return 0;
+    uint8_t b1 = (uint8_t) str[0];
+    uint8_t b2 = (uint8_t) str[1];
+    uint8_t b3 = (uint8_t) str[2];
+    uint8_t b4 = (uint8_t) str[3];
+    return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
 }
 
 /**
@@ -1556,8 +1571,18 @@ int _lib_utf32_to_char(char* buf, int cp) {
 
 ////
 
+int lib_utf16_to_code(const char* str) {
+    return _lib_utf16_to_code(str);
+}
+
 int lib_utf16_to_char(char* buf, int cp) {
-   return _lib_utf16_to_char(buf, cp, 0);
+   return _lib_utf16_to_char(buf, cp);
+}
+
+////
+
+int lib_utf32_to_code(const char* str) {
+    return _lib_utf32_to_code(str);
 }
 
 int lib_utf32_to_char(char* buf, int cp) {

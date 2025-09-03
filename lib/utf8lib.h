@@ -308,7 +308,13 @@ bool lib_utf8_strieq(const char* str1, const char* str2);
 
 //// alt: end
 
+int lib_utf16_to_code(const char* str);
+
 int lib_utf16_to_char(char* buf, int cp);
+
+////
+
+int lib_utf32_to_code(const char* str);
 
 int lib_utf32_to_char(char* buf, int cp);
 

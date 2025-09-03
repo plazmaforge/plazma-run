@@ -522,6 +522,13 @@ int lib_enc_conv_from_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data
     return 0;
 }
 
+void _print_char(char* buf) {
+    printf("%02X ",  (unsigned char) buf[0]);
+    printf("%02X ",  (unsigned char) buf[1]);
+    printf("%02X ",  (unsigned char) buf[2]);
+    printf("%02X\n", (unsigned char) buf[3]);
+}
+
 int lib_enc_test() {
     
     // 128640
@@ -534,22 +541,23 @@ int lib_enc_test() {
     int cp = 0x10437;
     char buf[5];
 
-    lib_utf32_to_char(buf, cp);
+    printf("UNI-CP: %08X\n",  (unsigned int) cp);
 
-    printf("%02X\n", (unsigned char) buf[0]);
-    printf("%02X\n", (unsigned char) buf[1]);
-    printf("%02X\n", (unsigned char) buf[2]);
-    printf("%02X\n", (unsigned char) buf[3]);
+    lib_utf32_to_char(buf, cp);
+    printf("UTF-32: ");
+    _print_char(buf);
+
+    cp = 0;
+    cp = lib_utf32_to_code(buf);
+    printf("UNI-CP: %08X\n",  (unsigned int) cp);
 
     lib_utf16_to_char(buf, cp);
+    printf("UTF-16: ");
+    _print_char(buf);
 
-    printf("\n");
-
-
-    printf("%02X\n", (unsigned char) buf[0]);
-    printf("%02X\n", (unsigned char) buf[1]);
-    printf("%02X\n", (unsigned char) buf[2]);
-    printf("%02X\n", (unsigned char) buf[3]);
+    cp = 0;
+    cp = lib_utf16_to_code(buf);
+    printf("UNI-CP: %08X\n",  (unsigned int) cp);
 
     return 0;
 }
