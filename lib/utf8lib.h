@@ -3,6 +3,19 @@
 
 #include <stdbool.h>
 
+/* utfdef.h */
+
+#define LIB_UTF8_ID       65001
+#define LIB_UTF8_BOM_ID 1065001
+
+#define LIB_UTF16_ID       1200
+#define LIB_UTF16BE_ID     1201
+#define LIB_UTF16LE_ID     1202
+
+#define LIB_UTF32_ID      12000
+#define LIB_UTF32BE_ID    12001
+#define LIB_UTF32LE_ID    12002
+
 /*
  * Return lenght of UTF-8 char by codepoint or error (0).
  */
@@ -308,14 +321,34 @@ bool lib_utf8_strieq(const char* str1, const char* str2);
 
 //// alt: end
 
+//// UTF-16
+
+int lib_utf16_char_seq_len(const char* str);
+
 int lib_utf16_to_code(const char* str);
+
+size_t lib_utf16_code_seq_len(int cp);
 
 int lib_utf16_to_char(char* buf, int cp);
 
-////
+//// UTF-32
+
+int lib_utf32_char_seq_len(const char* str);
 
 int lib_utf32_to_code(const char* str);
 
+size_t lib_utf32_code_seq_len(int cp);
+
 int lib_utf32_to_char(char* buf, int cp);
+
+//// UTF
+
+size_t lib_utf_char_seq_len(int utf_id, const char* str);
+
+size_t lib_utf_code_seq_len(int utf_id, int cp);
+
+int lib_utf_to_char(int utf_id, char* buf, int cp);
+
+int lib_utf_to_code(int utf_id, const char* str, int* cp);
 
 #endif // PLAZMA_LIB_UTF8LIB_H

@@ -1487,23 +1487,52 @@ bool lib_utf8_strieq(const char* str1, const char* str2) {
 
 // https://stackoverflow.com/questions/43564445/how-to-map-unicode-codepoints-from-an-utf-16-file-using-c
 
+//// UTF-16
+
+int lib_utf16_char_seq_len(const char* str) {
+    if (!str) {
+        return 0;
+    }
+    uint8_t b1 = (uint8_t) str[0];
+    uint8_t b2 = (uint8_t) str[1];
+    uint16_t c1 = (b1 << 8) | b2;
+
+    if (c1 >= 0xD800 && c1 < 0xDC00) {
+        return 4;
+    }
+    return 2;
+}
+
 /**
  * Convert UTF-16 char to the codepoint
  */
 int _lib_utf16_to_code(const char* str) {
+    if (!str) {
+        return -1;
+    }
     uint8_t b1 = (uint8_t) str[0];
     uint8_t b2 = (uint8_t) str[1];
 
     uint16_t c1 = (b1 << 8) | b2;
 
     if (c1 >= 0xD800 && c1 < 0xDC00) {
-        b1 = (uint8_t) str[2];
-        b2 = (uint8_t) str[3];
-        uint16_t c2 = (b1 << 8) | b2;
+        uint8_t b3 = (uint8_t) str[2];
+        uint8_t b4 = (uint8_t) str[3];
+        uint16_t c2 = (b3 << 8) | b4;
         return ((c1 & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
     }
 
     return c1;
+}
+
+size_t lib_utf16_code_seq_len(int cp) {
+    if (cp < 0 || cp > 0x10FFFF) {
+        return 0;
+    }
+    if(cp < 0xD800 || (cp > 0xDFFF && cp < 0x10000)) {
+        return 2;
+    }
+    return 4;
 }
 
 /**
@@ -1519,7 +1548,7 @@ int _lib_utf16_to_char(char* buf, int cp) {
         buf[1] = cp & 0xFF;
         buf[2] = 0;
         buf[3] = 0;            
-        return 1;
+        return 0;
     }
 
     cp -= 0x010000;
@@ -1535,15 +1564,34 @@ int _lib_utf16_to_char(char* buf, int cp) {
     return 0;
 }
 
+//// UTF-32
+
+int lib_utf32_char_seq_len(const char* str) {
+    if (!str) {
+        return 0;
+    }
+    return 4;
+}
+
 /**
  * Convert UTF-32 char to the codepoint
  */
 int _lib_utf32_to_code(const char* str) {
+    if (!str) {
+        return -1;
+    }
     uint8_t b1 = (uint8_t) str[0];
     uint8_t b2 = (uint8_t) str[1];
     uint8_t b3 = (uint8_t) str[2];
     uint8_t b4 = (uint8_t) str[3];
     return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
+}
+
+size_t lib_utf32_code_seq_len(int cp) {
+    if (cp < 0 || cp > 0x10FFFF) {
+        return 0;
+    }
+    return 4;
 }
 
 /**
@@ -1587,6 +1635,67 @@ int lib_utf32_to_code(const char* str) {
 
 int lib_utf32_to_char(char* buf, int cp) {
    return _lib_utf32_to_char(buf, cp);
+}
+
+//// UTF
+
+size_t lib_utf_char_seq_len(int utf_id, const char* str) {
+    if (!str || str[0] == '\0') {
+        return 0;
+    }
+    if (utf_id == LIB_UTF8_ID || utf_id == LIB_UTF8_BOM_ID) {
+        return lib_utf8_byte_seq_len(str[0]);
+    }
+    if (utf_id == LIB_UTF16_ID || utf_id == LIB_UTF16BE_ID || utf_id == LIB_UTF16LE_ID) {
+        return lib_utf16_char_seq_len(str);
+    }
+    if (utf_id == LIB_UTF32_ID || utf_id == LIB_UTF32BE_ID || utf_id == LIB_UTF32LE_ID) {
+        return lib_utf32_char_seq_len(str);
+    }
+    return 0;
+}
+
+size_t lib_utf_code_seq_len(int utf_id, int cp) {
+    if (utf_id == LIB_UTF8_ID || utf_id == LIB_UTF8_BOM_ID) {
+        return lib_utf8_code_seq_len(cp);
+    }
+    if (utf_id == LIB_UTF16_ID || utf_id == LIB_UTF16BE_ID || utf_id == LIB_UTF16LE_ID) {
+        return lib_utf16_code_seq_len(cp);
+    }
+    if (utf_id == LIB_UTF32_ID || utf_id == LIB_UTF32BE_ID || utf_id == LIB_UTF32LE_ID) {
+        return lib_utf32_code_seq_len(cp);
+    }
+    return 0;
+}
+
+int lib_utf_to_char(int utf_id, char* buf, int cp) {
+    // UTF-16LE/UTF-32LE is no implemented yet
+    if (utf_id == LIB_UTF8_ID || utf_id == LIB_UTF8_BOM_ID) {
+        return lib_utf8_to_char(buf, cp);
+    }
+    if (utf_id == LIB_UTF16_ID || utf_id == LIB_UTF16BE_ID || utf_id == LIB_UTF16LE_ID) {
+        return lib_utf16_to_char(buf, cp);
+    }
+    if (utf_id == LIB_UTF32_ID || utf_id == LIB_UTF32BE_ID || utf_id == LIB_UTF32LE_ID) {
+        return lib_utf32_to_char(buf, cp);
+    }
+    return -1;
+}
+
+int lib_utf_to_code(int utf_id, const char* str, int* cp) {
+    // UTF-16LE/UTF-32LE is no implemented yet
+    if (utf_id == LIB_UTF8_ID || utf_id == LIB_UTF8_BOM_ID) {
+        return lib_utf8_to_code(str, cp);
+    }
+    if (utf_id == LIB_UTF16_ID || utf_id == LIB_UTF16BE_ID || utf_id == LIB_UTF16LE_ID) {
+        *cp = _lib_utf16_to_code(str);
+        return 0;
+    }
+    if (utf_id == LIB_UTF32_ID || utf_id == LIB_UTF32BE_ID || utf_id == LIB_UTF32LE_ID) {
+        *cp = _lib_utf32_to_code(str);
+        return 0;
+    }
+    return -1;
 }
 
 /*

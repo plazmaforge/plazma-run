@@ -111,7 +111,8 @@ static const lib_encoding_t lib_encodings[] = {
 
     {65000,   "UTF-7",       "UTF-7",                 "UTF7     CSUNICODE11UTF7 UNICODE-1-1-UTF-7"},
     {65001,   "UTF-8",       "UTF-8",                 "UTF8"},
-/**/{1065001, "UTF-8-MAC",   "UTF-8-MAC",             "UTF8MAC  UTF8-MAC"},
+///**/{1065001, "UTF-8-MAC",   "UTF-8-MAC",             "UTF8MAC  UTF8-MAC"},
+/**/{1065001, "UTF-8-BOM",   "UTF-8-BOM",             "UTF8BOM  UTF8-BOM"},
 
     {1200,    "UTF-16",      "UTF-16",                "UTF16"},
     {1201,    "UTF-16BE",    "UTF-16BE",              "UTF16BE"},

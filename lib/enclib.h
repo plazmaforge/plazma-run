@@ -49,4 +49,16 @@ int lib_enc_conv_from_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data
 
 int lib_enc_test();
 
+//// UTF
+
+int lib_enc_conv_to_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char* from_data, size_t from_len, 
+    char** to_data, size_t* to_len);
+
+
+/**
+ * Converts data from UTF-[ID] by Encoding Map
+ */
+int lib_enc_conv_from_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char* from_data, size_t from_len, 
+    char** to_data, size_t* to_len);
+
 #endif // PLAZMA_LIB_ENCLIB_H
