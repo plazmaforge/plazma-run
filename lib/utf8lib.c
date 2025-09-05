@@ -1541,14 +1541,16 @@ size_t lib_utf16_code_seq_len(int cp) {
  */
 int _lib_utf16_to_char(char* buf, int cp) {
     if (cp < 0 || cp > 0x10FFFF) {
-        return -1;
+        //return -1;
+        return 0;
     }
     if(cp < 0xD800 || (cp > 0xDFFF && cp < 0x10000)) {
         buf[0] = (cp >> 8) & 0xFF;
         buf[1] = cp & 0xFF;
         buf[2] = 0;
         buf[3] = 0;            
-        return 0;
+        //return 0;
+        return 2;
     }
 
     cp -= 0x010000;
@@ -1561,7 +1563,8 @@ int _lib_utf16_to_char(char* buf, int cp) {
     buf[2] = (lo >> 8) & 0xFF;;
     buf[3] = lo & 0xFF;;
 
-    return 0;
+    //return 0;
+    return 4;
 }
 
 //// UTF-32
@@ -1600,7 +1603,8 @@ size_t lib_utf32_code_seq_len(int cp) {
  */
 int _lib_utf32_to_char(char* buf, int cp) {
     if (cp < 0 || cp > 0x10FFFF) {
-        return -1;
+        //return -1;
+        return 0;
     }
 
     // 128640
@@ -1614,7 +1618,8 @@ int _lib_utf32_to_char(char* buf, int cp) {
     buf[2] = (cp >> 8) & 0xFF;
     buf[3] = cp & 0xFF;
 
-    return 0;
+    //return 0;
+    return 4;
 }
 
 ////
