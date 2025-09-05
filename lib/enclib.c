@@ -129,7 +129,8 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
         fprintf(stderr, ">> conv_by_id: unimap -> UTF-8\n");
         #endif
 
-        return lib_enc_conv_to_utf8_by_id(from_id, from_data, from_len, to_data, to_len);
+        //return lib_enc_conv_to_utf8_by_id(from_id, from_data, from_len, to_data, to_len);
+        return lib_enc_conv_to_utf_by_id(LIB_ENC_UTF8_ID, from_id, from_data, from_len, to_data, to_len);
     }
 
     // UTF-8 -> unimap
@@ -139,7 +140,8 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
         fprintf(stderr, ">> conv_by_id: UTF-8 -> unimap\n");
         #endif
 
-        return lib_enc_conv_from_utf8_by_id(to_id, from_data, from_len, to_data, to_len);
+        //return lib_enc_conv_from_utf8_by_id(to_id, from_data, from_len, to_data, to_len);
+        return lib_enc_conv_from_utf_by_id(LIB_ENC_UTF8_ID, to_id, from_data, from_len, to_data, to_len);
     }
 
     // TODO: unimap -> UTF-16
@@ -193,6 +195,9 @@ int lib_enc_conv_to_utf8_by_id(int conv_id, char* from_data, size_t from_len,
     return lib_enc_conv_to_utf8_by_map(&conv_map , from_data, from_len, to_data, to_len);
 }
 
+/**
+ * Converts data from UTF-8 by Encoding ID
+ */
 int lib_enc_conv_from_utf8_by_id(int conv_id, char* from_data, size_t from_len, 
     char** to_data, size_t* to_len) {
 
@@ -220,14 +225,57 @@ static int _to_code(char chr) {
     return u;
 }
 
-
-
-
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // UTF-8/UTF-8-BOM/UTF-16/UTF-16BE/UTF-16LE/UTF-32/UTF-32BE/UTF-32LE
 /////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Converts data to UTF-[ID] by Encoding ID
+ */
+int lib_enc_conv_to_utf_by_id(int utf_id, int conv_id, char* from_data, size_t from_len, 
+    char** to_data, size_t* to_len) {
+
+    if (!from_data || from_len == 0 || !to_data || !to_len) {
+        return -1;
+    }
+
+    if (from_len == 0) {
+        return 0;
+    }
+
+    // Get 'from' map
+    struct lib_unimap_t conv_map;
+    lib_unimap_get_unimap_by_id(&conv_map, conv_id);
+
+    return lib_enc_conv_to_utf_by_map(utf_id, &conv_map, from_data, from_len, to_data, to_len);
+}
+
+/**
+ * Converts data from UTF-[ID] by Encoding ID
+ */
+int lib_enc_conv_from_utf_by_id(int utf_id, int conv_id, char* from_data, size_t from_len, 
+    char** to_data, size_t* to_len) {
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_from_utf_by_id: conv_id=%d\n", conv_id);
+    #endif
+
+    if (!from_data || from_len == 0 || !to_data || !to_len) {
+        return -1;
+    }
+
+    if (from_len == 0) {
+        return 0;
+    }
+
+    // Get 'conv' map
+    struct lib_unimap_t conv_map;
+    lib_unimap_get_unimap_by_id(&conv_map, conv_id);
+
+    return lib_enc_conv_from_utf_by_map(utf_id, &conv_map, from_data, from_len, to_data, to_len);
+}
+
+////
 
 /**
  * Converts data to UTF-[ID] by Encoding Map
