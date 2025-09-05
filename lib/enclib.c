@@ -42,7 +42,7 @@ static char* _data_copy(char* src, size_t size) {
  * Returns true if the Encoding ID supports conversion
  */
 bool lib_enc_supports_conv(int id) {
-    if (id == LIB_ENC_UTF8_ID) {
+    if (id == LIB_ENC_UTF8_ID || id == LIB_ENC_UTF16_ID || id == LIB_ENC_UTF32_ID) {
         return true;
     }
     return lib_unimap_supports_map(id);
@@ -122,26 +122,26 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
         return retval;
     }
 
-    // unimap -> UTF-8
-    if (has_from && to_id == LIB_ENC_UTF8_ID) {
+    // unimap -> UTF-[ID]
+    if (has_from && (to_id == LIB_ENC_UTF8_ID || to_id == LIB_ENC_UTF16_ID || to_id == LIB_ENC_UTF32_ID)) {
 
         #ifdef DEBUG
-        fprintf(stderr, ">> conv_by_id: unimap -> UTF-8\n");
+        fprintf(stderr, ">> conv_by_id: unimap -> UTF-[ID]\n");
         #endif
 
         //return lib_enc_conv_to_utf8_by_id(from_id, from_data, from_len, to_data, to_len);
-        return lib_enc_conv_to_utf_by_id(LIB_ENC_UTF8_ID, from_id, from_data, from_len, to_data, to_len);
+        return lib_enc_conv_to_utf_by_id(to_id, from_id, from_data, from_len, to_data, to_len);
     }
 
-    // UTF-8 -> unimap
-    if (from_id == LIB_ENC_UTF8_ID && has_to) {
+    // UTF-[ID] -> unimap
+    if (has_to && (from_id == LIB_ENC_UTF8_ID || from_id == LIB_ENC_UTF16_ID || from_id == LIB_ENC_UTF32_ID)) {
 
         #ifdef DEBUG
-        fprintf(stderr, ">> conv_by_id: UTF-8 -> unimap\n");
+        fprintf(stderr, ">> conv_by_id: UTF-[ID] -> unimap\n");
         #endif
 
         //return lib_enc_conv_from_utf8_by_id(to_id, from_data, from_len, to_data, to_len);
-        return lib_enc_conv_from_utf_by_id(LIB_ENC_UTF8_ID, to_id, from_data, from_len, to_data, to_len);
+        return lib_enc_conv_from_utf_by_id(from_id, to_id, from_data, from_len, to_data, to_len);
     }
 
     // TODO: unimap -> UTF-16
