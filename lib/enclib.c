@@ -38,13 +38,109 @@ static char* _data_copy(char* src, size_t size) {
     return data;
 } 
 
+int lib_enc_bom_len(int id) {
+
+    // UTF-8
+    if (id == LIB_ENC_UTF8_BOM_ID) {
+        return 3;
+    }
+
+    // UTF-16
+    if (id == LIB_ENC_UTF16_ID 
+     || id == LIB_ENC_UTF16BE_ID
+     || id == LIB_ENC_UTF16LE_ID) {
+        return 2;
+    }
+
+    // UTF-32
+    if (id == LIB_ENC_UTF32_ID 
+     || id == LIB_ENC_UTF32BE_ID
+     || id == LIB_ENC_UTF32LE_ID) {
+        return 4;
+    }
+
+    return 0;
+}
+
+int lib_enc_set_bom(int id, char* str) {
+    if (!str) {
+        return 0;
+    }
+
+    // UTF-8
+    if (id == LIB_ENC_UTF8_BOM_ID) {
+        str[0] = 0xEF;
+        str[1] = 0xBB;
+        str[2] = 0xBF;
+        return 3;
+    }
+
+    // UTF-16
+    if (id == LIB_ENC_UTF16_ID 
+     || id == LIB_ENC_UTF16BE_ID) {
+        str[0] = 0xFE;
+        str[1] = 0xFF;
+        return 2;
+    }
+    if (id == LIB_ENC_UTF16LE_ID) {
+        str[0] = 0xFF;
+        str[1] = 0xFE;
+        return 2;
+    }
+
+    // UTF-32
+    if (id == LIB_ENC_UTF32_ID 
+     || id == LIB_ENC_UTF32BE_ID) {
+        str[0] = 0x00;
+        str[1] = 0x00;
+        str[2] = 0xFE;
+        str[3] = 0xFF;
+        return 4;
+    }
+    if (id == LIB_ENC_UTF32LE_ID) {
+        str[0] = 0x00;
+        str[1] = 0x00;
+        str[2] = 0xFF;
+        str[3] = 0xFE;
+        return 4;
+    }
+
+    return 0;
+}
+
+bool lib_enc_supports_utf_conv(int id) {
+    return (id == LIB_ENC_UTF8_ID
+     || id == LIB_ENC_UTF8_BOM_ID
+
+     || id == LIB_ENC_UTF16_ID
+     || id == LIB_ENC_UTF16BE_ID
+     || id == LIB_ENC_UTF16LE_ID
+
+     || id == LIB_ENC_UTF32_ID
+     || id == LIB_ENC_UTF32BE_ID
+     || id == LIB_ENC_UTF32LE_ID);
+} 
+
 /**
  * Returns true if the Encoding ID supports conversion
  */
 bool lib_enc_supports_conv(int id) {
-    if (id == LIB_ENC_UTF8_ID || id == LIB_ENC_UTF16_ID || id == LIB_ENC_UTF32_ID) {
+    if (lib_enc_supports_utf_conv(id)) {
         return true;
     }
+
+    // if (id == LIB_ENC_UTF8_ID
+
+    //  || id == LIB_ENC_UTF16_ID
+    //  || id == LIB_ENC_UTF16BE_ID
+    //  || id == LIB_ENC_UTF16LE_ID
+
+    //  || id == LIB_ENC_UTF32_ID
+    //  || id == LIB_ENC_UTF32BE_ID
+    //  || id == LIB_ENC_UTF32LE_ID) {
+    //     return true;
+    // }
+
     return lib_unimap_supports_map(id);
 } 
 
@@ -123,7 +219,7 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     }
 
     // unimap -> UTF-[ID]
-    if (has_from && (to_id == LIB_ENC_UTF8_ID || to_id == LIB_ENC_UTF16_ID || to_id == LIB_ENC_UTF32_ID)) {
+    if (has_from && lib_enc_supports_utf_conv(to_id)) {
 
         #ifdef DEBUG
         fprintf(stderr, ">> conv_by_id: unimap -> UTF-[ID]\n");
@@ -134,7 +230,7 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     }
 
     // UTF-[ID] -> unimap
-    if (has_to && (from_id == LIB_ENC_UTF8_ID || from_id == LIB_ENC_UTF16_ID || from_id == LIB_ENC_UTF32_ID)) {
+    if (has_to && lib_enc_supports_utf_conv(from_id)) {
 
         #ifdef DEBUG
         fprintf(stderr, ">> conv_by_id: UTF-[ID] -> unimap\n");
@@ -235,6 +331,10 @@ static int _to_code(char chr) {
 int lib_enc_conv_to_utf_by_id(int utf_id, int conv_id, char* from_data, size_t from_len, 
     char** to_data, size_t* to_len) {
 
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_to_utf_by_id: unimap -> UTF-[ID]\n");
+    #endif
+
     if (!from_data || from_len == 0 || !to_data || !to_len) {
         return -1;
     }
@@ -306,12 +406,23 @@ int lib_enc_conv_to_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char* 
 
     char* new_data = NULL;
     size_t new_len = 0;
+    size_t bom_len = 0;
     size_t seq_len = 0;
     size_t total   = 0;
 
     char* data     = from_data;
     int i          = 0;
     int j          = 0;
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_to_utf_by_map: start\n");
+    #endif
+
+    //if (utf_id == LIB_ENC_UTF32_ID) {
+    //    bom_len = 4;
+    //}
+
+    bom_len = lib_enc_bom_len(utf_id);
 
     while (i < from_len) {
 
@@ -347,16 +458,25 @@ int lib_enc_conv_to_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char* 
         return -1;
     }
 
-    new_data = _data_new(new_len);
+    new_data = _data_new(new_len + bom_len);
     if (!new_data) {
         // error
         return -1;
     }
 
+    // if (utf_id == LIB_ENC_UTF32_ID) {
+    //     new_data[0] = '\0';
+    //     new_data[1] = '\0';
+    //     new_data[2] = 0xFE;
+    //     new_data[3] = 0xFF;
+    // }
+
+    lib_enc_set_bom(utf_id, new_data);
+
     char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
     data       = from_data;
     i          = 0;
-    j          = 0;
+    j          = bom_len;
     total      = 0;
 
     while (i < from_len) {
@@ -413,7 +533,7 @@ int lib_enc_conv_to_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char* 
     }
 
     *to_data = new_data;
-    *to_len  = new_len;
+    *to_len  = new_len + bom_len;
 
     return 0;
 }

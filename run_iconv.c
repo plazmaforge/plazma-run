@@ -66,6 +66,7 @@ static void _data_free(char* from_data, char* to_data) {
 }
 
 void _print_encodings() {
+    //lib_enc_test();
     size_t size = lib_enc_get_encoding_size();
     for (size_t i = 0; i < size; i++) {        
         lib_encoding_t e = lib_enc_get_encoding(i);
@@ -211,7 +212,18 @@ int main(int argc, char* argv[]) {
     //printf(">> to   ptr : %p\n", to_data);
 
     to_data[to_size] = '\0';
-    printf("%s", to_data);
+
+    if (lib_enc_is_utf16or32_encoding(to_id)) {
+        // UTF-16/16BE/16LE/32/32BE/32LE
+        for (int i = 0; i < to_size; i++) {
+           printf("%c", to_data[i]);
+        }
+    } else {
+        // UTF-8 or others
+        printf("%s", to_data);
+    }
+
+    //printf("%s", to_data);
 
     // WIN: Bug in UTF-8
     //printf("%.*s", (int) to_size, to_data);

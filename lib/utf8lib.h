@@ -325,11 +325,24 @@ bool lib_utf8_strieq(const char* str1, const char* str2);
 
 int lib_utf16_char_seq_len(const char* str);
 
+int lib_utf16be_char_seq_len(const char* str);
+
+int lib_utf16le_char_seq_len(const char* str);
+
 int lib_utf16_to_code(const char* str);
+
+int lib_utf16be_to_code(const char* str);
+
+int lib_utf16le_to_code(const char* str);
 
 size_t lib_utf16_code_seq_len(int cp);
 
 int lib_utf16_to_char(char* buf, int cp);
+
+int lib_utf16be_to_char(char* buf, int cp);
+
+int lib_utf16le_to_char(char* buf, int cp);
+
 
 //// UTF-32
 
@@ -337,9 +350,17 @@ int lib_utf32_char_seq_len(const char* str);
 
 int lib_utf32_to_code(const char* str);
 
+int lib_utf32be_to_code(const char* str);
+
+int lib_utf32le_to_code(const char* str);
+
 size_t lib_utf32_code_seq_len(int cp);
 
 int lib_utf32_to_char(char* buf, int cp);
+
+int lib_utf32be_to_char(char* buf, int cp);
+
+int lib_utf32le_to_char(char* buf, int cp);
 
 //// UTF
 

@@ -1489,13 +1489,26 @@ bool lib_utf8_strieq(const char* str1, const char* str2) {
 
 //// UTF-16
 
-int lib_utf16_char_seq_len(const char* str) {
+static uint16_t _u16(uint8_t b1, uint8_t b2) {
+    return (b1 << 8) | b2;
+}
+
+static int _utf16_char_seq_len(bool be, const char* str) {
     if (!str) {
         return 0;
     }
-    uint8_t b1 = (uint8_t) str[0];
-    uint8_t b2 = (uint8_t) str[1];
-    uint16_t c1 = (b1 << 8) | b2;
+    int i1;
+    int i2;
+    if (be) {
+        i1 = 0;
+        i2 = 1;
+    } else {
+        i1 = 1;
+        i2 = 0;
+    }
+    uint8_t b1 = (uint8_t) str[i1];
+    uint8_t b2 = (uint8_t) str[i2];
+    uint16_t c1 = _u16(b1, b2); // (b1 << 8) | b2;
 
     if (c1 >= 0xD800 && c1 < 0xDC00) {
         return 4;
@@ -1503,26 +1516,59 @@ int lib_utf16_char_seq_len(const char* str) {
     return 2;
 }
 
-/**
- * Convert UTF-16 char to the codepoint
- */
-int _lib_utf16_to_code(const char* str) {
+int lib_utf16_char_seq_len(const char* str) {
+    return lib_utf16be_char_seq_len(str);
+}
+
+int lib_utf16be_char_seq_len(const char* str) {
+    return _utf16_char_seq_len(true, str);
+}
+
+int lib_utf16le_char_seq_len(const char* str) {
+    return _utf16_char_seq_len(false, str);
+}
+
+static int _utf16_to_code(bool be, const char* str) {
     if (!str) {
         return -1;
     }
-    uint8_t b1 = (uint8_t) str[0];
-    uint8_t b2 = (uint8_t) str[1];
+    int i1, i2, i3, i4;
+    if (be) {
+        i1 = 0; 
+        i2 = 1; 
+        i3 = 2; 
+        i4 = 3;
+    } else {
+        i1 = 1; 
+        i2 = 0; 
+        i3 = 3; 
+        i4 = 2;
+    }
+    uint8_t b1 = (uint8_t) str[i1];
+    uint8_t b2 = (uint8_t) str[i2];
 
-    uint16_t c1 = (b1 << 8) | b2;
+    uint16_t c1 = _u16(b1, b2); // (b1 << 8) | b2;
 
     if (c1 >= 0xD800 && c1 < 0xDC00) {
-        uint8_t b3 = (uint8_t) str[2];
-        uint8_t b4 = (uint8_t) str[3];
-        uint16_t c2 = (b3 << 8) | b4;
+        uint8_t b3 = (uint8_t) str[i3];
+        uint8_t b4 = (uint8_t) str[i4];
+        uint16_t c2 = _u16(b3, b4); // (b3 << 8) | b4;
         return ((c1 & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
     }
 
     return c1;
+}
+
+int lib_utf16_to_code(const char* str) {
+    return lib_utf16be_to_code(str);
+}
+
+int lib_utf16be_to_code(const char* str) {
+    return _utf16_to_code(true, str);
+}
+
+int lib_utf16le_to_code(const char* str) {
+    return _utf16_to_code(false, str);
 }
 
 size_t lib_utf16_code_seq_len(int cp) {
@@ -1539,16 +1585,28 @@ size_t lib_utf16_code_seq_len(int cp) {
  * Convert the codepoint to UTF-16 char.
  * Store the result ot the buffer.
  */
-int _lib_utf16_to_char(char* buf, int cp) {
+static int _utf16_to_char(bool be, char* buf, int cp) {
     if (cp < 0 || cp > 0x10FFFF) {
         //return -1;
         return 0;
     }
+    int i1, i2, i3, i4;
+    if (be) {
+        i1 = 0; 
+        i2 = 1; 
+        i3 = 2; 
+        i4 = 3;
+    } else {
+        i1 = 1; 
+        i2 = 0; 
+        i3 = 3; 
+        i4 = 2;
+    }
     if(cp < 0xD800 || (cp > 0xDFFF && cp < 0x10000)) {
-        buf[0] = (cp >> 8) & 0xFF;
-        buf[1] = cp & 0xFF;
-        buf[2] = 0;
-        buf[3] = 0;            
+        buf[i1] = (cp >> 8) & 0xFF;
+        buf[i2] = cp & 0xFF;
+        buf[i3] = 0;
+        buf[i4] = 0;            
         //return 0;
         return 2;
     }
@@ -1558,10 +1616,10 @@ int _lib_utf16_to_char(char* buf, int cp) {
     uint16_t hi = (cp >> 10) + 0xD800;
     uint16_t lo = (cp & 0x03FF) + 0xDC00;
 
-    buf[0] = (hi >> 8) & 0xFF;
-    buf[1] = hi & 0xFF;
-    buf[2] = (lo >> 8) & 0xFF;;
-    buf[3] = lo & 0xFF;;
+    buf[i1] = (hi >> 8) & 0xFF;
+    buf[i2] = hi & 0xFF;
+    buf[i3] = (lo >> 8) & 0xFF;;
+    buf[i4] = lo & 0xFF;;
 
     //return 0;
     return 4;
@@ -1579,14 +1637,28 @@ int lib_utf32_char_seq_len(const char* str) {
 /**
  * Convert UTF-32 char to the codepoint
  */
-int _lib_utf32_to_code(const char* str) {
+static int _utf32_to_code(bool be, const char* str) {
     if (!str) {
         return -1;
     }
-    uint8_t b1 = (uint8_t) str[0];
-    uint8_t b2 = (uint8_t) str[1];
-    uint8_t b3 = (uint8_t) str[2];
-    uint8_t b4 = (uint8_t) str[3];
+
+    int i1, i2, i3, i4;
+    if (be) {
+        i1 = 0; 
+        i2 = 1; 
+        i3 = 2; 
+        i4 = 3;
+    } else {
+        i1 = 1; 
+        i2 = 0; 
+        i3 = 3; 
+        i4 = 2;
+    }
+
+    uint8_t b1 = (uint8_t) str[i1];
+    uint8_t b2 = (uint8_t) str[i2];
+    uint8_t b3 = (uint8_t) str[i3];
+    uint8_t b4 = (uint8_t) str[i4];
     return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
 }
 
@@ -1601,7 +1673,7 @@ size_t lib_utf32_code_seq_len(int cp) {
  * Convert the codepoint to UTF-32 char.
  * Store the result ot the buffer.
  */
-int _lib_utf32_to_char(char* buf, int cp) {
+int _utf32_to_char(bool be, char* buf, int cp) {
     if (cp < 0 || cp > 0x10FFFF) {
         //return -1;
         return 0;
@@ -1613,10 +1685,23 @@ int _lib_utf32_to_char(char* buf, int cp) {
     // -----------
     // 00 01 F6 80
 
-    buf[0] = (cp >> 24) & 0xFF;
-    buf[1] = (cp >> 16) & 0xFF;
-    buf[2] = (cp >> 8) & 0xFF;
-    buf[3] = cp & 0xFF;
+    int i1, i2, i3, i4;
+    if (be) {
+        i1 = 0; 
+        i2 = 1; 
+        i3 = 2; 
+        i4 = 3;
+    } else {
+        i1 = 1; 
+        i2 = 0; 
+        i3 = 3; 
+        i4 = 2;
+    }
+
+    buf[i1] = (cp >> 24) & 0xFF;
+    buf[i2] = (cp >> 16) & 0xFF;
+    buf[i3] = (cp >> 8) & 0xFF;
+    buf[i4] = cp & 0xFF;
 
     //return 0;
     return 4;
@@ -1624,22 +1709,44 @@ int _lib_utf32_to_char(char* buf, int cp) {
 
 ////
 
-int lib_utf16_to_code(const char* str) {
-    return _lib_utf16_to_code(str);
+int lib_utf16_to_char(char* buf, int cp) {
+   return lib_utf16be_to_char(buf, cp);
 }
 
-int lib_utf16_to_char(char* buf, int cp) {
-   return _lib_utf16_to_char(buf, cp);
+int lib_utf16be_to_char(char* buf, int cp) {
+   return _utf16_to_char(true, buf, cp);
+}
+
+int lib_utf16le_to_char(char* buf, int cp) {
+   return _utf16_to_char(false, buf, cp);
 }
 
 ////
 
 int lib_utf32_to_code(const char* str) {
-    return _lib_utf32_to_code(str);
+    return lib_utf32be_to_code(str);
 }
 
+int lib_utf32be_to_code(const char* str) {
+    return _utf32_to_code(true, str);
+}
+
+int lib_utf32le_to_code(const char* str) {
+    return _utf32_to_code(false, str);
+}
+
+//
+
 int lib_utf32_to_char(char* buf, int cp) {
-   return _lib_utf32_to_char(buf, cp);
+   return lib_utf32be_to_char(buf, cp);
+}
+
+int lib_utf32be_to_char(char* buf, int cp) {
+   return _utf32_to_char(true, buf, cp);
+}
+
+int lib_utf32le_to_char(char* buf, int cp) {
+   return _utf32_to_char(false, buf, cp);
 }
 
 //// UTF
@@ -1648,58 +1755,118 @@ size_t lib_utf_char_seq_len(int utf_id, const char* str) {
     if (!str || str[0] == '\0') {
         return 0;
     }
+
+    // UTF-8
     if (utf_id == LIB_UTF8_ID || utf_id == LIB_UTF8_BOM_ID) {
         return lib_utf8_byte_seq_len(str[0]);
     }
-    if (utf_id == LIB_UTF16_ID || utf_id == LIB_UTF16BE_ID || utf_id == LIB_UTF16LE_ID) {
+
+    // UTF-16
+    if (utf_id == LIB_UTF16_ID) {
         return lib_utf16_char_seq_len(str);
     }
+    if (utf_id == LIB_UTF16BE_ID) {
+        return lib_utf16be_char_seq_len(str);
+    }
+    if (utf_id == LIB_UTF16LE_ID) {
+        return lib_utf16le_char_seq_len(str);
+    }
+
+    // UTF-32  (BE/LE)
     if (utf_id == LIB_UTF32_ID || utf_id == LIB_UTF32BE_ID || utf_id == LIB_UTF32LE_ID) {
         return lib_utf32_char_seq_len(str);
     }
+
     return 0;
 }
 
 size_t lib_utf_code_seq_len(int utf_id, int cp) {
+
+    // UTF-8
     if (utf_id == LIB_UTF8_ID || utf_id == LIB_UTF8_BOM_ID) {
         return lib_utf8_code_seq_len(cp);
     }
+
+    // UTF-16 (BE/LE)
     if (utf_id == LIB_UTF16_ID || utf_id == LIB_UTF16BE_ID || utf_id == LIB_UTF16LE_ID) {
         return lib_utf16_code_seq_len(cp);
     }
+
+    // UTF-32 (BE/LE)
     if (utf_id == LIB_UTF32_ID || utf_id == LIB_UTF32BE_ID || utf_id == LIB_UTF32LE_ID) {
         return lib_utf32_code_seq_len(cp);
     }
+
     return 0;
 }
 
 int lib_utf_to_char(int utf_id, char* buf, int cp) {
-    // UTF-16LE/UTF-32LE is no implemented yet
+
+    // UTF-8
     if (utf_id == LIB_UTF8_ID || utf_id == LIB_UTF8_BOM_ID) {
         return lib_utf8_to_char(buf, cp);
     }
-    if (utf_id == LIB_UTF16_ID || utf_id == LIB_UTF16BE_ID || utf_id == LIB_UTF16LE_ID) {
+
+    // UTF-16
+    if (utf_id == LIB_UTF16_ID) {
         return lib_utf16_to_char(buf, cp);
     }
-    if (utf_id == LIB_UTF32_ID || utf_id == LIB_UTF32BE_ID || utf_id == LIB_UTF32LE_ID) {
+    if (utf_id == LIB_UTF16BE_ID) {
+        return lib_utf16be_to_char(buf, cp);
+    }
+    if (utf_id == LIB_UTF16LE_ID) {
+        return lib_utf16le_to_char(buf, cp);
+    }
+
+    // UTF-32
+    if (utf_id == LIB_UTF32_ID) {
         return lib_utf32_to_char(buf, cp);
     }
+    if (utf_id == LIB_UTF32BE_ID) {
+        return lib_utf32be_to_char(buf, cp);
+    }
+    if (utf_id == LIB_UTF32LE_ID) {
+        return lib_utf32le_to_char(buf, cp);
+    }
+
     return -1;
 }
 
 int lib_utf_to_code(int utf_id, const char* str, int* cp) {
-    // UTF-16LE/UTF-32LE is no implemented yet
+    
+    // UTF-8
     if (utf_id == LIB_UTF8_ID || utf_id == LIB_UTF8_BOM_ID) {
         return lib_utf8_to_code(str, cp);
     }
-    if (utf_id == LIB_UTF16_ID || utf_id == LIB_UTF16BE_ID || utf_id == LIB_UTF16LE_ID) {
-        *cp = _lib_utf16_to_code(str);
+
+    // UTF-16
+    if (utf_id == LIB_UTF16_ID) {
+        *cp = lib_utf16_to_code(str);
         return 0;
     }
-    if (utf_id == LIB_UTF32_ID || utf_id == LIB_UTF32BE_ID || utf_id == LIB_UTF32LE_ID) {
-        *cp = _lib_utf32_to_code(str);
+    if (utf_id == LIB_UTF16BE_ID) {
+        *cp = lib_utf16be_to_code(str);
         return 0;
     }
+    if (utf_id == LIB_UTF16LE_ID) {
+        *cp = lib_utf16le_to_code(str);
+        return 0;
+    }
+
+    // UTF-32
+    if (utf_id == LIB_UTF32_ID) {
+        *cp = lib_utf32_to_code(str);
+        return 0;
+    }
+    if (utf_id == LIB_UTF32BE_ID) {
+        *cp = lib_utf32be_to_code(str);
+        return 0;
+    }
+    if (utf_id == LIB_UTF32LE_ID) {
+        *cp = lib_utf32le_to_code(str);
+        return 0;
+    }
+
     return -1;
 }
 

@@ -9,16 +9,18 @@
 #define LIB_ENC_UTF_TYPE 10
 #define LIB_ENC_UCS_TYPE 11
 
+#define LIB_ENC_UTF7_ID       65000
+
 #define LIB_ENC_UTF8_ID       65001
-#define LIB_ENC_UTF8_BOM_ID 1065001
+#define LIB_ENC_UTF8_BOM_ID 1065001 /**/
 
 #define LIB_ENC_UTF16_ID       1200
 #define LIB_ENC_UTF16BE_ID     1201
-#define LIB_ENC_UTF16LE_ID     1202
+#define LIB_ENC_UTF16LE_ID     1202 /**/
 
 #define LIB_ENC_UTF32_ID      12000
 #define LIB_ENC_UTF32BE_ID    12001
-#define LIB_ENC_UTF32LE_ID    12002
+#define LIB_ENC_UTF32LE_ID    12002 /**/
 
 typedef struct lib_encoding_t {
     int id;                  /* 437           , 1251               */
@@ -49,6 +51,11 @@ bool lib_enc_is_win_encoding(int id);
  */
 bool lib_enc_is_utf_encoding(int id);
 
+/**
+ * Returns true if the encoding id is 
+ * UTF-16/16BE/18LE or UTF-32/32BE/32LE type 
+ */
+bool lib_enc_is_utf16or32_encoding(int id);
 
 /**
  * Returns true if the encoding id is UCS type 

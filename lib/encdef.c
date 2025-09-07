@@ -201,18 +201,27 @@ bool lib_enc_is_win_encoding(int id) {
  * Returns true if the encoding id is UTF type 
  */
 bool lib_enc_is_utf_encoding(int id) {
-  return (   id == 65000
-          || id == 65001
+  return (   id == LIB_ENC_UTF7_ID
+          || id == LIB_ENC_UTF8_ID
+    /**/  || id == LIB_ENC_UTF8_BOM_ID
 
-    /**/  || id == 1065001
+          || id == LIB_ENC_UTF16_ID
+          || id == LIB_ENC_UTF16BE_ID
+    /**/  || id == LIB_ENC_UTF16LE_ID    /* codepage = 1200  */
 
-          || id == 1200
-          || id == 1201
-    /**/  || id == 1202    /* codepage = 1200  */
+          || id == LIB_ENC_UTF32_ID
+          || id == LIB_ENC_UTF32BE_ID
+    /**/  || id == LIB_ENC_UTF32LE_ID); /* codepage = 12000 */
+}
 
-          || id == 12000
-          || id == 12001
-    /**/  || id == 12002); /* codepage = 12000 */
+bool lib_enc_is_utf16or32_encoding(int id) {
+  return (   id == LIB_ENC_UTF16_ID
+          || id == LIB_ENC_UTF16BE_ID
+    /**/  || id == LIB_ENC_UTF16LE_ID    /* codepage = 1200  */
+
+          || id == LIB_ENC_UTF32_ID
+          || id == LIB_ENC_UTF32BE_ID
+    /**/  || id == LIB_ENC_UTF32LE_ID); /* codepage = 12000 */
 }
 
 /**

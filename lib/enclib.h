@@ -10,6 +10,11 @@
 #define LIB_ENC_ERR_CONV_FROM_USUPPORTED      -2001
 #define LIB_ENC_ERR_CONV_TO_USUPPORTED        -2002
 
+
+int lib_enc_bom_len(int id);
+
+int lib_enc_set_bom(int id, char* str);
+
 /**
  * Returns true if the Encoding ID supports conversion
  */
