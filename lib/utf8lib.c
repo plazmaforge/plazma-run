@@ -1765,15 +1765,22 @@ size_t lib_utf_char_seq_len(int utf_id, const char* str) {
     if (utf_id == LIB_UTF16_ID) {
         return lib_utf16_char_seq_len(str);
     }
-    if (utf_id == LIB_UTF16BE_ID) {
+    if (utf_id == LIB_UTF16BE_ID 
+     || utf_id == LIB_UTF16BE_BOM_ID) {
         return lib_utf16be_char_seq_len(str);
     }
-    if (utf_id == LIB_UTF16LE_ID) {
+    if (utf_id == LIB_UTF16LE_ID
+     || utf_id == LIB_UTF16LE_BOM_ID) {
         return lib_utf16le_char_seq_len(str);
     }
 
     // UTF-32  (BE/LE)
-    if (utf_id == LIB_UTF32_ID || utf_id == LIB_UTF32BE_ID || utf_id == LIB_UTF32LE_ID) {
+    if (utf_id == LIB_UTF32_ID 
+     || utf_id == LIB_UTF32BE_ID 
+     || utf_id == LIB_UTF32LE_ID
+     || utf_id == LIB_UTF32BE_BOM_ID
+     || utf_id == LIB_UTF32LE_BOM_ID
+     ) {
         return lib_utf32_char_seq_len(str);
     }
 
@@ -1783,17 +1790,29 @@ size_t lib_utf_char_seq_len(int utf_id, const char* str) {
 size_t lib_utf_code_seq_len(int utf_id, int cp) {
 
     // UTF-8
-    if (utf_id == LIB_UTF8_ID || utf_id == LIB_UTF8_BOM_ID) {
+    if (utf_id == LIB_UTF8_ID 
+     || utf_id == LIB_UTF8_BOM_ID) {
         return lib_utf8_code_seq_len(cp);
     }
 
     // UTF-16 (BE/LE)
-    if (utf_id == LIB_UTF16_ID || utf_id == LIB_UTF16BE_ID || utf_id == LIB_UTF16LE_ID) {
+    if (utf_id == LIB_UTF16_ID 
+     || utf_id == LIB_UTF16BE_ID 
+     || utf_id == LIB_UTF16LE_ID
+     || utf_id == LIB_UTF16BE_BOM_ID 
+     || utf_id == LIB_UTF16LE_BOM_ID
+
+     ) {
         return lib_utf16_code_seq_len(cp);
     }
 
     // UTF-32 (BE/LE)
-    if (utf_id == LIB_UTF32_ID || utf_id == LIB_UTF32BE_ID || utf_id == LIB_UTF32LE_ID) {
+    if (utf_id == LIB_UTF32_ID 
+     || utf_id == LIB_UTF32BE_ID 
+     || utf_id == LIB_UTF32LE_ID
+     || utf_id == LIB_UTF32BE_BOM_ID 
+     || utf_id == LIB_UTF32LE_BOM_ID
+     ) {
         return lib_utf32_code_seq_len(cp);
     }
 
@@ -1817,6 +1836,12 @@ int lib_utf_to_char(int utf_id, char* buf, int cp) {
     if (utf_id == LIB_UTF16LE_ID) {
         return lib_utf16le_to_char(buf, cp);
     }
+    if (utf_id == LIB_UTF16BE_BOM_ID) {
+        return lib_utf16be_to_char(buf, cp);
+    }
+    if (utf_id == LIB_UTF16LE_BOM_ID) {
+        return lib_utf16le_to_char(buf, cp);
+    }
 
     // UTF-32
     if (utf_id == LIB_UTF32_ID) {
@@ -1826,6 +1851,12 @@ int lib_utf_to_char(int utf_id, char* buf, int cp) {
         return lib_utf32be_to_char(buf, cp);
     }
     if (utf_id == LIB_UTF32LE_ID) {
+        return lib_utf32le_to_char(buf, cp);
+    }
+    if (utf_id == LIB_UTF32BE_BOM_ID) {
+        return lib_utf32be_to_char(buf, cp);
+    }
+    if (utf_id == LIB_UTF32LE_BOM_ID) {
         return lib_utf32le_to_char(buf, cp);
     }
 

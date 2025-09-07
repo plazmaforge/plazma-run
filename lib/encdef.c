@@ -109,26 +109,29 @@ static const lib_encoding_t lib_encodings[] = {
       Unicode
     */
 
-    {65000,   "UTF-7",       "UTF-7",                 "UTF7     CSUNICODE11UTF7 UNICODE-1-1-UTF-7"},
-    {65001,   "UTF-8",       "UTF-8",                 "UTF8"},
-///**/{1065001, "UTF-8-MAC",   "UTF-8-MAC",             "UTF8MAC  UTF8-MAC"},
-/**/{1065001, "UTF-8-BOM",   "UTF-8-BOM",             "UTF8BOM  UTF8-BOM"},
+    {65000,   "UTF-7",       "UTF-7",                               "UTF7        CSUNICODE11UTF7 UNICODE-1-1-UTF-7"},
+    {65001,   "UTF-8",       "UTF-8",                               "UTF8"},
+/**/{1065001, "UTF-8-BOM",   "UTF-8 with BOM",                      "UTF8BOM     UTF8-BOM"},
 
-    {1200,    "UTF-16",      "UTF-16",                "UTF16"},
-    {1201,    "UTF-16BE",    "UTF-16BE",              "UTF16BE"},
-/**/{1202,    "UTF-16LE",    "UTF-16LE",              "UTF16LE"}, /* codepage = 1200  */
+    {1200,    "UTF-16",      "UTF-16 Big Endian with optional BOM", "UTF16       UTF_16"},
+    {1201,    "UTF-16BE",    "UTF-16 Big Endian",                   "UTF16BE     UTF-16-BE      UTF16-BE     UTF_16_BE"},
+/**/{1202,    "UTF-16LE",    "UTF-16 Little Endian",                "UTF16LE     UTF-16-LE      UTF16-LE     UTF_16_LE"},                 /* codepage = 1200  */
+/**/{1203,    "UTF-16BE-BOM","UTF-16 Big Endian with BOM",          "UTF16BEBOM  UTF-16-BE-BOM  UTF16-BE-BOM UTF_16_BE_BOM UTF16BE-BOM"}, /* codepage = 1200  */
+/**/{1204,    "UTF-16LE-BOM","UTF-16 Little Endian with BOM",       "UTF16LEBOM  UTF-16-LE-BOM  UTF16-LE-BOM UTF_16_LE_BOM UTF16LE-BOM"}, /* codepage = 1200  */
 
-    {12000,   "UTF-32",      "UTF-32",                "UTF32"},
-    {12001,   "UTF-32BE",    "UTF-32BE",              "UTF32BE"},
-/**/{12002,   "UTF-32LE",    "UTF-32LE",              "UTF32LE"}, /* codepage = 12000 */
+    {12000,   "UTF-32",      "UTF-32 Big Endian with optional BOM", "UTF32       UTF_32"},
+    {12001,   "UTF-32BE",    "UTF-32 Big Endian",                   "UTF32BE     UTF-32-BE      UTF32-BE     UTF_32_BE"},
+/**/{12002,   "UTF-32LE",    "UTF-32 Little Endian",                "UTF32LE     UTF-32-LE      UTF32-LE     UTF_32_LE"},                 /* codepage = 12000 */
+/**/{12003,   "UTF-32BE-BOM","UTF-32 Big Endian with BOM",          "UTF32BEBOM  UTF-32-BE-BOM  UTF32-BE-BOM UTF_32_BE_BOM UTF32BE-BOM"}, /* codepage = 12000 */
+/**/{12004,   "UTF-32LE-BOM","UTF-32 Little Endian with BOM",       "UTF32LE     UTF-32-LE-BOM  UTF32-LE-BOM UTF_32_LE_BOM UTF32LE-BOM"}, /* codepage = 12000 */
 
-/**/{1001200, "UCS-2",       "UCS-2",                 "UCS2     CSUNICODE       ISO-10646-UCS-2"},
-/**/{1001201, "UCS-2BE",     "UCS-2BE",               "UCS2BE   CSUNICODE11     UNICODEBIG UNICODE-1-1"},
-/**/{1001202, "UCS-2LE",     "UCS-2LE",               "UCS2LE                   UNICODELITTLE"},
+/**/{1001200, "UCS-2",       "UCS-2",                               "UCS2        CSUNICODE      ISO-10646-UCS-2"},
+/**/{1001201, "UCS-2BE",     "UCS-2BE",                             "UCS2BE      CSUNICODE11    UNICODEBIG UNICODE-1-1"},
+/**/{1001202, "UCS-2LE",     "UCS-2LE",                             "UCS2LE                     UNICODELITTLE"},
 
-/**/{1012000, "UCS-4",       "UCS-4",                 "UCS4     CSUCS4          ISO-10646-UCS-4"},
-/**/{1012001, "UCS-4BE",     "UCS-4BE",               "UCS4BE"},
-/**/{1012002, "UCS-4LE",     "UCS-4LE",               "UCS4LE"}
+/**/{1012000, "UCS-4",       "UCS-4",                               "UCS4        CSUCS4         ISO-10646-UCS-4"},
+/**/{1012001, "UCS-4BE",     "UCS-4BE",                             "UCS4BE"},
+/**/{1012002, "UCS-4LE",     "UCS-4LE",                             "UCS4LE"}
 
 };
 
@@ -207,21 +210,32 @@ bool lib_enc_is_utf_encoding(int id) {
 
           || id == LIB_ENC_UTF16_ID
           || id == LIB_ENC_UTF16BE_ID
-    /**/  || id == LIB_ENC_UTF16LE_ID    /* codepage = 1200  */
+    /**/  || id == LIB_ENC_UTF16LE_ID      /* codepage = 1200  */
+    /**/  || id == LIB_ENC_UTF16BE_BOM_ID  /* codepage = 1200  */
+    /**/  || id == LIB_ENC_UTF16LE_BOM_ID  /* codepage = 1200  */
 
           || id == LIB_ENC_UTF32_ID
-          || id == LIB_ENC_UTF32BE_ID
-    /**/  || id == LIB_ENC_UTF32LE_ID); /* codepage = 12000 */
+          || id == LIB_ENC_UTF32BE_ID      /* codepage = 12000 */
+    /**/  || id == LIB_ENC_UTF32BE_BOM_ID  /* codepage = 12000 */
+    /**/  || id == LIB_ENC_UTF32LE_BOM_ID  /* codepage = 12000 */
+
+        );
 }
 
 bool lib_enc_is_utf16or32_encoding(int id) {
   return (   id == LIB_ENC_UTF16_ID
           || id == LIB_ENC_UTF16BE_ID
-    /**/  || id == LIB_ENC_UTF16LE_ID    /* codepage = 1200  */
+    /**/  || id == LIB_ENC_UTF16LE_ID     /* codepage = 1200  */
+    /**/  || id == LIB_ENC_UTF16BE_BOM_ID /* codepage = 1200  */
+    /**/  || id == LIB_ENC_UTF16LE_ID     /* codepage = 1200  */
 
           || id == LIB_ENC_UTF32_ID
           || id == LIB_ENC_UTF32BE_ID
-    /**/  || id == LIB_ENC_UTF32LE_ID); /* codepage = 12000 */
+    /**/  || id == LIB_ENC_UTF32LE_ID     /* codepage = 12000  */
+    /**/  || id == LIB_ENC_UTF32BE_BOM_ID /* codepage = 12000  */
+    /**/  || id == LIB_ENC_UTF32LE_BOM_ID /* codepage = 12000  */
+
+    );
 }
 
 /**

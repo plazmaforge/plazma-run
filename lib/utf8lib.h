@@ -11,10 +11,14 @@
 #define LIB_UTF16_ID       1200
 #define LIB_UTF16BE_ID     1201
 #define LIB_UTF16LE_ID     1202
+#define LIB_UTF16BE_BOM_ID 1203
+#define LIB_UTF16LE_BOM_ID 1204
 
-#define LIB_UTF32_ID      12000
-#define LIB_UTF32BE_ID    12001
-#define LIB_UTF32LE_ID    12002
+#define LIB_UTF32_ID       12000
+#define LIB_UTF32BE_ID     12001
+#define LIB_UTF32LE_ID     12002
+#define LIB_UTF32BE_BOM_ID 12003
+#define LIB_UTF32LE_BOM_ID 12004
 
 /*
  * Return lenght of UTF-8 char by codepoint or error (0).
