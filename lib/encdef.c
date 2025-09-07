@@ -215,7 +215,8 @@ bool lib_enc_is_utf_encoding(int id) {
     /**/  || id == LIB_ENC_UTF16LE_BOM_ID  /* codepage = 1200  */
 
           || id == LIB_ENC_UTF32_ID
-          || id == LIB_ENC_UTF32BE_ID      /* codepage = 12000 */
+          || id == LIB_ENC_UTF32BE_ID
+          || id == LIB_ENC_UTF32LE_ID      /* codepage = 12000 */
     /**/  || id == LIB_ENC_UTF32BE_BOM_ID  /* codepage = 12000 */
     /**/  || id == LIB_ENC_UTF32LE_BOM_ID  /* codepage = 12000 */
 
