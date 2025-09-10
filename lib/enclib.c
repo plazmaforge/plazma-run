@@ -589,12 +589,13 @@ int lib_enc_conv_from_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char
 
     char* new_data = NULL;
     size_t new_len = 0;
+    size_t bom_len = lib_enc_bom_len(utf_id);
     size_t seq_len = 0;
     size_t total   = 0;
     
     //char c         = '\0';
     char* data     = from_data;
-    int i          = 0;
+    int i          = bom_len;
     int j          = 0;
 
     while (i < from_len) {
