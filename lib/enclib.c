@@ -505,7 +505,7 @@ int lib_enc_conv_to_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char* 
 
         icode = _to_code(*data);
 
-        // Convert char to UTF-8 codepoint
+        // Convert char to Unicode codepoint
         ucode = lib_unimap_conv_icode(conv_map, icode);
         if (ucode < 0) {
             // error
@@ -592,17 +592,17 @@ int lib_enc_conv_from_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char
     size_t seq_len = 0;
     size_t total   = 0;
     
-    char c         = '\0';
+    //char c         = '\0';
     char* data     = from_data;
     int i          = 0;
     int j          = 0;
 
     while (i < from_len) {
 
-        c = *data;
+        //c = *data;
+        //seq_len = lib_utf_byte_seq_len(c);
 
         // Calculate sequence lenght of UTF-[ID] char
-        //seq_len = lib_utf_byte_seq_len(c);
         seq_len = lib_utf_char_seq_len(utf_id, data);
         if (seq_len == 0) {
             // error
@@ -649,10 +649,10 @@ int lib_enc_conv_from_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char
         
     while (i < from_len) {
 
-        c = *data;
+        //c = *data;
+        //seq_len = lib_utf8_byte_seq_len(c);
 
         // Calculate sequence lenght of UTF-[ID] char
-        //seq_len = lib_utf8_byte_seq_len(c);
         seq_len = lib_utf_char_seq_len(utf_id, data);
         if (seq_len == 0) {
             // error
@@ -684,7 +684,7 @@ int lib_enc_conv_from_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char
             return -1;
         }
 
-        // Convert UTF-8 codepoint to code by conv_map
+        // Convert UTF-[ID] codepoint to code by conv_map
         if (ucode < conv_map->start) {
             ocode = ucode; 
         } else {
