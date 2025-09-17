@@ -871,6 +871,228 @@ int lib_enc_conv_utf2utf(int from_id, int to_id, char* from_data, size_t from_le
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Converts data to UTF-7
+ */
+int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** to_data, size_t* to_len) {
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_to_utf7: from_id=%d, len=%lu\n", from_id, from_len);
+    #endif
+
+    int to_id = LIB_ENC_UTF7_ID;
+
+    if (to_data) {
+        *to_data = NULL;
+    }
+    if (to_len) {
+        *to_len = 0;
+    }
+
+    if (!from_data || !to_data || !to_len) {
+        return -1;
+    }
+    if (from_len == 0) {
+        return 0;
+    }
+
+    int ocode;
+    int ucode;
+
+    char* new_data      = NULL;
+    size_t new_len      = 0;
+    size_t from_seq_len = 0;
+    size_t to_seq_len   = 0;
+    size_t total        = 0;
+
+    size_t from_bom_len = lib_enc_bom_len(from_id);
+    size_t to_bom_len   = lib_enc_bom_len(to_id);
+
+
+    char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
+
+    char* data     = from_data;
+    int i          = from_bom_len;
+    int j          = 0;
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_utf2utf: Starting...\n");
+    #endif
+
+    #ifdef ERROR
+    fprintf(stderr, "DEBUG: from_bom_len=%lu, to_bom_len=%lu\n", from_bom_len, to_bom_len);
+    #endif
+
+    bool start_block = false;
+
+    while (i < from_len) {
+
+        // Calculate input sequence lenght of UTF-[ID] char
+        from_seq_len = lib_utf_char_seq_len(from_id, data);
+        if (from_seq_len == 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
+            #endif
+            return -1;
+        }
+
+        // Convert input current UTF-[ID] char to codepoint
+        int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
+        if (from_cp_len < 0) {
+        //if (cp_len <= 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
+            #endif
+            free(new_data);
+            return -1;
+        }
+
+        to_seq_len = lib_utf_code_seq_len(to_id, ucode);
+        if (to_seq_len <= 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len=%lu\n", to_seq_len);
+            #endif
+            free(new_data);
+            return -1;
+        }
+
+        #ifdef DEBUG_LL
+        fprintf(stderr, "DEBUG: >> 1: to_seq_len=%lu\n", to_seq_len);
+        #endif
+
+        if (ucode <= 127) {
+            if (start_block) {
+                start_block = false; // add '-'
+                total++;
+            }
+        } else if (ucode > 127) {
+            if (!start_block) {
+                start_block = true; // add '+'
+                total++;
+            }
+        }
+
+        data += from_seq_len;
+        i += from_seq_len;
+        total += to_seq_len;
+    }
+
+    if (i != from_len) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: i != from_len\n");
+        #endif
+        return -1;
+    }
+
+
+    // last block
+    if (start_block) {
+        start_block = false; // add '-'
+        total++;
+    }
+
+    new_len = total;
+    if (new_len == 0) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: new_len == 0\n");
+        #endif
+        return -1;
+    }
+
+    new_data = _data_new(new_len + to_bom_len);
+    if (!new_data) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: Cannot allocate memory\n");
+        #endif
+        return -1;
+    }
+
+    lib_enc_set_bom(to_id, new_data);
+
+    data         = from_data;
+    i            = from_bom_len;
+    j            = to_bom_len;
+    from_seq_len = 0;
+    to_seq_len   = 0;
+    total        = 0;
+        
+    while (i < from_len) {
+
+        // Calculate input sequence lenght of UTF-[ID] char
+        from_seq_len = lib_utf_char_seq_len(from_id, data);
+        if (from_seq_len == 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
+            #endif
+            return -1;
+        }
+
+        // Convert input current UTF-[ID] char to codepoint
+        int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
+        if (from_cp_len < 0) {
+        //if (from_cp_len <= 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
+            #endif
+            free(new_data);
+            return -1;
+        }
+
+        // Convert Unicode codepoint to multi byte char
+        to_seq_len = lib_utf_to_char(to_id, buf, ucode);
+        if (to_seq_len <= 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len_v2=%lu\n", to_seq_len);
+            #endif
+            free(new_data);
+            return -1;
+        }
+
+        #ifdef DEBUG_LL
+        fprintf(stderr, "DEBUG: >> 2: to_seq_len=%lu\n", to_seq_len);
+        #endif
+
+        // Copy data from buffer to output
+        for (int k = 0; k < to_seq_len; k++) {
+            new_data[j + k] = buf[k];
+        }
+
+        data += from_seq_len;
+        i += from_seq_len;
+
+        j += to_seq_len;
+        total += to_seq_len;
+
+    }
+
+    if (new_len != total) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: Incorrect len: new_len=%lu, total=%lu\n", new_len, total);
+        #endif
+        free(new_data);
+        return -1;
+    }
+
+    *to_data = new_data;
+    *to_len  = new_len + to_bom_len;
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_utf2utf: SUCCESS\n");
+    #endif
+
+    return 0;
+}
+
 void _print_char(char* buf) {
     printf("%02X ",  (unsigned char) buf[0]);
     printf("%02X ",  (unsigned char) buf[1]);

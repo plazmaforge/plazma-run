@@ -10,6 +10,19 @@
 #define NO_CHR 0xFFFD
 #define NO_DAT '?'
 
+// Windows-1125,
+// Macintosh (?) Baltic, 
+// Macintosh (?) Kamenicky
+// Macintosh CE
+// Macintosh Cyrillic
+// ECMA Cyrillic
+// KOI8-CS2
+// KOI8-R
+// KOI8-U
+// KOI8-UNI
+// Cork
+//
+
 /*
   Character encoding mappings and related files
   https://www.unicode.org/L2/L1999/99325-E.htm

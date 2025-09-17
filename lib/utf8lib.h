@@ -5,6 +5,8 @@
 
 /* utfdef.h */
 
+#define LIB_UTF7_ID       65000
+
 #define LIB_UTF8_ID       65001
 #define LIB_UTF8_BOM_ID 1065001
 
