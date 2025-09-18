@@ -871,6 +871,44 @@ int lib_enc_conv_utf2utf(int from_id, int to_id, char* from_data, size_t from_le
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Calculate size of output base64 array by input size
+size_t to_base64_size(size_t size) {
+    return (size * 4 + 2) / 3;
+}
+
+// flush utf7 block  to prepared (non utf7) byte array (dtata)
+// count is unicode point count (!)
+// bdata is shared for all data buffer by max count * 2 (hi/lo)
+
+int to_utf7_block(char *idata, char *bdata, size_t bsize, /*size_t start, */ size_t count) {
+
+    int ucode  = 0;
+    uint8_t hi = 0;
+    uint8_t lo = 0;
+    size_t i   = 0;
+    size_t j   = 0;
+
+    // char* data = idata + start; // why i can shift idata before call
+    char *data = data;
+    while (i < count) {
+
+        ucode = data[i]; // stub
+        // seq_len = ...
+
+        // unicode point to hi and lo
+        hi = ucode >> 8;
+        lo = ucode & 0xFF;
+
+        i++;
+        bdata[j] = hi;
+        j++;
+
+        bdata[j] = lo;
+        j++;
+    }
+    return 0;
+}
+
 /**
  * Converts data to UTF-7
  */
@@ -908,7 +946,6 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     size_t from_bom_len = lib_enc_bom_len(from_id);
     size_t to_bom_len   = lib_enc_bom_len(to_id);
 
-
     char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
 
     char* data     = from_data;
@@ -923,7 +960,11 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     fprintf(stderr, "DEBUG: from_bom_len=%lu, to_bom_len=%lu\n", from_bom_len, to_bom_len);
     #endif
 
-    bool start_block = false;
+    bool start_block   = false; // Start UTF7 block flag
+    size_t start_index = 0;     // Start index in UTF7 block
+    size_t block_count = 0;     // Count of Unicode points in UTF7 block
+    size_t block_size  = 0;     // Size of Unicode point pairs (hi/lo): block_count * 2
+    size_t bsize       = 0;     // Max size of binary block
 
     while (i < from_len) {
 
@@ -963,17 +1004,36 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         fprintf(stderr, "DEBUG: >> 1: to_seq_len=%lu\n", to_seq_len);
         #endif
 
-        if (ucode <= 127) {
-            if (start_block) {
-                start_block = false; // add '-'
-                total++;
+        /////////////////////////////////////////////////////////////
+
+        if (ucode <= 127) {            
+            if (start_block) {                
+                block_size = block_count * 2;
+                if (block_size > bsize) {
+                    bsize = block_size;
+                }
+                // Calc UTF7 block
+                total += to_base64_size(block_size) + 2; //+,-
+
+                // End UF7 block
+                start_block = false;
+                block_count = 0;
+            }
+            total++; // Calc ASCII
+            if (ucode == '+') {
+                total++; // Calc "+-"
             }
         } else if (ucode > 127) {
             if (!start_block) {
-                start_block = true; // add '+'
-                total++;
+
+                // Start UTF7 block
+                start_block = true;
+                start_index = i;
             }
+            block_count++;
         }
+
+        /////////////////////////////////////////////////////////////
 
         data += from_seq_len;
         i += from_seq_len;
