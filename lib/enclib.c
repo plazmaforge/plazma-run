@@ -880,7 +880,7 @@ size_t to_base64_size(size_t size) {
 // count is unicode point count (!)
 // bdata is shared for all data buffer by max count * 2 (hi/lo)
 
-int to_utf7_block(char *idata, char *bdata, size_t bsize, /*size_t start, */ size_t count) {
+int to_utf7_block(char* idata, char* bdata, size_t bsize, /*size_t start, */ size_t count) {
 
     int ucode  = 0;
     uint8_t hi = 0;
@@ -905,6 +905,129 @@ int to_utf7_block(char *idata, char *bdata, size_t bsize, /*size_t start, */ siz
 
         bdata[j] = lo;
         j++;
+    }
+    return 0;
+}
+
+// TODO: stub
+
+static const int map1[] = {};
+
+static const int map2[] = {};
+
+int base64_encode(char* idata, size_t isize, char* odata, size_t osize) {
+
+    size_t dsize = (isize * 4 + 2) / 3;
+    // osize = ((isize + 2) / 3) * 4;  // with ==
+    // osize = dsize;
+
+    size_t i = 0;
+    size_t j = 0;
+
+    char i0, i1, i2 = 0;
+    char j0, j1, j2, j3 = 0;
+
+    while (i < isize) {
+        i0 = idata[i];
+        i++;
+
+        if (i < isize) {
+            i1 = idata[i];
+            i++;
+        } else {
+            i1 = 0;
+        }
+
+        if (i < isize) {
+            i2 = idata[i];
+            i++;
+        } else {
+            i2 = 0;
+        }
+
+        ////
+
+        j0 = i0 / 4;
+        j1 = ((i0 & 3) * 0x10) | (i1 / 0x10);
+        j2 = ((i1 & 0x0F) * 4) | (i2 / 0x40);
+        j3 = i2 & 0x3F;
+
+        odata[j] = map1[j0];
+        j++;
+        odata[j] = map1[j1];
+        j++;
+        if (j < dsize) {
+            odata[j] = map1[j2];
+        } else {
+            // odata[j] = '=';
+        }
+        j++;
+        if (j < dsize) {
+            odata[j] = map1[j3];
+        } else {
+            // odata[j] = '=';
+        }
+        j++;
+    }
+    return 0;
+}
+
+////
+
+int base64_decode(char* idata, size_t isize, char* odata, size_t osize) {
+
+    // osize = (isize * 3) / 4;
+
+    size_t i = 0;
+    size_t j = 0;
+
+    char i0, i1, i2, i3 = 0;
+    char b0, b1, b2, b3 = 0;
+    char j0, j1, j2 = 0;
+
+    while (i < isize) {
+        i0 = idata[i];
+        i++;
+        i1 = idata[i];
+        i++;
+
+        if (i < isize) {
+            i2 = idata[i];
+            i++;
+        } else {
+            i2 = 'A';
+        }
+
+        if (i < isize) {
+            i3 = idata[i];
+            i++;
+        } else {
+            i3 = 'A';
+        }
+
+        // check i0-i3 > 127: error
+
+        b0 = map2[i0];
+        b1 = map2[i1];
+        b2 = map2[i2];
+        b3 = map2[i3];
+
+        // check b0-b3 > 63: error
+
+        j0 = (b0 * 4) | b1 / 0x10;
+        j1 = ((b1 & 0x0F) * 0x10) | (b2 / 4);
+        j2 = ((b2 & 3) * 0x40) | b3;
+
+        odata[j] = j0;
+        j++;
+        if (j < osize) {
+            odata[j] = j1;
+            j++;
+        }
+        if (j < osize) {
+            odata[j] = j2;
+            j++;
+        }
     }
     return 0;
 }
