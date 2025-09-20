@@ -150,7 +150,10 @@ int lib_enc_set_bom(int id, char* str) {
 }
 
 bool lib_enc_supports_utf_conv(int id) {
-    return (id == LIB_ENC_UTF8_ID
+
+    return (id == LIB_ENC_UTF7_ID
+
+     || id == LIB_ENC_UTF8_ID
      || id == LIB_ENC_UTF8_BOM_ID
 
      || id == LIB_ENC_UTF16_ID
@@ -272,6 +275,19 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     }
 
     if (!has_from && !has_to) {
+
+        // TODO: STUB
+        if (lib_enc_supports_utf_conv(from_id) && to_id == LIB_ENC_UTF7_ID) {
+            return lib_enc_conv_to_utf7(from_id, from_data, from_len, to_data, to_len);
+        }
+
+        // TODO: STUB
+        if (from_id == LIB_ENC_UTF7_ID && lib_enc_supports_utf_conv(to_id)) {
+            #ifdef ERROR
+            fprintf(stderr, "Conversion from %d unsupported\n", from_id);
+            #endif
+            return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
+        }
 
         if (lib_enc_supports_utf_conv(from_id) && lib_enc_supports_utf_conv(to_id)) {
             return lib_enc_conv_utf2utf(from_id, to_id, from_data, from_len, to_data, to_len);
@@ -1209,17 +1225,23 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
                 if (block_bin_len > bin_len) {
                     bin_len = block_bin_len;
                 }
+
+                total++;     // +
                 block_b64_len = to_base64_size(block_bin_len);
 
                 // Calc UTF7 block
-                total +=  block_b64_len + 2; // +...-
+                total +=  block_b64_len;
+
+                if (i + from_seq_len < from_len) {
+                    total++; // -
+                }
 
                 // End UF7 block
                 start_block = false;
                 block_count = 0;
             }
 
-            total++; // Calc ASCII
+            total++;     // Calc ASCII
             if (ucode == '+') {
                 total++; // Calc "+-"
             }
@@ -1238,7 +1260,6 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
         data += from_seq_len;
         i += from_seq_len;
-
         //total += to_seq_len;
     }
 
@@ -1250,16 +1271,22 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         return -1;
     }
 
-    // last block
+    // Last block
     if (start_block) {
         block_bin_len = block_count * 2; // hi, lo
         if (block_bin_len > bin_len) {
             bin_len = block_bin_len;
         }
+
+        total++;     // '+'
         block_b64_len = to_base64_size(block_bin_len);
 
         // Calc UTF7 block
-        total += block_b64_len + 2; // +...-
+        total +=  block_b64_len;
+                
+        if (i + from_seq_len < from_len) {
+            total++; // '-'
+        }
 
         // End UF7 block
         start_block = false;
@@ -1373,15 +1400,20 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
                 *out_data = '+';
                 out_data++;
+                total++;     // +
 
                 // flush UTF7 block
                 base64_encode(bin_data, block_bin_len, out_data, block_b64_len);
-
-                *out_data = '-';
-                out_data++;
+                out_data += block_b64_len;
 
                 // Calc UTF7 block
-                total += block_b64_len + 2; // +...-
+                total += block_b64_len;
+
+                if (i + from_seq_len < from_len) {
+                    *out_data = '-';
+                    out_data++;
+                    total++; // -
+                }
 
                 // End UF7 block
                 start_block = false;
@@ -1390,13 +1422,12 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
             *out_data = (char) ucode;
             out_data++;
+            total++;     // Calc ASCII
 
-            total++; // Calc ASCII
             if (ucode == '+') {
 
                 *out_data = '-';
                 out_data++;
-
                 total++; // Calc "+-"
             }
 
@@ -1405,7 +1436,6 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
                 // Start UTF7 block
                 start_block = true;
-                //start_index = i;
                 cur_data = data;
             }
             block_count++;
@@ -1430,15 +1460,20 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
         *out_data = '+';
         out_data++;
+        total++;     // +
 
         // flush UTF7 block
         base64_encode(bin_data, block_bin_len, out_data, block_b64_len);
-
-        *out_data = '-';
-        out_data++;
+        out_data += block_b64_len;
 
         // Calc UTF7 block
-        total += block_b64_len + 2; // +...-
+        total += block_b64_len;
+
+        if (i + from_seq_len < from_len) {
+            *out_data = '-';
+            out_data++;
+            total++; // -
+        }
 
         // End UF7 block
         start_block = false;
