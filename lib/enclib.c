@@ -942,6 +942,10 @@ int to_utf7_block(int from_id, char* idata, char* bdata, size_t bsize, size_t co
         hi = ucode >> 8;
         lo = ucode & 0xFF;
 
+        //#ifdef ERROR
+        //fprintf(stderr, "DEBUG: >> ucode=%d, hi=%d, lo=%d\n", ucode, hi, lo);
+        //#endif
+
         // next codepoint
         i++; 
         data += from_seq_len;
@@ -1001,6 +1005,9 @@ static const int map2[128] = {
     41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -3, -3
 };
 
+static uint8_t to_uint8(char value) {
+    return (uint8_t) value;
+}
 
 int base64_encode(char* idata, size_t isize, char* odata, size_t osize) {
 
@@ -1011,22 +1018,22 @@ int base64_encode(char* idata, size_t isize, char* odata, size_t osize) {
     size_t i = 0;
     size_t j = 0;
 
-    char i0, i1, i2 = 0;
-    char j0, j1, j2, j3 = 0;
+    uint8_t i0, i1, i2 = 0;
+    uint8_t j0, j1, j2, j3 = 0;
 
     while (i < isize) {
-        i0 = idata[i];
+        i0 = to_uint8(idata[i]);
         i++;
 
         if (i < isize) {
-            i1 = idata[i];
+            i1 = to_uint8(idata[i]);
             i++;
         } else {
             i1 = 0;
         }
 
         if (i < isize) {
-            i2 = idata[i];
+            i2 = to_uint8(idata[i]);
             i++;
         } else {
             i2 = 0;
@@ -1034,27 +1041,39 @@ int base64_encode(char* idata, size_t isize, char* odata, size_t osize) {
 
         ////
 
+        //fprintf(stderr, ">> i-0: %d\n", i0);
+        //fprintf(stderr, ">> i-1: %d\n", i1);
+        //fprintf(stderr, ">> i-2: %d\n", i2);
+
         j0 = i0 / 4;
         j1 = ((i0 & 3) * 0x10) | (i1 / 0x10);
         j2 = ((i1 & 0x0F) * 4) | (i2 / 0x40);
         j3 = i2 & 0x3F;
 
         odata[j] = map1[j0];
+        //fprintf(stderr, ">> odata-0: %d\n", odata[j]);
         j++;
+
         odata[j] = map1[j1];
+        //fprintf(stderr, ">> odata-1: %d\n", odata[j]);
         j++;
+
         if (j < dsize) {
             odata[j] = map1[j2];
+            //fprintf(stderr, ">> odata-2: %d\n", odata[j]);
         } else {
             // odata[j] = '=';
         }
         j++;
+
         if (j < dsize) {
             odata[j] = map1[j3];
+            //fprintf(stderr, ">> odata-3: %d\n", odata[j]);
         } else {
             // odata[j] = '=';
         }
         j++;
+
     }
     return 0;
 }
