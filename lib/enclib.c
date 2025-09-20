@@ -880,7 +880,7 @@ size_t to_base64_size(size_t size) {
 // count is unicode point count (!)
 // bdata is shared for all data buffer by max count * 2 (hi/lo)
 
-int to_utf7_block(char* idata, char* bdata, size_t bsize, /*size_t start, */ size_t count) {
+int to_utf7_block(int from_id, char* idata, char* bdata, size_t bsize, size_t count) {
 
     int ucode  = 0;
     uint8_t hi = 0;
@@ -888,18 +888,48 @@ int to_utf7_block(char* idata, char* bdata, size_t bsize, /*size_t start, */ siz
     size_t i   = 0;
     size_t j   = 0;
 
+    size_t from_seq_len = 0;
+
     // char* data = idata + start; // why i can shift idata before call
-    char *data = data;
+    char* data = idata;
     while (i < count) {
 
-        ucode = data[i]; // stub
+        //ucode = data[i]; // stub
         // seq_len = ...
+
+        // Calculate input sequence lenght of UTF-[ID] char
+        from_seq_len = lib_utf_char_seq_len(from_id, data);
+        if (from_seq_len == 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
+            #endif
+            //free(new_data);
+            //free(bin_data);
+            return -1;
+        }
+
+        // Convert input current UTF-[ID] char to codepoint
+        int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
+        if (from_cp_len < 0) {
+        //if (from_cp_len <= 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
+            #endif
+            //free(new_data);
+            //free(bin_data);
+            return -1;
+        }
 
         // unicode point to hi and lo
         hi = ucode >> 8;
         lo = ucode & 0xFF;
 
-        i++;
+        // next codepoint
+        i++; 
+        data += from_seq_len;
+
         bdata[j] = hi;
         j++;
 
@@ -911,9 +941,50 @@ int to_utf7_block(char* idata, char* bdata, size_t bsize, /*size_t start, */ siz
 
 // TODO: stub
 
-static const int map1[] = {};
+//static const int map1[] = {};
 
-static const int map2[] = {};
+//static const int map2[] = {};
+
+// uint8_t to_base64
+static const int map1[64] = {
+    
+    /* A-Z */
+    65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+    78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90,
+
+    /* a-z */
+    97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
+    110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122,
+
+    /* 0-9 */
+    48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
+
+    /* +/ */
+    43, 47
+};
+
+// int8_t from_base64
+static const int map2[128] = {
+
+    /* C0 controls, -1 for legal ones (CR LF TAB), -3 for illegal ones */
+    -3, -3, -3, -3, -3, -3, -3, -3, -3, -1, -1, -3, -3, -1, -3, -3,
+    -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,
+
+    /* general punctuation with + and / and a special value (-2) for - */
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -2, -1, 63,
+
+    /* digits */
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1,
+
+    /* A-Z */
+    -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -3, -1, -1, -1,
+
+    /* a-z */
+    -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -3, -3
+};
+
 
 int base64_encode(char* idata, size_t isize, char* odata, size_t osize) {
 
@@ -1063,7 +1134,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     char* new_data      = NULL;
     size_t new_len      = 0;
     size_t from_seq_len = 0;
-    size_t to_seq_len   = 0;
+    //size_t to_seq_len   = 0;
     size_t total        = 0;
 
     size_t from_bom_len = lib_enc_bom_len(from_id);
@@ -1076,18 +1147,22 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     int j          = 0;
 
     #ifdef DEBUG
-    fprintf(stderr, ">> conv_utf2utf: Starting...\n");
+    fprintf(stderr, ">> conv_to_utf7: Starting...\n");
     #endif
 
     #ifdef ERROR
     fprintf(stderr, "DEBUG: from_bom_len=%lu, to_bom_len=%lu\n", from_bom_len, to_bom_len);
     #endif
 
-    bool start_block   = false; // Start UTF7 block flag
-    size_t start_index = 0;     // Start index in UTF7 block
-    size_t block_count = 0;     // Count of Unicode points in UTF7 block
-    size_t block_size  = 0;     // Size of Unicode point pairs (hi/lo): block_count * 2
-    size_t bsize       = 0;     // Max size of binary block
+    bool start_block     = false; // Start UTF7 block flag
+    size_t start_index   = 0;     // Start index in UTF7 block
+    size_t block_count   = 0;     // Count of Unicode points in UTF7 block
+    size_t block_bin_len = 0;     // Size of binary block of Unicode point pairs (hi/lo): block_count * 2
+    size_t block_b64_len = 0;     // Size of base64 block
+    size_t bin_len       = 0;     // Max size of binary block
+    char* bin_data       = NULL;  // Binary block data
+    char* out_data       = NULL;
+    char* cur_data       = NULL;
 
     while (i < from_len) {
 
@@ -1109,43 +1184,46 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
             #endif
-            free(new_data);
             return -1;
         }
 
-        to_seq_len = lib_utf_code_seq_len(to_id, ucode);
-        if (to_seq_len <= 0) {
-            // error
-            #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len=%lu\n", to_seq_len);
-            #endif
-            free(new_data);
-            return -1;
-        }
+        // to_seq_len = lib_utf_code_seq_len(to_id, ucode);
+        // if (to_seq_len <= 0) {
+        //     // error
+        //     #ifdef ERROR
+        //     fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len=%lu\n", to_seq_len);
+        //     #endif
+        //     return -1;
+        // }
 
-        #ifdef DEBUG_LL
-        fprintf(stderr, "DEBUG: >> 1: to_seq_len=%lu\n", to_seq_len);
-        #endif
+        // #ifdef DEBUG_LL
+        // fprintf(stderr, "DEBUG: >> 1: to_seq_len=%lu\n", to_seq_len);
+        // #endif
 
         /////////////////////////////////////////////////////////////
 
-        if (ucode <= 127) {            
-            if (start_block) {                
-                block_size = block_count * 2;
-                if (block_size > bsize) {
-                    bsize = block_size;
+        if (ucode <= 127) {
+
+            if (start_block) {
+                block_bin_len = block_count * 2; // hi, lo
+                if (block_bin_len > bin_len) {
+                    bin_len = block_bin_len;
                 }
+                block_b64_len = to_base64_size(block_bin_len);
+
                 // Calc UTF7 block
-                total += to_base64_size(block_size) + 2; //+,-
+                total +=  block_b64_len + 2; // +...-
 
                 // End UF7 block
                 start_block = false;
                 block_count = 0;
             }
+
             total++; // Calc ASCII
             if (ucode == '+') {
                 total++; // Calc "+-"
             }
+
         } else if (ucode > 127) {
             if (!start_block) {
 
@@ -1160,7 +1238,8 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
         data += from_seq_len;
         i += from_seq_len;
-        total += to_seq_len;
+
+        //total += to_seq_len;
     }
 
     if (i != from_len) {
@@ -1171,11 +1250,20 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         return -1;
     }
 
-
     // last block
     if (start_block) {
-        start_block = false; // add '-'
-        total++;
+        block_bin_len = block_count * 2; // hi, lo
+        if (block_bin_len > bin_len) {
+            bin_len = block_bin_len;
+        }
+        block_b64_len = to_base64_size(block_bin_len);
+
+        // Calc UTF7 block
+        total += block_b64_len + 2; // +...-
+
+        // End UF7 block
+        start_block = false;
+        block_count = 0;
     }
 
     new_len = total;
@@ -1183,6 +1271,14 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         // error
         #ifdef ERROR
         fprintf(stderr, "ERROR: new_len == 0\n");
+        #endif
+        return -1;
+    }
+
+    if (bin_len == 0) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: bin_len == 0\n");
         #endif
         return -1;
     }
@@ -1196,14 +1292,25 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         return -1;
     }
 
+    bin_data = _data_new(bin_len);
+    if (!bin_data) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: Cannot allocate memory\n");
+        #endif
+        free(new_data);
+        return -1;
+    }
+
     lib_enc_set_bom(to_id, new_data);
 
     data         = from_data;
     i            = from_bom_len;
     j            = to_bom_len;
     from_seq_len = 0;
-    to_seq_len   = 0;
+    //to_seq_len   = 0;
     total        = 0;
+    out_data     = new_data;
         
     while (i < from_len) {
 
@@ -1214,6 +1321,8 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
             #endif
+            free(new_data);
+            free(bin_data);
             return -1;
         }
 
@@ -1226,35 +1335,114 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
             fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
             #endif
             free(new_data);
+            free(bin_data);
             return -1;
         }
 
         // Convert Unicode codepoint to multi byte char
-        to_seq_len = lib_utf_to_char(to_id, buf, ucode);
-        if (to_seq_len <= 0) {
-            // error
-            #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len_v2=%lu\n", to_seq_len);
-            #endif
-            free(new_data);
-            return -1;
-        }
+        // to_seq_len = lib_utf_to_char(to_id, buf, ucode);
+        // if (to_seq_len <= 0) {
+        //     // error
+        //     #ifdef ERROR
+        //     fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len_v2=%lu\n", to_seq_len);
+        //     #endif
+        //     free(new_data);
+        //     free(bin_data);
+        //     return -1;
+        // }
 
-        #ifdef DEBUG_LL
-        fprintf(stderr, "DEBUG: >> 2: to_seq_len=%lu\n", to_seq_len);
-        #endif
+        // #ifdef DEBUG_LL
+        // fprintf(stderr, "DEBUG: >> 2: to_seq_len=%lu\n", to_seq_len);
+        // #endif
 
         // Copy data from buffer to output
-        for (int k = 0; k < to_seq_len; k++) {
-            new_data[j + k] = buf[k];
+        // for (int k = 0; k < to_seq_len; k++) {
+        //     new_data[j + k] = buf[k];
+        // }
+
+        /////////////////////////////////////////////////////////////
+
+        if (ucode <= 127) {
+
+            if (start_block) {
+                block_bin_len = block_count * 2; // hi, lo
+                block_b64_len = to_base64_size(block_bin_len);
+
+                // output to bin_data (hi, lo)
+                to_utf7_block(from_id, cur_data, bin_data, block_bin_len, block_count);
+
+                *out_data = '+';
+                out_data++;
+
+                // flush UTF7 block
+                base64_encode(bin_data, block_bin_len, out_data, block_b64_len);
+
+                *out_data = '-';
+                out_data++;
+
+                // Calc UTF7 block
+                total += block_b64_len + 2; // +...-
+
+                // End UF7 block
+                start_block = false;
+                block_count = 0;
+            }
+
+            *out_data = (char) ucode;
+            out_data++;
+
+            total++; // Calc ASCII
+            if (ucode == '+') {
+
+                *out_data = '-';
+                out_data++;
+
+                total++; // Calc "+-"
+            }
+
+        } else if (ucode > 127) {
+            if (!start_block) {
+
+                // Start UTF7 block
+                start_block = true;
+                //start_index = i;
+                cur_data = data;
+            }
+            block_count++;
         }
+
+        /////////////////////////////////////////////////////////////
 
         data += from_seq_len;
         i += from_seq_len;
 
-        j += to_seq_len;
-        total += to_seq_len;
+        // j += to_seq_len;
+        // total += to_seq_len;
 
+    }
+
+    if (start_block) {
+        block_bin_len = block_count * 2; // hi, lo
+        block_b64_len = to_base64_size(block_bin_len);
+
+        // output to bin_data (hi, lo)
+        to_utf7_block(from_id, cur_data, bin_data, block_bin_len, block_count);
+
+        *out_data = '+';
+        out_data++;
+
+        // flush UTF7 block
+        base64_encode(bin_data, block_bin_len, out_data, block_b64_len);
+
+        *out_data = '-';
+        out_data++;
+
+        // Calc UTF7 block
+        total += block_b64_len + 2; // +...-
+
+        // End UF7 block
+        start_block = false;
+        block_count = 0;
     }
 
     if (new_len != total) {
@@ -1263,6 +1451,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         fprintf(stderr, "ERROR: Incorrect len: new_len=%lu, total=%lu\n", new_len, total);
         #endif
         free(new_data);
+        free(bin_data);
         return -1;
     }
 
@@ -1283,7 +1472,23 @@ void _print_char(char* buf) {
     printf("%02X\n", (unsigned char) buf[3]);
 }
 
+int lib_enc_test2() {
+    int i;
+    int j;
+    for (i = 0; i < 64; i++) {
+        j = map1[i];
+        //map2[j] = i: Next
+        printf(">> MAP: i=%d, j=%d,\n",  i, j);
+    }
+    return 0;
+}
+
 int lib_enc_test() {
+
+    if (true) {
+        lib_enc_test2();
+        return 0;
+    }
     
     // 128640
     // 1F680
