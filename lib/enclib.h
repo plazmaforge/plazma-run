@@ -10,6 +10,23 @@
 #define LIB_ENC_ERR_CONV_FROM_USUPPORTED      -2001
 #define LIB_ENC_ERR_CONV_TO_USUPPORTED        -2002
 
+typedef struct lib_enc_context_t {
+
+    /* From */
+    int from_id;
+    char* from_data;
+    size_t from_len;
+    lib_unimap_t* from_map;
+    bool from_is_utf;
+
+    /* To */
+    int to_id;    
+    char** to_data;
+    size_t* to_len;
+    lib_unimap_t* to_map;
+    bool to_is_utf;
+
+} lib_enc_context_t;
 
 int lib_enc_bom_len(int id);
 

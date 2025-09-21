@@ -38,6 +38,42 @@ static char* _data_copy(char* src, size_t size) {
     return data;
 } 
 
+static int _init_ctx(lib_enc_context_t* ctx) {
+    if (!ctx) {
+        return 1;
+    }
+
+    /* From */
+    ctx->from_id     = 0;
+    ctx->from_data   = NULL;
+    ctx->from_len    = 0;
+    ctx->from_map    = NULL;
+    ctx->from_is_utf = false;
+
+    /* To */
+    ctx->to_id       = 0;
+    ctx->to_data     = NULL;
+    ctx->to_len      = 0;
+    ctx->to_map      = NULL;
+    ctx->to_is_utf   = false;
+
+    return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+static size_t _enc_char_seq_len(bool is_utf, int id, const char* str);
+
+static size_t _enc_code_seq_len(bool is_utf, int id, int cp);
+
+static int _enc_to_code(lib_enc_context_t* ctx, int id, const char* str, int* cp);
+
+static int _enc_to_char(lib_enc_context_t* ctx, int id, char* buf, int cp);
+
+static int _enc_conv_ctx(lib_enc_context_t* ctx);
+
+////////////////////////////////////////////////////////////////////////////////////////
+
 int lib_enc_bom_len(int id) {
 
     // UTF-8
@@ -214,6 +250,28 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
         return 0;
     }
 
+    bool sup_from = lib_enc_supports_conv(from_id);
+    bool sup_to = lib_enc_supports_conv(to_id);
+
+    if (!sup_from && !sup_to) {
+        #ifdef ERROR
+        fprintf(stderr, "Conversion from %d to %d unsupported\n", from_id, to_id);
+        #endif
+        return LIB_ENC_ERR_CONV_USUPPORTED;
+    }
+    if (!sup_from) {
+        #ifdef ERROR
+        fprintf(stderr, "Conversion from %d unsupported\n", from_id);
+        #endif
+        return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
+    }
+    if (!sup_to) {
+        #ifdef ERROR
+        fprintf(stderr, "Conversion to %d unsupported\n", from_id);
+        #endif
+        return LIB_ENC_ERR_CONV_TO_USUPPORTED;
+    }
+
     if (from_id == to_id) {
 
         // Copy data
@@ -235,6 +293,61 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     bool has_from = lib_unimap_supports_map(from_id);
     bool has_to   = lib_unimap_supports_map(to_id);
 
+    ////////////////////////////////////////////////////////////////////////////////
+    // UTF7 Only
+    ////////////////////////////////////////////////////////////////////////////////
+
+    // TODO: STUB
+    if (from_id == LIB_ENC_UTF7_ID /*&& lib_enc_supports_utf_conv(to_id)*/) {
+        #ifdef ERROR
+        fprintf(stderr, "Conversion from %d unsupported\n", from_id);
+        #endif
+        return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
+    }
+
+    if (to_id == LIB_ENC_UTF7_ID) {
+        if (lib_enc_supports_utf_conv(from_id)) {
+            return lib_enc_conv_to_utf7(from_id, from_data, from_len, to_data, to_len);
+        } else {
+            #ifdef ERROR
+            fprintf(stderr, "Conversion from/to map unsupported: %d, %d\n", from_id, to_id);
+            #endif
+            return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
+        }            
+    }
+
+    lib_enc_context_t ctx;
+    _init_ctx(&ctx);
+
+    ctx.from_id = from_id;
+    ctx.from_data = from_data;
+    ctx.from_len = from_len;
+
+    ctx.to_id   = to_id;
+    ctx.to_data = to_data;
+    ctx.to_len = to_len;
+    
+    if (has_from) {
+        lib_unimap_t from_map;
+        lib_unimap_get_unimap_by_id(&from_map, from_id);
+        ctx.from_map = &from_map;
+        ctx.from_is_utf = false;
+    } else {
+        ctx.from_is_utf = true;
+    }
+
+    if (has_to) {
+        lib_unimap_t to_map;
+        lib_unimap_get_unimap_by_id(&to_map, to_id);
+        ctx.to_map = &to_map;
+        ctx.to_is_utf = false;
+    } else {
+        ctx.to_is_utf = true;
+    }
+
+    return _enc_conv_ctx(&ctx);
+
+    /*
     // unimap <-> unimap
     if (has_from && has_to) {
 
@@ -276,19 +389,6 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
 
     if (!has_from && !has_to) {
 
-        // TODO: STUB
-        if (lib_enc_supports_utf_conv(from_id) && to_id == LIB_ENC_UTF7_ID) {
-            return lib_enc_conv_to_utf7(from_id, from_data, from_len, to_data, to_len);
-        }
-
-        // TODO: STUB
-        if (from_id == LIB_ENC_UTF7_ID && lib_enc_supports_utf_conv(to_id)) {
-            #ifdef ERROR
-            fprintf(stderr, "Conversion from %d unsupported\n", from_id);
-            #endif
-            return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
-        }
-
         if (lib_enc_supports_utf_conv(from_id) && lib_enc_supports_utf_conv(to_id)) {
             return lib_enc_conv_utf2utf(from_id, to_id, from_data, from_len, to_data, to_len);
         }
@@ -314,6 +414,7 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     }
 
     return LIB_ENC_ERR_CONV_USUPPORTED;
+    */
 }
 
 static int _to_code(char chr) {
@@ -1182,7 +1283,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     int j          = 0;
 
     #ifdef DEBUG
-    fprintf(stderr, ">> conv_to_utf7: Starting...\n");
+    fprintf(stderr, ">> conv_to_utf7: starting...\n");
     #endif
 
     #ifdef ERROR
@@ -1513,7 +1614,301 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     *to_len  = new_len + to_bom_len;
 
     #ifdef DEBUG
-    fprintf(stderr, ">> conv_utf2utf: SUCCESS\n");
+    fprintf(stderr, ">> conv_utf7: SUCCESS\n");
+    #endif
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+static size_t _enc_char_seq_len(bool is_utf, int id, const char* str) {
+    if (!str) {
+        return 0;
+    }
+    if (!is_utf) {
+        return 1;
+    }
+
+    // UTF
+    return lib_utf_char_seq_len(id, str);
+}
+
+static size_t _enc_code_seq_len(bool is_utf, int id, int cp) {
+    if (!is_utf) {
+        return 1;  // Lenght is always one
+    }
+
+    // UTF
+    return lib_utf_code_seq_len(id, cp);
+}
+
+static int _enc_to_code(lib_enc_context_t* ctx, int id, const char* str, int* cp) {
+    if (!ctx->from_is_utf) {
+
+        // Get unsigned code
+        int icode = _to_code(*str);
+
+        // Convert char to  Unicode codepoint
+        *cp = lib_unimap_conv_icode(ctx->from_map, icode);
+
+        return 1; // Lenght is always one
+    }
+
+    // UTF
+    return lib_utf_to_code(id, str, cp);
+}
+
+static int _enc_to_char(lib_enc_context_t* ctx, int id, char* buf, int cp) {
+
+    if (!ctx->to_is_utf) {
+        int ocode = 0;
+
+        // Convert [EncodingID] codepoint to code by map
+        if (cp < ctx->to_map->start) {
+            ocode = cp; 
+        } else {
+            ocode = lib_unimap_conv_ucode(ctx->to_map, cp);
+        }
+        *buf = (char) ocode;
+        return 1;
+    }
+
+    return lib_utf_to_char(id, buf, cp);
+}
+
+/**
+ * Converts data from [EncodingID] to [EncodingID]
+ */
+static int _enc_conv_ctx(lib_enc_context_t* ctx) {
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_ctx\n");
+    #endif
+
+    if (ctx->to_data) {
+        *(ctx->to_data) = NULL;
+    }
+    if (ctx->to_len) {
+        *(ctx->to_len) = 0;
+    }
+    int err = 0;
+
+    if (!ctx->from_data) {
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: 'from_data' is empty\n");
+        #endif
+        err = -1;
+    }
+    if (!ctx->to_data) {
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: 'to_data' is empty\n");
+        #endif
+        err = -1;
+    }
+    if (!ctx->to_len) {
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: 'to_len' is empty\n");
+        #endif
+        err = -1;
+    }
+
+    if (err != 0) {
+        return err;
+    }
+
+    if (ctx->from_len == 0) {
+        #ifdef DEBUG
+        fprintf(stderr, "DEBUG: 'from_len is 0: No conversation\n");
+        #endif
+        return 0;
+    }
+
+    int from_id      = ctx->from_id;
+    char* from_data  = ctx->from_data;
+    size_t from_len  = ctx->from_len;
+    bool from_is_utf = ctx->from_is_utf;
+
+    int to_id        = ctx->to_id;
+    char** to_data   = ctx->to_data;
+    size_t* to_len   = ctx->to_len;
+    bool to_is_utf   = ctx->to_is_utf;
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_ctx: from_id=%d, to_id=%d, len=%lu\n", from_id, to_id, from_len);
+    #endif
+
+    int ocode;
+    int ucode;
+
+    char* new_data      = NULL;
+    size_t new_len      = 0;
+    size_t from_seq_len = 0;
+    size_t to_seq_len   = 0;
+    size_t total        = 0;
+
+    size_t from_bom_len = lib_enc_bom_len(from_id);
+    size_t to_bom_len   = lib_enc_bom_len(to_id);
+
+
+    char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
+
+    char* data     = from_data;
+    int i          = from_bom_len;
+    int j          = 0;
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_ctx: starting...\n");
+    #endif
+
+    #ifdef DEBUG
+    fprintf(stderr, "DEBUG: from_bom_len=%lu, to_bom_len=%lu\n", from_bom_len, to_bom_len);
+    #endif
+
+    while (i < from_len) {
+
+        // Calculate input sequence lenght of [EncodingID] char
+        from_seq_len = _enc_char_seq_len(from_is_utf, from_id, data);
+        if (from_seq_len == 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
+            #endif
+            return -1;
+        }
+
+        // Convert input current [EncodingID] char to codepoint
+        int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
+        if (from_cp_len < 0) {
+        //if (cp_len <= 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
+            #endif
+            free(new_data);
+            return -1;
+        }
+
+        to_seq_len = _enc_code_seq_len(to_is_utf, to_id, ucode);
+        if (to_seq_len <= 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len=%lu\n", to_seq_len);
+            #endif
+            free(new_data);
+            return -1;
+        }
+
+        #ifdef DEBUG_LL
+        fprintf(stderr, "DEBUG: >> 1: to_seq_len=%lu\n", to_seq_len);
+        #endif
+
+        data += from_seq_len;
+        i += from_seq_len;
+        total += to_seq_len;
+    }
+
+    if (i != from_len) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: i != from_len\n");
+        #endif
+        return -1;
+    }
+
+    new_len = total;
+    if (new_len == 0) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: new_len == 0\n");
+        #endif
+        return -1;
+    }
+
+    new_data = _data_new(new_len + to_bom_len);
+    if (!new_data) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: Cannot allocate memory\n");
+        #endif
+        return -1;
+    }
+
+    lib_enc_set_bom(to_id, new_data);
+
+    data         = from_data;
+    i            = from_bom_len;
+    j            = to_bom_len;
+    from_seq_len = 0;
+    to_seq_len   = 0;
+    total        = 0;
+        
+    while (i < from_len) {
+
+        // Calculate input sequence lenght of [EncodingID] char
+        from_seq_len = _enc_char_seq_len(from_is_utf, from_id, data);
+        if (from_seq_len == 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
+            #endif
+            return -1;
+        }
+
+        // Convert input current [EncodingID] char to codepoint
+        int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
+        if (from_cp_len < 0) {
+        //if (from_cp_len <= 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
+            #endif
+            free(new_data);
+            return -1;
+        }
+
+        // Convert Unicode codepoint to multi byte char
+        to_seq_len = _enc_to_char(ctx, to_id, buf, ucode);
+        if (to_seq_len <= 0) {
+            // error
+            #ifdef ERROR
+            fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len_v2=%lu\n", to_seq_len);
+            #endif
+            free(new_data);
+            return -1;
+        }
+
+        #ifdef DEBUG_LL
+        fprintf(stderr, "DEBUG: >> 2: to_seq_len=%lu\n", to_seq_len);
+        #endif
+
+        // Copy data from buffer to output
+        for (int k = 0; k < to_seq_len; k++) {
+            new_data[j + k] = buf[k];
+        }
+
+        data += from_seq_len;
+        i += from_seq_len;
+
+        j += to_seq_len;
+        total += to_seq_len;
+
+    }
+
+    if (new_len != total) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: Incorrect len: new_len=%lu, total=%lu\n", new_len, total);
+        #endif
+        free(new_data);
+        return -1;
+    }
+
+    *to_data = new_data;
+    *to_len  = new_len + to_bom_len;
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_ctx: SUCCESS\n");
     #endif
 
     return 0;
