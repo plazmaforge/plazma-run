@@ -1239,6 +1239,41 @@ int base64_decode(char* idata, size_t isize, char* odata, size_t osize) {
     return 0;
 }
 
+/* Set directly */
+bool IN_SET_D(int c) {
+    return
+       (c >= 65 && c <= 90)  /* A-Z */
+    || (c >= 97 && c <= 122) /* a-z */
+    || (c >= 48 && c <= 57)  /* 0-9 */
+    || c == 39 
+    || c == 40               /* ( */ 
+    || c == 41               /* ) */ 
+    || (c >= 44 && c <= 47)
+    || c == 58               /* : */ 
+    || c == 63;              /* ? */ 
+}
+
+/* Set optional */
+bool IN_SET_O(int c) {
+    return
+       (c >= 33 && c <= 38)
+    || c == 42               /* * */
+    || (c >= 59 && c <= 64)
+    || c == 91
+    || (c >= 93 && c <= 96)
+    || (c >= 123 && c <= 125);
+}
+
+/* Set base64 */
+bool IN_SET_B(int c) {
+    return
+       (c >= 65 && c <= 90)  /* A-Z */
+    || (c >= 97 && c <= 122) /* a-z */
+    || (c >= 48 && c <= 57)  /* 0-9 */
+    || c == 43 /* + */
+    || c == 47; /* / */
+}
+
 /**
  * Converts data to UTF-7
  */
@@ -1299,6 +1334,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     char* bin_data       = NULL;  // Binary block data
     char* out_data       = NULL;
     char* cur_data       = NULL;
+    bool use_set_o       = true;
 
     while (i < from_len) {
 
@@ -1323,19 +1359,6 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
             return -1;
         }
 
-        // to_seq_len = lib_utf_code_seq_len(to_id, ucode);
-        // if (to_seq_len <= 0) {
-        //     // error
-        //     #ifdef ERROR
-        //     fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len=%lu\n", to_seq_len);
-        //     #endif
-        //     return -1;
-        // }
-
-        // #ifdef DEBUG_LL
-        // fprintf(stderr, "DEBUG: >> 1: to_seq_len=%lu\n", to_seq_len);
-        // #endif
-
         /////////////////////////////////////////////////////////////
 
         bool is_directly = false;
@@ -1343,6 +1366,9 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         if (ucode <= 127) {
 
             is_directly = true;
+            if (use_set_o && IN_SET_O(ucode)) {
+                is_directly = false;
+            }
 
             // if (start_block) {
             //     block_bin_len = block_count * 2; // hi, lo
