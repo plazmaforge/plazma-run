@@ -1338,7 +1338,52 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
         /////////////////////////////////////////////////////////////
 
+        bool is_directly = false;
+
         if (ucode <= 127) {
+
+            is_directly = true;
+
+            // if (start_block) {
+            //     block_bin_len = block_count * 2; // hi, lo
+            //     if (block_bin_len > bin_len) {
+            //         bin_len = block_bin_len;
+            //     }
+
+            //     total++;     // +
+            //     block_b64_len = to_base64_size(block_bin_len);
+
+            //     // Calc UTF7 block
+            //     total +=  block_b64_len;
+
+            //     if (i + from_seq_len < from_len) {
+            //         total++; // -
+            //     }
+
+            //     // End UF7 block
+            //     start_block = false;
+            //     block_count = 0;
+            // }
+
+            // total++;     // Calc ASCII
+            // if (ucode == '+') {
+            //     total++; // Calc "+-"
+            // }
+
+        } else if (ucode > 127) {
+
+            is_directly = false;
+
+            // if (!start_block) {
+
+            //     // Start UTF7 block
+            //     start_block = true;
+            //     start_index = i;
+            // }
+            // block_count++;
+        }
+
+        if (is_directly) {
 
             if (start_block) {
                 block_bin_len = block_count * 2; // hi, lo
@@ -1366,7 +1411,8 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
                 total++; // Calc "+-"
             }
 
-        } else if (ucode > 127) {
+        } else {
+
             if (!start_block) {
 
                 // Start UTF7 block
