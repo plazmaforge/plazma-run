@@ -1335,6 +1335,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     char* out_data       = NULL;
     char* cur_data       = NULL;
     bool use_set_o       = true;
+    bool is_directly     = false;
 
     while (i < from_len) {
 
@@ -1361,13 +1362,19 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
         /////////////////////////////////////////////////////////////
 
-        bool is_directly = false;
+        is_directly = false;
 
         if (ucode <= 127) {
-
-            is_directly = true;
-            if (use_set_o && IN_SET_O(ucode)) {
-                is_directly = false;
+            
+            if (IN_SET_D(ucode)) {
+                /* Set directly */
+                is_directly = true;
+            } else if (IN_SET_O(ucode)) {
+                /* Set optional */
+                is_directly = !use_set_o;
+            } else {
+                /* Set other */
+                is_directly = true;
             }
 
             // if (start_block) {
@@ -1581,7 +1588,76 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
         /////////////////////////////////////////////////////////////
 
+        is_directly = false;
+
         if (ucode <= 127) {
+
+            if (IN_SET_D(ucode)) {
+                /* Set directly */
+                is_directly = true;
+            } else if (IN_SET_O(ucode)) {
+                /* Set optional */
+                is_directly = !use_set_o;
+            } else {
+                /* Set other */
+                is_directly = true;
+            }
+
+
+            // if (start_block) {
+            //     block_bin_len = block_count * 2; // hi, lo
+            //     block_b64_len = to_base64_size(block_bin_len);
+
+            //     // output to bin_data (hi, lo)
+            //     to_utf7_block(from_id, cur_data, bin_data, block_bin_len, block_count);
+
+            //     *out_data = '+';
+            //     out_data++;
+            //     total++;     // +
+
+            //     // flush UTF7 block
+            //     base64_encode(bin_data, block_bin_len, out_data, block_b64_len);
+            //     out_data += block_b64_len;
+
+            //     // Calc UTF7 block
+            //     total += block_b64_len;
+
+            //     if (i + from_seq_len < from_len) {
+            //         *out_data = '-';
+            //         out_data++;
+            //         total++; // -
+            //     }
+
+            //     // End UF7 block
+            //     start_block = false;
+            //     block_count = 0;
+            // }
+
+            // *out_data = (char) ucode;
+            // out_data++;
+            // total++;     // Calc ASCII
+
+            // if (ucode == '+') {
+
+            //     *out_data = '-';
+            //     out_data++;
+            //     total++; // Calc "+-"
+            // }
+
+        } else if (ucode > 127) {
+
+            is_directly = false;
+
+            // if (!start_block) {
+
+            //     // Start UTF7 block
+            //     start_block = true;
+            //     cur_data = data;
+            // }
+            // block_count++;
+        }
+
+        if (is_directly) {
 
             if (start_block) {
                 block_bin_len = block_count * 2; // hi, lo
@@ -1623,7 +1699,8 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
                 total++; // Calc "+-"
             }
 
-        } else if (ucode > 127) {
+        } else {
+
             if (!start_block) {
 
                 // Start UTF7 block
@@ -1631,7 +1708,9 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
                 cur_data = data;
             }
             block_count++;
+
         }
+
 
         /////////////////////////////////////////////////////////////
 
