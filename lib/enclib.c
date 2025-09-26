@@ -1377,43 +1377,8 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
                 is_directly = true;
             }
 
-            // if (start_block) {
-            //     block_bin_len = block_count * 2; // hi, lo
-            //     if (block_bin_len > bin_len) {
-            //         bin_len = block_bin_len;
-            //     }
-
-            //     total++;     // +
-            //     block_b64_len = to_base64_size(block_bin_len);
-
-            //     // Calc UTF7 block
-            //     total +=  block_b64_len;
-
-            //     if (i + from_seq_len < from_len) {
-            //         total++; // -
-            //     }
-
-            //     // End UF7 block
-            //     start_block = false;
-            //     block_count = 0;
-            // }
-
-            // total++;     // Calc ASCII
-            // if (ucode == '+') {
-            //     total++; // Calc "+-"
-            // }
-
         } else if (ucode > 127) {
-
             is_directly = false;
-
-            // if (!start_block) {
-
-            //     // Start UTF7 block
-            //     start_block = true;
-            //     start_index = i;
-            // }
-            // block_count++;
         }
 
         if (is_directly) {
@@ -1565,27 +1530,6 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
             return -1;
         }
 
-        // Convert Unicode codepoint to multi byte char
-        // to_seq_len = lib_utf_to_char(to_id, buf, ucode);
-        // if (to_seq_len <= 0) {
-        //     // error
-        //     #ifdef ERROR
-        //     fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len_v2=%lu\n", to_seq_len);
-        //     #endif
-        //     free(new_data);
-        //     free(bin_data);
-        //     return -1;
-        // }
-
-        // #ifdef DEBUG_LL
-        // fprintf(stderr, "DEBUG: >> 2: to_seq_len=%lu\n", to_seq_len);
-        // #endif
-
-        // Copy data from buffer to output
-        // for (int k = 0; k < to_seq_len; k++) {
-        //     new_data[j + k] = buf[k];
-        // }
-
         /////////////////////////////////////////////////////////////
 
         is_directly = false;
@@ -1603,58 +1547,10 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
                 is_directly = true;
             }
 
-
-            // if (start_block) {
-            //     block_bin_len = block_count * 2; // hi, lo
-            //     block_b64_len = to_base64_size(block_bin_len);
-
-            //     // output to bin_data (hi, lo)
-            //     to_utf7_block(from_id, cur_data, bin_data, block_bin_len, block_count);
-
-            //     *out_data = '+';
-            //     out_data++;
-            //     total++;     // +
-
-            //     // flush UTF7 block
-            //     base64_encode(bin_data, block_bin_len, out_data, block_b64_len);
-            //     out_data += block_b64_len;
-
-            //     // Calc UTF7 block
-            //     total += block_b64_len;
-
-            //     if (i + from_seq_len < from_len) {
-            //         *out_data = '-';
-            //         out_data++;
-            //         total++; // -
-            //     }
-
-            //     // End UF7 block
-            //     start_block = false;
-            //     block_count = 0;
-            // }
-
-            // *out_data = (char) ucode;
-            // out_data++;
-            // total++;     // Calc ASCII
-
-            // if (ucode == '+') {
-
-            //     *out_data = '-';
-            //     out_data++;
-            //     total++; // Calc "+-"
-            // }
-
         } else if (ucode > 127) {
 
             is_directly = false;
 
-            // if (!start_block) {
-
-            //     // Start UTF7 block
-            //     start_block = true;
-            //     cur_data = data;
-            // }
-            // block_count++;
         }
 
         if (is_directly) {
@@ -1710,7 +1606,6 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
             block_count++;
 
         }
-
 
         /////////////////////////////////////////////////////////////
 
