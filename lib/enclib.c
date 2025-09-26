@@ -1666,6 +1666,189 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     return 0;
 }
 
+/**
+ * Converts data from UTF-7
+ */
+int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** to_data, size_t* to_len) {
+
+    int from_id = LIB_ENC_UTF7_ID;
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_from_utf7: from_id=%d, to_id=%d, len=%lu\n", from_id, to_id, from_len);
+    #endif
+
+    
+    if (to_data) {
+        *to_data = NULL;
+    }
+    if (to_len) {
+        *to_len = 0;
+    }
+
+    if (!from_data || !to_data || !to_len) {
+        return -1;
+    }
+    if (from_len == 0) {
+        return 0;
+    }
+
+    int icode;
+    int ucode;
+
+    char* new_data      = NULL;
+    size_t new_len      = 0;
+    size_t from_seq_len = 0;
+    size_t to_seq_len   = 0;
+    size_t total        = 0;
+
+    size_t from_bom_len = lib_enc_bom_len(from_id);
+    size_t to_bom_len   = lib_enc_bom_len(to_id);
+
+
+    char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
+
+    char* data     = from_data;
+    int i          = from_bom_len;
+    int j          = 0;
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_from_utf7: starting...\n");
+    #endif
+
+    #ifdef DEBUG
+    fprintf(stderr, "DEBUG: from_bom_len=%lu, to_bom_len=%lu\n", from_bom_len, to_bom_len);
+    #endif
+
+    bool start_block     = false; // Start UTF7 block flag
+    //size_t start_index   = 0;     // Start index in UTF7 block
+    size_t block_count   = 0;     // Count of Unicode points in UTF7 block
+    size_t block_bin_len = 0;     // Size of binary block of Unicode point pairs (hi/lo): block_count * 2
+    size_t block_b64_len = 0;     // Size of base64 block
+    size_t bin_len       = 0;     // Max size of binary block
+    char* bin_data       = NULL;  // Binary block data
+    char* out_data       = NULL;
+    char* cur_data       = NULL;
+    bool use_set_o       = true;
+    bool is_directly     = false;
+
+    from_seq_len = 0;
+
+    while (i < from_len) {
+
+        icode = _to_code(*data);
+
+        // TODO: STUB
+        from_seq_len = 1;
+        to_seq_len   = 1;
+        if (start_block) {
+            // TODO
+            block_count++;
+            //from_seq_len = 1;
+        } else {
+            if (icode == '+') {
+                if (i + 1 < from_len && _to_code(data[i + 1]) == '-') {
+                    from_seq_len = 2;
+                    i++;
+                    total++;
+                } else {
+                    start_block = true;
+                }
+            } else {
+                total++;
+            }            
+        }
+
+        data += from_seq_len;
+        i += from_seq_len;
+        total += to_seq_len;
+
+    }
+
+    // if (i != from_len) {
+    //     // error
+    //     #ifdef ERROR
+    //     fprintf(stderr, "ERROR: i != from_len\n");
+    //     #endif
+    //     return -1;
+    // }
+
+    new_len = total;
+    if (new_len == 0) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: new_len == 0\n");
+        #endif
+        return -1;
+    }
+
+    new_data = _data_new(new_len + to_bom_len);
+    if (!new_data) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: Cannot allocate memory\n");
+        #endif
+        return -1;
+    }
+
+    lib_enc_set_bom(to_id, new_data);
+
+    data         = from_data;
+    i            = from_bom_len;
+    j            = to_bom_len;
+    from_seq_len = 0;
+    to_seq_len   = 0;
+    total        = 0;
+        
+    while (i < from_len) {
+
+        icode = _to_code(*data);
+
+        // TODO: STUB
+        from_seq_len = 1;
+        to_seq_len   = 1;
+        if (start_block) {
+            // TODO
+            block_count++;
+            //from_seq_len = 1;
+        } else {
+            if (icode == '+') {
+                if (i + 1 < from_len && _to_code(data[i + 1]) == '-') {
+                    from_seq_len = 2;
+                    i++;
+                    total++;
+                } else {
+                    start_block = true;
+                }
+            } else {
+                total++;
+            }            
+        }
+
+        data += from_seq_len;
+        i += from_seq_len;
+        total += to_seq_len;
+
+    }
+
+    if (new_len != total) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: Incorrect len: new_len=%lu, total=%lu\n", new_len, total);
+        #endif
+        free(new_data);
+        return -1;
+    }
+
+    *to_data = new_data;
+    *to_len  = new_len + to_bom_len;
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_from_utf7: SUCCESS\n");
+    #endif
+
+    return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 static size_t _enc_char_seq_len(bool is_utf, int id, const char* str) {
