@@ -298,11 +298,15 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     ////////////////////////////////////////////////////////////////////////////////
 
     // TODO: STUB
-    if (from_id == LIB_ENC_UTF7_ID /*&& lib_enc_supports_utf_conv(to_id)*/) {
-        #ifdef ERROR
-        fprintf(stderr, "Conversion from %d unsupported\n", from_id);
-        #endif
-        return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
+    if (from_id == LIB_ENC_UTF7_ID) {
+        if (lib_enc_supports_utf_conv(to_id)) {
+            return lib_enc_conv_from_utf7(to_id, from_data, from_len, to_data, to_len);
+        } else {
+            #ifdef ERROR
+            fprintf(stderr, "Conversion from/to unsupported: %d, %d\n", from_id, to_id);
+            #endif
+            return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
+        }
     }
 
     if (to_id == LIB_ENC_UTF7_ID) {
@@ -310,10 +314,10 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
             return lib_enc_conv_to_utf7(from_id, from_data, from_len, to_data, to_len);
         } else {
             #ifdef ERROR
-            fprintf(stderr, "Conversion from/to map unsupported: %d, %d\n", from_id, to_id);
+            fprintf(stderr, "Conversion from/to unsupported: %d, %d\n", from_id, to_id);
             #endif
             return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
-        }            
+        }
     }
 
     lib_enc_context_t ctx;
@@ -993,6 +997,10 @@ size_t to_b64_len(size_t len) {
     return (len * 4 + 2) / 3;
 }
 
+size_t to_u16_len(size_t len) {
+    return (len * 3) / 4;
+}
+
 // flush utf7 block  to prepared (non utf7) byte array (bdata)
 // count is unicode point count (!)
 // bdata is shared for all data buffer by max count * 2 (hi/lo)
@@ -1301,7 +1309,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
     char* data     = from_data;
     int i          = from_bom_len;
-    int j          = 0;
+    //int j          = 0;
 
     #ifdef DEBUG
     fprintf(stderr, ">> conv_to_utf7: starting...\n");
@@ -1312,7 +1320,6 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     #endif
 
     bool start_block     = false; // Start UTF7 block flag
-    //size_t start_index   = 0;     // Start index in UTF7 block
     size_t block_count   = 0;     // Count of Unicode points in UTF7 block
     size_t block_u16_len = 0;     // Size of binary block of Unicode point pairs (hi/lo): block_count * 2
     size_t block_b64_len = 0;     // Size of base64 block
@@ -1401,7 +1408,6 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
                 // Start UTF7 block
                 start_block = true;
-                //start_index = i;
             }
             block_count++;
         }
@@ -1410,7 +1416,6 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
         data += from_seq_len;
         i += from_seq_len;
-        //total += to_seq_len;
     }
 
     if (i != from_len) {
@@ -1483,11 +1488,11 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
     data         = from_data;
     i            = from_bom_len;
-    j            = to_bom_len;
     from_seq_len = 0;
-    //to_seq_len   = 0;
     total        = 0;
-    out_data     = new_data;
+    out_data     = new_data + to_bom_len;
+    start_block  = false;
+    block_count  = 0;
         
     while (i < from_len) {
 
@@ -1542,7 +1547,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         if (is_directly) {
 
             if (start_block) {
-                block_u16_len = block_count * 2; // hi, lo
+                block_u16_len = block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
                 block_b64_len = to_b64_len(block_u16_len);
 
                 // output to u16_data (hi, lo)
@@ -1598,13 +1603,10 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         data += from_seq_len;
         i += from_seq_len;
 
-        // j += to_seq_len;
-        // total += to_seq_len;
-
     }
 
     if (start_block) {
-        block_u16_len = block_count * 2; // hi, lo
+        block_u16_len = block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
         block_b64_len = to_b64_len(block_u16_len);
 
         // output to u16_data (hi, lo)
@@ -1684,7 +1686,6 @@ int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** t
     char* new_data      = NULL;
     size_t new_len      = 0;
     size_t from_seq_len = 0;
-    size_t to_seq_len   = 0;
     size_t total        = 0;
 
     size_t from_bom_len = lib_enc_bom_len(from_id);
@@ -1706,57 +1707,90 @@ int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** t
     #endif
 
     bool start_block     = false; // Start UTF7 block flag
-    //size_t start_index   = 0;     // Start index in UTF7 block
     size_t block_count   = 0;     // Count of Unicode points in UTF7 block
-    size_t block_bin_len = 0;     // Size of binary block of Unicode point pairs (hi/lo): block_count * 2
+    size_t block_u16_len = 0;     // Size of binary block of Unicode point pairs (hi/lo): block_count * 2
     size_t block_b64_len = 0;     // Size of base64 block
-    size_t bin_len       = 0;     // Max size of binary block
-    char* bin_data       = NULL;  // Binary block data
+    size_t u16_len       = 0;     // Max size of binary block
+    char* u16_data       = NULL;  // Binary block data
     char* out_data       = NULL;
     char* cur_data       = NULL;
     bool use_set_o       = true;
     bool is_directly     = false;
 
-    from_seq_len = 0;
-
     while (i < from_len) {
 
         icode = _to_code(*data);
 
-        // TODO: STUB
-        from_seq_len = 1;
-        to_seq_len   = 1;
+        from_seq_len = 1; // by default
         if (start_block) {
-            // TODO
-            block_count++;
-            //from_seq_len = 1;
+
+            // Check end block
+            if (icode == '-') {
+                block_b64_len = block_count;
+                block_u16_len = to_u16_len(block_b64_len);
+                if (block_u16_len > u16_len) {
+                    u16_len = block_u16_len;
+                }
+                total += (block_u16_len / 2); // Temp solution for UTF7 x2 only
+
+                #ifdef DEBUG
+                fprintf(stderr, "DEBUG: S-1.1: total=%lu\n", total);
+                #endif
+
+                start_block = false;
+                block_count = 0;
+            } else {
+                block_count++;
+            }            
+
         } else {
+
+            // Check start block
             if (icode == '+') {
                 if (i + 1 < from_len && _to_code(data[i + 1]) == '-') {
                     from_seq_len = 2;
-                    i++;
-                    total++;
+                    total++; // '-'
                 } else {
                     start_block = true;
+                    block_count = 0;
                 }
-            } else {
-                total++;
-            }            
+            }
+
+            total++;
+            #ifdef DEBUG
+            fprintf(stderr, "DEBUG: S-1.2: total=%lu\n", total);
+            #endif
+
         }
 
         data += from_seq_len;
         i += from_seq_len;
-        total += to_seq_len;
 
     }
 
-    // if (i != from_len) {
-    //     // error
-    //     #ifdef ERROR
-    //     fprintf(stderr, "ERROR: i != from_len\n");
-    //     #endif
-    //     return -1;
-    // }
+    if (start_block) {
+                block_b64_len = block_count;
+                block_u16_len = to_u16_len(block_b64_len);
+                if (block_u16_len > u16_len) {
+                    u16_len = block_u16_len;
+                }
+                total += (block_u16_len / 2); // Temp solution for UTF7 x2 only
+
+                #ifdef DEBUG
+                fprintf(stderr, "DEBUG: S-1.3: total=%lu\n", total);
+                #endif
+
+                start_block = false;
+                block_count = 0;
+    }
+
+    if (i != from_len) {
+        // error
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: i != from_len\n");
+        #endif
+        return -1;
+    }
 
     new_len = total;
     if (new_len == 0) {
@@ -1782,39 +1816,81 @@ int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** t
     i            = from_bom_len;
     j            = to_bom_len;
     from_seq_len = 0;
-    to_seq_len   = 0;
     total        = 0;
+    start_block  = false;
+    block_count  = 0;
         
     while (i < from_len) {
 
         icode = _to_code(*data);
+        #ifdef DEBUG_LL
+        fprintf(stderr, "DEBUG: icode=%d\n", icode);
+        #endif
 
-        // TODO: STUB
-        from_seq_len = 1;
-        to_seq_len   = 1;
+
+        from_seq_len = 1; // by default
         if (start_block) {
-            // TODO
-            block_count++;
-            //from_seq_len = 1;
+
+            // Check end block
+            if (icode == '-') {
+                block_b64_len = block_count;
+                block_u16_len = to_u16_len(block_b64_len);
+                if (block_u16_len > u16_len) {
+                    u16_len = block_u16_len;
+                }
+                total += (block_u16_len / 2); // Temp solution for UTF7 x2 only
+
+                #ifdef DEBUG
+                fprintf(stderr, "DEBUG: S-2.1: total=%lu\n", total);
+                #endif
+
+                start_block = false;
+                block_count = 0;
+            } else {
+                block_count++;
+            }            
+
         } else {
+
+            // Check start block
             if (icode == '+') {
                 if (i + 1 < from_len && _to_code(data[i + 1]) == '-') {
                     from_seq_len = 2;
-                    i++;
-                    total++;
+                    total++; // '-'
                 } else {
                     start_block = true;
+                    block_count = 0;
                 }
-            } else {
-                total++;
-            }            
+            }
+
+            total++;
+            #ifdef DEBUG
+            fprintf(stderr, "DEBUG: S-2.2: total=%lu\n", total);
+            #endif
+
         }
 
         data += from_seq_len;
         i += from_seq_len;
-        total += to_seq_len;
 
     }
+
+    if (start_block) {
+                block_b64_len = block_count;
+                block_u16_len = to_u16_len(block_b64_len);
+                if (block_u16_len > u16_len) {
+                    u16_len = block_u16_len;
+                }
+                total += (block_u16_len / 2); // Temp solution for UTF7 x2 only
+
+                #ifdef DEBUG
+                fprintf(stderr, "DEBUG: S-1.3: total=%lu\n", total);
+                #endif
+
+                start_block = false;
+                block_count = 0;
+    }
+
 
     if (new_len != total) {
         // error

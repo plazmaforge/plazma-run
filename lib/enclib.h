@@ -103,6 +103,11 @@ int lib_enc_conv_utf2utf(int from_id, int to_id, char* from_data, size_t from_le
  */
 int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** to_data, size_t* to_len);
 
+/**
+ * Converts data from UTF-7
+ */
+int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** to_data, size_t* to_len);
+
 int lib_enc_test();
 
 #endif // PLAZMA_LIB_ENCLIB_H
