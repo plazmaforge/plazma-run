@@ -988,16 +988,16 @@ int lib_enc_conv_utf2utf(int from_id, int to_id, char* from_data, size_t from_le
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Calculate size of output base64 array by input size
-size_t to_base64_size(size_t size) {
-    return (size * 4 + 2) / 3;
+// Calculate lenght of output base64 array by input lenght
+size_t to_b64_len(size_t len) {
+    return (len * 4 + 2) / 3;
 }
 
-// flush utf7 block  to prepared (non utf7) byte array (dtata)
+// flush utf7 block  to prepared (non utf7) byte array (bdata)
 // count is unicode point count (!)
 // bdata is shared for all data buffer by max count * 2 (hi/lo)
 
-int to_utf7_block(int from_id, char* idata, char* bdata, size_t bsize, size_t count) {
+int to_u16_block(int from_id, char* idata, char* bdata, size_t bsize, size_t count) {
 
     int ucode  = 0;
     uint8_t hi = 0;
@@ -1007,12 +1007,8 @@ int to_utf7_block(int from_id, char* idata, char* bdata, size_t bsize, size_t co
 
     size_t from_seq_len = 0;
 
-    // char* data = idata + start; // why i can shift idata before call
     char* data = idata;
     while (i < count) {
-
-        //ucode = data[i]; // stub
-        // seq_len = ...
 
         // Calculate input sequence lenght of UTF-[ID] char
         from_seq_len = lib_utf_char_seq_len(from_id, data);
@@ -1021,8 +1017,6 @@ int to_utf7_block(int from_id, char* idata, char* bdata, size_t bsize, size_t co
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
             #endif
-            //free(new_data);
-            //free(bin_data);
             return -1;
         }
 
@@ -1034,8 +1028,6 @@ int to_utf7_block(int from_id, char* idata, char* bdata, size_t bsize, size_t co
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
             #endif
-            //free(new_data);
-            //free(bin_data);
             return -1;
         }
 
@@ -1043,7 +1035,7 @@ int to_utf7_block(int from_id, char* idata, char* bdata, size_t bsize, size_t co
         hi = ucode >> 8;
         lo = ucode & 0xFF;
 
-        //#ifdef ERROR
+        //#ifdef DEBUG
         //fprintf(stderr, "DEBUG: >> ucode=%d, hi=%d, lo=%d\n", ucode, hi, lo);
         //#endif
 
@@ -1059,12 +1051,6 @@ int to_utf7_block(int from_id, char* idata, char* bdata, size_t bsize, size_t co
     }
     return 0;
 }
-
-// TODO: stub
-
-//static const int map1[] = {};
-
-//static const int map2[] = {};
 
 // uint8_t to_base64
 static const int map1[64] = {
@@ -1326,12 +1312,12 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     #endif
 
     bool start_block     = false; // Start UTF7 block flag
-    size_t start_index   = 0;     // Start index in UTF7 block
+    //size_t start_index   = 0;     // Start index in UTF7 block
     size_t block_count   = 0;     // Count of Unicode points in UTF7 block
-    size_t block_bin_len = 0;     // Size of binary block of Unicode point pairs (hi/lo): block_count * 2
+    size_t block_u16_len = 0;     // Size of binary block of Unicode point pairs (hi/lo): block_count * 2
     size_t block_b64_len = 0;     // Size of base64 block
-    size_t bin_len       = 0;     // Max size of binary block
-    char* bin_data       = NULL;  // Binary block data
+    size_t u16_len       = 0;     // Max size of binary block
+    char* u16_data       = NULL;  // Binary block data
     char* out_data       = NULL;
     char* cur_data       = NULL;
     bool use_set_o       = true;
@@ -1384,13 +1370,13 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         if (is_directly) {
 
             if (start_block) {
-                block_bin_len = block_count * 2; // hi, lo
-                if (block_bin_len > bin_len) {
-                    bin_len = block_bin_len;
+                block_u16_len = block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
+                if (block_u16_len > u16_len) {
+                    u16_len = block_u16_len;
                 }
 
                 total++;     // +
-                block_b64_len = to_base64_size(block_bin_len);
+                block_b64_len = to_b64_len(block_u16_len);
 
                 // Calc UTF7 block
                 total +=  block_b64_len;
@@ -1415,7 +1401,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
                 // Start UTF7 block
                 start_block = true;
-                start_index = i;
+                //start_index = i;
             }
             block_count++;
         }
@@ -1437,13 +1423,13 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
     // Last block
     if (start_block) {
-        block_bin_len = block_count * 2; // hi, lo
-        if (block_bin_len > bin_len) {
-            bin_len = block_bin_len;
+        block_u16_len = block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
+        if (block_u16_len > u16_len) {
+            u16_len = block_u16_len;
         }
 
         total++;     // '+'
-        block_b64_len = to_base64_size(block_bin_len);
+        block_b64_len = to_b64_len(block_u16_len);
 
         // Calc UTF7 block
         total +=  block_b64_len;
@@ -1466,10 +1452,10 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         return -1;
     }
 
-    if (bin_len == 0) {
+    if (u16_len == 0) {
         // error
         #ifdef ERROR
-        fprintf(stderr, "ERROR: bin_len == 0\n");
+        fprintf(stderr, "ERROR: u16_len == 0\n");
         #endif
         return -1;
     }
@@ -1483,8 +1469,8 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         return -1;
     }
 
-    bin_data = _data_new(bin_len);
-    if (!bin_data) {
+    u16_data = _data_new(u16_len);
+    if (!u16_data) {
         // error
         #ifdef ERROR
         fprintf(stderr, "ERROR: Cannot allocate memory\n");
@@ -1513,7 +1499,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
             fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
             #endif
             free(new_data);
-            free(bin_data);
+            free(u16_data);
             return -1;
         }
 
@@ -1526,7 +1512,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
             fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
             #endif
             free(new_data);
-            free(bin_data);
+            free(u16_data);
             return -1;
         }
 
@@ -1556,18 +1542,18 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         if (is_directly) {
 
             if (start_block) {
-                block_bin_len = block_count * 2; // hi, lo
-                block_b64_len = to_base64_size(block_bin_len);
+                block_u16_len = block_count * 2; // hi, lo
+                block_b64_len = to_b64_len(block_u16_len);
 
-                // output to bin_data (hi, lo)
-                to_utf7_block(from_id, cur_data, bin_data, block_bin_len, block_count);
+                // output to u16_data (hi, lo)
+                to_u16_block(from_id, cur_data, u16_data, block_u16_len, block_count);
 
                 *out_data = '+';
                 out_data++;
                 total++;     // +
 
                 // flush UTF7 block
-                base64_encode(bin_data, block_bin_len, out_data, block_b64_len);
+                base64_encode(u16_data, block_u16_len, out_data, block_b64_len);
                 out_data += block_b64_len;
 
                 // Calc UTF7 block
@@ -1618,18 +1604,18 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     }
 
     if (start_block) {
-        block_bin_len = block_count * 2; // hi, lo
-        block_b64_len = to_base64_size(block_bin_len);
+        block_u16_len = block_count * 2; // hi, lo
+        block_b64_len = to_b64_len(block_u16_len);
 
-        // output to bin_data (hi, lo)
-        to_utf7_block(from_id, cur_data, bin_data, block_bin_len, block_count);
+        // output to u16_data (hi, lo)
+        to_u16_block(from_id, cur_data, u16_data, block_u16_len, block_count);
 
         *out_data = '+';
         out_data++;
         total++;     // +
 
         // flush UTF7 block
-        base64_encode(bin_data, block_bin_len, out_data, block_b64_len);
+        base64_encode(u16_data, block_u16_len, out_data, block_b64_len);
         out_data += block_b64_len;
 
         // Calc UTF7 block
@@ -1652,7 +1638,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         fprintf(stderr, "ERROR: Incorrect len: new_len=%lu, total=%lu\n", new_len, total);
         #endif
         free(new_data);
-        free(bin_data);
+        free(u16_data);
         return -1;
     }
 
