@@ -75,7 +75,11 @@ static int _enc_to_code(lib_enc_context_t* ctx, int id, const char* str, int* cp
 
 static int _enc_to_char(lib_enc_context_t* ctx, int id, char* buf, int cp);
 
+static int _enc_check_ctx(lib_enc_context_t* ctx);
+
 static int _enc_conv_ctx(lib_enc_context_t* ctx);
+
+int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -314,16 +318,16 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
         }
     }
 
-    if (to_id == LIB_ENC_UTF7_ID) {
-        if (lib_enc_supports_utf_conv(from_id)) {
-            return lib_enc_conv_to_utf7(from_id, from_data, from_len, to_data, to_len);
-        } else {
-            #ifdef ERROR
-            fprintf(stderr, "Conversion from/to unsupported: %d, %d\n", from_id, to_id);
-            #endif
-            return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
-        }
-    }
+    // if (to_id == LIB_ENC_UTF7_ID) {
+    //     if (lib_enc_supports_utf_conv(from_id)) {
+    //         return lib_enc_conv_to_utf7(from_id, from_data, from_len, to_data, to_len);
+    //     } else {
+    //         #ifdef ERROR
+    //         fprintf(stderr, "Conversion from/to unsupported: %d, %d\n", from_id, to_id);
+    //         #endif
+    //         return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
+    //     }
+    // }
 
     lib_enc_context_t ctx;
     _init_ctx(&ctx);
@@ -335,7 +339,7 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     ctx.to_id   = to_id;
     ctx.to_data = to_data;
     ctx.to_len = to_len;
-    
+
     if (has_from) {
         lib_unimap_t from_map;
         lib_unimap_get_unimap_by_id(&from_map, from_id);
@@ -352,6 +356,17 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
         ctx.to_is_utf = false;
     } else {
         ctx.to_is_utf = true;
+    }
+
+    if (to_id == LIB_ENC_UTF7_ID) {
+        if (lib_enc_supports_utf_conv(from_id)) {
+            return _enc_conv_to_utf7_ctx(&ctx);
+        } else {
+            #ifdef ERROR
+            fprintf(stderr, "Conversion from/to unsupported: %d, %d\n", from_id, to_id);
+            #endif
+            return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
+        }
     }
 
     return _enc_conv_ctx(&ctx);
@@ -1326,13 +1341,48 @@ bool IN_SET_B(int c) {
 /**
  * Converts data to UTF-7
  */
-int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** to_data, size_t* to_len) {
+//int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** to_data, size_t* to_len) {
+int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_to_utf7_ctx\n");
+    #endif
+
+    if (ctx->to_data) {
+        *(ctx->to_data) = NULL;
+    }
+    if (ctx->to_len) {
+        *(ctx->to_len) = 0;
+    }
+
+    int err = _enc_check_ctx(ctx);
+    if (err != 0) {
+        return err;
+    }
+
+    if (ctx->from_len == 0) {
+        #ifdef DEBUG
+        fprintf(stderr, "DEBUG: 'from_len is 0: No conversation\n");
+        #endif
+        return 0;
+    }
+
+    int from_id      = ctx->from_id;
+    char* from_data  = ctx->from_data;
+    size_t from_len  = ctx->from_len;
+    bool from_is_utf = ctx->from_is_utf;
+
+    int to_id        = ctx->to_id;
+    char** to_data   = ctx->to_data;
+    size_t* to_len   = ctx->to_len;
+    bool to_is_utf   = ctx->to_is_utf;
 
     #ifdef DEBUG
     fprintf(stderr, ">> conv_to_utf7: from_id=%d, len=%lu\n", from_id, from_len);
     #endif
 
-    int to_id = LIB_ENC_UTF7_ID;
+
+    //int to_id = LIB_ENC_UTF7_ID;
 
     if (to_data) {
         *to_data = NULL;
@@ -2096,23 +2146,14 @@ static int _enc_to_char(lib_enc_context_t* ctx, int id, char* buf, int cp) {
     return lib_utf_to_char(id, buf, cp);
 }
 
-/**
- * Converts data from [EncodingID] to [EncodingID]
- */
-static int _enc_conv_ctx(lib_enc_context_t* ctx) {
-
-    #ifdef DEBUG
-    fprintf(stderr, ">> conv_ctx\n");
-    #endif
-
-    if (ctx->to_data) {
-        *(ctx->to_data) = NULL;
-    }
-    if (ctx->to_len) {
-        *(ctx->to_len) = 0;
+static int _enc_check_ctx(lib_enc_context_t* ctx) {
+    if (!ctx) {
+        #ifdef ERROR
+        fprintf(stderr, "ERROR: 'context' is empty\n");
+        #endif
+        return -1;
     }
     int err = 0;
-
     if (!ctx->from_data) {
         #ifdef ERROR
         fprintf(stderr, "ERROR: 'from_data' is empty\n");
@@ -2131,7 +2172,26 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         #endif
         err = -1;
     }
+    return err;
+}
 
+/**
+ * Converts data from [EncodingID] to [EncodingID]
+ */
+static int _enc_conv_ctx(lib_enc_context_t* ctx) {
+
+    #ifdef DEBUG
+    fprintf(stderr, ">> conv_ctx\n");
+    #endif
+
+    if (ctx->to_data) {
+        *(ctx->to_data) = NULL;
+    }
+    if (ctx->to_len) {
+        *(ctx->to_len) = 0;
+    }
+
+    int err = _enc_check_ctx(ctx);
     if (err != 0) {
         return err;
     }
