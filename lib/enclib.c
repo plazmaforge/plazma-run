@@ -1370,7 +1370,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
     fprintf(stderr, ">> conv_to_utf7: starting...\n");
     #endif
 
-    #ifdef ERROR
+    #ifdef DEBUGs
     fprintf(stderr, "DEBUG: from_bom_len=%lu, to_bom_len=%lu\n", from_bom_len, to_bom_len);
     #endif
 
@@ -1449,7 +1449,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
                 // End UF7 block
                 start_block = false;
-                block_count = 0;
+                //block_count = 0;
             }
 
             total++;     // Calc ASCII
@@ -1463,6 +1463,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
                 // Start UTF7 block
                 start_block = true;
+                block_count = 0;
             }
             block_count++;
         }
@@ -1628,7 +1629,8 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
                 // End UF7 block
                 start_block = false;
-                block_count = 0;
+                cur_data    = NULL;
+                //block_count = 0;
             }
 
             *out_data = (char) ucode;
@@ -1648,6 +1650,7 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
                 // Start UTF7 block
                 start_block = true;
+                block_count = 0;
                 cur_data = data;
             }
             block_count++;
@@ -1688,7 +1691,8 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
 
         // End UF7 block
         start_block = false;
-        block_count = 0;
+        cur_data    = NULL;
+        //block_count = 0;
     }
 
     if (new_len != total) {
@@ -1700,6 +1704,8 @@ int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** t
         free(u16_data);
         return -1;
     }
+
+    free(u16_data);
 
     *to_data = new_data;
     *to_len  = new_len + to_bom_len;
@@ -1802,7 +1808,7 @@ int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** t
                 #endif
 
                 start_block = false;
-                block_count = 0;
+                //block_count = 0;
             } else {
                 block_count++;
                 // skip total for char - processing in end block
@@ -1852,7 +1858,7 @@ int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** t
         #endif
 
         start_block = false;
-        block_count = 0;
+        //block_count = 0;
     }
 
     if (i != from_len) {
@@ -1940,7 +1946,7 @@ int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** t
                 #endif
 
                 start_block = false;
-                block_count = 0;
+                //block_count = 0;
                 cur_data    = NULL;
             } else {
                 block_count++;
@@ -2008,7 +2014,7 @@ int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** t
         #endif
 
         start_block = false;
-        block_count = 0;
+        //block_count = 0;
     }
 
     if (new_len != total) {
@@ -2020,6 +2026,8 @@ int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** t
         free(u16_data);
         return -1;
     }
+
+    free(u16_data);
 
     *to_data = new_data;
     *to_len  = new_len + to_bom_len;
