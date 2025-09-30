@@ -49,61 +49,6 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     char** to_data, size_t* to_len);
 
 /**
- * Converts data to UTF-8 by Encoding ID
- */
-int lib_enc_conv_to_utf8_by_id(int conv_id, char* from_data, size_t from_len, 
-    char** to_data, size_t* to_len);
-
-int lib_enc_conv_from_utf8_by_id(int conv_id, char* from_data, size_t from_len, 
-    char** to_data, size_t* to_len);
-
-/**
- * Converts data to UTF-8 by Encoding Map
- */
-int lib_enc_conv_to_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data, size_t from_len, 
-    char** to_data, size_t* to_len);
-
-/**
- * Converts data from UTF-8 by Encoding Map
- */
-int lib_enc_conv_from_utf8_by_map(struct lib_unimap_t* conv_map, char* from_data, size_t from_len, 
-    char** to_data, size_t* to_len);
-
-//// UTF
-
-int lib_enc_conv_to_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char* from_data, size_t from_len, 
-    char** to_data, size_t* to_len);
-
-
-/**
- * Converts data from UTF-[ID] by Encoding Map
- */
-int lib_enc_conv_from_utf_by_map(int utf_id, struct lib_unimap_t* conv_map, char* from_data, size_t from_len, 
-    char** to_data, size_t* to_len);
-
-/**
- * Converts data to UTF-[ID] by Encoding ID
- */
-int lib_enc_conv_to_utf_by_id(int utf_id, int conv_id, char* from_data, size_t from_len, 
-    char** to_data, size_t* to_len);
-
-/**
- * Converts data from UTF-[ID] by Encoding ID
- */
-int lib_enc_conv_from_utf_by_id(int utf_id, int conv_id, char* from_data, size_t from_len, 
-    char** to_data, size_t* to_len);
-
-/**
- * Converts data from UTF-[ID] to UTF-[ID]
- */
-int lib_enc_conv_utf2utf(int from_id, int to_id, char* from_data, size_t from_len, char** to_data, size_t* to_len);
-
-/**
- * Converts data to UTF-7
- */
-int lib_enc_conv_to_utf7(int from_id, char* from_data, size_t from_len, char** to_data, size_t* to_len);
-
-/**
  * Converts data from UTF-7
  */
 int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** to_data, size_t* to_len);
