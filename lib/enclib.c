@@ -383,8 +383,9 @@ size_t to_u16_len(size_t len) {
 // count is unicode point count (!)
 // bdata is shared for all data buffer by max count * 2 (hi/lo)
 
-int to_u16_block(int from_id, char* idata, char* bdata, size_t bsize, size_t count) {
+static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_t bsize, size_t count) {
 
+    int from_id = ctx->from_id;
     int ucode  = 0;
     uint8_t hi = 0;
     uint8_t lo = 0;
@@ -439,8 +440,9 @@ int to_u16_block(int from_id, char* idata, char* bdata, size_t bsize, size_t cou
     return 0;
 }
 
-int to_char_block(int to_id, char* idata, char* odata, size_t osize, size_t count) {
+static int _to_char_block(lib_enc_context_t* ctx, char* idata, char* odata, size_t osize, size_t count) {
 
+    int to_id = ctx->to_id;
     int ucode  = 0;
     uint16_t icode = 0;
     uint8_t hi = 0;
@@ -465,9 +467,6 @@ int to_char_block(int to_id, char* idata, char* odata, size_t osize, size_t coun
         // next (hi, lo) for x2 only
         data++;
         i++;
-
-        // TODO: STUB
-        //ucode = 65;
 
         icode = (icode << 8) | hi;
         icode = (icode << 8) | lo;
@@ -993,7 +992,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
                 block_b64_len = to_b64_len(block_u16_len);
 
                 // output to u16_data (hi, lo)
-                to_u16_block(from_id, cur_data, u16_data, block_u16_len, block_count);
+                _to_u16_block(ctx, cur_data, u16_data, block_u16_len, block_count);
 
                 *out_data = '+';
                 out_data++;
@@ -1054,7 +1053,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
         block_b64_len = to_b64_len(block_u16_len);
 
         // output to u16_data (hi, lo)
-        to_u16_block(from_id, cur_data, u16_data, block_u16_len, block_count);
+        _to_u16_block(ctx, cur_data, u16_data, block_u16_len, block_count);
 
         *out_data = '+';
         out_data++;
@@ -1332,7 +1331,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
                 base64_decode(cur_data, block_b64_len, u16_data, block_u16_len);
 
                 // output u16_data (hi, lo) to char data
-                to_char_block(to_id, u16_data, out_data, block_out_len, block_u16_len);
+                _to_char_block(ctx, u16_data, out_data, block_out_len, block_u16_len);
 
                 out_data += block_out_len;
                 total += block_out_len; // Temp solution for UTF7 x2 only
@@ -1401,7 +1400,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
         base64_decode(cur_data, block_b64_len, u16_data, block_u16_len);
 
         // output u16_data (hi, lo) to char data
-        to_char_block(to_id, u16_data, out_data, block_out_len, block_u16_len);
+        _to_char_block(ctx, u16_data, out_data, block_out_len, block_u16_len);
 
         out_data += block_out_len;
         total += block_out_len; // Temp solution for UTF7 x2 only
