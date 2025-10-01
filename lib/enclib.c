@@ -738,30 +738,12 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     fprintf(stderr, ">> conv_to_utf7: from_id=%d, len=%lu\n", from_id, from_len);
     #endif
 
-
-    //int to_id = LIB_ENC_UTF7_ID;
-
-    // if (to_data) {
-    //     *to_data = NULL;
-    // }
-    // if (to_len) {
-    //     *to_len = 0;
-    // }
-
-    // if (!from_data || !to_data || !to_len) {
-    //     return -1;
-    // }
-    // if (from_len == 0) {
-    //     return 0;
-    // }
-
     int ocode;
     int ucode;
 
     char* new_data      = NULL;
     size_t new_len      = 0;
     size_t from_seq_len = 0;
-    //size_t to_seq_len   = 0;
     size_t total        = 0;
 
     size_t from_bom_len = lib_enc_bom_len(from_id);
@@ -771,7 +753,6 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 
     char* data     = from_data;
     int i          = from_bom_len;
-    //int j          = 0;
 
     #ifdef DEBUG
     fprintf(stderr, ">> conv_to_utf7: starting...\n");
@@ -856,7 +837,6 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 
                 // End UF7 block
                 start_block = false;
-                //block_count = 0;
             }
 
             total++;     // Calc ASCII
@@ -908,7 +888,6 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 
         // End UF7 block
         start_block = false;
-        block_count = 0;
     }
 
     new_len = total;
@@ -1037,7 +1016,6 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
                 // End UF7 block
                 start_block = false;
                 cur_data    = NULL;
-                //block_count = 0;
             }
 
             *out_data = (char) ucode;
@@ -1099,7 +1077,6 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
         // End UF7 block
         start_block = false;
         cur_data    = NULL;
-        //block_count = 0;
     }
 
     if (new_len != total) {
@@ -1166,21 +1143,6 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
     fprintf(stderr, ">> conv_from_utf7: from_id=%d, to_id=%d, len=%lu\n", from_id, to_id, from_len);
     #endif
 
-    
-    // if (to_data) {
-    //     *to_data = NULL;
-    // }
-    // if (to_len) {
-    //     *to_len = 0;
-    // }
-
-    // if (!from_data || !to_data || !to_len) {
-    //     return -1;
-    // }
-    // if (from_len == 0) {
-    //     return 0;
-    // }
-
     int icode;
     int ucode;
 
@@ -1246,7 +1208,6 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
                 #endif
 
                 start_block = false;
-                //block_count = 0;
             } else {
                 block_count++;
                 // skip total for char - processing in end block
@@ -1296,7 +1257,6 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
         #endif
 
         start_block = false;
-        //block_count = 0;
     }
 
     if (i != from_len) {
@@ -1384,7 +1344,6 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
                 #endif
 
                 start_block = false;
-                //block_count = 0;
                 cur_data    = NULL;
             } else {
                 block_count++;
@@ -1452,7 +1411,6 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
         #endif
 
         start_block = false;
-        //block_count = 0;
     }
 
     if (new_len != total) {
