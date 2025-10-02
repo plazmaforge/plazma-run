@@ -386,6 +386,7 @@ size_t to_u16_len(size_t len) {
 static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_t bsize, size_t count) {
 
     int from_id = ctx->from_id;
+    bool from_is_utf = ctx->from_is_utf;
     int ucode  = 0;
     uint8_t hi = 0;
     uint8_t lo = 0;
@@ -398,7 +399,8 @@ static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_
     while (i < count) {
 
         // Calculate input sequence lenght of UTF-[ID] char
-        from_seq_len = lib_utf_char_seq_len(from_id, data);
+        //from_seq_len = lib_utf_char_seq_len(from_id, data);
+        from_seq_len = _enc_char_seq_len(from_is_utf, from_id, data);
         if (from_seq_len == 0) {
             // error
             #ifdef ERROR
@@ -408,9 +410,9 @@ static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_
         }
 
         // Convert input current UTF-[ID] char to codepoint
-        int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
+        //int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
+        int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
         if (from_cp_len < 0) {
-        //if (from_cp_len <= 0) {
             // error
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
@@ -422,7 +424,6 @@ static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_
         hi = ucode >> 8;
         lo = ucode & 0xFF;
         
-
         //#ifdef DEBUG
         //fprintf(stderr, "DEBUG: >> ucode=%d, hi=%d, lo=%d\n", ucode, hi, lo);
         //#endif
@@ -824,7 +825,8 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // Calculate input sequence lenght of UTF-[ID] char
-        from_seq_len = lib_utf_char_seq_len(from_id, data);
+        //from_seq_len = lib_utf_char_seq_len(from_id, data);
+        from_seq_len = _enc_char_seq_len(from_is_utf, from_id, data);
         if (from_seq_len == 0) {
             // error
             #ifdef ERROR
@@ -834,9 +836,9 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
         }
 
         // Convert input current UTF-[ID] char to codepoint
-        int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
+        //int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
+        int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
         if (from_cp_len < 0) {
-        //if (cp_len <= 0) {
             // error
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
@@ -996,7 +998,8 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // Calculate input sequence lenght of UTF-[ID] char
-        from_seq_len = lib_utf_char_seq_len(from_id, data);
+        //from_seq_len = lib_utf_char_seq_len(from_id, data);
+        from_seq_len = _enc_char_seq_len(from_is_utf, from_id, data);
         if (from_seq_len == 0) {
             // error
             #ifdef ERROR
@@ -1008,7 +1011,8 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
         }
 
         // Convert input current UTF-[ID] char to codepoint
-        int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
+        //int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
+        int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
         if (from_cp_len < 0) {
         //if (from_cp_len <= 0) {
             // error
