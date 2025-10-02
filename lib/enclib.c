@@ -698,22 +698,6 @@ bool IN_SET_B(int c) {
 ///////////////////////////////////////////////////////////////////////
 
 /*
-//data -> (ucode, seq_len)
-
-if (from_id = UTF7) {
-  u16_seq_len = seq_len;
-} else {
-  u16_seq_len = lib_utf16_code_seq_len(ucode);
-}
-u16_count += u16_seq_len;
-
-u16_len = u16_count;
-b64_len = to_b64_len(u16_len);
-*/
-
-///////////////////////////////////////////////////////////////////////
-
-/*
 size_t b = 0;
 //
 
@@ -828,6 +812,9 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     size_t block_u16_len = 0;     // Size of binary block of Unicode point pairs (hi/lo): block_count * 2
     size_t block_b64_len = 0;     // Size of base64 block
     size_t u16_len       = 0;     // Max size of binary block
+    size_t u16_seq_len   = 0;
+    size_t u16_count     = 0;
+
     char* u16_data       = NULL;  // Binary block data
     char* out_data       = NULL;
     char* cur_data       = NULL;
@@ -881,7 +868,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
         if (is_directly) {
 
             if (start_block) {
-                block_u16_len = block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
+                block_u16_len = u16_count; // block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
                 if (block_u16_len > u16_len) {
                     u16_len = block_u16_len;
                 }
@@ -912,8 +899,17 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
                 // Start UTF7 block
                 start_block = true;
                 block_count = 0;
+                u16_count   = 0;
             }
+
             block_count++;
+            if (from_id == LIB_ENC_UTF16_ID) {
+                u16_seq_len = from_seq_len;
+            } else {
+                u16_seq_len = lib_utf16_code_seq_len(ucode);
+            }
+            u16_count += u16_seq_len;
+
         }
 
         /////////////////////////////////////////////////////////////
@@ -932,7 +928,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 
     // Last block
     if (start_block) {
-        block_u16_len = block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
+        block_u16_len = u16_count; // block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
         if (block_u16_len > u16_len) {
             u16_len = block_u16_len;
         }
@@ -1050,7 +1046,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
         if (is_directly) {
 
             if (start_block) {
-                block_u16_len = block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
+                block_u16_len = u16_count; // block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
                 block_b64_len = to_b64_len(block_u16_len);
 
                 // output to u16_data (hi, lo)
@@ -1097,9 +1093,17 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
                 // Start UTF7 block
                 start_block = true;
                 block_count = 0;
-                cur_data = data;
+                u16_count   = 0;
+                cur_data    = data;
             }
+
             block_count++;
+            if (from_id == LIB_ENC_UTF16_ID) {
+                u16_seq_len = from_seq_len;
+            } else {
+                u16_seq_len = lib_utf16_code_seq_len(ucode);
+            }
+            u16_count += u16_seq_len;
 
         }
 
@@ -1111,7 +1115,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     }
 
     if (start_block) {
-        block_u16_len = block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
+        block_u16_len = u16_count; //block_count * 2; // hi, lo (Temp sulution for UTF16 x2 only)
         block_b64_len = to_b64_len(block_u16_len);
 
         // output to u16_data (hi, lo)
