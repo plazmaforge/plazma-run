@@ -662,43 +662,6 @@ int base64_decode(char* idata, size_t isize, char* odata, size_t osize) {
     return 0;
 }
 
-/* Set directly */
-bool IN_SET_D(int c) {
-    return
-       (c >= 65 && c <= 90)  /* A-Z */
-    || (c >= 97 && c <= 122) /* a-z */
-    || (c >= 48 && c <= 57)  /* 0-9 */
-    || c == 39 
-    || c == 40               /* ( */ 
-    || c == 41               /* ) */ 
-    || (c >= 44 && c <= 47)
-    || c == 58               /* : */ 
-    || c == 63;              /* ? */ 
-}
-
-/* Set optional */
-bool IN_SET_O(int c) {
-    return
-       (c >= 33 && c <= 38)
-    || c == 42               /* * */
-    || (c >= 59 && c <= 64)
-    || c == 91
-    || (c >= 93 && c <= 96)
-    || (c >= 123 && c <= 125);
-}
-
-/* Set base64 */
-bool IN_SET_B(int c) {
-    return
-       (c >= 65 && c <= 90)  /* A-Z */
-    || (c >= 97 && c <= 122) /* a-z */
-    || (c >= 48 && c <= 57)  /* 0-9 */
-    || c == 43 /* + */
-    || c == 47; /* / */
-}
-
-///////////////////////////////////////////////////////////////////////
-
 /*
 size_t b = 0;
 //
@@ -740,6 +703,171 @@ if (b == 4) {
   // .. .
 }
 */
+
+///////////////////////////////////////////////////////////////////////
+
+int base64_decode_count(char* idata, size_t isize, char* odata, size_t osize) {
+
+    // osize = (isize * 3) / 4;
+
+    size_t i = 0;
+    size_t j = 0;
+
+    char i0, i1, i2, i3 = 0;
+    char b0, b1, b2, b3 = 0;
+    char j0, j1, j2 = 0;
+
+    size_t b = 0;
+    char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
+    int label = 0;
+
+    size_t seq_len = 0;
+    size_t u16_len = 0;
+    
+    while (i < isize) {
+        i0 = idata[i];
+        i++;
+        i1 = idata[i];
+        i++;
+
+        if (i < isize) {
+            i2 = idata[i];
+            i++;
+        } else {
+            i2 = 'A';
+        }
+
+        if (i < isize) {
+            i3 = idata[i];
+            i++;
+        } else {
+            i3 = 'A';
+        }
+
+        // check i0-i3 > 127: error
+
+        b0 = map2[i0];
+        b1 = map2[i1];
+        b2 = map2[i2];
+        b3 = map2[i3];
+
+        // check b0-b3 > 63: error
+
+        j0 = (b0 * 4) | b1 / 0x10;
+        j1 = ((b1 & 0x0F) * 0x10) | (b2 / 4);
+        j2 = ((b2 & 3) * 0x40) | b3;
+
+        //odata[j] = j0;
+        buf[b]   = j0;
+        b++;
+        j++;
+
+        label = 1;
+        goto check;
+
+        label_1:
+        if (j < osize) {
+            //odata[j] = j1;
+            buf[b]   = j1;
+            b++;
+            j++;
+        }
+
+        label = 2;
+        goto check;
+
+        label_2:
+        if (j < osize) {
+            //odata[j] = j2;
+            buf[b]   = j2;
+            b++;
+            j++;
+        }
+
+        check:
+
+        if (b == 4) {
+            seq_len = lib_utf16_char_seq_len(buf);
+            if (seq_len == 4) {
+                u16_len += seq_len;
+                b = 0;
+            } else if (seq_len == 2) {
+                u16_len += seq_len;
+                seq_len = lib_utf16_char_seq_len(buf + 2);
+                if (seq_len == 2) {
+                    u16_len += seq_len;
+                    b = 0;
+                } else if (seq_len == 4) {
+
+                    // shift 2 bytes
+                    buf[0] = buf[2];
+                    buf[1] = buf[3];
+                    buf[2] = '\0';
+                    buf[3] = '\0';
+
+                    // next time
+                    b = 2;
+                } else {
+                    // error
+                }
+            }
+
+        } else if (b == 2) {
+                seq_len = lib_utf16_char_seq_len(buf);
+                if (seq_len == 2) {
+                    u16_len += seq_len;
+                    b = 0;
+                } else {
+                    // error
+                }
+            //}
+
+        }
+
+        if (label == 1) {
+            goto label_1;
+        } else if (label == 2) {
+            goto label_2;
+        }
+
+    }
+    return 0;
+}
+
+/* Set directly */
+bool IN_SET_D(int c) {
+    return
+       (c >= 65 && c <= 90)  /* A-Z */
+    || (c >= 97 && c <= 122) /* a-z */
+    || (c >= 48 && c <= 57)  /* 0-9 */
+    || c == 39 
+    || c == 40               /* ( */ 
+    || c == 41               /* ) */ 
+    || (c >= 44 && c <= 47)
+    || c == 58               /* : */ 
+    || c == 63;              /* ? */ 
+}
+
+/* Set optional */
+bool IN_SET_O(int c) {
+    return
+       (c >= 33 && c <= 38)
+    || c == 42               /* * */
+    || (c >= 59 && c <= 64)
+    || c == 91
+    || (c >= 93 && c <= 96)
+    || (c >= 123 && c <= 125);
+}
+
+/* Set base64 */
+bool IN_SET_B(int c) {
+    return
+       (c >= 65 && c <= 90)  /* A-Z */
+    || (c >= 97 && c <= 122) /* a-z */
+    || (c >= 48 && c <= 57)  /* 0-9 */
+    || c == 43 /* + */
+    || c == 47; /* / */
+}
 
 ///////////////////////////////////////////////////////////////////////
 
