@@ -349,7 +349,8 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     }
 
     if (to_id == LIB_ENC_UTF7_ID) {
-        if (lib_enc_supports_utf_conv(from_id)) {
+        //if (lib_enc_supports_utf_conv(from_id)) {
+        if (lib_enc_supports_conv(from_id)) {
             return _enc_conv_to_utf7_ctx(&ctx);
         } else {
             #ifdef ERROR
