@@ -780,9 +780,9 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
 
         check:
 
-            #ifdef DEBUG_L1
-            fprintf(stderr, "DEBUG: base64_decode  : check=%lu\n", b);
-            #endif
+        #ifdef DEBUG_L1
+        fprintf(stderr, "DEBUG: base64_decode  : check=%lu\n", b);
+        #endif
 
         if (b == 4) {
             #ifdef DEBUG_L1
@@ -849,27 +849,25 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             fprintf(stderr, "DEBUG: base64_decode  : check=2: [OK]\n");
             #endif
 
-                buf[2] = '\0';
-                buf[3] = '\0';
+            buf[2] = '\0';
+            buf[3] = '\0';
 
-                seq_len = lib_utf16_char_seq_len(buf);
-                if (seq_len == 2) {
+            seq_len = lib_utf16_char_seq_len(buf);
+            if (seq_len == 2) {
 
-                    ucode = _utf16_to_code(buf);
-                    out_seq_len = _enc_code_seq_len(is_utf, to_id, ucode);
-                    out_len += out_seq_len;
+                ucode = _utf16_to_code(buf);
+                out_seq_len = _enc_code_seq_len(is_utf, to_id, ucode);
+                out_len += out_seq_len;
 
-                    #ifdef DEBUG_L2
-                    fprintf(stderr, "DEBUG: base64_decode  : ucode=%d\n", ucode);
-                    #endif
+                #ifdef DEBUG_L2
+                fprintf(stderr, "DEBUG: base64_decode  : ucode=%d\n", ucode);
+                #endif
 
-                    u16_len += seq_len;
-                    b = 0;
-                } else {
-                    // error
-                }
-            //}
-
+                u16_len += seq_len;
+                b = 0;
+            } else {
+                // error
+            }
         }
 
         if (label == 1) {
@@ -879,7 +877,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             label = 0;
             goto label_2;
         }
-            label = 0;
+        label = 0;
 
     }
 
