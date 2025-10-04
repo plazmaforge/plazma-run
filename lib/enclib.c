@@ -350,7 +350,6 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     }
 
     if (to_id == LIB_ENC_UTF7_ID) {
-        //if (lib_enc_supports_utf_conv(from_id)) {
         if (lib_enc_supports_conv(from_id)) {
             return _enc_conv_to_utf7_ctx(&ctx);
         } else {
@@ -401,7 +400,6 @@ static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_
     while (i < count) {
 
         // Calculate input sequence lenght of UTF-[ID] char
-        //from_seq_len = lib_utf_char_seq_len(from_id, data);
         from_seq_len = _enc_char_seq_len(from_is_utf, from_id, data);
         if (from_seq_len == 0) {
             // error
@@ -412,7 +410,6 @@ static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_
         }
 
         // Convert input current UTF-[ID] char to codepoint
-        //int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
         int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
         if (from_cp_len < 0) {
             // error
@@ -934,19 +931,19 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     fprintf(stderr, ">> conv_to_utf7: starting...\n");
     #endif
 
-    #ifdef DEBUGs
+    #ifdef DEBUG
     fprintf(stderr, "DEBUG: from_bom_len=%lu, to_bom_len=%lu\n", from_bom_len, to_bom_len);
     #endif
 
     bool start_block     = false; // Start UTF7 block flag
-    size_t block_count   = 0;     // Count of Unicode points in UTF7 block
-    size_t block_u16_len = 0;     // Size of binary block of Unicode point pairs (hi/lo): block_count * 2
-    size_t block_b64_len = 0;     // Size of base64 block
-    size_t u16_len       = 0;     // Max size of binary block
+    size_t block_count   = 0;     // Count of Unicode codepoints in UTF7 block (!)
+    size_t block_u16_len = 0;     // Lenght of UTF16 block (hi/lo)
+    size_t block_b64_len = 0;     // Lenght of base64 block
+    size_t u16_len       = 0;     // Max lenght of UTF16 block
     size_t u16_seq_len   = 0;
     size_t u16_count     = 0;
 
-    char* u16_data       = NULL;  // Binary block data
+    char* u16_data       = NULL;  // UTF16 block data
     char* out_data       = NULL;
     char* cur_data       = NULL;
     bool use_set_o       = true;
@@ -955,7 +952,6 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // Calculate input sequence lenght of UTF-[ID] char
-        //from_seq_len = lib_utf_char_seq_len(from_id, data);
         from_seq_len = _enc_char_seq_len(from_is_utf, from_id, data);
         if (from_seq_len == 0) {
             // error
@@ -966,7 +962,6 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
         }
 
         // Convert input current UTF-[ID] char to codepoint
-        //int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
         int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
         if (from_cp_len < 0) {
             // error
@@ -1014,6 +1009,10 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
                 if (i + from_seq_len < from_len) {
                     total++; // -
                 }
+
+                #ifdef DEBUG_LL
+                fprintf(stderr, "DEBUG: >> 1: block_count=%lu\n", block_count);
+                #endif
 
                 // End UF7 block
                 start_block = false;
@@ -1075,6 +1074,10 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
             total++; // '-'
         }
 
+        #ifdef DEBUG_LL
+        fprintf(stderr, "DEBUG: >> 1: block_count=%lu\n", block_count);
+        #endif
+
         // End UF7 block
         start_block = false;
     }
@@ -1128,7 +1131,6 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // Calculate input sequence lenght of UTF-[ID] char
-        //from_seq_len = lib_utf_char_seq_len(from_id, data);
         from_seq_len = _enc_char_seq_len(from_is_utf, from_id, data);
         if (from_seq_len == 0) {
             // error
@@ -1141,7 +1143,6 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
         }
 
         // Convert input current UTF-[ID] char to codepoint
-        //int from_cp_len = lib_utf_to_code(from_id, data, &ucode);
         int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
         if (from_cp_len < 0) {
         //if (from_cp_len <= 0) {
@@ -1203,6 +1204,10 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
                     out_data++;
                     total++; // -
                 }
+
+                #ifdef DEBUG_LL
+                fprintf(stderr, "DEBUG: >> 2: block_count=%lu\n", block_count);
+                #endif
 
                 // End UF7 block
                 start_block = false;
@@ -1272,6 +1277,10 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
             out_data++;
             total++; // -
         }
+
+        #ifdef DEBUG_LL
+        fprintf(stderr, "DEBUG: >> 2: block_count=%lu\n", block_count);
+        #endif
 
         // End UF7 block
         start_block = false;
