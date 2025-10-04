@@ -8,6 +8,7 @@
 
 // #define DEBUG    1
 // #define DEBUG_LL 1
+// #define DEBUG_L1 1
 // #define DEBUG_L2 1
 // #define ERROR    1
 
@@ -339,7 +340,8 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     }
 
     if (from_id == LIB_ENC_UTF7_ID) {
-        if (lib_enc_supports_utf_conv(to_id)) {
+        //if (lib_enc_supports_utf_conv(to_id)) {
+        if (lib_enc_supports_conv(to_id)) {
             return _enc_conv_from_utf7_ctx(&ctx);
         } else {
             #ifdef ERROR
@@ -459,20 +461,25 @@ static int _to_char_block(lib_enc_context_t* ctx, char* idata, char* odata, size
             return -1;
         }
 
+        // TODO: for UTF16 x2 only ////////////////////////////
         hi = to_uint8(*data);
         data++;
         i++;
         lo = to_uint8(*data);
 
-        // next (hi, lo) for x2 only
+        // next (hi, lo) 
         data++;
-        i++;
+        i++;        
 
         icode = (icode << 8) | hi;
         icode = (icode << 8) | lo;
         ucode = icode;
+
+        ///////////////////////////////////////////////////////
   
-        to_seq_len = lib_utf_to_char(to_id, buf, ucode);
+        //to_seq_len = lib_utf_to_char(to_id, buf, ucode);
+        to_seq_len = _enc_to_char(ctx, to_id, buf, ucode);
+        
         if (to_seq_len == 0) {
             // error
             #ifdef ERROR
@@ -604,6 +611,7 @@ int base64_encode(char* idata, size_t isize, char* odata, size_t osize) {
 
 int base64_decode(char* idata, size_t isize, char* odata, size_t osize) {
 
+    // u16_len
     // osize = (isize * 3) / 4;
 
     size_t i = 0;
@@ -704,9 +712,20 @@ if (b == 4) {
 
 ///////////////////////////////////////////////////////////////////////
 
-int base64_decode_count(char* idata, size_t isize, char* odata, size_t osize) {
+static int _utf16_to_code(const char* str) {
+    return lib_utf16_to_code(str);
+}
 
+int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_t osize, size_t* count) {
+
+    // u16_len
     // osize = (isize * 3) / 4;
+    if (count) {
+        *count = 0;
+    }
+
+    int to_id = LIB_UTF8_ID;
+    bool is_utf = true;
 
     size_t i = 0;
     size_t j = 0;
@@ -719,8 +738,11 @@ int base64_decode_count(char* idata, size_t isize, char* odata, size_t osize) {
     char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
     int label = 0;
 
-    size_t seq_len = 0;
-    size_t u16_len = 0;
+    size_t seq_len     = 0;
+    size_t u16_len     = 0;
+    size_t out_len     = 0;
+    size_t out_seq_len = 0;
+    int ucode          = 0;
     
     while (i < isize) {
         i0 = idata[i];
@@ -755,6 +777,10 @@ int base64_decode_count(char* idata, size_t isize, char* odata, size_t osize) {
         j1 = ((b1 & 0x0F) * 0x10) | (b2 / 4);
         j2 = ((b2 & 3) * 0x40) | b3;
 
+        #ifdef DEBUG_L2
+        fprintf(stderr, "DEBUG: base64_decode  : label_0:\n");
+        #endif
+
         //odata[j] = j0;
         buf[b]   = j0;
         b++;
@@ -764,7 +790,13 @@ int base64_decode_count(char* idata, size_t isize, char* odata, size_t osize) {
         goto check;
 
         label_1:
+        label = 0;
         if (j < osize) {
+
+            #ifdef DEBUG_L2
+            fprintf(stderr, "DEBUG: base64_decode  : label_1:\n");
+            #endif
+
             //odata[j] = j1;
             buf[b]   = j1;
             b++;
@@ -775,7 +807,13 @@ int base64_decode_count(char* idata, size_t isize, char* odata, size_t osize) {
         goto check;
 
         label_2:
+        label = 0;
         if (j < osize) {
+
+            #ifdef DEBUG_L2
+            fprintf(stderr, "DEBUG: base64_decode  : label_2:\n");
+            #endif
+
             //odata[j] = j2;
             buf[b]   = j2;
             b++;
@@ -784,17 +822,54 @@ int base64_decode_count(char* idata, size_t isize, char* odata, size_t osize) {
 
         check:
 
+            #ifdef DEBUG_L1
+            fprintf(stderr, "DEBUG: base64_decode  : check=%lu\n", b);
+            #endif
+
         if (b == 4) {
+            #ifdef DEBUG_L1
+            fprintf(stderr, "DEBUG: base64_decode  : check=4: [OK]\n");
+            #endif
+
             seq_len = lib_utf16_char_seq_len(buf);
             if (seq_len == 4) {
+
+                ucode = _utf16_to_code(buf);
+                out_seq_len = _enc_code_seq_len(is_utf, to_id, ucode);
+                out_len += out_seq_len;
+
+                #ifdef DEBUG_L2
+                fprintf(stderr, "DEBUG: base64_decode  : ucode=%d\n", ucode);
+                #endif
+
                 u16_len += seq_len;
                 b = 0;
             } else if (seq_len == 2) {
+                    
+                ucode = _utf16_to_code(buf);
+                out_seq_len = _enc_code_seq_len(is_utf, to_id, ucode);
+                out_len += out_seq_len;
+
+                #ifdef DEBUG_L2
+                fprintf(stderr, "DEBUG: base64_decode  : ucode=%d\n", ucode);
+                #endif
+
                 u16_len += seq_len;
+
                 seq_len = lib_utf16_char_seq_len(buf + 2);
                 if (seq_len == 2) {
+
+                    ucode = _utf16_to_code(buf + 2);
+                    out_seq_len = _enc_code_seq_len(is_utf, to_id, ucode);
+                    out_len += out_seq_len;
+
+                    #ifdef DEBUG_L2
+                    fprintf(stderr, "DEBUG: base64_decode  : ucode=%d\n", ucode);
+                    #endif
+
                     u16_len += seq_len;
                     b = 0;
+                    
                 } else if (seq_len == 4) {
 
                     // shift 2 bytes
@@ -811,8 +886,25 @@ int base64_decode_count(char* idata, size_t isize, char* odata, size_t osize) {
             }
 
         } else if (b == 2) {
+            
+            #ifdef DEBUG_L1
+            fprintf(stderr, "DEBUG: base64_decode  : check=2: [OK]\n");
+            #endif
+
+                buf[2] = '\0';
+                buf[3] = '\0';
+
                 seq_len = lib_utf16_char_seq_len(buf);
                 if (seq_len == 2) {
+
+                    ucode = _utf16_to_code(buf);
+                    out_seq_len = _enc_code_seq_len(is_utf, to_id, ucode);
+                    out_len += out_seq_len;
+
+                    #ifdef DEBUG_L2
+                    fprintf(stderr, "DEBUG: base64_decode  : ucode=%d\n", ucode);
+                    #endif
+
                     u16_len += seq_len;
                     b = 0;
                 } else {
@@ -823,12 +915,28 @@ int base64_decode_count(char* idata, size_t isize, char* odata, size_t osize) {
         }
 
         if (label == 1) {
+            label = 0;
             goto label_1;
         } else if (label == 2) {
+            label = 0;
             goto label_2;
         }
+            label = 0;
 
     }
+
+    #ifdef DEBUG_LL
+    fprintf(stderr, "DEBUG: base64_decode  : out_len=%lu\n", out_len);
+    #endif
+
+    #ifdef DEBUG_LL
+    fprintf(stderr, "DEBUG: base64_decode  : u16_len=%lu\n", u16_len);
+    #endif
+
+    if (count) {
+        *count = out_len;
+    }
+
     return 0;
 }
 
@@ -1379,6 +1487,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 
     bool start_block     = false; // Start UTF7 block flag
     size_t block_count   = 0;     // Count of Unicode points in UTF7 block
+    size_t decode_count  = 0;
     size_t block_u16_len = 0;     // Size of binary block of Unicode point pairs (hi/lo): block_count * 2
     size_t block_b64_len = 0;     // Size of base64 block
     size_t block_out_len = 0;     // Size of output block
@@ -1407,15 +1516,24 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
                 if (block_u16_len > u16_len) {
                     u16_len = block_u16_len;
                 }
-                block_out_len = block_u16_len; // block_u16_len / 2; // TODO: STUB
-                total += block_out_len; // Temp solution for UTF7 x2 only
+
+                // base64 -> UTF16
+                base64_decode_count(ctx, cur_data, block_b64_len, block_u16_len, &decode_count);
+
+                #ifdef DEBUG_LL
+                fprintf(stderr, "DEBUG: [1] start block: u16_len=%lu\n", u16_len);
+                #endif
+
+                block_out_len = decode_count; // block_u16_len; // block_u16_len / 2;
+                total += block_out_len;
                 // skip total for '-'
 
                 #ifdef DEBUG_LL
-                fprintf(stderr, "DEBUG: [1] flush-block: total=%lu\n", total);
+                fprintf(stderr, "DEBUG: [1] flush block: total=%lu\n", total);
                 #endif
 
                 start_block = false;
+                cur_data    = NULL;
             } else {
                 block_count++;
                 // skip total for char - processing in end block
@@ -1435,6 +1553,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
                 } else {
                     start_block = true;
                     block_count = 0;
+                    cur_data    = (i + 1 < from_len) ? (data + 1) : NULL;
                     // skip total for '+'
                 }
             } else {
@@ -1457,14 +1576,23 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
         if (block_u16_len > u16_len) {
             u16_len = block_u16_len;
         }
-        block_out_len = block_u16_len; // block_u16_len / 2; // TODO: STUB
-        total += block_out_len; // Temp solution for UTF7 x2 only
+
+        // base64 -> UTF16
+        base64_decode_count(ctx, cur_data, block_b64_len, block_u16_len, &decode_count);
 
         #ifdef DEBUG_LL
-        fprintf(stderr, "DEBUG: [1] flush last: total=%lu\n", total);
+        fprintf(stderr, "DEBUG: [1] last block : u16_len=%lu\n", u16_len);
+        #endif
+
+        block_out_len = decode_count; // block_u16_len; // block_u16_len / 2;
+        total += block_out_len;
+
+        #ifdef DEBUG_LL
+        fprintf(stderr, "DEBUG: [1] flush last : total=%lu\n", total);
         #endif
 
         start_block = false;
+        cur_data    = NULL;
     }
 
     if (i != from_len) {
@@ -1530,11 +1658,14 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
                 block_b64_len = block_count;
                 block_u16_len = to_u16_len(block_b64_len);
 
-                block_out_len = block_u16_len; // block_u16_len / 2; // TODO: STUB
-
                 #ifdef DEBUG_LL
                 fprintf(stderr, "DEBUG: [2] flush block: start: cur_data=%s, block_b64_len=%lu, block_u16_len=%lu\n", (cur_data ? "[OK]" : "[NULL]"), block_b64_len, block_u16_len);
                 #endif
+
+                // TODO: Temp solution
+                base64_decode_count(ctx, cur_data, block_b64_len, block_u16_len, &decode_count);
+
+                block_out_len = decode_count; // block_u16_len; // block_u16_len / 2;
 
                 // base64 -> UTF16 
                 base64_decode(cur_data, block_b64_len, u16_data, block_u16_len);
@@ -1543,7 +1674,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
                 _to_char_block(ctx, u16_data, out_data, block_out_len, block_u16_len);
 
                 out_data += block_out_len;
-                total += block_out_len; // Temp solution for UTF7 x2 only
+                total += block_out_len;
 
                 // skip total for '-'
 
@@ -1599,11 +1730,14 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
         block_b64_len = block_count;
         block_u16_len = to_u16_len(block_b64_len);
 
-        block_out_len = block_u16_len; // block_u16_len / 2; // TODO: STUB
-
         #ifdef DEBUG_LL
         fprintf(stderr, "DEBUG: [2] flush last: START: cur_data=%s, block_b64_len=%lu, block_u16_len=%lu\n", (cur_data ? "[OK]" : "[NULL]"), block_b64_len, block_u16_len);
         #endif
+
+        // TODO: Temp solution
+        base64_decode_count(ctx, cur_data, block_b64_len, block_u16_len, &decode_count);
+
+        block_out_len = decode_count; // block_u16_len; // block_u16_len / 2;
 
         // base64 -> UTF16 
         base64_decode(cur_data, block_b64_len, u16_data, block_u16_len);
@@ -1612,7 +1746,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
         _to_char_block(ctx, u16_data, out_data, block_out_len, block_u16_len);
 
         out_data += block_out_len;
-        total += block_out_len; // Temp solution for UTF7 x2 only
+        total += block_out_len;
 
         #ifdef DEBUG_LL
         fprintf(stderr, "DEBUG: [2] flush block: SUCCESS: total=%lu\n", total);
