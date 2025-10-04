@@ -1749,6 +1749,33 @@ int lib_utf32le_to_char(char* buf, int cp) {
    return _utf32_to_char(false, buf, cp);
 }
 
+//// UTF-8
+
+bool lib_utf8_is_enc_id(int enc_id) {
+    return enc_id == LIB_UTF8_ID 
+    || enc_id == LIB_UTF8_BOM_ID;
+}
+
+//// UTF-16
+
+bool lib_utf16_is_enc_id(int enc_id) {
+    return enc_id == LIB_UTF16_ID
+    || enc_id == LIB_UTF16BE_ID 
+    || enc_id == LIB_UTF16BE_BOM_ID
+    || enc_id == LIB_UTF16LE_ID
+    || enc_id == LIB_UTF16LE_BOM_ID;
+}
+
+//// UTF-32
+
+bool lib_utf32_is_enc_id(int enc_id) {
+    return enc_id == LIB_UTF32_ID
+    || enc_id == LIB_UTF32BE_ID 
+    || enc_id == LIB_UTF32BE_BOM_ID
+    || enc_id == LIB_UTF32LE_ID
+    || enc_id == LIB_UTF32LE_BOM_ID;
+}
+
 //// UTF
 
 size_t lib_utf_char_seq_len(int utf_id, const char* str) {

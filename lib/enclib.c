@@ -668,48 +668,6 @@ int base64_decode(char* idata, size_t isize, char* odata, size_t osize) {
     return 0;
 }
 
-/*
-size_t b = 0;
-//
-
-if (b == 4) {
-  seq_len = lib_utf16_char_seq_len(buf);
-  if (seq_len == 4) {
-    u16_len += seq_len;
-    b = 0;
-  } if (seq_len == 2) {
-    u16_len += seq_len;
-    seq_len = lib_utf16_char_seq_len(buf + 2);
-   if (seq_len == 2) {
-       u16_len += seq_len;
-       b = 0;
-    } else if (seq_len == 4) {
-
-       // shift 2 bytes
-       buf[0] = buf[2];
-       buf[1] = buf[3];
-       buf[2] = '\0';
-       buf[3] = '\0';
-
-       // next time
-       b = 2;
-      
-    } else {
-       // error
-    }
-  } else if (b = 2) {
-      seq_len = lib_utf16_char_seq_len(buf);
-       if (seq_len == 2) {
-         u16_len += seq_len;
-         b = 0;
-       } else {
-         // error
-      }
-  }
-  // .. .
-}
-*/
-
 ///////////////////////////////////////////////////////////////////////
 
 static int _utf16_to_code(const char* str) {
@@ -1142,7 +1100,9 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
             }
 
             block_count++;
-            if (from_id == LIB_ENC_UTF16_ID) {
+            
+            //if (from_id == LIB_ENC_UTF16_ID) {
+            if (lib_utf16_is_enc_id(from_id)) {
                 u16_seq_len = from_seq_len;
             } else {
                 u16_seq_len = lib_utf16_code_seq_len(ucode);
@@ -1345,7 +1305,8 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
             }
 
             block_count++;
-            if (from_id == LIB_ENC_UTF16_ID) {
+            //if (from_id == LIB_ENC_UTF16_ID) {
+            if (lib_utf16_is_enc_id(from_id)) {
                 u16_seq_len = from_seq_len;
             } else {
                 u16_seq_len = lib_utf16_code_seq_len(ucode);
