@@ -130,35 +130,6 @@ int lib_uni_is_not_ffff(int c) {
 
 //// utf8
 
-size_t lib_utf7_code_seq_len(int cp) {
-    if (cp < 0) {
-        return 0; /* error */
-    }
-    if (cp <= 0x7F) {
-        // < 0x80
-        // 0000 .. 007F
-        // 0 .. 127
-        // 0000 0000 .. 0111 1111
-        // 1-byte ASCII
-        if (cp == '+') {
-            return 2;
-        }
-        return 1;
-    } else if (cp <= 0x10FFFF) {
-        // < 0x110000
-        // 10000 .. 10FFFF
-        // 65 536 .. 1 114 111
-        // 1 0000 0000 0000 0000 .. 1 0000 1111 1111 1111 1111
-        // 4-byte unicode
-        return 2;
-    }
-    
-    /* error */
-    return 0;
-}
-
-//// utf8
-
 size_t lib_utf8_code_seq_len(int cp) {
     if (cp < 0) {
         return 0; /* error */
@@ -1817,11 +1788,6 @@ size_t lib_utf_char_seq_len(int utf_id, const char* str) {
 }
 
 size_t lib_utf_code_seq_len(int utf_id, int cp) {
-
-    // UTF-7
-    if (utf_id == LIB_UTF7_ID) {
-        return lib_utf7_code_seq_len(cp);
-    }
 
     // UTF-8
     if (utf_id == LIB_UTF8_ID 
