@@ -63,9 +63,14 @@ static int _init_ctx(lib_enc_context_t* ctx) {
     return 0;
 }
 
-static uint8_t to_uint8(char value) {
+static uint8_t _u8(char value) {
     return (uint8_t) value;
 }
+
+// static int _u(char c) {
+//     unsigned char u = (unsigned char) c;
+//     return u;
+// }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -366,11 +371,6 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
 
 }
 
-static int _to_code(char chr) {
-    unsigned char u = (unsigned char) chr;
-    return u;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Calculate lenght of output base64 array by input lenght
@@ -462,10 +462,10 @@ static int _to_char_block(lib_enc_context_t* ctx, char* idata, char* odata, size
         }
 
         // TODO: for UTF16 x2 only ////////////////////////////
-        hi = to_uint8(*data);
+        hi = _u8(*data);
         data++;
         i++;
-        lo = to_uint8(*data);
+        lo = _u8(*data);
 
         // next (hi, lo) 
         data++;
@@ -551,18 +551,18 @@ int base64_encode(char* idata, size_t isize, char* odata, size_t osize) {
     uint8_t j0, j1, j2, j3 = 0;
 
     while (i < isize) {
-        i0 = to_uint8(idata[i]);
+        i0 = _u8(idata[i]);
         i++;
 
         if (i < isize) {
-            i1 = to_uint8(idata[i]);
+            i1 = _u8(idata[i]);
             i++;
         } else {
             i1 = 0;
         }
 
         if (i < isize) {
-            i2 = to_uint8(idata[i]);
+            i2 = _u8(idata[i]);
             i++;
         } else {
             i2 = 0;
@@ -1461,7 +1461,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 
     while (i < from_len) {
 
-        icode = _to_code(*data);
+        icode = _u8(*data);
 
         #ifdef DEBUG_L2
         fprintf(stderr, "DEBUG: [1] icode=%d\n", icode);
@@ -1504,7 +1504,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 
             // Check start block
             if (icode == '+') {
-                if (i + 1 < from_len && _to_code(data[i + 1]) == '-') {
+                if (i + 1 < from_len && _u8(data[i + 1]) == '-') {
                     from_seq_len = 2;
                     total++; // '-'
 
@@ -1605,7 +1605,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
         
     while (i < from_len) {
 
-        icode = _to_code(*data);
+        icode = _u8(*data);
 
         #ifdef DEBUG_L2
         fprintf(stderr, "DEBUG: [2] icode=%d\n", icode);
@@ -1654,7 +1654,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 
             // Check start block
             if (icode == '+') {
-                if (i + 1 < from_len && _to_code(data[i + 1]) == '-') {
+                if (i + 1 < from_len && _u8(data[i + 1]) == '-') {
                     from_seq_len = 2;
                     total++; // '-'
 
@@ -1765,7 +1765,7 @@ static int _enc_to_code(lib_enc_context_t* ctx, int id, const char* str, int* cp
     if (!ctx->from_is_utf) {
 
         // Get unsigned code
-        int icode = _to_code(*str);
+        int icode = _u8(*str);
 
         // Convert char to  Unicode codepoint
         *cp = lib_unimap_conv_icode(ctx->from_map, icode);
