@@ -87,7 +87,10 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-int lib_enc_bom_len(int enc_id) {
+/**
+ * Return lenght of BOM
+ */
+size_t lib_enc_bom_len(int enc_id) {
 
     // UTF-8
     if (enc_id == LIB_ENC_UTF8_ID) {
@@ -137,9 +140,9 @@ int lib_enc_bom_len(int enc_id) {
 }
 
 /**
- * Set BOM and return count of BOM
+ * Set BOM and return lenght of BOM
  */
-int lib_enc_set_bom(int enc_id, char* str) {
+size_t lib_enc_set_bom(int enc_id, char* str) {
     if (!str) {
         return 0;
     }
