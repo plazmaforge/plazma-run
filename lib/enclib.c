@@ -67,11 +67,6 @@ static uint8_t _u8(char value) {
     return (uint8_t) value;
 }
 
-// static int _u(char c) {
-//     unsigned char u = (unsigned char) c;
-//     return u;
-// }
-
 ////////////////////////////////////////////////////////////////////////////////////////
 
 static size_t _enc_char_seq_len(bool is_utf, int id, const char* str);
@@ -681,9 +676,11 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
     if (count) {
         *count = 0;
     }
+    int to_id = ctx->to_id;
+    bool is_utf = ctx->to_is_utf;
 
-    int to_id = LIB_UTF8_ID;
-    bool is_utf = true;
+    //int to_id = LIB_UTF8_ID;
+    //bool is_utf = true;
 
     size_t i = 0;
     size_t j = 0;
@@ -879,6 +876,92 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
         }
         label = 0;
 
+    }
+
+
+    if (b == 4) {
+        #ifdef DEBUG_L1
+        fprintf(stderr, "DEBUG: base64_decode  : check=4: [OK]\n");
+        #endif
+
+        seq_len = lib_utf16_char_seq_len(buf);
+        if (seq_len == 4) {
+
+            ucode = _utf16_to_code(buf);
+            out_seq_len = _enc_code_seq_len(is_utf, to_id, ucode);
+            out_len += out_seq_len;
+
+            #ifdef DEBUG_L2
+            fprintf(stderr, "DEBUG: base64_decode  : ucode=%d\n", ucode);
+            #endif
+
+            u16_len += seq_len;
+            b = 0;
+        } else if (seq_len == 2) {
+                    
+            ucode = _utf16_to_code(buf);
+            out_seq_len = _enc_code_seq_len(is_utf, to_id, ucode);
+            out_len += out_seq_len;
+
+            #ifdef DEBUG_L2
+            fprintf(stderr, "DEBUG: base64_decode  : ucode=%d\n", ucode);
+            #endif
+
+            u16_len += seq_len;
+
+            seq_len = lib_utf16_char_seq_len(buf + 2);
+            if (seq_len == 2) {
+
+                ucode = _utf16_to_code(buf + 2);
+                out_seq_len = _enc_code_seq_len(is_utf, to_id, ucode);
+                out_len += out_seq_len;
+
+                #ifdef DEBUG_L2
+                fprintf(stderr, "DEBUG: base64_decode  : ucode=%d\n", ucode);
+                #endif
+
+                u16_len += seq_len;
+                b = 0;            
+            } else if (seq_len == 4) {
+
+                // shift 2 bytes
+                buf[0] = buf[2];
+                buf[1] = buf[3];
+                buf[2] = '\0';
+                buf[3] = '\0';
+
+                // next time
+                b = 2;
+            } else {
+                   // error
+            }
+        }
+
+    } else if (b == 2) {
+            
+        #ifdef DEBUG_L1
+        fprintf(stderr, "DEBUG: base64_decode  : check=2: [OK]\n");
+        #endif
+
+        buf[2] = '\0';
+        buf[3] = '\0';
+
+        seq_len = lib_utf16_char_seq_len(buf);
+        if (seq_len == 2) {
+
+            ucode = _utf16_to_code(buf);
+            out_seq_len = _enc_code_seq_len(is_utf, to_id, ucode);
+            out_len += out_seq_len;
+
+            #ifdef DEBUG_L2
+            fprintf(stderr, "DEBUG: base64_decode  : ucode=%d\n", ucode);
+            #endif
+
+            u16_len += seq_len;
+            b = 0;
+        } else {
+            // error
+        }
     }
 
     #ifdef DEBUG_LL
