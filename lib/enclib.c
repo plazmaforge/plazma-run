@@ -51,14 +51,14 @@ static int _init_ctx(lib_enc_context_t* ctx) {
     ctx->from_data   = NULL;
     ctx->from_len    = 0;
     ctx->from_map    = NULL;
-    ctx->from_is_utf = false;
+    ctx->from_is_mbc = false;
 
     /* To */
     ctx->to_id       = 0;
     ctx->to_data     = NULL;
     ctx->to_len      = 0;
     ctx->to_map      = NULL;
-    ctx->to_is_utf   = false;
+    ctx->to_is_mbc   = false;
 
     return 0;
 }
@@ -69,9 +69,9 @@ static uint8_t _u8(char value) {
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-static size_t _enc_char_seq_len(bool is_utf, int enc_id, const char* str);
+static size_t _enc_char_seq_len(bool is_mbc, int enc_id, const char* str);
 
-static size_t _enc_code_seq_len(bool is_utf, int enc_id, int cp);
+static size_t _enc_code_seq_len(bool is_mbc, int enc_id, int cp);
 
 static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp);
 
@@ -329,18 +329,18 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
         lib_unimap_t from_map;
         lib_unimap_get_unimap_by_id(&from_map, from_id);
         ctx.from_map = &from_map;
-        ctx.from_is_utf = false;
+        ctx.from_is_mbc = false;
     } else {
-        ctx.from_is_utf = true;
+        ctx.from_is_mbc = true;
     }
 
     if (has_to) {
         lib_unimap_t to_map;
         lib_unimap_get_unimap_by_id(&to_map, to_id);
         ctx.to_map = &to_map;
-        ctx.to_is_utf = false;
+        ctx.to_is_mbc = false;
     } else {
-        ctx.to_is_utf = true;
+        ctx.to_is_mbc = true;
     }
 
     if (from_id == LIB_ENC_UTF7_ID) {
@@ -386,7 +386,7 @@ size_t to_u16_len(size_t len) {
 static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_t bsize, size_t count) {
 
     int from_id = ctx->from_id;
-    bool from_is_utf = ctx->from_is_utf;
+    bool from_is_utf = ctx->from_is_mbc;
     int ucode  = 0;
     uint8_t hi = 0;
     uint8_t lo = 0;
@@ -678,7 +678,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
         *count = 0;
     }
     int to_id   = ctx->to_id;
-    bool is_utf = ctx->to_is_utf;
+    bool is_utf = ctx->to_is_mbc;
 
     size_t i = 0;
     size_t j = 0;
@@ -1045,12 +1045,12 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     int from_id      = ctx->from_id;
     char* from_data  = ctx->from_data;
     size_t from_len  = ctx->from_len;
-    bool from_is_utf = ctx->from_is_utf;
+    bool from_is_utf = ctx->from_is_mbc;
 
     int to_id        = ctx->to_id;
     char** to_data   = ctx->to_data;
     size_t* to_len   = ctx->to_len;
-    bool to_is_utf   = ctx->to_is_utf;
+    bool to_is_utf   = ctx->to_is_mbc;
 
     #ifdef DEBUG
     fprintf(stderr, ">> conv_to_utf7: from_id=%d, len=%lu\n", from_id, from_len);
@@ -1488,12 +1488,12 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
     int from_id      = ctx->from_id;
     char* from_data  = ctx->from_data;
     size_t from_len  = ctx->from_len;
-    bool from_is_utf = ctx->from_is_utf;
+    bool from_is_utf = ctx->from_is_mbc;
 
     int to_id        = ctx->to_id;
     char** to_data   = ctx->to_data;
     size_t* to_len   = ctx->to_len;
-    bool to_is_utf   = ctx->to_is_utf;
+    bool to_is_utf   = ctx->to_is_mbc;
 
     #ifdef DEBUG
     fprintf(stderr, ">> conv_from_utf7: from_id=%d, to_id=%d, len=%lu\n", from_id, to_id, from_len);
@@ -1841,7 +1841,7 @@ static size_t _enc_code_seq_len(bool is_utf, int enc_id, int cp) {
 }
 
 static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
-    if (!ctx->from_is_utf) {
+    if (!ctx->from_is_mbc) {
 
         // Get unsigned code
         int icode = _u8(*str);
@@ -1858,7 +1858,7 @@ static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int
 
 static int _enc_to_char(lib_enc_context_t* ctx, int enc_id, char* buf, int cp) {
 
-    if (!ctx->to_is_utf) {
+    if (!ctx->to_is_mbc) {
         int ocode = 0;
 
         // Convert [EncodingID] codepoint to code by map
@@ -1934,12 +1934,12 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     int from_id      = ctx->from_id;
     char* from_data  = ctx->from_data;
     size_t from_len  = ctx->from_len;
-    bool from_is_utf = ctx->from_is_utf;
+    bool from_is_utf = ctx->from_is_mbc;
 
     int to_id        = ctx->to_id;
     char** to_data   = ctx->to_data;
     size_t* to_len   = ctx->to_len;
-    bool to_is_utf   = ctx->to_is_utf;
+    bool to_is_utf   = ctx->to_is_mbc;
 
     #ifdef DEBUG
     fprintf(stderr, ">> conv_ctx: from_id=%d, to_id=%d, len=%lu\n", from_id, to_id, from_len);

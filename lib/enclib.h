@@ -17,14 +17,14 @@ typedef struct lib_enc_context_t {
     char* from_data;
     size_t from_len;
     lib_unimap_t* from_map;
-    bool from_is_utf;
+    bool from_is_mbc;
 
     /* To                  */
     int to_id;    
     char** to_data;
     size_t* to_len;
     lib_unimap_t* to_map;
-    bool to_is_utf;
+    bool to_is_mbc;
 
 } lib_enc_context_t;
 
