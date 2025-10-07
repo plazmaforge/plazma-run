@@ -12,14 +12,14 @@
 
 typedef struct lib_enc_context_t {
 
-    /* From */
+    /* From                */
     int from_id;
     char* from_data;
     size_t from_len;
     lib_unimap_t* from_map;
     bool from_is_utf;
 
-    /* To */
+    /* To                  */
     int to_id;    
     char** to_data;
     size_t* to_len;
@@ -28,30 +28,24 @@ typedef struct lib_enc_context_t {
 
 } lib_enc_context_t;
 
-int lib_enc_bom_len(int id);
+int lib_enc_bom_len(int enc_id);
 
-int lib_enc_set_bom(int id, char* str);
+int lib_enc_set_bom(int enc_id, char* str);
 
 /**
- * Returns true if the Encoding ID supports conversion
+ * Return true if the Encoding ID supports conversion
  */
-bool lib_enc_supports_conv(int id);
+bool lib_enc_supports_conv(int enc_id);
 
 /**
- * Returns (conversion only) encoding id by encoding name 
+ * Return (conversion only) encoding id by encoding name 
  */
 int lib_enc_get_conv_encoding_id(const char* name);
 
 /**
- * Converts data by Encoding IDs 
+ * Convert data by Encoding IDs 
  */
-int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len, 
-    char** to_data, size_t* to_len);
-
-/**
- * Converts data from UTF-7
- */
-int lib_enc_conv_from_utf7(int to_id, char* from_data, size_t from_len, char** to_data, size_t* to_len);
+int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len, char** to_data, size_t* to_len);
 
 int lib_enc_test();
 
