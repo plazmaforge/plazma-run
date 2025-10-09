@@ -203,40 +203,52 @@ bool lib_enc_is_win_encoding(int id) {
 /**
  * Returns true if the encoding id is UTF type 
  */
-bool lib_enc_is_utf_encoding(int id) {
-  return (   id == LIB_ENC_UTF7_ID
-          || id == LIB_ENC_UTF8_ID
-    /**/  || id == LIB_ENC_UTF8_BOM_ID
+bool lib_enc_is_utf_encoding(int enc_id) {
+    return ( lib_enc_is_utf7_encoding(enc_id)
+          || lib_enc_is_utf8_encoding(enc_id)
+          || lib_enc_is_utf16_encoding(enc_id)
+          || lib_enc_is_utf32_encoding(enc_id)
+          );
+}
 
-          || id == LIB_ENC_UTF16_ID
-          || id == LIB_ENC_UTF16BE_ID
-    /**/  || id == LIB_ENC_UTF16LE_ID      /* codepage = 1200  */
-    /**/  || id == LIB_ENC_UTF16BE_BOM_ID  /* codepage = 1200  */
-    /**/  || id == LIB_ENC_UTF16LE_BOM_ID  /* codepage = 1200  */
-
-          || id == LIB_ENC_UTF32_ID
-          || id == LIB_ENC_UTF32BE_ID
-          || id == LIB_ENC_UTF32LE_ID      /* codepage = 12000 */
-    /**/  || id == LIB_ENC_UTF32BE_BOM_ID  /* codepage = 12000 */
-    /**/  || id == LIB_ENC_UTF32LE_BOM_ID  /* codepage = 12000 */
-
+/**
+ * Returns true if the encoding id is UTF-7 type 
+ */
+bool lib_enc_is_utf7_encoding(int enc_id) {
+  return (   enc_id == LIB_ENC_UTF7_ID
         );
 }
 
-bool lib_enc_is_utf16or32_encoding(int id) {
-  return (   id == LIB_ENC_UTF16_ID
-          || id == LIB_ENC_UTF16BE_ID
-    /**/  || id == LIB_ENC_UTF16LE_ID     /* codepage = 1200  */
-    /**/  || id == LIB_ENC_UTF16BE_BOM_ID /* codepage = 1200  */
-    /**/  || id == LIB_ENC_UTF16LE_ID     /* codepage = 1200  */
+/**
+ * Returns true if the encoding id is UTF-8 type 
+ */
+bool lib_enc_is_utf8_encoding(int enc_id) {
+  return (   enc_id == LIB_ENC_UTF8_ID
+    /**/  || enc_id == LIB_ENC_UTF8_BOM_ID
+        );
+}
 
-          || id == LIB_ENC_UTF32_ID
-          || id == LIB_ENC_UTF32BE_ID
-    /**/  || id == LIB_ENC_UTF32LE_ID     /* codepage = 12000  */
-    /**/  || id == LIB_ENC_UTF32BE_BOM_ID /* codepage = 12000  */
-    /**/  || id == LIB_ENC_UTF32LE_BOM_ID /* codepage = 12000  */
-
+bool lib_enc_is_utf16_encoding(int enc_id) {
+  return (   enc_id == LIB_ENC_UTF16_ID
+          || enc_id == LIB_ENC_UTF16BE_ID
+    /**/  || enc_id == LIB_ENC_UTF16LE_ID     /* codepage = 1200  */
+    /**/  || enc_id == LIB_ENC_UTF16BE_BOM_ID /* codepage = 1200  */
+    /**/  || enc_id == LIB_ENC_UTF16LE_BOM_ID /* codepage = 1200  */
     );
+}
+
+bool lib_enc_is_utf32_encoding(int enc_id) {
+  return (   enc_id == LIB_ENC_UTF32_ID
+          || enc_id == LIB_ENC_UTF32BE_ID
+    /**/  || enc_id == LIB_ENC_UTF32LE_ID     /* codepage = 12000  */
+    /**/  || enc_id == LIB_ENC_UTF32BE_BOM_ID /* codepage = 12000  */
+    /**/  || enc_id == LIB_ENC_UTF32LE_BOM_ID /* codepage = 12000  */
+    );
+}
+
+bool lib_enc_is_utf16or32_encoding(int enc_id) {
+  return (   lib_enc_is_utf16_encoding(enc_id)
+          || lib_enc_is_utf32_encoding(enc_id) );
 }
 
 /**
