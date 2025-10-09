@@ -2179,17 +2179,37 @@ int lib_enc_test() {
 
 /*
 
+iconv
+https://github.com/pillarjs/iconv-lite/tree/master/encodings/tables
+
+Encoding Converter (ENCA)
+https://github.com/nijel/enca
+https://github.com/nijel/enca/blob/master/lib/unicodemap.c
+https://github.com/nijel/enca/blob/master/src/locale_detect.c
+https://github.com/nijel/enca/blob/master/src/filebuf.c
+https://github.com/nijel/enca/blob/master/src/getopt_long.c
+https://github.com/nijel/enca/blob/master/src/options.c
+
+UTF7 RFC
+https://datatracker.ietf.org/doc/html/rfc2152
+
+UTF7 Wiki
+https://ru.m.wikipedia.org/wiki/UTF-7
+
+UTF7 VBA
+https://www.source-code.biz/snippets/vbasic/Base64Coder.bas.txt
+
+UTF7 ICU
+https://github.com/godotengine/godot/blob/master/thirdparty/icu4c/common/ucnv_u7.cpp
+https://cocalc.com/github/godotengine/godot/blob/master/thirdparty/icu4c/common/ucnv_u7.cpp
+https://unicode-org.github.io/icu/userguide/conversion/converters.html#1-single-string
+
+UTF-7 JavaScript
+https://github.com/kkaefer/utf7/blob/master/utf7.js
+
 UTF-7 Mapping Table
 https://www.fileformat.info/info/charset/UTF-7/list.htm
 
 https://www.google.com/amp/s/habr.com/ru/amp/publications/835206/
-
-ICU
-====
-https://unicode-org.github.io/icu/userguide/conversion/converters.html#1-single-string
-
-https://github.com/godotengine/godot/blob/master/thirdparty/icu4c/common/ucnv_u7.cpp
-
-https://cocalc.com/github/godotengine/godot/blob/master/thirdparty/icu4c/common/ucnv_u7.cpp
 
 */
