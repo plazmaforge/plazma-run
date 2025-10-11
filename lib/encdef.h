@@ -34,24 +34,24 @@ bool lib_enc_is_dos_encoding(int id);
 
 bool lib_enc_is_win_encoding(int id);
 
-/**
- * Returns true if the encoding id is UTF type 
- */
-bool lib_enc_is_utf_encoding(int enc_id);
+// /**
+//  * Returns true if the encoding id is UTF type 
+//  */
+// bool lib_enc_is_utf_encoding(int enc_id);
 
-bool lib_enc_is_utf7_encoding(int enc_id);
+// bool lib_enc_is_utf7_encoding(int enc_id);
 
-bool lib_enc_is_utf8_encoding(int enc_id);
+// bool lib_enc_is_utf8_encoding(int enc_id);
 
-bool lib_enc_is_utf16_encoding(int enc_id);
+// bool lib_enc_is_utf16_encoding(int enc_id);
 
-bool lib_enc_is_utf32_encoding(int enc_id);
+// bool lib_enc_is_utf32_encoding(int enc_id);
 
-/**
- * Returns true if the encoding id is 
- * UTF-16/16BE/18LE or UTF-32/32BE/32LE type 
- */
-bool lib_enc_is_utf16or32_encoding(int enc_id);
+// /**
+//  * Returns true if the encoding id is 
+//  * UTF-16/16BE/18LE or UTF-32/32BE/32LE type 
+//  */
+// bool lib_enc_is_utf16or32_encoding(int enc_id);
 
 /**
  * Returns true if the encoding id is UCS type 
