@@ -67,7 +67,7 @@ static void _data_free(char* from_data, char* to_data) {
 
 void _print_encodings() {
     //lib_enc_test();
-    size_t size = lib_enc_get_encoding_size();
+    size_t size = lib_enc_get_size();
     for (size_t i = 0; i < size; i++) {        
         lib_encoding_t e = lib_enc_get_encoding(i);
         if (!lib_enc_supports_conv(e.id)) {

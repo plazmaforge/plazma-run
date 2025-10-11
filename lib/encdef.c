@@ -444,7 +444,7 @@ int lib_enc_get_encoding_id(const char* name) {
   if (!name) {
     return 0;
   }
-  size_t size = lib_enc_get_encoding_size();
+  size_t size = lib_enc_get_size();
   for (size_t i = 0; i < size; i++) {
     lib_encoding_t e = lib_encodings[i];
 
@@ -456,11 +456,11 @@ int lib_enc_get_encoding_id(const char* name) {
   return 0;
 }
 
-bool lib_enc_has_encoding_id(int id) {
+bool lib_enc_has_id(int id) {
     if (id <= 0) {
         return false;
     }
-    size_t size = lib_enc_get_encoding_size();
+    size_t size = lib_enc_get_size();
     for (size_t i = 0; i < size; i++) {
         lib_encoding_t e = lib_encodings[i];
         if (e.id == id) {
@@ -470,7 +470,7 @@ bool lib_enc_has_encoding_id(int id) {
     return false;
 }
 
-size_t lib_enc_get_encoding_size() {
+size_t lib_enc_get_size() {
   return sizeof(lib_encodings) / sizeof(lib_encoding_t);
 }
 
@@ -479,7 +479,7 @@ lib_encoding_t lib_enc_get_encoding(size_t index) {
 }
 
 void lib_enc_print_encodings() {
-    size_t size = lib_enc_get_encoding_size();
+    size_t size = lib_enc_get_size();
     for (size_t i = 0; i < size; i++) {
         lib_encoding_t e = lib_encodings[i];
         //printf("%s   \t%s\t\t %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id));

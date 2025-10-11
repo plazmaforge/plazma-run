@@ -21,7 +21,7 @@ typedef struct lib_encoding_t {
 /**
  * Returns size of encoding 
  */
-size_t lib_enc_get_encoding_size();
+size_t lib_enc_get_size();
 
 /**
  * Returns encoding by index 
