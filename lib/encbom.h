@@ -1,25 +1,25 @@
-#ifndef PLAZMA_LIB_BOMLIB_H
-#define PLAZMA_LIB_BOMLIB_H
+#ifndef PLAZMA_LIB_ENCBOM_H
+#define PLAZMA_LIB_ENCBOM_H
 
 #include "encpre.h"
 
 /*
  * Return byte order mark (BOM) of a string.
  */
-int lib_bom_get_bom_n(const char* str, size_t num);
+int lib_enc_get_bom_n(const char* str, size_t num);
 
 /*
  * Convert BOM type to a string representation.
  * First numbers only.
  */
-const char* lib_bom_to_bom_str(int bom);
+const char* lib_enc_to_bom_str(int bom);
 
 ////
 
 // BOM
 // https://en.wikipedia.org/wiki/Byte_order_mark
 
-int lib_bom_get_bom_n(const char* str, size_t num) {
+int lib_enc_get_bom_n(const char* str, size_t num) {
     if (!str || num < 2) {
         return LIB_ENC_NONE;
     }
@@ -114,7 +114,7 @@ int lib_bom_get_bom_n(const char* str, size_t num) {
     return LIB_ENC_NONE;
 }
 
-const char* lib_bom_to_bom_str(int bom) {
+const char* lib_enc_to_bom_str(int bom) {
     switch (bom) {
 
     // UTF-8
@@ -155,4 +155,4 @@ const char* lib_bom_to_bom_str(int bom) {
     return "";
 }
 
-#endif // PLAZMA_LIB_BOMLIB_H
+#endif // PLAZMA_LIB_ENCBOM_H

@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "bomlib.h"
+#include "encbom.h"
 #include "unilib.h"
 #include "utf8lib.h"
 
@@ -801,7 +801,7 @@ bool lib_utf8_is_utf_valid_n(const char* str, size_t num) {
     if (!str) {
         return true;
     }
-    int bom = lib_bom_get_bom_n(str, num);
+    int bom = lib_enc_get_bom_n(str, num);
     if (bom > 0) {
         return (bom == LIB_ENC_UTF8_BOM_ID 
         || bom == LIB_ENC_UTF16BE_BOM_ID
@@ -832,7 +832,7 @@ bool lib_utf8_is_ascii_n(const char* str, size_t num) {
     if (!str || num <= 0) {
         return true;
     }
-    int bom = lib_bom_get_bom_n(str, num);
+    int bom = lib_enc_get_bom_n(str, num);
     if (bom > 0) {
         return false;
     }
@@ -856,7 +856,7 @@ bool lib_utf8_is_utf8_n(const char* str, size_t num) {
     if (!str || num <= 0) {
         return true;
     }
-    int bom = lib_bom_get_bom_n(str, num);
+    int bom = lib_enc_get_bom_n(str, num);
     if (bom > 0) {
         return (bom == LIB_ENC_UTF8_BOM_ID);
     }
@@ -867,11 +867,11 @@ bool lib_utf8_is_utf8_n(const char* str, size_t num) {
  * Return byte order mark (BOM) of a string.
  */
 int lib_utf8_get_bom_n(const char* str, size_t num) {
-    return lib_bom_get_bom_n(str, num);
+    return lib_enc_get_bom_n(str, num);
 }
 
 const char* lib_utf8_to_bom_str(int bom) {
-    return lib_bom_to_bom_str(bom);
+    return lib_enc_to_bom_str(bom);
 }
 
 ////
