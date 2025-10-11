@@ -2212,4 +2212,7 @@ https://www.fileformat.info/info/charset/UTF-7/list.htm
 
 https://www.google.com/amp/s/habr.com/ru/amp/publications/835206/
 
+BOCU
+https://en.wikipedia.org/wiki/Binary_Ordered_Compression_for_Unicode
+
 */

@@ -803,11 +803,11 @@ bool lib_utf8_is_utf_valid_n(const char* str, size_t num) {
     }
     int bom = lib_bom_get_bom_n(str, num);
     if (bom > 0) {
-        return (bom == LIB_BOM_UTF8 
-        || bom == LIB_BOM_UTF16_BE
-        || bom == LIB_BOM_UTF16_LE
-        || bom == LIB_BOM_UTF32_BE
-        || bom == LIB_BOM_UTF16_LE
+        return (bom == LIB_ENC_UTF8_BOM_ID 
+        || bom == LIB_ENC_UTF16BE_BOM_ID
+        || bom == LIB_ENC_UTF16LE_BOM_ID
+        || bom == LIB_ENC_UTF32BE_BOM_ID
+        || bom == LIB_ENC_UTF16LE_BOM_ID
         );
     }
     return lib_utf8_is_utf8_valid(str);   
@@ -858,7 +858,7 @@ bool lib_utf8_is_utf8_n(const char* str, size_t num) {
     }
     int bom = lib_bom_get_bom_n(str, num);
     if (bom > 0) {
-        return (bom == LIB_BOM_UTF8);
+        return (bom == LIB_ENC_UTF8_BOM_ID);
     }
     return lib_utf8_is_utf8_valid(str);   
 }
