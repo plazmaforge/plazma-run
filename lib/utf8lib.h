@@ -308,17 +308,19 @@ bool lib_utf8_strieq(const char* str1, const char* str2);
 
 //// alt: end
 
+
 //// UTF-8
 
-bool lib_utf8_is_enc_id(int enc_id);
+// bool lib_utf8_is_enc_id(int enc_id);
 
 //// UTF-16
 
-bool lib_utf16_is_enc_id(int enc_id);
+// bool lib_utf16_is_enc_id(int enc_id);
 
 //// UTF-32
 
-bool lib_utf32_is_enc_id(int enc_id);
+// bool lib_utf32_is_enc_id(int enc_id);
+
 
 int lib_utf16_char_seq_len(const char* str);
 

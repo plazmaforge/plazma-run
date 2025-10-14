@@ -238,7 +238,7 @@ bool lib_enc_supports_conv(int enc_id) {
  * Returns (conversion only) encoding id by encoding name 
  */
 int lib_enc_get_conv_encoding_id(const char* name) {
-    int enc_id = lib_enc_get_encoding_id(name);
+    int enc_id = lib_enc_get_id(name);
     if (enc_id == 0) {
         return 0;
     }
@@ -1181,7 +1181,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
             block_count++;
             
             //if (from_id == LIB_ENC_UTF16_ID) {
-            if (lib_utf16_is_enc_id(from_id)) {
+            if (lib_enc_is_utf16(from_id)) {
                 u16_seq_len = from_seq_len;
             } else {
                 u16_seq_len = lib_utf16_code_seq_len(ucode);
@@ -1385,7 +1385,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 
             block_count++;
             //if (from_id == LIB_ENC_UTF16_ID) {
-            if (lib_utf16_is_enc_id(from_id)) {
+            if (lib_enc_is_utf16(from_id)) {
                 u16_seq_len = from_seq_len;
             } else {
                 u16_seq_len = lib_utf16_code_seq_len(ucode);

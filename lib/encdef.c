@@ -138,7 +138,7 @@ static const lib_encoding_t lib_encodings[] = {
 /**
  * Returns true if the encoding id is ISO type 
  */
-bool lib_enc_is_iso_encoding(int id) {
+bool lib_enc_is_iso(int id) {
   return (   id == 28591
           || id == 28592
           || id == 28593
@@ -160,7 +160,7 @@ bool lib_enc_is_iso_encoding(int id) {
 /**
  * Returns true if the encoding id is DOS type 
  */
-bool lib_enc_is_dos_encoding(int id) {
+bool lib_enc_is_dos(int id) {
   return (   id == 437
           || id == 737
           || id == 775
@@ -183,7 +183,7 @@ bool lib_enc_is_dos_encoding(int id) {
 /**
  * Returns true if the encoding id is WIN type 
  */
-bool lib_enc_is_win_encoding(int id) {
+bool lib_enc_is_win(int id) {
   return (   id == 1250
           || id == 1251
           || id == 1252
@@ -203,58 +203,18 @@ bool lib_enc_is_win_encoding(int id) {
 /**
  * Returns true if the encoding id is UTF type 
  */
-bool lib_enc_is_utf_encoding(int enc_id) {
-    return ( lib_enc_is_utf7_encoding(enc_id)
-          || lib_enc_is_utf8_encoding(enc_id)
-          || lib_enc_is_utf16_encoding(enc_id)
-          || lib_enc_is_utf32_encoding(enc_id)
+bool lib_enc_is_utf(int enc_id) {
+    return ( lib_enc_is_utf7(enc_id)
+          || lib_enc_is_utf8(enc_id)
+          || lib_enc_is_utf16(enc_id)
+          || lib_enc_is_utf32(enc_id)
           );
 }
-
-// /**
-//  * Returns true if the encoding id is UTF-7 type 
-//  */
-// bool lib_enc_is_utf7_encoding(int enc_id) {
-//   return (   enc_id == LIB_ENC_UTF7_ID
-//         );
-// }
-
-// /**
-//  * Returns true if the encoding id is UTF-8 type 
-//  */
-// bool lib_enc_is_utf8_encoding(int enc_id) {
-//   return (   enc_id == LIB_ENC_UTF8_ID
-//     /**/  || enc_id == LIB_ENC_UTF8_BOM_ID
-//         );
-// }
-
-// bool lib_enc_is_utf16_encoding(int enc_id) {
-//   return (   enc_id == LIB_ENC_UTF16_ID
-//           || enc_id == LIB_ENC_UTF16BE_ID
-//     /**/  || enc_id == LIB_ENC_UTF16LE_ID     /* codepage = 1200  */
-//     /**/  || enc_id == LIB_ENC_UTF16BE_BOM_ID /* codepage = 1200  */
-//     /**/  || enc_id == LIB_ENC_UTF16LE_BOM_ID /* codepage = 1200  */
-//     );
-// }
-
-// bool lib_enc_is_utf32_encoding(int enc_id) {
-//   return (   enc_id == LIB_ENC_UTF32_ID
-//           || enc_id == LIB_ENC_UTF32BE_ID
-//     /**/  || enc_id == LIB_ENC_UTF32LE_ID     /* codepage = 12000  */
-//     /**/  || enc_id == LIB_ENC_UTF32BE_BOM_ID /* codepage = 12000  */
-//     /**/  || enc_id == LIB_ENC_UTF32LE_BOM_ID /* codepage = 12000  */
-//     );
-// }
-
-// bool lib_enc_is_utf16or32_encoding(int enc_id) {
-//   return (   lib_enc_is_utf16_encoding(enc_id)
-//           || lib_enc_is_utf32_encoding(enc_id) );
-// }
 
 /**
  * Returns true if the encoding id is UCS type 
  */
-bool lib_enc_is_ucs_encoding(int id) {
+bool lib_enc_is_ucs(int id) {
   return (   id == 1001200
     /**/  || id == 1001201
     /**/  || id == 1001202
@@ -323,17 +283,17 @@ int lib_enc_dos_to_win(int id) {
 /**
  * Returns encoding type by encoding id
  */
-int lib_enc_get_encoding_type(int id) {
+int lib_enc_get_type(int id) {
 
-  if (lib_enc_is_iso_encoding(id)) {
+  if (lib_enc_is_iso(id)) {
     return LIB_ENC_ISO_TYPE;
-  } else if (lib_enc_is_dos_encoding(id)) {
+  } else if (lib_enc_is_dos(id)) {
     return LIB_ENC_DOS_TYPE;
-  } else if (lib_enc_is_win_encoding(id)) {
+  } else if (lib_enc_is_win(id)) {
     return LIB_ENC_WIN_TYPE;
-  } else if (lib_enc_is_utf_encoding(id)) {
+  } else if (lib_enc_is_utf(id)) {
     return LIB_ENC_UTF_TYPE;
-  } else if (lib_enc_is_ucs_encoding(id)) {
+  } else if (lib_enc_is_ucs(id)) {
     return LIB_ENC_UCS_TYPE;
   }
 
@@ -343,10 +303,10 @@ int lib_enc_get_encoding_type(int id) {
 /**
  * Returns name of encoding type by encoding id
  */
-const char* lib_enc_get_encoding_type_name(int id) {
+const char* lib_enc_get_type_name(int id) {
   
   // Get encoding type by id
-  int type = lib_enc_get_encoding_type(id);
+  int type = lib_enc_get_type(id);
 
   if (type == LIB_ENC_ISO_TYPE) {
     return "ISO-8859";
@@ -440,7 +400,7 @@ bool _lib_enc_equals(const char* name, lib_encoding_t* encoding) {
 /**
  * Returns encoding id by encoding name
  */
-int lib_enc_get_encoding_id(const char* name) {
+int lib_enc_get_id(const char* name) {
   if (!name) {
     return 0;
   }
@@ -482,7 +442,7 @@ void lib_enc_print_encodings() {
     size_t size = lib_enc_get_size();
     for (size_t i = 0; i < size; i++) {
         lib_encoding_t e = lib_encodings[i];
-        //printf("%s   \t%s\t\t %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id));
-        printf("%-15s %-45s %-15s %s\n", e.name, e.description, lib_enc_get_encoding_type_name(e.id), e.alias);
+        //printf("%s   \t%s\t\t %s\n", e.name, e.description, lib_enc_get_type_name(e.id));
+        printf("%-15s %-45s %-15s %s\n", e.name, e.description, lib_enc_get_type_name(e.id), e.alias);
     }
 }

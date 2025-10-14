@@ -1752,33 +1752,21 @@ int lib_utf32le_to_char(char* buf, int cp) {
 
 //// UTF-8
 
-bool lib_utf8_is_enc_id(int enc_id) {
-    return lib_enc_is_utf8_encoding(enc_id);
-    //return enc_id == LIB_ENC_UTF8_ID 
-    //|| enc_id == LIB_ENC_UTF8_BOM_ID;
-}
+// bool lib_utf8_is_enc_id(int enc_id) {
+//     return lib_enc_is_utf8(enc_id);
+// }
 
 //// UTF-16
 
-bool lib_utf16_is_enc_id(int enc_id) {
-    return lib_enc_is_utf16_encoding(enc_id);
-    // return enc_id == LIB_ENC_UTF16_ID
-    // || enc_id == LIB_ENC_UTF16BE_ID 
-    // || enc_id == LIB_ENC_UTF16BE_BOM_ID
-    // || enc_id == LIB_ENC_UTF16LE_ID
-    // || enc_id == LIB_ENC_UTF16LE_BOM_ID;
-}
+// bool lib_utf16_is_enc_id(int enc_id) {
+//     return lib_enc_is_utf16(enc_id);
+// }
 
 //// UTF-32
 
-bool lib_utf32_is_enc_id(int enc_id) {
-    return lib_enc_is_utf32_encoding(enc_id);
-    // return enc_id == LIB_ENC_UTF32_ID
-    // || enc_id == LIB_ENC_UTF32BE_ID 
-    // || enc_id == LIB_ENC_UTF32BE_BOM_ID
-    // || enc_id == LIB_ENC_UTF32LE_ID
-    // || enc_id == LIB_ENC_UTF32LE_BOM_ID;
-}
+// bool lib_utf32_is_enc_id(int enc_id) {
+//     return lib_enc_is_utf32(enc_id);
+// }
 
 //// UTF
 
