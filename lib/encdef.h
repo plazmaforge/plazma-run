@@ -28,32 +28,42 @@ size_t lib_enc_get_size();
  */
 lib_encoding_t lib_enc_get_encoding(size_t index);
 
-bool lib_enc_is_iso(int id);
+bool lib_enc_is_iso(int enc_id);
 
-bool lib_enc_is_dos(int id);
+bool lib_enc_is_dos(int enc_id);
 
-bool lib_enc_is_win(int id);
+bool lib_enc_is_win(int enc_id);
+
+/**
+ * Returns true if the encoding id is multi bytes type 
+ */
+bool lib_enc_is_mbc(int enc_id);
+
+/**
+ * Returns true if the encoding id is UTF type 
+ */
+bool lib_enc_is_utf(int enc_id);
 
 /**
  * Returns true if the encoding id is UCS type 
  */
-bool lib_enc_is_ucs(int id);
+bool lib_enc_is_ucs(int enc_id);
 
 /**
  * Converts DOS encoding id to WIN encoding id
  */
-int lib_enc_dos_to_win(int id);
+int lib_enc_dos_to_win(int enc_id);
 
 
 /**
  * Returns encoding type by encoding id
  */
-int lib_enc_get_type(int id);
+int lib_enc_get_type(int enc_id);
 
 /**
  * Returns name of encoding type by encoding id
  */
-const char* lib_enc_get_type_name(int id);
+const char* lib_enc_get_type_name(int enc_id);
 
 
 /**

@@ -203,31 +203,11 @@ size_t lib_enc_set_bom(int enc_id, char* str) {
     return 0;
 }
 
-bool lib_enc_supports_utf_conv(int enc_id) {
-
-    return (enc_id == LIB_ENC_UTF7_ID
-
-     || enc_id == LIB_ENC_UTF8_ID
-     || enc_id == LIB_ENC_UTF8_BOM_ID
-
-     || enc_id == LIB_ENC_UTF16_ID
-     || enc_id == LIB_ENC_UTF16BE_ID
-     || enc_id == LIB_ENC_UTF16LE_ID
-     || enc_id == LIB_ENC_UTF16BE_BOM_ID
-     || enc_id == LIB_ENC_UTF16LE_BOM_ID
-
-     || enc_id == LIB_ENC_UTF32_ID
-     || enc_id == LIB_ENC_UTF32BE_ID
-     || enc_id == LIB_ENC_UTF32LE_ID
-     || enc_id == LIB_ENC_UTF32BE_BOM_ID
-     || enc_id == LIB_ENC_UTF32LE_BOM_ID);
-} 
-
 /**
  * Returns true if the Encoding ID supports conversion
  */
 bool lib_enc_supports_conv(int enc_id) {
-    if (lib_enc_supports_utf_conv(enc_id)) {
+    if (lib_enc_is_utf(enc_id)) {
         return true;
     }
 
@@ -310,10 +290,6 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
     bool has_from = lib_unimap_supports_map(from_id);
     bool has_to   = lib_unimap_supports_map(to_id);
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // UTF7 Only
-    ////////////////////////////////////////////////////////////////////////////////
-
     lib_enc_context_t ctx;
     _init_ctx(&ctx);
 
@@ -343,7 +319,11 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
         ctx.to_is_mbc = true;
     }
 
-    if (from_id == LIB_ENC_UTF7_ID) {
+    ////////////////////////////////////////////////////////////////////////////////
+    // UTF7 encoding only
+    ////////////////////////////////////////////////////////////////////////////////
+
+    if (lib_enc_is_utf7(from_id)) {
         if (lib_enc_supports_conv(to_id)) {
             return _enc_conv_from_utf7_ctx(&ctx);
         } else {
@@ -354,7 +334,7 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
         }
     }
 
-    if (to_id == LIB_ENC_UTF7_ID) {
+    if (lib_enc_is_utf7(to_id)) {
         if (lib_enc_supports_conv(from_id)) {
             return _enc_conv_to_utf7_ctx(&ctx);
         } else {
@@ -364,6 +344,10 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
             return LIB_ENC_ERR_CONV_FROM_USUPPORTED;
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Other encodings
+    ////////////////////////////////////////////////////////////////////////////////
 
     return _enc_conv_ctx(&ctx);
 
