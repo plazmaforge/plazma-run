@@ -41,11 +41,6 @@ int lib_unimap_conv_by_map(lib_unimap_t* from_map, lib_unimap_t* to_map, char* d
  */
 bool lib_unimap_supports_map(int id);
 
-/**
- * Return UTF-8 code by map and code 
- */
-int lib_unimap_get_ucode(lib_unimap_t* from_map, int icode);
-
 ////
 
 int lib_unimap_conv_icode(lib_unimap_t* conv_map, int icode);
