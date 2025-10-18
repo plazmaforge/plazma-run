@@ -3,9 +3,9 @@
 
 #include "unimap.h"
 
-//#define DEBUG    1
-//#define DEBUG_LL 1
-//#define ERROR    1
+#define DEBUG    1
+#define DEBUG_LL 1
+#define ERROR    1
 
 #define NO_CHR 0xFFFD
 #define NO_DAT '?'
@@ -819,104 +819,104 @@ static const int unimap_cp1258[] = {
 };
 
 /**
- * Returns unimap array by Encoding ID 
+ * Return unimap array by Encoding ID 
  */
-static int* _get_map_by_id(int id) {
-    if (id <= 0) {
+static int* _get_map_by_id(int enc_id) {
+    if (enc_id <= 0) {
         return NULL;
     }
 
     // ISO
-    if (id == 28591) {
+    if (enc_id == 28591) {
         return (int*) unimap_iso8859_1;
-    } else if (id == 28592) {
+    } else if (enc_id == 28592) {
         return (int*) unimap_iso8859_2;
-    } else if (id == 28593) {
+    } else if (enc_id == 28593) {
         return (int*) unimap_iso8859_3;
-    } else if (id == 28594) {
+    } else if (enc_id == 28594) {
         return (int*) unimap_iso8859_4;
-    } else if (id == 28595) {
+    } else if (enc_id == 28595) {
         return (int*) unimap_iso8859_5;
-    } else if (id == 28596) {
+    } else if (enc_id == 28596) {
         return (int*) unimap_iso8859_6;
-    } else if (id == 28597) {
+    } else if (enc_id == 28597) {
         return (int*) unimap_iso8859_7;
-    } else if (id == 28598) {
+    } else if (enc_id == 28598) {
         return (int*) unimap_iso8859_8;            
-    } else if (id == 28599) {        
+    } else if (enc_id == 28599) {        
         return (int*) unimap_iso8859_9;
 
-    } else if (id == 28600) {
+    } else if (enc_id == 28600) {
         return (int*) unimap_iso8859_10;
-    } else if (id == 28601) {
+    } else if (enc_id == 28601) {
         return (int*) unimap_iso8859_11;
 
-    } else if (id == 28603) {
+    } else if (enc_id == 28603) {
         return (int*) unimap_iso8859_13;
-    } else if (id == 28604) {
+    } else if (enc_id == 28604) {
         return (int*) unimap_iso8859_14;
-    } else if (id == 28605) {
+    } else if (enc_id == 28605) {
         return (int*) unimap_iso8859_15;
-    } else if (id == 28606) {
+    } else if (enc_id == 28606) {
         return (int*) unimap_iso8859_16;
 
     // DOS
-    } else if (id == 437) {
+    } else if (enc_id == 437) {
         return (int*) unimap_cp437;
-    } else if (id == 737) {
+    } else if (enc_id == 737) {
         return (int*) unimap_cp737;
-    } else if (id == 775) {
+    } else if (enc_id == 775) {
         return (int*) unimap_cp775;
-    } else if (id == 850) {
+    } else if (enc_id == 850) {
         return (int*) unimap_cp850;
-    } else if (id == 852) {
+    } else if (enc_id == 852) {
         return (int*) unimap_cp852;
-    } else if (id == 855) {
+    } else if (enc_id == 855) {
         return (int*) unimap_cp855;
-    } else if (id == 857) {
+    } else if (enc_id == 857) {
         return (int*) unimap_cp857;
 
-    } else if (id == 860) {
+    } else if (enc_id == 860) {
         return (int*) unimap_cp860;
-    } else if (id == 861) {
+    } else if (enc_id == 861) {
         return (int*) unimap_cp861;
-    } else if (id == 862) {
+    } else if (enc_id == 862) {
         return (int*) unimap_cp862;
-    } else if (id == 863) {
+    } else if (enc_id == 863) {
         return (int*) unimap_cp863;
-    } else if (id == 864) {
+    } else if (enc_id == 864) {
         return (int*) unimap_cp864;
-    } else if (id == 865) {
+    } else if (enc_id == 865) {
         return (int*) unimap_cp865;                         
-    } else if (id == 866) {
+    } else if (enc_id == 866) {
         return (int*) unimap_cp866;
 
-    } else if (id == 869) {
+    } else if (enc_id == 869) {
         return (int*) unimap_cp869;
 
     /* CP874 */ /* WINDOWS-874 ? */    
-    } else if (id == 874) {
+    } else if (enc_id == 874) {
         return (int*) unimap_cp874;
     }
 
     // WIN
-    if (id == 1250) {
+    if (enc_id == 1250) {
         return (int*) unimap_cp1250;
-    } else if (id == 1251) {
+    } else if (enc_id == 1251) {
         return (int*) unimap_cp1251;
-    } else if (id == 1252) {
+    } else if (enc_id == 1252) {
         return (int*) unimap_cp1252;
-    } else if (id == 1253) {
+    } else if (enc_id == 1253) {
         return (int*) unimap_cp1253;
-    } else if (id == 1254) {
+    } else if (enc_id == 1254) {
         return (int*) unimap_cp1254;
-    } else if (id == 1255) {
+    } else if (enc_id == 1255) {
         return (int*) unimap_cp1255;
-    } else if (id == 1256) {
+    } else if (enc_id == 1256) {
         return (int*) unimap_cp1256;
-    } else if (id == 1257) {
+    } else if (enc_id == 1257) {
         return (int*) unimap_cp1257;
-    } else if (id == 1258) {
+    } else if (enc_id == 1258) {
         return (int*) unimap_cp1258;
     }
 
@@ -942,25 +942,25 @@ static uint8_t _u8(char value) {
 ////
 
 /**
- * Returns unimap array by Encoding ID 
+ * Return unimap array by Encoding ID 
  */
-int* lib_unimap_get_map_by_id(int id) {
-    return _get_map_by_id(id);
+int* lib_unimap_get_map_by_id(int enc_id) {
+    return _get_map_by_id(enc_id);
 }
 
 /**
- * Loads unimap by Encoding ID
+ * Load unimap by Encoding ID
  */
-int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int id) {
+int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int enc_id) {
     if (!unimap) {
         return -1;
     }
-    int* map = _get_map_by_id(id);
+    int* map = _get_map_by_id(enc_id);
     if (!map) {
         return -1;
     }
     unimap->map = map;
-    unimap->id  = id;
+    unimap->id  = enc_id;
     if (!map) {
         unimap->start = 0;
         unimap->len   = 0;
@@ -970,24 +970,24 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int id) {
     unimap->start = 128;
     unimap->len   = 128;
 
-    if (id == 28591
+    if (enc_id == 28591
 
-       || id == 28592
-       || id == 28593
-       || id == 28594
-       || id == 28595
-       || id == 28596
-       || id == 28597
-       || id == 28598
-       || id == 28599
+       || enc_id == 28592
+       || enc_id == 28593
+       || enc_id == 28594
+       || enc_id == 28595
+       || enc_id == 28596
+       || enc_id == 28597
+       || enc_id == 28598
+       || enc_id == 28599
 
-       || id == 28600
-       || id == 28601
+       || enc_id == 28600
+       || enc_id == 28601
 
-       || id == 28603
-       || id == 28604
-       || id == 28605
-       || id == 28606
+       || enc_id == 28603
+       || enc_id == 28604
+       || enc_id == 28605
+       || enc_id == 28606
 
        ) {
 
@@ -999,13 +999,8 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int id) {
     return 0;
 }
 
-// int _lib_unimap_to_code(char chr) {
-//     unsigned char u = (unsigned char) chr;
-//     return u;
-// }
-
 /**
- * Return Unicode by internal code
+ * Return Unicode by Bytecode
  */
 static int _get_ucode(lib_unimap_t* from_map, int icode) {
 
@@ -1023,7 +1018,7 @@ static int _get_ucode(lib_unimap_t* from_map, int icode) {
     fprintf(stderr, ">> oidx  : %d\n", idx);
     #endif
 
-    // Get UTF8 code from 'from_map"
+    // Get Unicode from 'from_map"
     if (idx >= from_map->len) {
         // error: NO_CHR (?)
         #ifdef ERROR
@@ -1037,7 +1032,7 @@ static int _get_ucode(lib_unimap_t* from_map, int icode) {
 }
 
 /**
- * Return internal code by Unicode
+ * Return Bytecode by Unicode
  */
 static int _get_icode(lib_unimap_t* conv_map, int ucode) {
 
@@ -1074,19 +1069,23 @@ static int _get_icode(lib_unimap_t* conv_map, int ucode) {
     return ocode;
 }
 
-static int _conv_code(lib_unimap_t* from_map, lib_unimap_t* to_map, int icode) {
+/**
+ * Convert b2b code
+ */
+static int _conv_b2b_code(lib_unimap_t* from_map, lib_unimap_t* to_map, int icode) {
 
     #ifdef DEBUG_LL
     fprintf(stderr, ">> icode : 0x%02X\n", (unsigned int) icode);
     #endif
 
+    // Convert to Unicode
     int ucode = _get_ucode(from_map, icode);
 
     #ifdef DEBUG_LL
     fprintf(stderr, ">> ucode : 0x%02X\n", (unsigned int) ucode);
     #endif
 
-    // Find index in 'to_map' by ucode
+    // Find index in 'to_map' by Unicode
     int ocode = 0;
     if (ucode == 0xFFFD) {
         #ifdef ERROR
@@ -1115,13 +1114,8 @@ static int _conv_code(lib_unimap_t* from_map, lib_unimap_t* to_map, int icode) {
     return ocode;
 }
 
-static int _conv_char(lib_unimap_t* from_map, lib_unimap_t* to_map, char ch) {
-    int icode = _u8(ch);
-    return _conv_code(from_map, to_map, icode);
-}
-
 /**
- * Converts data by Encoding IDs 
+ * Convert data by Encoding IDs 
  * b2b convert only
  */
 int lib_unimap_conv_by_id(int from_id, int to_id, char* data, size_t len) {
@@ -1151,7 +1145,7 @@ int lib_unimap_conv_by_id(int from_id, int to_id, char* data, size_t len) {
 }
 
 /**
- * Converts data by Encoding Maps 
+ * Convert data by Encoding Maps 
  * b2b convert only
  */
 int lib_unimap_conv_by_map(lib_unimap_t* from_map, lib_unimap_t* to_map, char* data, size_t len) {
@@ -1197,16 +1191,14 @@ int lib_unimap_conv_by_map(lib_unimap_t* from_map, lib_unimap_t* to_map, char* d
         return LIB_UNIMAP_ERR_CONV_TO_USUPPORTED;
     }
 
-    unsigned char u;
     int icode;
-    int ocode;        
+    int ocode;
 
     for (int i = 0; i < len; i++) {
 
         // ==>>
-        u = (unsigned char) data[i];
-        icode = u;
-        ocode = _conv_code(from_map, to_map, icode);
+        icode = _u8(data[i]);
+        ocode = _conv_b2b_code(from_map, to_map, icode);
         if (ocode < from_map->start) {
             continue;
         }
@@ -1217,8 +1209,8 @@ int lib_unimap_conv_by_map(lib_unimap_t* from_map, lib_unimap_t* to_map, char* d
     return 0;
 }
 
-bool lib_unimap_supports_map(int id) {
-    return _get_map_by_id(id) != NULL;
+bool lib_unimap_supports_map(int enc_id) {
+    return _get_map_by_id(enc_id) != NULL;
 }
 
 ////

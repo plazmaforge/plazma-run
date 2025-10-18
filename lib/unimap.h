@@ -15,31 +15,31 @@ typedef struct lib_unimap_t {
 } lib_unimap_t;
 
 /**
- * Returns unimap array by Encoding ID 
+ * Return unimap array by Encoding ID 
  */
-int* lib_unimap_get_map_by_id(int id);
+int* lib_unimap_get_map_by_id(int enc_id);
 
 /**
- * Loads unimap by Encoding ID
+ * Load unimap by Encoding ID
  */
-int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int id);
+int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int enc_id);
 
 /**
- * Converts data by Encoding IDs 
+ * Convert data by Encoding IDs 
  * b2b convert only
  */
 int lib_unimap_conv_by_id(int from_id, int to_id, char* data, size_t len);
 
 /**
- * Converts data by Encoding Maps 
+ * Convert data by Encoding Maps 
  * b2b convert only
  */
 int lib_unimap_conv_by_map(lib_unimap_t* from_map, lib_unimap_t* to_map, char* data, size_t len);
 
 /**
- * Returns true if the Encoding ID supports conversion map 
+ * Return true if the Encoding ID supports conversion map 
  */
-bool lib_unimap_supports_map(int id);
+bool lib_unimap_supports_map(int enc_id);
 
 ////
 
