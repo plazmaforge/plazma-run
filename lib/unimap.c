@@ -2,6 +2,7 @@
 #include  <stdio.h>
 
 #include "unimap.h"
+#include "encpre.h"
 
 // #define DEBUG    1
 // #define DEBUG_LL 1
@@ -970,27 +971,7 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int enc_id) {
     unimap->start = 128;
     unimap->len   = 128;
 
-    if (enc_id == 28591
-
-       || enc_id == 28592
-       || enc_id == 28593
-       || enc_id == 28594
-       || enc_id == 28595
-       || enc_id == 28596
-       || enc_id == 28597
-       || enc_id == 28598
-       || enc_id == 28599
-
-       || enc_id == 28600
-       || enc_id == 28601
-
-       || enc_id == 28603
-       || enc_id == 28604
-       || enc_id == 28605
-       || enc_id == 28606
-
-       ) {
-
+    if (lib_enc_is_iso(enc_id)) {
         // Shift for ISO-8859 only
         unimap->start += 32;
         unimap->len   -= 32;

@@ -28,7 +28,7 @@ size_t lib_enc_get_size();
  */
 lib_encoding_t lib_enc_get_encoding(size_t index);
 
-bool lib_enc_is_iso(int enc_id);
+//bool lib_enc_is_iso(int enc_id);
 
 bool lib_enc_is_dos(int enc_id);
 
@@ -70,6 +70,12 @@ const char* lib_enc_get_type_name(int enc_id);
  * Returns encoding id by encoding name
  */
 int lib_enc_get_id(const char* name);
+
+bool lib_enc_has_id(int enc_id);
+
+lib_encoding_t lib_enc_get_by_id(int enc_id);
+
+lib_encoding_t lib_enc_get_by_name(const char* name);
 
 void lib_enc_print_encodings();
 

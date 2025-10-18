@@ -110,6 +110,7 @@ static const lib_encoding_t lib_encodings[] = {
     */
 
     {65000,   "UTF-7",       "UTF-7",                               "UTF7        CSUNICODE11UTF7 UNICODE-1-1-UTF-7"},
+/**/{1065000, "UTF-7-BOM",   "UTF-7-BOM",                           "UTF7BOM     UTF7-BOM"},
     {65001,   "UTF-8",       "UTF-8",                               "UTF8"},
 /**/{1065001, "UTF-8-BOM",   "UTF-8 with BOM",                      "UTF8BOM     UTF8-BOM"},
 
@@ -134,28 +135,6 @@ static const lib_encoding_t lib_encodings[] = {
 /**/{1012002, "UCS-4LE",     "UCS-4LE",                             "UCS4LE"}
 
 };
-
-/**
- * Returns true if the encoding id is ISO type 
- */
-bool lib_enc_is_iso(int enc_id) {
-  return (   enc_id == 28591
-          || enc_id == 28592
-          || enc_id == 28593
-          || enc_id == 28594
-          || enc_id == 28595
-          || enc_id == 28596
-          || enc_id == 28597
-          || enc_id == 28598
-          || enc_id == 28599
-          || enc_id == 28600
-          || enc_id == 28601
-
-          || enc_id == 28603
-          || enc_id == 28604
-          || enc_id == 28605
-          || enc_id == 28606);
-}
 
 /**
  * Returns true if the encoding id is DOS type 
@@ -406,6 +385,17 @@ static bool _enc_equals(const char* name, lib_encoding_t* encoding) {
   return false;
 }
 
+static int _init(lib_encoding_t* enc) {
+  if (!enc) {
+    return 1;
+  }
+  enc->id          = 0;
+  enc->name        = NULL;
+  enc->description = NULL;
+  enc->alias       = NULL;
+  return 0;
+} 
+
 /**
  * Returns encoding id by encoding name
  */
@@ -413,29 +403,60 @@ int lib_enc_get_id(const char* name) {
   if (!name) {
     return 0;
   }
+  lib_encoding_t enc;
   size_t size = lib_enc_get_size();
   for (size_t i = 0; i < size; i++) {
-    lib_encoding_t e = lib_encodings[i];
-
-    if (_enc_equals(name, &e)) {
-      return e.id;
+    enc = lib_encodings[i];
+    if (_enc_equals(name, &enc)) {
+      return enc.id;
     }    
   }  
   return 0;
 }
 
-bool lib_enc_has_id(int id) {
-    if (id <= 0) {
+bool lib_enc_has_id(int enc_id) {
+    if (enc_id <= 0) {
         return false;
     }
+    lib_encoding_t enc;
     size_t size = lib_enc_get_size();
     for (size_t i = 0; i < size; i++) {
-        lib_encoding_t e = lib_encodings[i];
-        if (e.id == id) {
+        enc = lib_encodings[i];
+        if (enc.id == enc_id) {
             return true;
         }    
     }
     return false;
+}
+
+lib_encoding_t lib_enc_get_by_id(int enc_id) {
+  lib_encoding_t enc;
+  size_t size = lib_enc_get_size();
+  for (size_t i = 0; i < size; i++) {
+    enc = lib_encodings[i];
+    if (enc.id == enc_id) {
+      return enc;
+    }    
+  }
+  _init(&enc);
+  return enc;
+}
+
+lib_encoding_t lib_enc_get_by_name(const char* name) {
+  lib_encoding_t enc;
+  if (!name) {
+    _init(&enc);
+    return enc;
+  }
+  size_t size = lib_enc_get_size();
+  for (size_t i = 0; i < size; i++) {
+    enc = lib_encodings[i];
+    if (_enc_equals(name, &enc)) {
+      return enc;
+    }    
+  }
+  _init(&enc);
+  return enc;
 }
 
 size_t lib_enc_get_size() {
@@ -447,10 +468,11 @@ lib_encoding_t lib_enc_get_encoding(size_t index) {
 }
 
 void lib_enc_print_encodings() {
+    lib_encoding_t enc;
     size_t size = lib_enc_get_size();
     for (size_t i = 0; i < size; i++) {
-        lib_encoding_t e = lib_encodings[i];
-        //printf("%s   \t%s\t\t %s\n", e.name, e.description, lib_enc_get_type_name(e.id));
-        printf("%-15s %-45s %-15s %s\n", e.name, e.description, lib_enc_get_type_name(e.id), e.alias);
+        lib_encoding_t enc = lib_encodings[i];
+        //printf("%s   \t%s\t\t %s\n", enc.name, enc.description, lib_enc_get_type_name(enc.id));
+        printf("%-15s %-45s %-15s %s\n", enc.name, enc.description, lib_enc_get_type_name(enc.id), enc.alias);
     }
 }
