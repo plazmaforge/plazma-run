@@ -110,7 +110,7 @@ static const lib_encoding_t lib_encodings[] = {
     */
 
     {65000,   "UTF-7",       "UTF-7",                               "UTF7        CSUNICODE11UTF7 UNICODE-1-1-UTF-7"},
-/**/{1065000, "UTF-7-BOM",   "UTF-7-BOM",                           "UTF7BOM     UTF7-BOM"},
+/**/{1065000, "UTF-7-BOM",   "UTF-7 with BOM",                      "UTF7BOM     UTF7-BOM"},
     {65001,   "UTF-8",       "UTF-8",                               "UTF8"},
 /**/{1065001, "UTF-8-BOM",   "UTF-8 with BOM",                      "UTF8BOM     UTF8-BOM"},
 
