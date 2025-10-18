@@ -3,9 +3,9 @@
 
 #include "unimap.h"
 
-#define DEBUG    1
-#define DEBUG_LL 1
-#define ERROR    1
+// #define DEBUG    1
+// #define DEBUG_LL 1
+// #define ERROR    1
 
 #define NO_CHR 0xFFFD
 #define NO_DAT '?'
