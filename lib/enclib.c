@@ -136,6 +136,14 @@ size_t lib_enc_bom_len(int enc_id) {
         return 4;
     }
 
+    // UTF-7
+    if (enc_id == LIB_ENC_UTF7_ID) {
+        return 0;
+    }
+    if (enc_id == LIB_ENC_UTF7_BOM_ID) {
+        return 4;
+    }
+
     return 0;
 }
 
@@ -159,7 +167,8 @@ size_t lib_enc_set_bom(int enc_id, char* str) {
     }
 
     // UTF-16
-    if (enc_id == LIB_ENC_UTF16_ID 
+    if (enc_id == LIB_ENC_UTF16_ID
+     // UTF-16 by default with BOM
      || enc_id == LIB_ENC_UTF16BE_BOM_ID) {
         str[0] = 0xFE;
         str[1] = 0xFF;
@@ -178,7 +187,8 @@ size_t lib_enc_set_bom(int enc_id, char* str) {
     }
 
     // UTF-32
-    if (enc_id == LIB_ENC_UTF32_ID 
+    if (enc_id == LIB_ENC_UTF32_ID
+     // UTF-32 by default with BOM 
      || enc_id == LIB_ENC_UTF32BE_BOM_ID) {
         str[0] = 0x00;
         str[1] = 0x00;
@@ -198,6 +208,18 @@ size_t lib_enc_set_bom(int enc_id, char* str) {
     if (enc_id == LIB_ENC_UTF32BE_ID
      || enc_id == LIB_ENC_UTF32LE_ID) {
         return 0;
+    }
+
+    // UTF-7
+    if (enc_id == LIB_ENC_UTF7_ID) {
+        return 0;
+    }
+    if (enc_id == LIB_ENC_UTF7_BOM_ID) {
+        str[0] = 0x2B;
+        str[1] = 0x2F;
+        str[2] = 0x76;
+        str[3] = 0x38; // 0x38 | 0x39 | 0x2B | 0x2F
+        return 4;
     }
 
     return 0;
@@ -1053,7 +1075,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 
     char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
 
-    char* data     = from_data;
+    char* data     = from_data + from_bom_len;
     int i          = from_bom_len;
 
     #ifdef DEBUG
@@ -1251,7 +1273,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 
     lib_enc_set_bom(to_id, new_data);
 
-    data         = from_data;
+    data         = from_data + from_bom_len;
     i            = from_bom_len;
     from_seq_len = 0;
     total        = 0;
@@ -1497,7 +1519,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 
     char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
 
-    char* data     = from_data;
+    char* data     = from_data + from_bom_len;
     int i          = from_bom_len;
     int j          = 0;
 
@@ -1657,7 +1679,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 
     lib_enc_set_bom(to_id, new_data);
 
-    data         = from_data;
+    data         = from_data + from_bom_len;
     i            = from_bom_len;
     j            = to_bom_len;
     from_seq_len = 0;
@@ -1804,10 +1826,22 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 static size_t _enc_char_seq_len(bool is_mbc, int enc_id, const char* str) {
+    #ifdef DEBUG_L2
+    fprintf(stderr, ">> enc_char_seq_len\n");
+    #endif
+
     if (!str) {
+
+        #ifdef DEBUG_L2
+        fprintf(stderr, ">> enc_char_seq_len: return 0\n");
+        #endif
+
         return 0;
     }
     if (!is_mbc) {
+        #ifdef DEBUG_L2
+        fprintf(stderr, ">> enc_char_seq_len: return 1\n");
+        #endif
         return 1;
     }
 
@@ -1944,7 +1978,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
 
     char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
 
-    char* data     = from_data;
+    char* data     = from_data + from_bom_len;
     int i          = from_bom_len;
     int j          = 0;
 
@@ -1953,6 +1987,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     #endif
 
     #ifdef DEBUG
+    fprintf(stderr, "DEBUG: from_is_mbc=%d, to_is_mbc=%d\n", from_is_mbc, to_is_mbc);
     fprintf(stderr, "DEBUG: from_bom_len=%lu, to_bom_len=%lu\n", from_bom_len, to_bom_len);
     #endif
 
@@ -2027,7 +2062,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
 
     lib_enc_set_bom(to_id, new_data);
 
-    data         = from_data;
+    data         = from_data + from_bom_len;
     i            = from_bom_len;
     j            = to_bom_len;
     from_seq_len = 0;

@@ -1771,12 +1771,15 @@ int lib_utf32le_to_char(char* buf, int cp) {
 //// UTF
 
 size_t lib_utf_char_seq_len(int enc_id, const char* str) {
-    if (!str || str[0] == '\0') {
+    if (!str /*|| str[0] == '\0'*/) {
         return 0;
     }
 
     // UTF-8
     if (enc_id == LIB_ENC_UTF8_ID || enc_id == LIB_ENC_UTF8_BOM_ID) {
+        if (str[0] == '\0') {
+            return 0;
+        }
         return lib_utf8_byte_seq_len(str[0]);
     }
 

@@ -56,15 +56,6 @@ int lib_enc_get_bom_n(const char* str, size_t num) {
             return LIB_ENC_UTF8_BOM_ID;
         }
 
-        // UTF-7: 2B 2F 76
-        if (u1 == 0x2B && u2 == 0x2F && u3 == 0x76) {
-
-            // TODO: if (u4 !=  38, 39, 2B, 2F)
-            // return LIB_ENC_UNKNOWN
-
-            return LIB_ENC_UTF7_BOM_ID;
-        }
-
         // UTF-1: F7 64 4C
         if (u1 == 0xF7 && u2 == 0x64 && u3 == 0x4C) {
             return LIB_ENC_UTF1_BOM_ID;
@@ -97,6 +88,15 @@ int lib_enc_get_bom_n(const char* str, size_t num) {
         // UTF-32 (LE): FF FE 00 00
         if (u1 == 0xFF && u2 == 0xFE && u3 == 0x00 && u4 == 0x00) {
             return LIB_ENC_UTF32LE_BOM_ID;
+        }
+
+        // UTF-7: 2B 2F 76
+        if (u1 == 0x2B && u2 == 0x2F && u3 == 0x76) {
+
+            //  38, 39, 2B, 2F
+            if (u4 == 0x38 || u4 == 0x39 || u4 == 0x2B || u4 == 0x2F) {
+                return LIB_ENC_UTF7_BOM_ID;
+            }
         }
 
         // UTF-EBCDIC: DD 73 66 73
@@ -133,7 +133,7 @@ const char* lib_enc_to_bom_str(int bom) {
     case LIB_ENC_UTF32LE_BOM_ID:
         return "UTF-32LE";
 
-    // UTF-7, UTF-1, UTF-EBCDIC
+    // UTF-7
     case LIB_ENC_UTF7_BOM_ID:
         return "UTF-7";
 
