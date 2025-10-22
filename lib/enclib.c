@@ -672,7 +672,9 @@ int base64_decode(char* idata, size_t isize, char* odata, size_t osize) {
 ///////////////////////////////////////////////////////////////////////
 
 static int _utf16_to_code(const char* str) {
-    return lib_utf16_to_code(str);
+    int cp = 0;
+    int err = lib_utf16_to_code(str, &cp);
+    return cp;
 }
 
 int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_t osize, size_t* count) {
@@ -2182,7 +2184,7 @@ int lib_enc_test() {
     _print_char(buf);
 
     cp = 0;
-    cp = lib_utf32_to_code(buf);
+    lib_utf32_to_code(buf, &cp);
     printf("UNI-CP: %08X\n",  (unsigned int) cp);
 
     lib_utf16_to_char(buf, cp);
@@ -2190,7 +2192,7 @@ int lib_enc_test() {
     _print_char(buf);
 
     cp = 0;
-    cp = lib_utf16_to_code(buf);
+    lib_utf16_to_code(buf, &cp);
     printf("UNI-CP: %08X\n",  (unsigned int) cp);
 
     return 0;

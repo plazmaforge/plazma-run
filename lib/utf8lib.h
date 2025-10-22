@@ -54,8 +54,8 @@ const char* lib_utf8_iterate(const char* str, char* buf, int* cp, int* len);
 const char* lib_utf8_next(const char* str, int* cp, int* len);
 
 /*
- * Encode utf8 char from codepoint and store it to the buffer
- * Return lenght of utf8 char or error (-1).
+ * Encode UTF-8 char from codepoint and store it to the buffer
+ * Return lenght of UTF-8 char or error (-1).
  */
 int lib_utf8_encode(char* buf, int cp);
 
@@ -308,31 +308,17 @@ bool lib_utf8_strieq(const char* str1, const char* str2);
 
 //// alt: end
 
-
-//// UTF-8
-
-// bool lib_utf8_is_enc_id(int enc_id);
-
-//// UTF-16
-
-// bool lib_utf16_is_enc_id(int enc_id);
-
-//// UTF-32
-
-// bool lib_utf32_is_enc_id(int enc_id);
-
-
 int lib_utf16_char_seq_len(const char* str);
 
 int lib_utf16be_char_seq_len(const char* str);
 
 int lib_utf16le_char_seq_len(const char* str);
 
-int lib_utf16_to_code(const char* str);
+int lib_utf16_to_code(const char* str, int* cp);
 
-int lib_utf16be_to_code(const char* str);
+int lib_utf16be_to_code(const char* str, int* cp);
 
-int lib_utf16le_to_code(const char* str);
+int lib_utf16le_to_code(const char* str, int* cp);
 
 size_t lib_utf16_code_seq_len(int cp);
 
@@ -347,11 +333,11 @@ int lib_utf16le_to_char(char* buf, int cp);
 
 int lib_utf32_char_seq_len(const char* str);
 
-int lib_utf32_to_code(const char* str);
+int lib_utf32_to_code(const char* str, int* cp);
 
-int lib_utf32be_to_code(const char* str);
+int lib_utf32be_to_code(const char* str, int* cp);
 
-int lib_utf32le_to_code(const char* str);
+int lib_utf32le_to_code(const char* str, int* cp);
 
 size_t lib_utf32_code_seq_len(int cp);
 
