@@ -178,7 +178,6 @@ size_t lib_utf8_code_seq_len(int cp) {
 //  1 000 000:  1.497s
 // 10 000 000: 14.500s
 size_t lib_utf8_byte_seq_len_array(char first) {
-    //unsigned char u = (unsigned char) first;
     uint8_t u = _u8(first);
     return LIB_UTF8_SEQ[u];
 }
@@ -187,7 +186,6 @@ size_t lib_utf8_byte_seq_len_array(char first) {
 //  1 000 000:  1.043s
 // 10 000 000: 10.000s
 size_t lib_utf8_byte_seq_len_strong(char first) {
-    //unsigned char u = (unsigned char) first;
     uint8_t u = _u8(first);
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
@@ -209,7 +207,6 @@ size_t lib_utf8_byte_seq_len_strong(char first) {
 //  1 000 000: 0.980s
 // 10 000 000: 9.500s
 size_t lib_utf8_byte_seq_len_range(char first) {
-    //unsigned char u = (unsigned char) first;
     uint8_t u = _u8(first);
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
@@ -230,7 +227,6 @@ size_t lib_utf8_byte_seq_len_range(char first) {
 }
 
 size_t lib_utf8_byte_seq_len_alt(char first) {
-    //unsigned char u = (unsigned char) first;
     uint8_t u = _u8(first);
     if (0xF0 == (0xF8 & u)) {
         return 4;
@@ -379,10 +375,7 @@ const char* lib_utf8_strprev(const char* str) {
         return NULL;
     }
     //printf(">> strprev: uuuu\n");
-
-    //unsigned char u = s[0];
     uint8_t u = _u8(s[0]);
-
     if (u <= 0x7F) {
         // < 0x80
         // 1-byte ASCII
@@ -398,7 +391,6 @@ const char* lib_utf8_strprev(const char* str) {
             return NULL;
         }
 
-        //u = s[0];
         u = _u8(s[0]);
         if (u >= 0x80 && u < 0xC0) {
             // 10xxxxxx
@@ -409,7 +401,6 @@ const char* lib_utf8_strprev(const char* str) {
                 return NULL;
             }
 
-            //u = s[0];
             u = _u8(s[0]);
             if (u >= 0xE0 && u < 0xF0) {
                 // 1110xxxx
@@ -427,7 +418,6 @@ const char* lib_utf8_strprev(const char* str) {
                     return NULL;
                 }
 
-                //u = s[0];
                 u = _u8(s[0]);
                 if (u >= 0xF0 && u < 0xF8) {
                     // 11110xxx
@@ -831,7 +821,6 @@ bool lib_utf8_is_utf_valid_n(const char* str, size_t num) {
 }
 
 bool lib_utf8_is_ascii_char(char c) {
-    //unsigned char u = (unsigned char) c;
     uint8_t u = _u8(c);
     return (u <= 127);
 }
@@ -851,7 +840,6 @@ bool lib_utf8_is_ascii_n(const char* str, size_t num) {
     if (bom > 0) {
         return false;
     }
-    //unsigned char u;
     for (size_t i = 0; i < num; i++) {
         if (!lib_utf8_is_ascii_char(str[i])) {
             return false;
@@ -897,18 +885,15 @@ const char* lib_utf8_to_bom_str(int bom) {
 int _lib_utf8_to_code(const char* str, int len) {
 
     // Get first byte
-    //unsigned char c = (unsigned char) str[0];
     uint8_t c = _u8(str[0]);
 
     if (len == 1) {
 
         /* 1 byte utf8 codepoint */
-        //return str[0];
         return c;
     } else if (len == 2) {
 
         /* 2 byte utf8 codepoint */
-        //unsigned char d = (unsigned char) str[1];
         uint8_t d = _u8(str[1]);
 
         if (d < 0x80 || d > 0xBF) {
@@ -917,13 +902,10 @@ int _lib_utf8_to_code(const char* str, int len) {
         if (c <= 0xC1) {
             return LIB_UTF8_BAD_BYTE;
 	    }
-        //return ((0x1F & str[0]) << 6) | (0x3F & str[1]);
         return ((0x1F & c) << 6) | (0x3F & d);
     } else if (len == 3) {
 
         /* 3 byte utf8 codepoint */
-        //unsigned char d = (unsigned char) str[1];
-        //unsigned char e = (unsigned char) str[2];
         uint8_t d = _u8(str[1]);
         uint8_t e = _u8(str[2]);
 
@@ -938,7 +920,6 @@ int _lib_utf8_to_code(const char* str, int len) {
            return LIB_UTF8_BAD_BYTE;
 	    }
 
-        //return ((0x0F & str[0]) << 12) | ((0x3F & str[1]) << 6) | (0x3F & str[2]);
         int r = ((0x0F & c) << 12) | ((0x3F & d) << 6) | (0x3F & e);
 
         // Check: surrogate
@@ -964,10 +945,6 @@ int _lib_utf8_to_code(const char* str, int len) {
     } else if (len == 4) {
 
         /* 4 byte utf8 codepoint */
-        //unsigned char d = (unsigned char) str[1];
-        //unsigned char e = (unsigned char) str[2];
-        //unsigned char f = (unsigned char) str[3];
-
         uint8_t d = _u8(str[1]);
         uint8_t e = _u8(str[2]);
         uint8_t f = _u8(str[3]);
@@ -988,9 +965,6 @@ int _lib_utf8_to_code(const char* str, int len) {
             return LIB_UTF8_BAD_BYTE;
 	    }
 
-        //return ((0x07 & str[0]) << 18) | ((0x3F & str[1]) << 12) |
-        //             ((0x3F & str[2]) << 6) | (0x3F & str[3]);
-
         int r = ((0x07 & c) << 18) | ((0x3F & d) << 12) | ((0x3F & e) << 6) | (0x3F & f);
 
         if (r > LIB_UNI_MAX) {
@@ -1006,7 +980,7 @@ int _lib_utf8_to_code(const char* str, int len) {
 
         /* 
         We don't need to check for surrogate pairs here, since the
-        minimum value of UCS2 if there are four bytes of UTF-8 is 0x10000. 
+        minimum value of UCS-2 if there are four bytes of UTF-8 is 0x10000. 
         */
 
         return r;
@@ -1438,7 +1412,7 @@ bool lib_utf8_strceq(const char* str1, const char* str2) {
     return true;
 }
 
-// equals by ignorte case codepoint
+// equals by ignore case codepoint
 // what about unicode compare?
 bool lib_utf8_strieq(const char* str1, const char* str2) {
     if (!str1 || !str2) {
@@ -1529,9 +1503,9 @@ static int _utf16_char_seq_len(bool be, const char* str) {
         i1 = 1;
         i2 = 0;
     }
-    uint8_t b1 = (uint8_t) str[i1];
-    uint8_t b2 = (uint8_t) str[i2];
-    uint16_t c1 = _u16(b1, b2); // (b1 << 8) | b2;
+    uint8_t b1  = _u8(str[i1]);
+    uint8_t b2  = _u8(str[i2]);
+    uint16_t c1 = _u16(b1, b2);
 
     if (c1 >= 0xD800 && c1 < 0xDC00) {
         return 4;
@@ -1567,14 +1541,13 @@ static int _utf16_to_code(bool be, const char* str, int* cp) {
         i3 = 3; 
         i4 = 2;
     }
-    uint8_t b1 = (uint8_t) str[i1];
-    uint8_t b2 = (uint8_t) str[i2];
-
+    uint8_t b1  = _u8(str[i1]);
+    uint8_t b2  = _u8(str[i2]);
     uint16_t c1 = _u16(b1, b2);
 
     if (c1 >= 0xD800 && c1 < 0xDC00) {
-        uint8_t b3 = (uint8_t) str[i3];
-        uint8_t b4 = (uint8_t) str[i4];
+        uint8_t b3  = _u8(str[i3]);
+        uint8_t b4  = _u8(str[i4]);
         uint16_t c2 = _u16(b3, b4);
         *cp = ((c1 & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
         return 0;
