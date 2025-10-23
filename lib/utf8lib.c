@@ -1,6 +1,6 @@
-#include <string.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "encpre.h"
 #include "encbom.h"
@@ -74,11 +74,11 @@ static const int LIB_UTF8_SEQ[256] = {
 
 //// static
 
-static int _lib_utf8_to_code(const char* str, int len);
+static int _utf8_to_code(const char* str, int len);
 
-static int _lib_utf8_to_char(char* buf, int cp, int len);
+static int _utf8_to_char(char* buf, int cp, int len);
 
-static int _lib_utf8_to_case_char(
+static int _utf8_to_case_char(
     int mode, const char* str, char* buf,
     int* cp1, int* len1, int* cp2, int* len2);
 
@@ -94,22 +94,22 @@ static uint8_t _u8(char value) {
 
 //// uni: check
 
-int lib_uni_check_ffff(int c) {
-    if ((c & 0xFFFF) >= 0xFFFE) {
+static int _uni_check_ffff(int cp) {
+    if ((cp & 0xFFFF) >= 0xFFFE) {
         return LIB_UNI_NOT_CHAR;
     }
     return 0;
 }
 
-int lib_uni_check_not_char(int c) {
-    if (c >= LIB_UNI_NOT_CHAR_MIN && c <= LIB_UNI_NOT_CHAR_MAX) {
+static int _uni_check_not_char(int cp) {
+    if (cp >= LIB_UNI_NOT_CHAR_MIN && cp <= LIB_UNI_NOT_CHAR_MAX) {
 	  return LIB_UNI_NOT_CHAR;
     }
     return 0;
 }
 
-int lib_uni_check_sur(int c) {
-    if (c >= LIB_UNI_SUR_HIGH_START && c <= LIB_UNI_SUR_LOW_END) {
+static int _uni_check_sur(int cp) {
+    if (cp >= LIB_UNI_SUR_HIGH_START && cp <= LIB_UNI_SUR_LOW_END) {
         return LIB_UNI_SUR_PAIR;
     }
     return 0;
@@ -117,20 +117,20 @@ int lib_uni_check_sur(int c) {
 
 //// uni: is
 
-bool lib_uni_is_not_char(int c) {
-    return lib_uni_check_not_char(c) != 0;
+bool lib_uni_is_not_char(int cp) {
+    return _uni_check_not_char(cp) != 0;
 }
 
-bool lib_uni_is_char(int c) {
-    return lib_uni_check_not_char(c) == 0;
+bool lib_uni_is_char(int cp) {
+    return _uni_check_not_char(cp) == 0;
 }
 
-bool lib_uni_is_sur(int c) {
-    return lib_uni_check_sur(c) != 0;
+bool lib_uni_is_sur(int cp) {
+    return _uni_check_sur(cp) != 0;
 }
 
-int lib_uni_is_not_ffff(int c) {
-    return lib_uni_check_ffff(c) == 0;
+int lib_uni_is_not_ffff(int cp) {
+    return _uni_check_ffff(cp) == 0;
 }
 
 //// utf8
@@ -262,7 +262,7 @@ int lib_utf8_to_char(char* buf, int cp) {
     }
 
     size_t len = lib_utf8_code_seq_len(cp);
-    return _lib_utf8_to_char(buf, cp, len);
+    return _utf8_to_char(buf, cp, len);
 }
 
 size_t lib_utf8_get_char_len(const char* str) {
@@ -296,7 +296,7 @@ int lib_utf8_get_char_info(const char* str, int* cp, int* len) {
     }
 
     // Convert UTF-8 char to codepoint
-    *cp = _lib_utf8_to_code(str, *len);
+    *cp = _utf8_to_code(str, *len);
     if (*cp < 0)  {
         return -1;
     }
@@ -558,7 +558,7 @@ int lib_utf8_get_char_n(const char* str, size_t num, char* buf, int index) {
         if (k == index) {
 
             // Convert UTF-8 char to codepoint
-            cp = _lib_utf8_to_code(s, len);
+            cp = _utf8_to_code(s, len);
             if (cp < 0) {
                 // error: invalid codepoint
                 return -1;
@@ -702,7 +702,7 @@ int lib_utf8_to_case(int mode, char* str) {
             return i;
         }
 
-        int cc = _lib_utf8_to_case_char(mode, s, buf, &cp1, &len1, &cp2, &len2);
+        int cc = _utf8_to_case_char(mode, s, buf, &cp1, &len1, &cp2, &len2);
         if (cc < 0) {
             // error
             return -1;
@@ -755,7 +755,7 @@ int lib_utf8_to_lower_char(const char* str, char* buf) {
 
 int lib_utf8_to_case_char(int mode, const char* str, char* buf) {
     int cp1, len1, cp2, len2;
-    return _lib_utf8_to_case_char(mode, str, buf, &cp1, &len1, &cp2, &len2);
+    return _utf8_to_case_char(mode, str, buf, &cp1, &len1, &cp2, &len2);
 }
 
 /*
@@ -882,7 +882,7 @@ const char* lib_utf8_to_bom_str(int bom) {
 /**
  * Convert UTF-8 char to the codepoint
  */
-int _lib_utf8_to_code(const char* str, int len) {
+static int _utf8_to_code(const char* str, int len) {
 
     // Get first byte
     uint8_t c = _u8(str[0]);
@@ -923,19 +923,19 @@ int _lib_utf8_to_code(const char* str, int len) {
         int r = ((0x0F & c) << 12) | ((0x3F & d) << 6) | (0x3F & e);
 
         // Check: surrogate
-        int err = lib_uni_check_sur(r);
+        int err = _uni_check_sur(r);
         if (err != 0) {
             return err;
         }
 
         // Check: FFFF
-        err = lib_uni_check_ffff(r);
+        err = _uni_check_ffff(r);
         if (err != 0) {
             return err;
         }
 
         // Check: not char
-        err = lib_uni_check_not_char(r);
+        err = _uni_check_not_char(r);
         if (err != 0) {
             return err;
         }
@@ -973,7 +973,7 @@ int _lib_utf8_to_code(const char* str, int len) {
 
         /* Non-characters U+nFFFE..U+nFFFF on plane 1-16 */
 
-        int err = lib_uni_check_ffff(c);
+        int err = _uni_check_ffff(c);
         if (err != 0) {
             return err;
         }
@@ -995,7 +995,7 @@ int _lib_utf8_to_code(const char* str, int len) {
  * Convert the codepoint to UTF-8 char.
  * Store the result ot the buffer.
  */
-int _lib_utf8_to_char(char* buf, int cp, int len) {
+static int _utf8_to_char(char* buf, int cp, int len) {
 
     //if (cp <= 0x7F) {
     if (len == 1) {
@@ -1019,13 +1019,13 @@ int _lib_utf8_to_char(char* buf, int cp, int len) {
         buf[3] = '\0';
 
         // Check: surrogate
-        int err =  lib_uni_check_sur(cp);
+        int err =  _uni_check_sur(cp);
         if (err != 0) {
             return err;
         }
 
         // Check: not char
-        err =  lib_uni_check_not_char(cp);
+        err =  _uni_check_not_char(cp);
         if (err != 0) {
             return err;
         }
@@ -1050,7 +1050,7 @@ int _lib_utf8_to_char(char* buf, int cp, int len) {
     return -1;
 }
 
-int _lib_utf8_to_case_char(
+static int _utf8_to_case_char(
     int mode, const char* str, char* buf,
     int* cp1, int* len1, int* cp2, int* len2) {
 
@@ -1088,7 +1088,7 @@ int _lib_utf8_to_case_char(
     if (buf) {
         // important: when len < 0 because 
         // it set special/invalid value to the buffer
-        _lib_utf8_to_char(buf, *cp2, *len2);
+        _utf8_to_char(buf, *cp2, *len2);
     }
    
     //printf("to_case: len2 = %i\n", len2);
@@ -1550,10 +1550,12 @@ static int _utf16_to_code(bool be, const char* str, int* cp) {
         uint8_t b4  = _u8(str[i4]);
         uint16_t c2 = _u16(b3, b4);
         *cp = ((c1 & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
-        return 0;
+        //return 0;
+        return 4;
     }
     *cp = c1;
-    return 0;
+    //return 0;
+    return 2;
 }
 
 int lib_utf16_to_code(const char* str, int* cp) {
@@ -1657,7 +1659,8 @@ static int _utf32_to_code(bool be, const char* str, int* cp) {
     uint8_t b3 = (uint8_t) str[i3];
     uint8_t b4 = (uint8_t) str[i4];
     *cp = (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
-    return 0;
+    //return 0;
+    return 4;
 }
 
 size_t lib_utf32_code_seq_len(int cp) {
@@ -1820,6 +1823,9 @@ size_t lib_utf_code_seq_len(int enc_id, int cp) {
     return 0;
 }
 
+/*
+ * Convert a codepount to a char and return lenght of the char.
+ */
 int lib_utf_to_char(int enc_id, char* buf, int cp) {
 
     // UTF-8
@@ -1864,6 +1870,9 @@ int lib_utf_to_char(int enc_id, char* buf, int cp) {
     return -1;
 }
 
+/*
+ * Convert a char to a codepount and return lenght of the char.
+ */
 int lib_utf_to_code(int enc_id, const char* str, int* cp) {
     
     // UTF-8
@@ -1873,35 +1882,23 @@ int lib_utf_to_code(int enc_id, const char* str, int* cp) {
 
     // UTF-16
     if (enc_id == LIB_ENC_UTF16_ID) {
-        //*cp = lib_utf16_to_code(str);
-        //return 0;
         return lib_utf16_to_code(str, cp);
     }
     if (enc_id == LIB_ENC_UTF16BE_ID) {
-        //*cp = lib_utf16be_to_code(str);
-        //return 0;
         return lib_utf16be_to_code(str, cp);
     }
     if (enc_id == LIB_ENC_UTF16LE_ID) {
-        //*cp = lib_utf16le_to_code(str);
-        //return 0;
         return lib_utf16le_to_code(str, cp);
     }
 
     // UTF-32
     if (enc_id == LIB_ENC_UTF32_ID) {
-        //*cp = lib_utf32_to_code(str);
-        //return 0;
         return lib_utf32_to_code(str, cp);
     }
     if (enc_id == LIB_ENC_UTF32BE_ID) {
-        //*cp = lib_utf32be_to_code(str);
-        //return 0;
         return lib_utf32be_to_code(str, cp);
     }
     if (enc_id == LIB_ENC_UTF32LE_ID) {
-        //*cp = lib_utf32le_to_code(str);
-        //return 0;
         return lib_utf32le_to_code(str, cp);
     }
 

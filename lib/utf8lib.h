@@ -353,8 +353,14 @@ size_t lib_utf_char_seq_len(int utf_id, const char* str);
 
 size_t lib_utf_code_seq_len(int utf_id, int cp);
 
+/*
+ * Convert a codepount to a char and return lenght of the char.
+ */
 int lib_utf_to_char(int utf_id, char* buf, int cp);
 
+/*
+ * Convert a char to a codepount and return lenght of the char.
+ */
 int lib_utf_to_code(int utf_id, const char* str, int* cp);
 
 #endif // PLAZMA_LIB_UTF8LIB_H
