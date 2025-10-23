@@ -69,9 +69,9 @@ static uint8_t _u8(char value) {
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-static size_t _enc_char_seq_len(bool is_mbc, int enc_id, const char* str);
+static size_t _enc_char_seq(bool is_mbc, int enc_id, const char* str);
 
-static size_t _enc_code_seq_len(bool is_mbc, int enc_id, int cp);
+static size_t _enc_code_seq(bool is_mbc, int enc_id, int cp);
 
 static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp);
 
@@ -405,7 +405,7 @@ static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_
     while (i < count) {
 
         // Calculate input sequence lenght of [EncodingID] char
-        from_seq_len = _enc_char_seq_len(from_is_mbc, from_id, data);
+        from_seq_len = _enc_char_seq(from_is_mbc, from_id, data);
         if (from_seq_len == 0) {
             // error
             #ifdef ERROR
@@ -792,11 +792,11 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             fprintf(stderr, "DEBUG: base64_decode  : check=4: [OK]\n");
             #endif
 
-            seq_len = lib_utf16_char_seq_len(buf);
+            seq_len = lib_utf16_char_seq(buf);
             if (seq_len == 4) {
 
                 ucode = _utf16_to_code(buf);
-                out_seq_len = _enc_code_seq_len(is_mbc, to_id, ucode);
+                out_seq_len = _enc_code_seq(is_mbc, to_id, ucode);
                 out_len += out_seq_len;
 
                 #ifdef DEBUG_L2
@@ -808,7 +808,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             } else if (seq_len == 2) {
                     
                 ucode = _utf16_to_code(buf);
-                out_seq_len = _enc_code_seq_len(is_mbc, to_id, ucode);
+                out_seq_len = _enc_code_seq(is_mbc, to_id, ucode);
                 out_len += out_seq_len;
 
                 #ifdef DEBUG_L2
@@ -817,11 +817,11 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
 
                 u16_len += seq_len;
 
-                seq_len = lib_utf16_char_seq_len(buf + 2);
+                seq_len = lib_utf16_char_seq(buf + 2);
                 if (seq_len == 2) {
 
                     ucode = _utf16_to_code(buf + 2);
-                    out_seq_len = _enc_code_seq_len(is_mbc, to_id, ucode);
+                    out_seq_len = _enc_code_seq(is_mbc, to_id, ucode);
                     out_len += out_seq_len;
 
                     #ifdef DEBUG_L2
@@ -855,11 +855,11 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             buf[2] = '\0';
             buf[3] = '\0';
 
-            seq_len = lib_utf16_char_seq_len(buf);
+            seq_len = lib_utf16_char_seq(buf);
             if (seq_len == 2) {
 
                 ucode = _utf16_to_code(buf);
-                out_seq_len = _enc_code_seq_len(is_mbc, to_id, ucode);
+                out_seq_len = _enc_code_seq(is_mbc, to_id, ucode);
                 out_len += out_seq_len;
 
                 #ifdef DEBUG_L2
@@ -890,11 +890,11 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
         fprintf(stderr, "DEBUG: base64_decode  : check=4: [OK]\n");
         #endif
 
-        seq_len = lib_utf16_char_seq_len(buf);
+        seq_len = lib_utf16_char_seq(buf);
         if (seq_len == 4) {
 
             ucode = _utf16_to_code(buf);
-            out_seq_len = _enc_code_seq_len(is_mbc, to_id, ucode);
+            out_seq_len = _enc_code_seq(is_mbc, to_id, ucode);
             out_len += out_seq_len;
 
             #ifdef DEBUG_L2
@@ -906,7 +906,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
         } else if (seq_len == 2) {
                     
             ucode = _utf16_to_code(buf);
-            out_seq_len = _enc_code_seq_len(is_mbc, to_id, ucode);
+            out_seq_len = _enc_code_seq(is_mbc, to_id, ucode);
             out_len += out_seq_len;
 
             #ifdef DEBUG_L2
@@ -915,11 +915,11 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
 
             u16_len += seq_len;
 
-            seq_len = lib_utf16_char_seq_len(buf + 2);
+            seq_len = lib_utf16_char_seq(buf + 2);
             if (seq_len == 2) {
 
                 ucode = _utf16_to_code(buf + 2);
-                out_seq_len = _enc_code_seq_len(is_mbc, to_id, ucode);
+                out_seq_len = _enc_code_seq(is_mbc, to_id, ucode);
                 out_len += out_seq_len;
 
                 #ifdef DEBUG_L2
@@ -952,11 +952,11 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
         buf[2] = '\0';
         buf[3] = '\0';
 
-        seq_len = lib_utf16_char_seq_len(buf);
+        seq_len = lib_utf16_char_seq(buf);
         if (seq_len == 2) {
 
             ucode = _utf16_to_code(buf);
-            out_seq_len = _enc_code_seq_len(is_mbc, to_id, ucode);
+            out_seq_len = _enc_code_seq(is_mbc, to_id, ucode);
             out_len += out_seq_len;
 
             #ifdef DEBUG_L2
@@ -1105,7 +1105,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // Calculate input sequence lenght of [EncodingID] char
-        from_seq_len = _enc_char_seq_len(from_is_mbc, from_id, data);
+        from_seq_len = _enc_char_seq(from_is_mbc, from_id, data);
         if (from_seq_len == 0) {
             // error
             #ifdef ERROR
@@ -1192,7 +1192,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
             if (lib_enc_is_utf16(from_id)) {
                 u16_seq_len = from_seq_len;
             } else {
-                u16_seq_len = lib_utf16_code_seq_len(ucode);
+                u16_seq_len = lib_utf16_code_seq(ucode);
             }
             u16_count += u16_seq_len;
 
@@ -1286,7 +1286,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // Calculate input sequence lenght of [EncodingID] char
-        from_seq_len = _enc_char_seq_len(from_is_mbc, from_id, data);
+        from_seq_len = _enc_char_seq(from_is_mbc, from_id, data);
         if (from_seq_len == 0) {
             // error
             #ifdef ERROR
@@ -1396,7 +1396,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
             if (lib_enc_is_utf16(from_id)) {
                 u16_seq_len = from_seq_len;
             } else {
-                u16_seq_len = lib_utf16_code_seq_len(ucode);
+                u16_seq_len = lib_utf16_code_seq(ucode);
             }
             u16_count += u16_seq_len;
 
@@ -1827,7 +1827,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-static size_t _enc_char_seq_len(bool is_mbc, int enc_id, const char* str) {
+static size_t _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
     #ifdef DEBUG_L2
     fprintf(stderr, ">> enc_char_seq_len\n");
     #endif
@@ -1848,16 +1848,16 @@ static size_t _enc_char_seq_len(bool is_mbc, int enc_id, const char* str) {
     }
 
     // UTF
-    return lib_utf_char_seq_len(enc_id, str);
+    return lib_utf_char_seq(enc_id, str);
 }
 
-static size_t _enc_code_seq_len(bool is_mbc, int enc_id, int cp) {
+static size_t _enc_code_seq(bool is_mbc, int enc_id, int cp) {
     if (!is_mbc) {
         return 1;  // Lenght is always one
     }
 
     // UTF
-    return lib_utf_code_seq_len(enc_id, cp);
+    return lib_utf_code_seq(enc_id, cp);
 }
 
 static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
@@ -1996,7 +1996,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // Calculate input sequence lenght of [EncodingID] char
-        from_seq_len = _enc_char_seq_len(from_is_mbc, from_id, data);
+        from_seq_len = _enc_char_seq(from_is_mbc, from_id, data);
         if (from_seq_len == 0) {
             // error
             #ifdef ERROR
@@ -2017,7 +2017,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
             return -1;
         }
 
-        to_seq_len = _enc_code_seq_len(to_is_mbc, to_id, ucode);
+        to_seq_len = _enc_code_seq(to_is_mbc, to_id, ucode);
         if (to_seq_len <= 0) {
             // error
             #ifdef ERROR
@@ -2074,7 +2074,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // Calculate input sequence lenght of [EncodingID] char
-        from_seq_len = _enc_char_seq_len(from_is_mbc, from_id, data);
+        from_seq_len = _enc_char_seq(from_is_mbc, from_id, data);
         if (from_seq_len == 0) {
             // error
             #ifdef ERROR

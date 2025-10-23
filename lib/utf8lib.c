@@ -135,7 +135,7 @@ int lib_uni_is_not_ffff(int cp) {
 
 //// utf8
 
-size_t lib_utf8_code_seq_len(int cp) {
+size_t lib_utf8_code_seq(int cp) {
     if (cp < 0) {
         return 0; /* error */
     }
@@ -177,7 +177,7 @@ size_t lib_utf8_code_seq_len(int cp) {
 // by array (strong)
 //  1 000 000:  1.497s
 // 10 000 000: 14.500s
-size_t lib_utf8_byte_seq_len_array(char first) {
+size_t lib_utf8_byte_seq_array(char first) {
     uint8_t u = _u8(first);
     return LIB_UTF8_SEQ[u];
 }
@@ -185,7 +185,7 @@ size_t lib_utf8_byte_seq_len_array(char first) {
 // by range (strong)
 //  1 000 000:  1.043s
 // 10 000 000: 10.000s
-size_t lib_utf8_byte_seq_len_strong(char first) {
+size_t lib_utf8_byte_seq_strong(char first) {
     uint8_t u = _u8(first);
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
@@ -206,7 +206,7 @@ size_t lib_utf8_byte_seq_len_strong(char first) {
 // by range
 //  1 000 000: 0.980s
 // 10 000 000: 9.500s
-size_t lib_utf8_byte_seq_len_range(char first) {
+size_t lib_utf8_byte_seq_range(char first) {
     uint8_t u = _u8(first);
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
@@ -226,7 +226,7 @@ size_t lib_utf8_byte_seq_len_range(char first) {
     return 0;
 }
 
-size_t lib_utf8_byte_seq_len_alt(char first) {
+size_t lib_utf8_byte_seq_alt(char first) {
     uint8_t u = _u8(first);
     if (0xF0 == (0xF8 & u)) {
         return 4;
@@ -240,8 +240,8 @@ size_t lib_utf8_byte_seq_len_alt(char first) {
 
 ////
 
-size_t lib_utf8_byte_seq_len(char first) {
-    return lib_utf8_byte_seq_len_array(first);
+size_t lib_utf8_byte_seq(char first) {
+    return lib_utf8_byte_seq_array(first);
 }
 
 int lib_utf8_get_code(const char* str) {
@@ -261,7 +261,7 @@ int lib_utf8_to_char(char* buf, int cp) {
         return 0;
     }
 
-    size_t len = lib_utf8_code_seq_len(cp);
+    size_t len = lib_utf8_code_seq(cp);
     return _utf8_to_char(buf, cp, len);
 }
 
@@ -269,7 +269,7 @@ size_t lib_utf8_get_char_len(const char* str) {
     if (!str || str[0] == '\0') {
         return 0;
     }
-    return lib_utf8_byte_seq_len(str[0]);
+    return lib_utf8_byte_seq(str[0]);
 }
 
 /**
@@ -290,7 +290,7 @@ int lib_utf8_get_char_info(const char* str, int* cp, int* len) {
     }
 
     // Get sequence len of char by first byte 
-    *len = lib_utf8_byte_seq_len(str[0]);
+    *len = lib_utf8_byte_seq(str[0]);
     if (*len == 0) {
         return -1;
     }
@@ -342,7 +342,7 @@ const char* lib_utf8_strnext(const char* str) {
     }
 
     // Get sequence len of char by first byte 
-    size_t len = lib_utf8_byte_seq_len(str[0]);
+    size_t len = lib_utf8_byte_seq(str[0]);
     if (len == 0) {
         // error
         return NULL;
@@ -549,7 +549,7 @@ int lib_utf8_get_char_n(const char* str, size_t num, char* buf, int index) {
         char c = *s;
 
         // Get lenght of UTF-8 char
-        size_t len = lib_utf8_byte_seq_len(c);
+        size_t len = lib_utf8_byte_seq(c);
         if (len == 0) {
             // error: invalid sequence lenght
             return -1;
@@ -615,7 +615,7 @@ int lib_utf8_get_code_count_n(const char* str, size_t num) {
     size_t count = 0;
     while (i < num) {
         char c = str[i];
-        size_t len = lib_utf8_byte_seq_len(c);
+        size_t len = lib_utf8_byte_seq(c);
         //if (len == 0) {
         //    return -1;
         //}
@@ -634,7 +634,7 @@ int lib_utf8_get_first_byte_count_n(const char* str, size_t num, size_t char_num
     size_t count = 0;
     while (i < num) {
         char c = str[i];
-        size_t len = lib_utf8_byte_seq_len(c);
+        size_t len = lib_utf8_byte_seq(c);
         if (len == 0) {
             return -1;
         }
@@ -1084,7 +1084,7 @@ static int _utf8_to_case_char(
     // (min size = 4 + 1)
     //*len2 = lib_utf8_to_char(buf, *cp2);
 
-    *len2 = lib_utf8_code_seq_len(*cp2);
+    *len2 = lib_utf8_code_seq(*cp2);
     if (buf) {
         // important: when len < 0 because 
         // it set special/invalid value to the buffer
@@ -1300,7 +1300,7 @@ char* lib_utf8_strrev(char* str) {
     size_t chl = 0;
     char* s = (char*) str;
     while (i < len) {
-        chl = lib_utf8_byte_seq_len(*s);
+        chl = lib_utf8_byte_seq(*s);
         if (chl == 0) {
             chl = 1;
         }
@@ -1490,7 +1490,7 @@ static uint16_t _u16(uint8_t b1, uint8_t b2) {
     return (b1 << 8) | b2;
 }
 
-static int _utf16_char_seq_len(bool be, const char* str) {
+static int _utf16_char_seq(bool be, const char* str) {
     if (!str) {
         return 0;
     }
@@ -1513,16 +1513,16 @@ static int _utf16_char_seq_len(bool be, const char* str) {
     return 2;
 }
 
-int lib_utf16_char_seq_len(const char* str) {
-    return lib_utf16be_char_seq_len(str);
+int lib_utf16_char_seq(const char* str) {
+    return lib_utf16be_char_seq(str);
 }
 
-int lib_utf16be_char_seq_len(const char* str) {
-    return _utf16_char_seq_len(true, str);
+int lib_utf16be_char_seq(const char* str) {
+    return _utf16_char_seq(true, str);
 }
 
-int lib_utf16le_char_seq_len(const char* str) {
-    return _utf16_char_seq_len(false, str);
+int lib_utf16le_char_seq(const char* str) {
+    return _utf16_char_seq(false, str);
 }
 
 static int _utf16_to_code(bool be, const char* str, int* cp) {
@@ -1570,7 +1570,7 @@ int lib_utf16le_to_code(const char* str, int* cp) {
     return _utf16_to_code(false, str, cp);
 }
 
-size_t lib_utf16_code_seq_len(int cp) {
+size_t lib_utf16_code_seq(int cp) {
     if (cp < 0 || cp > 0x10FFFF) {
         return 0;
     }
@@ -1626,7 +1626,7 @@ static int _utf16_to_char(bool be, char* buf, int cp) {
 
 //// UTF-32
 
-int lib_utf32_char_seq_len(const char* str) {
+int lib_utf32_char_seq(const char* str) {
     if (!str) {
         return 0;
     }
@@ -1663,7 +1663,7 @@ static int _utf32_to_code(bool be, const char* str, int* cp) {
     return 4;
 }
 
-size_t lib_utf32_code_seq_len(int cp) {
+size_t lib_utf32_code_seq(int cp) {
     if (cp < 0 || cp > 0x10FFFF) {
         return 0;
     }
@@ -1752,7 +1752,7 @@ int lib_utf32le_to_char(char* buf, int cp) {
 
 //// UTF
 
-size_t lib_utf_char_seq_len(int enc_id, const char* str) {
+size_t lib_utf_char_seq(int enc_id, const char* str) {
     if (!str /*|| str[0] == '\0'*/) {
         return 0;
     }
@@ -1762,20 +1762,20 @@ size_t lib_utf_char_seq_len(int enc_id, const char* str) {
         if (str[0] == '\0') {
             return 0;
         }
-        return lib_utf8_byte_seq_len(str[0]);
+        return lib_utf8_byte_seq(str[0]);
     }
 
     // UTF-16
     if (enc_id == LIB_ENC_UTF16_ID) {
-        return lib_utf16_char_seq_len(str);
+        return lib_utf16_char_seq(str);
     }
     if (enc_id == LIB_ENC_UTF16BE_ID 
      || enc_id == LIB_ENC_UTF16BE_BOM_ID) {
-        return lib_utf16be_char_seq_len(str);
+        return lib_utf16be_char_seq(str);
     }
     if (enc_id == LIB_ENC_UTF16LE_ID
      || enc_id == LIB_ENC_UTF16LE_BOM_ID) {
-        return lib_utf16le_char_seq_len(str);
+        return lib_utf16le_char_seq(str);
     }
 
     // UTF-32  (BE/LE)
@@ -1785,18 +1785,18 @@ size_t lib_utf_char_seq_len(int enc_id, const char* str) {
      || enc_id == LIB_ENC_UTF32BE_BOM_ID
      || enc_id == LIB_ENC_UTF32LE_BOM_ID
      ) {
-        return lib_utf32_char_seq_len(str);
+        return lib_utf32_char_seq(str);
     }
 
     return 0;
 }
 
-size_t lib_utf_code_seq_len(int enc_id, int cp) {
+size_t lib_utf_code_seq(int enc_id, int cp) {
 
     // UTF-8
     if (enc_id == LIB_ENC_UTF8_ID 
      || enc_id == LIB_ENC_UTF8_BOM_ID) {
-        return lib_utf8_code_seq_len(cp);
+        return lib_utf8_code_seq(cp);
     }
 
     // UTF-16 (BE/LE)
@@ -1807,7 +1807,7 @@ size_t lib_utf_code_seq_len(int enc_id, int cp) {
      || enc_id == LIB_ENC_UTF16LE_BOM_ID
 
      ) {
-        return lib_utf16_code_seq_len(cp);
+        return lib_utf16_code_seq(cp);
     }
 
     // UTF-32 (BE/LE)
@@ -1817,7 +1817,7 @@ size_t lib_utf_code_seq_len(int enc_id, int cp) {
      || enc_id == LIB_ENC_UTF32BE_BOM_ID 
      || enc_id == LIB_ENC_UTF32LE_BOM_ID
      ) {
-        return lib_utf32_code_seq_len(cp);
+        return lib_utf32_code_seq(cp);
     }
 
     return 0;
