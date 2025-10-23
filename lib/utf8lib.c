@@ -22,7 +22,7 @@ Char. number range     |        UTF-8 octet sequence
 
 // https://tools.ietf.org/html/rfc3629
 
-static const int LIB_UTF8_SEQLEN[256] = {
+static const int LIB_UTF8_SEQ[256] = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 0: 1: 0x00 - 0x0F */ /* 0x00 - 0x7F */
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 1: 1: 0x10 - 0x1F */
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 2: 1: 0x20 - 0x2F */
@@ -87,6 +87,10 @@ static void _reset_var(int* var1, int* var2);
 static void _reset_val(int* val);
 
 static void _reset_buf(char* buf);
+
+static uint8_t _u8(char value) {
+    return (uint8_t) value;
+}
 
 //// uni: check
 
@@ -174,15 +178,17 @@ size_t lib_utf8_code_seq_len(int cp) {
 //  1 000 000:  1.497s
 // 10 000 000: 14.500s
 size_t lib_utf8_byte_seq_len_array(char first) {
-    unsigned char u = (unsigned char) first;
-    return LIB_UTF8_SEQLEN[u];
+    //unsigned char u = (unsigned char) first;
+    uint8_t u = _u8(first);
+    return LIB_UTF8_SEQ[u];
 }
 
 // by range (strong)
 //  1 000 000:  1.043s
 // 10 000 000: 10.000s
 size_t lib_utf8_byte_seq_len_strong(char first) {
-    unsigned char u = (unsigned char) first;
+    //unsigned char u = (unsigned char) first;
+    uint8_t u = _u8(first);
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
         return 1;
@@ -203,7 +209,8 @@ size_t lib_utf8_byte_seq_len_strong(char first) {
 //  1 000 000: 0.980s
 // 10 000 000: 9.500s
 size_t lib_utf8_byte_seq_len_range(char first) {
-    unsigned char u = (unsigned char) first;
+    //unsigned char u = (unsigned char) first;
+    uint8_t u = _u8(first);
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
         return 1;
@@ -223,7 +230,8 @@ size_t lib_utf8_byte_seq_len_range(char first) {
 }
 
 size_t lib_utf8_byte_seq_len_alt(char first) {
-    unsigned char u = (unsigned char) first;
+    //unsigned char u = (unsigned char) first;
+    uint8_t u = _u8(first);
     if (0xF0 == (0xF8 & u)) {
         return 4;
     } else if (0xE0 == (0xF0 & u)) {
@@ -372,7 +380,9 @@ const char* lib_utf8_strprev(const char* str) {
     }
     //printf(">> strprev: uuuu\n");
 
-    unsigned char u = s[0];
+    //unsigned char u = s[0];
+    uint8_t u = _u8(s[0]);
+
     if (u <= 0x7F) {
         // < 0x80
         // 1-byte ASCII
@@ -388,7 +398,8 @@ const char* lib_utf8_strprev(const char* str) {
             return NULL;
         }
 
-        u = s[0];
+        //u = s[0];
+        u = _u8(s[0]);
         if (u >= 0x80 && u < 0xC0) {
             // 10xxxxxx
             s--;
@@ -398,7 +409,8 @@ const char* lib_utf8_strprev(const char* str) {
                 return NULL;
             }
 
-            u = s[0];
+            //u = s[0];
+            u = _u8(s[0]);
             if (u >= 0xE0 && u < 0xF0) {
                 // 1110xxxx
                 // 3 - byte unicode
@@ -415,7 +427,8 @@ const char* lib_utf8_strprev(const char* str) {
                     return NULL;
                 }
 
-                u = s[0];
+                //u = s[0];
+                u = _u8(s[0]);
                 if (u >= 0xF0 && u < 0xF8) {
                     // 11110xxx
                     // 4 - byte unicode
@@ -818,7 +831,8 @@ bool lib_utf8_is_utf_valid_n(const char* str, size_t num) {
 }
 
 bool lib_utf8_is_ascii_char(char c) {
-    unsigned char u = (unsigned char) c;
+    //unsigned char u = (unsigned char) c;
+    uint8_t u = _u8(c);
     return (u <= 127);
 }
 
@@ -837,7 +851,7 @@ bool lib_utf8_is_ascii_n(const char* str, size_t num) {
     if (bom > 0) {
         return false;
     }
-    unsigned char u;
+    //unsigned char u;
     for (size_t i = 0; i < num; i++) {
         if (!lib_utf8_is_ascii_char(str[i])) {
             return false;
@@ -883,7 +897,8 @@ const char* lib_utf8_to_bom_str(int bom) {
 int _lib_utf8_to_code(const char* str, int len) {
 
     // Get first byte
-    unsigned char c = (unsigned char) str[0];
+    //unsigned char c = (unsigned char) str[0];
+    uint8_t c = _u8(str[0]);
 
     if (len == 1) {
 
@@ -893,7 +908,8 @@ int _lib_utf8_to_code(const char* str, int len) {
     } else if (len == 2) {
 
         /* 2 byte utf8 codepoint */
-        unsigned char d = (unsigned char) str[1];
+        //unsigned char d = (unsigned char) str[1];
+        uint8_t d = _u8(str[1]);
 
         if (d < 0x80 || d > 0xBF) {
             return LIB_UTF8_BAD_BYTE;
@@ -906,8 +922,10 @@ int _lib_utf8_to_code(const char* str, int len) {
     } else if (len == 3) {
 
         /* 3 byte utf8 codepoint */
-        unsigned char d = (unsigned char) str[1];
-        unsigned char e = (unsigned char) str[2];
+        //unsigned char d = (unsigned char) str[1];
+        //unsigned char e = (unsigned char) str[2];
+        uint8_t d = _u8(str[1]);
+        uint8_t e = _u8(str[2]);
 
         if (d < 0x80 || d > 0xBF || e < 0x80 || e > 0xBF) {
             return LIB_UTF8_BAD_BYTE;
@@ -946,9 +964,13 @@ int _lib_utf8_to_code(const char* str, int len) {
     } else if (len == 4) {
 
         /* 4 byte utf8 codepoint */
-        unsigned char d = (unsigned char) str[1];
-        unsigned char e = (unsigned char) str[2];
-        unsigned char f = (unsigned char) str[3];
+        //unsigned char d = (unsigned char) str[1];
+        //unsigned char e = (unsigned char) str[2];
+        //unsigned char f = (unsigned char) str[3];
+
+        uint8_t d = _u8(str[1]);
+        uint8_t e = _u8(str[2]);
+        uint8_t f = _u8(str[3]);
 
         if (/* c must be 11110xxx. */
             c >= 0xF8 ||
@@ -1560,14 +1582,6 @@ static int _utf16_to_code(bool be, const char* str, int* cp) {
     *cp = c1;
     return 0;
 }
-
-// static int _utf16_to_code(bool be, const char* str) {
-//     return _utf16_to_code_(be, str);
-// }
-
-// int lib_utf16_to_code(const char* str, int* cp) {
-//     return lib_utf16be_to_code(str);
-// }
 
 int lib_utf16_to_code(const char* str, int* cp) {
     return _utf16_to_code(true, str, cp);
