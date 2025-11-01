@@ -19,55 +19,37 @@ typedef struct lib_encoding_t {
 
 
 /**
- * Returns size of encoding 
+ * Return size of encoding list
  */
 size_t lib_enc_get_size();
 
 /**
- * Returns encoding by index 
+ * Return encoding by index 
  */
 lib_encoding_t lib_enc_get_encoding(size_t index);
-
-//bool lib_enc_is_iso(int enc_id);
 
 bool lib_enc_is_dos(int enc_id);
 
 bool lib_enc_is_win(int enc_id);
 
 /**
- * Returns true if the encoding id is multi bytes type 
- */
-bool lib_enc_is_mbc(int enc_id);
-
-/**
- * Returns true if the encoding id is UTF type 
- */
-bool lib_enc_is_utf(int enc_id);
-
-/**
- * Returns true if the encoding id is UCS type 
- */
-bool lib_enc_is_ucs(int enc_id);
-
-/**
- * Converts DOS encoding id to WIN encoding id
+ * Convert DOS encoding id to WIN encoding id
  */
 int lib_enc_dos_to_win(int enc_id);
 
 
 /**
- * Returns encoding type by encoding id
+ * Return encoding type by encoding id
  */
 int lib_enc_get_type(int enc_id);
 
 /**
- * Returns name of encoding type by encoding id
+ * Return name of encoding type by encoding id
  */
 const char* lib_enc_get_type_name(int enc_id);
 
-
 /**
- * Returns encoding id by encoding name
+ * Return encoding id by encoding name
  */
 int lib_enc_get_id(const char* name);
 

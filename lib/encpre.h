@@ -49,6 +49,15 @@
 #define LIB_ENC_UTF32BE_BOM_ID    12003 /**/
 #define LIB_ENC_UTF32LE_BOM_ID    12004 /**/
 
+/* UCS */
+#define LIB_ENC_UCS2_ID           1001200 /**/
+#define LIB_ENC_UCS2BE_ID         1001201 /**/
+#define LIB_ENC_UCS2LE_ID         1001202 /**/
+
+#define LIB_ENC_UCS4_ID           1012000 /**/
+#define LIB_ENC_UCS4BE_ID         1012001 /**/
+#define LIB_ENC_UCS4LE_ID         1012002 /**/
+
 /* OTHER */
 #define LIB_ENC_UTF1_BOM_ID       999007 /**/
 #define LIB_ENC_UTF_EBCDIC_BOM_ID 999008 /**/
@@ -56,6 +65,7 @@
 #define LIB_ENC_SCSU_BOM_ID       999009 /**/
 #define LIB_ENC_BOCU1_BOM_ID      999010 /**/
 #define LIB_ENC_GB18030_BOM_ID    999011 /**/
+
 
 /**
  * Return true if the encoding id is ISO type 
@@ -128,5 +138,39 @@ static bool lib_enc_is_utf16or32_encoding(int enc_id) {
   return (   lib_enc_is_utf16(enc_id)
           || lib_enc_is_utf32(enc_id) );
 }
+
+/**
+ * Return true if the encoding id is UTF type 
+ */
+static bool lib_enc_is_utf(int enc_id) {
+    return ( lib_enc_is_utf7(enc_id)
+          || lib_enc_is_utf8(enc_id)
+          || lib_enc_is_utf16(enc_id)
+          || lib_enc_is_utf32(enc_id)
+          );
+}
+
+/**
+ * Return true if the encoding id is UCS type 
+ */
+static bool lib_enc_is_ucs(int enc_id) {
+  return (   enc_id == LIB_ENC_UCS2_ID
+    /**/  || enc_id == LIB_ENC_UCS2BE_ID
+    /**/  || enc_id == LIB_ENC_UCS2LE_ID
+
+    /**/  || enc_id == LIB_ENC_UCS4_ID
+    /**/  || enc_id == LIB_ENC_UCS4BE_ID
+    /**/  || enc_id == LIB_ENC_UCS4BE_ID);
+}
+
+/**
+ * Return true if the encoding id is multi bytes type 
+ */
+static bool lib_enc_is_mbc(int enc_id) {
+    return ( lib_enc_is_utf(enc_id)
+          || lib_enc_is_ucs(enc_id)
+          );
+}
+
 
 #endif // PLAZMA_LIB_ENCPRE_H

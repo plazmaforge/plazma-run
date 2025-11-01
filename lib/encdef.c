@@ -137,7 +137,7 @@ static const lib_encoding_t lib_encodings[] = {
 };
 
 /**
- * Returns true if the encoding id is DOS type 
+ * Return true if the encoding id is DOS type 
  */
 bool lib_enc_is_dos(int enc_id) {
   return (   enc_id == 437
@@ -160,7 +160,7 @@ bool lib_enc_is_dos(int enc_id) {
 }
 
 /**
- * Returns true if the encoding id is WIN type 
+ * Return true if the encoding id is WIN type 
  */
 bool lib_enc_is_win(int enc_id) {
   return (   enc_id == 1250
@@ -180,40 +180,7 @@ bool lib_enc_is_win(int enc_id) {
 }
 
 /**
- * Returns true if the encoding id is multi bytes type 
- */
-bool lib_enc_is_mbc(int enc_id) {
-    return ( lib_enc_is_utf(enc_id)
-          || lib_enc_is_ucs(enc_id)
-          );
-}
-
-/**
- * Returns true if the encoding id is UTF type 
- */
-bool lib_enc_is_utf(int enc_id) {
-    return ( lib_enc_is_utf7(enc_id)
-          || lib_enc_is_utf8(enc_id)
-          || lib_enc_is_utf16(enc_id)
-          || lib_enc_is_utf32(enc_id)
-          );
-}
-
-/**
- * Returns true if the encoding id is UCS type 
- */
-bool lib_enc_is_ucs(int enc_id) {
-  return (   enc_id == 1001200
-    /**/  || enc_id == 1001201
-    /**/  || enc_id == 1001202
-
-    /**/  || enc_id == 1012000
-    /**/  || enc_id == 1012001
-    /**/  || enc_id == 1012002);
-}
-
-/**
- * Converts DOS encoding id to WIN encoding id
+ * Convert DOS encoding id to WIN encoding id
  */
 int lib_enc_dos_to_win(int enc_id) {
     /*
@@ -397,7 +364,7 @@ static int _init(lib_encoding_t* enc) {
 } 
 
 /**
- * Returns encoding id by encoding name
+ * Return encoding id by encoding name
  */
 int lib_enc_get_id(const char* name) {
   if (!name) {
