@@ -377,11 +377,16 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Calculate lenght of output base64 array by input lenght
+/**
+ * Calculate lenght of output base64 array by input lenght
+ */
 size_t to_b64_len(size_t len) {
     return (len * 4 + 2) / 3;
 }
 
+/**
+ * Calculate lenght of output UTF16 array by input lenght
+ */
 size_t to_u16_len(size_t len) {
     return (len * 3) / 4;
 }
@@ -389,44 +394,53 @@ size_t to_u16_len(size_t len) {
 /**
  * Convert char data to UTF16 block
  */
-static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_t bsize, size_t count) {
+static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* odata, size_t osize, size_t count) {
 
     int from_id = ctx->from_id;
     bool from_is_mbc = ctx->from_is_mbc;
     int ucode  = 0;
     size_t i   = 0;
-    size_t from_seq_len = 0;
+    size_t from_seq = 0;
     char* data = idata;
-    char* odata = bdata;
+    char* buf = odata;
 
     while (i < count) {
 
         // Calculate input sequence lenght of [EncodingID] char
-        from_seq_len = _enc_char_seq(from_is_mbc, from_id, data);
-        if (from_seq_len == 0) {
-            // error
-            #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
-            #endif
-            return -1;
-        }
+        // from_seq = _enc_char_seq(from_is_mbc, from_id, data);
+        // if (from_seq == 0) {
+        //     // error
+        //     #ifdef ERROR
+        //     fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
+        //     #endif
+        //     return -1;
+        // }
 
         // Convert input current [EncodingID] char to codepoint
-        int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
-        if (from_cp_len < 0) {
+        // int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
+        // if (from_cp_len < 0) {
+        //     // error
+        //     #ifdef ERROR
+        //     fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
+        //     #endif
+        //     return -1;
+        // }
+
+        from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        if (from_seq <= 0) {
             // error
             #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
+            fprintf(stderr, "ERROR: Invalid Sequence: from_seq=%d\n", from_seq);
             #endif
             return -1;
         }
 
-        int u16_seq = lib_utf16_to_char(odata, ucode);
-        odata += u16_seq;
+        int u16_seq = lib_utf16_to_char(buf, ucode);
+        buf += u16_seq;
 
         // next codepoint
         i++; 
-        data += from_seq_len;
+        data += from_seq;
 
     }
     return 0;
@@ -440,7 +454,7 @@ static int _to_char_block(lib_enc_context_t* ctx, char* idata, char* odata, size
     int to_id = ctx->to_id;
     int ucode  = 0;
     size_t i   = 0;
-    size_t to_seq_len = 0;
+    size_t to_seq = 0;
     char* data = idata;
     char* buf = odata;
 
@@ -454,9 +468,9 @@ static int _to_char_block(lib_enc_context_t* ctx, char* idata, char* odata, size
         data += u16_seq;
         i += u16_seq;
 
-        to_seq_len = _enc_to_char(ctx, to_id, buf, ucode);
+        to_seq = _enc_to_char(ctx, to_id, buf, ucode);
         
-        if (to_seq_len == 0) {
+        if (to_seq == 0) {
             // error
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len=%lu\n", to_seq_len);
@@ -468,7 +482,7 @@ static int _to_char_block(lib_enc_context_t* ctx, char* idata, char* odata, size
         fprintf(stderr, "DEBUG: >> ucode=%d, hi=%d, lo=%d\n", ucode, hi, lo);
         #endif
 
-        buf += to_seq_len;
+        buf += to_seq;
     }
     return 0;
 }
