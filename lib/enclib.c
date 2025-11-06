@@ -386,21 +386,16 @@ size_t to_u16_len(size_t len) {
     return (len * 3) / 4;
 }
 
-// flush utf7 block  to prepared (non utf7) byte array (bdata)
-// count is unicode point count (!)
-// bdata is shared for all data buffer by max count * 2 (hi/lo)
+/**
+ * Convert char data to UTF16 block
+ */
 static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_t bsize, size_t count) {
 
     int from_id = ctx->from_id;
     bool from_is_mbc = ctx->from_is_mbc;
     int ucode  = 0;
-    //uint8_t hi = 0;
-    //uint8_t lo = 0;
     size_t i   = 0;
-    size_t j   = 0;
-
     size_t from_seq_len = 0;
-
     char* data = idata;
     char* odata = bdata;
 
@@ -426,31 +421,6 @@ static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_
             return -1;
         }
 
-        // TODO: U16 (!)
-        //size_t u16_seq_len = lib_utf16_code_seq(ucode);
-        //if (u16_seq_len != 2 && u16_seq_len != 4) {
-        //    return -1;
-        //}
-
-        //uint16_t u1 = ucode >> 16;
-        //uint16_t u2 = ucode & 0xFF;
-
-        // V 1.0
-        // unicode point to hi and lo
-        // hi = ucode >> 8;
-        // lo = ucode & 0xFF;
-
-        //bdata[j] = hi;
-        //j++;
-
-        //bdata[j] = lo;
-        //j++;
-
-        //#ifdef DEBUG
-        //fprintf(stderr, "DEBUG: >> ucode=%d, hi=%d, lo=%d\n", ucode, hi, lo);
-        //#endif
-
-        // V 2.0
         int u16_seq = lib_utf16_to_char(odata, ucode);
         odata += u16_seq;
 
@@ -462,50 +432,27 @@ static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* bdata, size_
     return 0;
 }
 
+/**
+ * Convert UTF16 block to char data
+ */
 static int _to_char_block(lib_enc_context_t* ctx, char* idata, char* odata, size_t osize, size_t count) {
 
     int to_id = ctx->to_id;
     int ucode  = 0;
-    //uint16_t icode = 0;
-    //uint8_t hi = 0;
-    //uint8_t lo = 0;    
     size_t i   = 0;
-    size_t j   = 0;
-
     size_t to_seq_len = 0;
     char* data = idata;
     char* buf = odata;
+
     while (i < count) {
 
         if (i + 1 >= count) {
             return -1;
         }
 
-        // TODO: for UTF16 x2 only ////////////////////////////
-        ///////////////////////////////////////////////////////
-        // V 1.0
-        ///////////////////////////////////////////////////////
-        //hi = _u8(*data);
-        //data++;
-        //i++;
-        //lo = _u8(*data);
-
-        // next (hi, lo) 
-        //data++;
-        //i++;        
-
-        //icode = (icode << 8) | hi;
-        //icode = (icode << 8) | lo;
-        //ucode = icode;
-        ///////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////
-        // V2.0
         int u16_seq = lib_utf16_to_code(data, &ucode);
         data += u16_seq;
         i += u16_seq;
-        ///////////////////////////////////////////////////////
-
 
         to_seq_len = _enc_to_char(ctx, to_id, buf, ucode);
         
@@ -521,7 +468,6 @@ static int _to_char_block(lib_enc_context_t* ctx, char* idata, char* odata, size
         fprintf(stderr, "DEBUG: >> ucode=%d, hi=%d, lo=%d\n", ucode, hi, lo);
         #endif
 
-        j++;
         buf += to_seq_len;
     }
     return 0;
