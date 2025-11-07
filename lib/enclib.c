@@ -376,6 +376,10 @@ int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len,
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// UTF7: BEGIN
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Calculate lenght of output base64 array by input lenght
@@ -406,7 +410,7 @@ static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* odata, size_
 
     while (i < count) {
 
-        // Convert input current [EncodingID] char to codepoint
+        // char [EncodingID] -> codepoint
         from_seq = _enc_to_code(ctx, from_id, data, &ucode);
         if (from_seq <= 0) {
             // error
@@ -420,6 +424,7 @@ static int _to_u16_block(lib_enc_context_t* ctx, char* idata, char* odata, size_
         fprintf(stderr, "DEBUG: >> ucode=%d\n", ucode);
         #endif
 
+        // codepoint -> utf16
         u16_seq = lib_utf16_to_char(buf, ucode);
         buf += u16_seq;
 
@@ -450,10 +455,12 @@ static int _to_char_block(lib_enc_context_t* ctx, char* idata, char* odata, size
             return -1;
         }
 
+        // utf16 -> codepoint
         u16_seq = lib_utf16_to_code(data, &ucode);
         data += u16_seq;
         i += u16_seq;
 
+        // codepoint -> char [EncodingID]
         to_seq = _enc_to_char(ctx, to_id, buf, ucode);
         if (to_seq <= 0) {
             // error
