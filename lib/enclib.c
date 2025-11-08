@@ -1493,7 +1493,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 
     char* new_data      = NULL;
     size_t new_len      = 0;
-    size_t from_seq_len = 0;
+    size_t from_seq     = 0;
     size_t total        = 0;
 
     size_t from_bom_len = lib_enc_bom_len(from_id);
@@ -1535,7 +1535,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
         fprintf(stderr, "DEBUG: [1] icode=%d\n", icode);
         #endif
 
-        from_seq_len = 1; // by default
+        from_seq = 1; // by default
         if (start_block) {
 
             // Check end block
@@ -1573,7 +1573,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
             // Check start block
             if (icode == '+') {
                 if (i + 1 < from_len && _u8(data[i + 1]) == '-') {
-                    from_seq_len = 2;
+                    from_seq = 2;
                     total++; // '-'
 
                     #ifdef DEBUG_LL
@@ -1594,8 +1594,8 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
             }
         }
 
-        data += from_seq_len;
-        i += from_seq_len;
+        data += from_seq;
+        i += from_seq;
 
     }
 
@@ -1665,7 +1665,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
     data         = from_data + from_bom_len;
     i            = from_bom_len;
     j            = to_bom_len;
-    from_seq_len = 0;
+    from_seq     = 0;
     total        = 0;
     out_data     = new_data + to_bom_len;
     start_block  = false;
@@ -1679,7 +1679,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
         fprintf(stderr, "DEBUG: [2] icode=%d\n", icode);
         #endif
 
-        from_seq_len = 1; // by default
+        from_seq = 1; // by default
         if (start_block) {
 
             // Check end block
@@ -1694,12 +1694,12 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
                 // TODO: Temp solution
                 base64_decode_count(ctx, cur_data, block_b64_len, block_u16_len, &decode_count);
 
-                block_out_len = decode_count; // block_u16_len; // block_u16_len / 2;
+                block_out_len = decode_count;
 
                 // base64 -> UTF16 
                 base64_decode(cur_data, block_b64_len, u16_data, block_u16_len);
 
-                // output u16_data (hi, lo) to char data
+                // UTF16 -> char
                 _to_char_block(ctx, u16_data, out_data, block_out_len, block_u16_len);
 
                 out_data += block_out_len;
@@ -1723,7 +1723,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
             // Check start block
             if (icode == '+') {
                 if (i + 1 < from_len && _u8(data[i + 1]) == '-') {
-                    from_seq_len = 2;
+                    from_seq = 2;
                     total++; // '-'
 
                     #ifdef DEBUG_LL
@@ -1750,8 +1750,8 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 
         }
 
-        data += from_seq_len;
-        i += from_seq_len;
+        data += from_seq;
+        i += from_seq;
 
     }
 
@@ -1766,12 +1766,12 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
         // TODO: Temp solution
         base64_decode_count(ctx, cur_data, block_b64_len, block_u16_len, &decode_count);
 
-        block_out_len = decode_count; // block_u16_len; // block_u16_len / 2;
+        block_out_len = decode_count;
 
-        // base64 -> UTF16 
+        // base64 -> UTF16
         base64_decode(cur_data, block_b64_len, u16_data, block_u16_len);
 
-        // output u16_data (hi, lo) to char data
+        // UTF16 -> char
         _to_char_block(ctx, u16_data, out_data, block_out_len, block_u16_len);
 
         out_data += block_out_len;
@@ -1951,8 +1951,8 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
 
     char* new_data      = NULL;
     size_t new_len      = 0;
-    size_t from_seq_len = 0;
-    size_t to_seq_len   = 0;
+    size_t from_seq     = 0;
+    size_t to_seq       = 0;
     size_t total        = 0;
 
     size_t from_bom_len = lib_enc_bom_len(from_id);
@@ -1977,8 +1977,8 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // Calculate input sequence lenght of [EncodingID] char
-        from_seq_len = _enc_char_seq(from_is_mbc, from_id, data);
-        if (from_seq_len == 0) {
+        from_seq = _enc_char_seq(from_is_mbc, from_id, data);
+        if (from_seq == 0) {
             // error
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
@@ -1998,8 +1998,8 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
             return -1;
         }
 
-        to_seq_len = _enc_code_seq(to_is_mbc, to_id, ucode);
-        if (to_seq_len <= 0) {
+        to_seq = _enc_code_seq(to_is_mbc, to_id, ucode);
+        if (to_seq <= 0) {
             // error
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len=%lu\n", to_seq_len);
@@ -2012,9 +2012,9 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         fprintf(stderr, "DEBUG: >> 1: to_seq_len=%lu\n", to_seq_len);
         #endif
 
-        data += from_seq_len;
-        i += from_seq_len;
-        total += to_seq_len;
+        data += from_seq;
+        i += from_seq;
+        total += to_seq;
     }
 
     if (i != from_len) {
@@ -2048,15 +2048,15 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     data         = from_data + from_bom_len;
     i            = from_bom_len;
     j            = to_bom_len;
-    from_seq_len = 0;
-    to_seq_len   = 0;
+    from_seq     = 0;
+    to_seq       = 0;
     total        = 0;
         
     while (i < from_len) {
 
         // Calculate input sequence lenght of [EncodingID] char
-        from_seq_len = _enc_char_seq(from_is_mbc, from_id, data);
-        if (from_seq_len == 0) {
+        from_seq = _enc_char_seq(from_is_mbc, from_id, data);
+        if (from_seq == 0) {
             // error
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
@@ -2077,8 +2077,8 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         }
 
         // Convert Unicode codepoint to multi byte char
-        to_seq_len = _enc_to_char(ctx, to_id, buf, ucode);
-        if (to_seq_len <= 0) {
+        to_seq = _enc_to_char(ctx, to_id, buf, ucode);
+        if (to_seq <= 0) {
             // error
             #ifdef ERROR
             fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len_v2=%lu\n", to_seq_len);
@@ -2092,15 +2092,15 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         #endif
 
         // Copy data from buffer to output
-        for (int k = 0; k < to_seq_len; k++) {
+        for (int k = 0; k < to_seq; k++) {
             new_data[j + k] = buf[k];
         }
 
-        data += from_seq_len;
-        i += from_seq_len;
+        data += from_seq;
+        i += from_seq;
 
-        j += to_seq_len;
-        total += to_seq_len;
+        j += to_seq;
+        total += to_seq;
 
     }
 
