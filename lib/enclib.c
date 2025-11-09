@@ -1085,16 +1085,6 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 
     while (i < from_len) {
 
-        // // Calculate input sequence lenght of [EncodingID] char
-        // from_seq = _enc_char_seq(from_is_mbc, from_id, data);
-        // if (from_seq == 0) {
-        //     // error
-        //     #ifdef ERROR
-        //     fprintf(stderr, "ERROR: Invalid Sequence: from_seq=%lu\n", from_seq_len);
-        //     #endif
-        //     return -1;
-        // }
-
         // char [EncodingID] -> codepoint
         from_seq = _enc_to_code(ctx, from_id, data, &ucode);
         if (from_seq <= 0) {
@@ -1265,18 +1255,6 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     block_count  = 0;
         
     while (i < from_len) {
-
-        // // Calculate input sequence lenght of [EncodingID] char
-        // from_seq = _enc_char_seq(from_is_mbc, from_id, data);
-        // if (from_seq == 0) {
-        //     // error
-        //     #ifdef ERROR
-        //     fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
-        //     #endif
-        //     free(new_data);
-        //     free(u16_data);
-        //     return -1;
-        // }
 
         // char [EncodingID] -> codepoint
         from_seq = _enc_to_code(ctx, from_id, data, &ucode);
@@ -1975,17 +1953,6 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
 
     while (i < from_len) {
 
-        // // Calculate input sequence lenght of [EncodingID] char
-        // from_seq = _enc_char_seq(from_is_mbc, from_id, data);
-        // if (from_seq == 0) {
-        //     // error
-        //     #ifdef ERROR
-        //     fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
-        //     #endif
-        //     return -1;
-        // }
-        // Convert input current [EncodingID] char to codepoint
-
         // char [EncodingID] -> codepoint
         from_seq = _enc_to_code(ctx, from_id, data, &ucode);
         if (from_seq <= 0) {
@@ -2053,17 +2020,6 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     total        = 0;
         
     while (i < from_len) {
-
-        // // Calculate input sequence lenght of [EncodingID] char
-        // from_seq = _enc_char_seq(from_is_mbc, from_id, data);
-        // if (from_seq == 0) {
-        //     // error
-        //     #ifdef ERROR
-        //     fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
-        //     #endif
-        //     return -1;
-        // }
-        // // Convert input current [EncodingID] char to codepoint
 
         // char [EncodingID] -> codepoint
         from_seq = _enc_to_code(ctx, from_id, data, &ucode);
