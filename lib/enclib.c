@@ -1004,7 +1004,7 @@ bool IN_SET_B(int c) {
 ///////////////////////////////////////////////////////////////////////
 
 /**
- * Converts data to UTF-7
+ * Convert data to UTF-7
  */
 static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 
@@ -1071,7 +1071,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 
     bool start_block     = false; // Start UTF7 block flag
     size_t block_count   = 0;     // Count of Unicode codepoints in UTF7 block (!)
-    size_t block_u16_len = 0;     // Lenght of UTF16 block (hi/lo)
+    size_t block_u16_len = 0;     // Lenght of UTF16 block
     size_t block_b64_len = 0;     // Lenght of base64 block
     size_t u16_len       = 0;     // Max lenght of UTF16 block
     size_t u16_seq       = 0;
@@ -1278,7 +1278,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
         //     return -1;
         // }
 
-        // Convert input current [EncodingID] char to codepoint
+        // char [EncodingID] -> codepoint
         from_seq = _enc_to_code(ctx, from_id, data, &ucode);
         if (from_seq <= 0) {
             // error
@@ -1319,7 +1319,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
                 block_u16_len = u16_count;
                 block_b64_len = to_b64_len(block_u16_len);
 
-                // output to u16_data (hi, lo)
+                // char -> UTF16
                 _to_u16_block(ctx, cur_data, u16_data, block_u16_len, block_count);
 
                 *out_data = '+';
@@ -1393,7 +1393,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
         block_u16_len = u16_count;
         block_b64_len = to_b64_len(block_u16_len);
 
-        // output to u16_data (hi, lo)
+        // char -> UTF16
         _to_u16_block(ctx, cur_data, u16_data, block_u16_len, block_count);
 
         *out_data = '+';
@@ -1446,7 +1446,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 }
 
 /**
- * Converts data from UTF-7
+ * Convert data from UTF-7
  */
 static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 
@@ -1516,11 +1516,11 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
     bool start_block     = false; // Start UTF7 block flag
     size_t block_count   = 0;     // Count of Unicode points in UTF7 block
     size_t decode_count  = 0;
-    size_t block_u16_len = 0;     // Size of binary block of Unicode point pairs (hi/lo): block_count * 2
-    size_t block_b64_len = 0;     // Size of base64 block
-    size_t block_out_len = 0;     // Size of output block
-    size_t u16_len       = 0;     // Max size of binary block
-    char* u16_data       = NULL;  // Binary block data
+    size_t block_u16_len = 0;     // Lenght of UTF16 block
+    size_t block_b64_len = 0;     // Lenght of base64 block
+    size_t block_out_len = 0;     // Lenght of output block
+    size_t u16_len       = 0;     // Max lenght of UTF16 block
+    char* u16_data       = NULL;  // UTF16 block data
     char* out_data       = NULL;
     char* cur_data       = NULL;
     bool use_set_o       = true;
@@ -1552,7 +1552,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
                 fprintf(stderr, "DEBUG: [1] start block: u16_len=%lu\n", u16_len);
                 #endif
 
-                block_out_len = decode_count; // block_u16_len; // block_u16_len / 2;
+                block_out_len = decode_count;
                 total += block_out_len;
                 // skip total for '-'
 
@@ -1612,7 +1612,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
         fprintf(stderr, "DEBUG: [1] last block : u16_len=%lu\n", u16_len);
         #endif
 
-        block_out_len = decode_count; // block_u16_len; // block_u16_len / 2;
+        block_out_len = decode_count;
         total += block_out_len;
 
         #ifdef DEBUG_LL
@@ -1904,7 +1904,7 @@ static int _enc_check_ctx(lib_enc_context_t* ctx) {
 }
 
 /**
- * Converts data from [EncodingID] to [EncodingID]
+ * Convert data from [EncodingID] to [EncodingID]
  */
 static int _enc_conv_ctx(lib_enc_context_t* ctx) {
 
@@ -1975,40 +1975,41 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
 
     while (i < from_len) {
 
-        // Calculate input sequence lenght of [EncodingID] char
-        from_seq = _enc_char_seq(from_is_mbc, from_id, data);
-        if (from_seq == 0) {
-            // error
-            #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
-            #endif
-            return -1;
-        }
-
+        // // Calculate input sequence lenght of [EncodingID] char
+        // from_seq = _enc_char_seq(from_is_mbc, from_id, data);
+        // if (from_seq == 0) {
+        //     // error
+        //     #ifdef ERROR
+        //     fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
+        //     #endif
+        //     return -1;
+        // }
         // Convert input current [EncodingID] char to codepoint
-        int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
-        if (from_cp_len < 0) {
-        //if (cp_len <= 0) {
+
+        // char [EncodingID] -> codepoint
+        from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        if (from_seq <= 0) {
             // error
             #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
+            fprintf(stderr, "ERROR: Invalid Sequence: from_seq=%d\n", from_seq);
             #endif
             free(new_data);
             return -1;
         }
 
+        // codepoint -> char [EncodingID]
         to_seq = _enc_code_seq(to_is_mbc, to_id, ucode);
         if (to_seq <= 0) {
             // error
             #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len=%lu\n", to_seq_len);
+            fprintf(stderr, "ERROR: Invalid Sequence: to_seq=%lu\n", to_seq);
             #endif
             free(new_data);
             return -1;
         }
 
         #ifdef DEBUG_LL
-        fprintf(stderr, "DEBUG: >> 1: to_seq_len=%lu\n", to_seq_len);
+        fprintf(stderr, "DEBUG: >> 1: to_seq=%lu\n", to_seq);
         #endif
 
         data += from_seq;
@@ -2053,41 +2054,41 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         
     while (i < from_len) {
 
-        // Calculate input sequence lenght of [EncodingID] char
-        from_seq = _enc_char_seq(from_is_mbc, from_id, data);
-        if (from_seq == 0) {
-            // error
-            #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
-            #endif
-            return -1;
-        }
+        // // Calculate input sequence lenght of [EncodingID] char
+        // from_seq = _enc_char_seq(from_is_mbc, from_id, data);
+        // if (from_seq == 0) {
+        //     // error
+        //     #ifdef ERROR
+        //     fprintf(stderr, "ERROR: Invalid Sequence: from_seq_len_v1=%lu\n", from_seq_len);
+        //     #endif
+        //     return -1;
+        // }
+        // // Convert input current [EncodingID] char to codepoint
 
-        // Convert input current [EncodingID] char to codepoint
-        int from_cp_len = _enc_to_code(ctx, from_id, data, &ucode);
-        if (from_cp_len < 0) {
-        //if (from_cp_len <= 0) {
+        // char [EncodingID] -> codepoint
+        from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        if (from_seq <= 0) {
             // error
             #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: from_cp_len_v2=%d\n", from_cp_len);
+            fprintf(stderr, "ERROR: Invalid Sequence: from_seq=%d\n", from_seq);
             #endif
             free(new_data);
             return -1;
         }
 
-        // Convert Unicode codepoint to multi byte char
+        // codepoint -> char [EncodingID]          
         to_seq = _enc_to_char(ctx, to_id, buf, ucode);
         if (to_seq <= 0) {
             // error
             #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: to_seq_len_v2=%lu\n", to_seq_len);
+            fprintf(stderr, "ERROR: Invalid Sequence: to_seq=%lu\n", to_seq);
             #endif
             free(new_data);
             return -1;
         }
 
         #ifdef DEBUG_LL
-        fprintf(stderr, "DEBUG: >> 2: to_seq_len=%lu\n", to_seq_len);
+        fprintf(stderr, "DEBUG: >> 2: to_seq_len=%lu\n", to_seq);
         #endif
 
         // Copy data from buffer to output
