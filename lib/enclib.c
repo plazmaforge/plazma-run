@@ -465,7 +465,7 @@ static int _to_char_block(lib_enc_context_t* ctx, char* idata, char* odata, size
         if (to_seq <= 0) {
             // error
             #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: to_seq=%lu\n", to_seq);
+            fprintf(stderr, "ERROR: Invalid Sequence: to_seq=%d\n", to_seq);
             #endif
             return -1;
         }
@@ -1050,7 +1050,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
 
     char* new_data      = NULL;
     size_t new_len      = 0;
-    size_t from_seq     = 0;
+    int from_seq     = 0;
     size_t total        = 0;
 
     size_t from_bom_len = lib_enc_bom_len(from_id);
@@ -1928,13 +1928,12 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
 
     char* new_data      = NULL;
     size_t new_len      = 0;
-    size_t from_seq     = 0;
-    size_t to_seq       = 0;
     size_t total        = 0;
+    int from_seq        = 0;
+    int to_seq          = 0;
 
     size_t from_bom_len = lib_enc_bom_len(from_id);
     size_t to_bom_len   = lib_enc_bom_len(to_id);
-
 
     char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
 
@@ -1969,14 +1968,14 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         if (to_seq <= 0) {
             // error
             #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: to_seq=%lu\n", to_seq);
+            fprintf(stderr, "ERROR: Invalid Sequence: to_seq=%d\n", to_seq);
             #endif
             free(new_data);
             return -1;
         }
 
         #ifdef DEBUG_LL
-        fprintf(stderr, "DEBUG: >> 1: to_seq=%lu\n", to_seq);
+        fprintf(stderr, "DEBUG: >> 1: to_seq=%d\n", to_seq);
         #endif
 
         data += from_seq;
@@ -2037,14 +2036,14 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         if (to_seq <= 0) {
             // error
             #ifdef ERROR
-            fprintf(stderr, "ERROR: Invalid Sequence: to_seq=%lu\n", to_seq);
+            fprintf(stderr, "ERROR: Invalid Sequence: to_seq=%d\n", to_seq);
             #endif
             free(new_data);
             return -1;
         }
 
         #ifdef DEBUG_LL
-        fprintf(stderr, "DEBUG: >> 2: to_seq_len=%lu\n", to_seq);
+        fprintf(stderr, "DEBUG: >> 2: to_seq=%d\n", to_seq);
         #endif
 
         // Copy data from buffer to output
