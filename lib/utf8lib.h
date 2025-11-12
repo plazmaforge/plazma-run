@@ -106,27 +106,27 @@ const char* lib_utf8_get_char_next(const char* str, char* buf);
 /*
  * Return count of codepoints or error (-1).
  */
-int lib_utf8_get_code_count(const char* str);
+int lib_utf8_code_count(const char* str);
 
 /*
  * Return count of codepoints or error (-1).
  * First numbers only.
  */
-int lib_utf8_get_code_count_n(const char* str, size_t num);
+int lib_utf8_code_count_n(const char* str, size_t num);
 
-int lib_utf8_get_first_byte_count(const char* str, size_t char_num);
+int lib_utf8_first_byte_count(const char* str, size_t char_num);
 
-int lib_utf8_get_first_byte_count_n(const char* str, size_t num, size_t char_num);
+int lib_utf8_first_byte_count_n(const char* str, size_t num, size_t char_num);
 
 /**
  * Return count of bytes
  */
-int lib_utf8_get_byte_count(const char* str);
+int lib_utf8_byte_count(const char* str);
 
 /**
  * Return count of UTF-8 chars or error (-1).
  */
-int lib_utf8_get_char_count(const char* str);
+int lib_utf8_char_count(const char* str);
 
 /*
  * Convert all chars of a string to lower/upper case
@@ -190,19 +190,13 @@ int lib_utf8_to_upper_code(int cp);
 /**
  * Return true if UTF-8 string is valid.
  */
-bool lib_utf8_is_utf8_valid(const char* str);
+bool lib_utf8_is_valid(const char* str);
 
 /**
  * Return true if UTF-8 string is valid.
  * First numbers only.
  */
-bool lib_utf8_is_utf8_valid_n(const char* str, size_t num);
-
-/**
- * Return true if UTF (UTF-8, UTF-16, UTF-32) string is valid.
- * First numbers only.
- */
-bool lib_utf8_is_utf_valid_n(const char* str, size_t num);
+bool lib_utf8_is_valid_n(const char* str, size_t num);
 
 /**
  * Return true if a string is ASCII
@@ -226,16 +220,11 @@ bool lib_utf8_is_utf8(const char* str);
  */
 bool lib_utf8_is_utf8_n(const char* str, size_t num);
 
-/*
- * Return byte order mark (BOM) of a string.
+/**
+ * Return true if UTF (UTF-8, UTF-16, UTF-32) string is valid.
  * First numbers only.
  */
-int lib_utf8_get_bom_n(const char* str, size_t num);
-
-/*
- * Convert BOM type to a string representation.
- */
-const char* lib_utf8_to_bom_str(int bom);
+bool lib_utf_is_utf_n(const char* str, size_t num);
 
 //// std: begin
 
