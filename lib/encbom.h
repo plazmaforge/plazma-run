@@ -1,38 +1,39 @@
 #ifndef PLAZMA_LIB_ENCBOM_H
 #define PLAZMA_LIB_ENCBOM_H
 
+#include "intlib.h"
 #include "encpre.h"
 
 /*
- * Return byte order mark (BOM) of a string.
+ * Return [EncodingID] BOM (byte order mark) type of a string.
  */
-int lib_enc_get_bom_n(const char* str, size_t num);
+static int lib_enc_get_bom_n(const char* str, size_t num);
 
 /*
- * Convert BOM type to a string representation.
+ * Convert [EncodingID] BOM (byte order mark) type to a string representation.
  * First numbers only.
  */
-const char* lib_enc_to_bom_str(int bom);
+static const char* lib_enc_to_bom_str(int enc_id);
 
 ////
 
 // BOM
 // https://en.wikipedia.org/wiki/Byte_order_mark
 
-int lib_enc_get_bom_n(const char* str, size_t num) {
+static int lib_enc_get_bom_n(const char* str, size_t num) {
     if (!str || num < 2) {
         return LIB_ENC_NONE;
     }
 
-    unsigned char u1;
-    unsigned char u2;
-    unsigned char u3;
-    unsigned char u4;
+    uint8_t u1;
+    uint8_t u2;
+    uint8_t u3;
+    uint8_t u4;
 
     // UTF-16
     if (num >= 2) {
-        u1 = (unsigned char) str[0];
-        u2 = (unsigned char) str[1];
+        u1 = _u8(str[0]);
+        u2 = _u8(str[1]);
 
         // UTF-16 (BE): FE FF
         if (u1 == 0xFE && u2 == 0xFF) {
@@ -47,9 +48,9 @@ int lib_enc_get_bom_n(const char* str, size_t num) {
 
     // UTF-8
     if (num >= 3) {
-        u1 = (unsigned char) str[0];
-        u2 = (unsigned char) str[1];
-        u3 = (unsigned char) str[2];
+        u1 = _u8(str[0]);
+        u2 = _u8(str[1]);
+        u3 = _u8(str[2]);
 
         // UTF-8: EF BB BF
         if (u1 == 0xEF && u2 == 0xBB && u3 == 0xBF) {
@@ -75,10 +76,10 @@ int lib_enc_get_bom_n(const char* str, size_t num) {
 
     // UTF-32
     if (num >= 4) {
-        u1 = (unsigned char) str[0];
-        u2 = (unsigned char) str[1];
-        u3 = (unsigned char) str[2];
-        u4 = (unsigned char) str[3];
+        u1 = _u8(str[0]);
+        u2 = _u8(str[1]);
+        u3 = _u8(str[2]);
+        u4 = _u8(str[3]);
 
         // UTF-32 (BE): 00 00 FE FF
         if (u1 == 0x00 && u2 == 0x00 && u3 == 0xFE && u4 == 0xFF) {
@@ -114,8 +115,148 @@ int lib_enc_get_bom_n(const char* str, size_t num) {
     return LIB_ENC_NONE;
 }
 
-const char* lib_enc_to_bom_str(int bom) {
-    switch (bom) {
+/**
+ * Return lenght of BOM
+ */
+static size_t lib_enc_bom_len(int enc_id) {
+
+    // UTF-8
+    if (enc_id == LIB_ENC_UTF8_ID) {
+        return 0;
+    }
+    if (enc_id == LIB_ENC_UTF8_BOM_ID) {
+        return 3;
+    }
+
+    // UTF-16
+    if (enc_id == LIB_ENC_UTF16_ID) {
+        // UTF16 by default with BOM
+        return 2;
+    }
+
+    // UTF-16 (BE/LE)
+    if (enc_id == LIB_ENC_UTF16BE_ID
+     || enc_id == LIB_ENC_UTF16LE_ID) {
+        return 0;
+    }
+
+    // UTF-16-BOM
+    if (enc_id == LIB_ENC_UTF16BE_BOM_ID
+     || enc_id == LIB_ENC_UTF16LE_BOM_ID) {
+        return 2;
+    }
+
+    // UTF-32
+    if (enc_id == LIB_ENC_UTF32_ID) {
+        // UTF32 by default with BOM
+        return 4;
+    }
+
+    // UTF-32 (BE/LE)
+    if (enc_id == LIB_ENC_UTF32BE_ID
+     || enc_id == LIB_ENC_UTF32LE_ID) {
+        return 0;
+    }
+
+    // UTF-32-BOM
+    if (enc_id == LIB_ENC_UTF32BE_BOM_ID
+     || enc_id == LIB_ENC_UTF32LE_BOM_ID) {
+        return 4;
+    }
+
+    // UTF-7
+    if (enc_id == LIB_ENC_UTF7_ID) {
+        return 0;
+    }
+    if (enc_id == LIB_ENC_UTF7_BOM_ID) {
+        return 4;
+    }
+
+    return 0;
+}
+
+/**
+ * Set BOM and return lenght of BOM
+ */
+static size_t lib_enc_set_bom(int enc_id, char* str) {
+    if (!str) {
+        return 0;
+    }
+
+    // UTF-8
+    if (enc_id == LIB_ENC_UTF8_ID) {
+        return 0;
+    }
+    if (enc_id == LIB_ENC_UTF8_BOM_ID) {
+        str[0] = 0xEF;
+        str[1] = 0xBB;
+        str[2] = 0xBF;
+        return 3;
+    }
+
+    // UTF-16
+    if (enc_id == LIB_ENC_UTF16_ID
+     // UTF-16 by default with BOM
+     || enc_id == LIB_ENC_UTF16BE_BOM_ID) {
+        str[0] = 0xFE;
+        str[1] = 0xFF;
+        return 2;
+    }
+    if (enc_id == LIB_ENC_UTF16LE_BOM_ID) {
+        str[0] = 0xFF;
+        str[1] = 0xFE;
+        return 2;
+    }
+
+    // UTF-16 (BE/LE)
+    if (enc_id == LIB_ENC_UTF16BE_ID
+     || enc_id == LIB_ENC_UTF16LE_ID) {
+        return 0;
+    }
+
+    // UTF-32
+    if (enc_id == LIB_ENC_UTF32_ID
+     // UTF-32 by default with BOM 
+     || enc_id == LIB_ENC_UTF32BE_BOM_ID) {
+        str[0] = 0x00;
+        str[1] = 0x00;
+        str[2] = 0xFE;
+        str[3] = 0xFF;
+        return 4;
+    }
+    if (enc_id == LIB_ENC_UTF32LE_BOM_ID) {
+        str[0] = 0xFF;
+        str[1] = 0xFE;
+        str[2] = 0x00;
+        str[3] = 0x00;
+        return 4;
+    }
+
+    // UTF-32 (BE/LE)
+    if (enc_id == LIB_ENC_UTF32BE_ID
+     || enc_id == LIB_ENC_UTF32LE_ID) {
+        return 0;
+    }
+
+    // UTF-7
+    if (enc_id == LIB_ENC_UTF7_ID) {
+        return 0;
+    }
+    if (enc_id == LIB_ENC_UTF7_BOM_ID) {
+        str[0] = 0x2B;
+        str[1] = 0x2F;
+        str[2] = 0x76;
+        str[3] = 0x38; // 0x38 | 0x39 | 0x2B | 0x2F
+        return 4;
+    }
+
+    return 0;
+}
+
+////
+
+static const char* lib_enc_to_bom_str(int enc_id) {
+    switch (enc_id) {
 
     // UTF-8
     case LIB_ENC_UTF8_BOM_ID:

@@ -3,10 +3,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "enclib.h"
 #include "intlib.h"
 #include "utf7lib.h"
 #include "utf8lib.h"
+#include "encbom.h"
+#include "enclib.h"
 
 // #define DEBUG    1
 // #define DEBUG_LL 1
@@ -86,145 +87,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx);
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Return lenght of BOM
- */
-size_t lib_enc_bom_len(int enc_id) {
-
-    // UTF-8
-    if (enc_id == LIB_ENC_UTF8_ID) {
-        return 0;
-    }
-    if (enc_id == LIB_ENC_UTF8_BOM_ID) {
-        return 3;
-    }
-
-    // UTF-16
-    if (enc_id == LIB_ENC_UTF16_ID) {
-        // UTF16 by default with BOM
-        return 2;
-    }
-
-    // UTF-16 (BE/LE)
-    if (enc_id == LIB_ENC_UTF16BE_ID
-     || enc_id == LIB_ENC_UTF16LE_ID) {
-        return 0;
-    }
-
-    // UTF-16-BOM
-    if (enc_id == LIB_ENC_UTF16BE_BOM_ID
-     || enc_id == LIB_ENC_UTF16LE_BOM_ID) {
-        return 2;
-    }
-
-    // UTF-32
-    if (enc_id == LIB_ENC_UTF32_ID) {
-        // UTF32 by default with BOM
-        return 4;
-    }
-
-    // UTF-32 (BE/LE)
-    if (enc_id == LIB_ENC_UTF32BE_ID
-     || enc_id == LIB_ENC_UTF32LE_ID) {
-        return 0;
-    }
-
-    // UTF-32-BOM
-    if (enc_id == LIB_ENC_UTF32BE_BOM_ID
-     || enc_id == LIB_ENC_UTF32LE_BOM_ID) {
-        return 4;
-    }
-
-    // UTF-7
-    if (enc_id == LIB_ENC_UTF7_ID) {
-        return 0;
-    }
-    if (enc_id == LIB_ENC_UTF7_BOM_ID) {
-        return 4;
-    }
-
-    return 0;
-}
-
-/**
- * Set BOM and return lenght of BOM
- */
-size_t lib_enc_set_bom(int enc_id, char* str) {
-    if (!str) {
-        return 0;
-    }
-
-    // UTF-8
-    if (enc_id == LIB_ENC_UTF8_ID) {
-        return 0;
-    }
-    if (enc_id == LIB_ENC_UTF8_BOM_ID) {
-        str[0] = 0xEF;
-        str[1] = 0xBB;
-        str[2] = 0xBF;
-        return 3;
-    }
-
-    // UTF-16
-    if (enc_id == LIB_ENC_UTF16_ID
-     // UTF-16 by default with BOM
-     || enc_id == LIB_ENC_UTF16BE_BOM_ID) {
-        str[0] = 0xFE;
-        str[1] = 0xFF;
-        return 2;
-    }
-    if (enc_id == LIB_ENC_UTF16LE_BOM_ID) {
-        str[0] = 0xFF;
-        str[1] = 0xFE;
-        return 2;
-    }
-
-    // UTF-16 (BE/LE)
-    if (enc_id == LIB_ENC_UTF16BE_ID
-     || enc_id == LIB_ENC_UTF16LE_ID) {
-        return 0;
-    }
-
-    // UTF-32
-    if (enc_id == LIB_ENC_UTF32_ID
-     // UTF-32 by default with BOM 
-     || enc_id == LIB_ENC_UTF32BE_BOM_ID) {
-        str[0] = 0x00;
-        str[1] = 0x00;
-        str[2] = 0xFE;
-        str[3] = 0xFF;
-        return 4;
-    }
-    if (enc_id == LIB_ENC_UTF32LE_BOM_ID) {
-        str[0] = 0xFF;
-        str[1] = 0xFE;
-        str[2] = 0x00;
-        str[3] = 0x00;
-        return 4;
-    }
-
-    // UTF-32 (BE/LE)
-    if (enc_id == LIB_ENC_UTF32BE_ID
-     || enc_id == LIB_ENC_UTF32LE_ID) {
-        return 0;
-    }
-
-    // UTF-7
-    if (enc_id == LIB_ENC_UTF7_ID) {
-        return 0;
-    }
-    if (enc_id == LIB_ENC_UTF7_BOM_ID) {
-        str[0] = 0x2B;
-        str[1] = 0x2F;
-        str[2] = 0x76;
-        str[3] = 0x38; // 0x38 | 0x39 | 0x2B | 0x2F
-        return 4;
-    }
-
-    return 0;
-}
-
-/**
- * Returns true if the Encoding ID supports conversion
+ * Return true if the Encoding ID supports conversion
  */
 bool lib_enc_supports_conv(int enc_id) {
     if (lib_enc_is_utf(enc_id)) {
@@ -235,7 +98,7 @@ bool lib_enc_supports_conv(int enc_id) {
 } 
 
 /**
- * Returns (conversion only) encoding id by encoding name 
+ * Return (conversion only) encoding id by encoding name 
  */
 int lib_enc_get_conv_encoding_id(const char* name) {
     int enc_id = lib_enc_get_id(name);
@@ -251,7 +114,7 @@ int lib_enc_get_conv_encoding_id(const char* name) {
 }
 
 /**
- * Converts data by Encoding IDs 
+ * Convert data by Encoding IDs 
  */
 int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len, char** to_data, size_t* to_len) {
 
