@@ -5,6 +5,7 @@
 #include "encpre.h"
 #include "encbom.h"
 #include "unilib.h"
+#include "intlib.h"
 #include "utf8lib.h"
 
 /*
@@ -88,9 +89,9 @@ static void _reset_val(int* val);
 
 static void _reset_buf(char* buf);
 
-static uint8_t _u8(char value) {
-    return (uint8_t) value;
-}
+// static uint8_t _u8(char value) {
+//     return (uint8_t) value;
+// }
 
 //// uni: check
 
