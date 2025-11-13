@@ -219,21 +219,22 @@ int lib_utf8_get_char_info(const char* str, int* cp, int* len) {
     _reset_var(cp, len);
 
     if (!str) {
-        return 0;
-    }
-
-    // Get sequence len of char by first byte 
-    *len = lib_utf8_byte_seq(str[0]);
-    if (*len == 0) {
         return -1;
     }
 
-    // Convert UTF-8 char to codepoint
-    int err = _utf8_to_code(str, cp, *len);
-    if (err != 0)  {
-        return err;
+    // Get sequence len of char by first byte 
+    int seq = lib_utf8_byte_seq(str[0]);
+    if (seq <= 0) {
+        return seq == 0 ? -1 : seq;
     }
 
+    // Convert UTF-8 char to codepoint
+    seq = _utf8_to_code(str, cp, seq);
+    if (seq <= 0)  {
+        return seq == 0 ? -1 : seq;
+    }
+
+    *len = seq;
     return 0;
 }
 
@@ -491,17 +492,11 @@ int lib_utf8_get_char_n(const char* str, size_t num, char* buf, int index) {
         if (k == index) {
 
             // Convert UTF-8 char to codepoint
-            int err = _utf8_to_code(s, &cp, len);
-            if (err != 0) {
+            int seq = _utf8_to_code(s, &cp, len);
+            if (seq <= 0) {
                 // error: invalid codepoint
-                return err;
+                return seq == 0 ? -1 : seq;
             }
-
-            // cp = _utf8_to_code(s, len);
-            // if (cp < 0) {
-            //     // error: invalid codepoint
-            //     return -1;
-            // }
 
             // Copy current UTF-8 char to the buffer
             lib_utf8_chrcpy(buf, s, len);
@@ -821,7 +816,7 @@ static int _utf8_to_code(const char* str, int* cp, int len) {
         /* 1 byte utf8 codepoint */
         //return c;
         *cp = c;
-        return 0;
+        return 1;
     } else if (len == 2) {
 
         /* 2 byte utf8 codepoint */
@@ -835,7 +830,7 @@ static int _utf8_to_code(const char* str, int* cp, int len) {
 	    }
         //return ((0x1F & c) << 6) | (0x3F & d);
         *cp = ((0x1F & c) << 6) | (0x3F & d);
-        return 0;
+        return 2;
     } else if (len == 3) {
 
         /* 3 byte utf8 codepoint */
@@ -875,7 +870,7 @@ static int _utf8_to_code(const char* str, int* cp, int len) {
 
         //return r;
         *cp = r;
-        return 0;
+        return 3;
 
     } else if (len == 4) {
 
@@ -920,7 +915,7 @@ static int _utf8_to_code(const char* str, int* cp, int len) {
 
         //return r;
         *cp = r;
-        return 0;
+        return 4;
     }
 
     // error: invalid lenght
