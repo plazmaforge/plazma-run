@@ -64,9 +64,6 @@ static void _reset_buf(char* buf);
 //// utf8
 
 int lib_utf8_code_seq(int cp) {
-    // if (cp < 0) {
-    //     return -1; /* error */
-    // }
 
     int err = lib_uni_check_range(cp);
     if (err != 0) {
@@ -184,17 +181,20 @@ int lib_utf8_get_code(const char* str) {
 }
 
 int lib_utf8_to_char(char* buf, int cp) {
-
     if (!buf) {
-        return 0;
+        return -1;
     }
 
-    if (cp < 0) {
+    int err = lib_uni_check_range(cp);
+    if (err != 0) {
         _reset_buf(buf);
-        return 0;
+        return err;
     }
 
     int len = lib_utf8_code_seq(cp);
+    if (len <= 0) {
+        return len;
+    }
     return _utf8_to_char(buf, cp, len);
 }
 
@@ -243,7 +243,7 @@ int lib_utf8_to_code(const char* str, int* cp) {
     _reset_val(cp);
 
     if (!str) {
-        return 0;
+        return -1;
     }
 
     int len;
@@ -450,8 +450,15 @@ int lib_utf8_get_char(const char* str, char* buf, int index) {
  * Return codepoint of this char or error (-1).
  */
 int lib_utf8_get_char_n(const char* str, size_t num, char* buf, int index) {
-    if (!str || num == 0) {
+    if (!str) {
         _reset_buf(buf);
+        // error: invalid arguments
+        return -1;
+    }
+
+    if (num == 0) {
+        _reset_buf(buf);
+        // warn: empty
         return 0;
     }
 
@@ -483,8 +490,8 @@ int lib_utf8_get_char_n(const char* str, size_t num, char* buf, int index) {
         char c = *s;
 
         // Get lenght of UTF-8 char
-        size_t len = lib_utf8_byte_seq(c);
-        if (len == 0) {
+        int len = lib_utf8_byte_seq(c);
+        if (len <= 0) {
             // error: invalid sequence lenght
             return -1;
         }
@@ -492,10 +499,10 @@ int lib_utf8_get_char_n(const char* str, size_t num, char* buf, int index) {
         if (k == index) {
 
             // Convert UTF-8 char to codepoint
-            int seq = _utf8_to_code(s, &cp, len);
-            if (seq <= 0) {
+            int ret = _utf8_to_code(s, &cp, len);
+            if (ret <= 0) {
                 // error: invalid codepoint
-                return seq == 0 ? -1 : seq;
+                return ret == 0 ? -1 : ret;
             }
 
             // Copy current UTF-8 char to the buffer
@@ -549,7 +556,7 @@ int lib_utf8_code_count_n(const char* str, size_t num) {
     size_t count = 0;
     while (i < num) {
         char c = str[i];
-        size_t len = lib_utf8_byte_seq(c);
+        int len = lib_utf8_byte_seq(c);
         //if (len == 0) {
         //    return -1;
         //}
@@ -568,8 +575,8 @@ int lib_utf8_first_byte_count_n(const char* str, size_t num, size_t char_num) {
     size_t count = 0;
     while (i < num) {
         char c = str[i];
-        size_t len = lib_utf8_byte_seq(c);
-        if (len == 0) {
+        int len = lib_utf8_byte_seq(c);
+        if (len <= 0) {
             return -1;
         }
         i += len;
@@ -1059,16 +1066,16 @@ void _reset_buf(char* buf) {
 // strlen
 
 size_t lib_utf8_strlen(const char* str) {
-    int len = lib_utf8_char_count(str);
+    int count = lib_utf8_char_count(str);
     // For compatibility with std::strlen
-    return len < 0 ? 0 : len;
+    return count < 0 ? 0 : count;
 }
 
 size_t lib_utf8_strnlen(const char* str, size_t num) {
     // For compatibility with std::strnlen
     // Calculate count of first bytes by UTF-8 char numbers
-    int len = lib_utf8_first_byte_count(str, num);
-    return len < 0 ? 0 : len;
+    int count = lib_utf8_first_byte_count(str, num);
+    return count < 0 ? 0 : count;
 }
 
 // strcpy
@@ -1419,7 +1426,7 @@ bool lib_utf8_strieq(const char* str1, const char* str2) {
 
 static int _utf16_char_seq(bool be, const char* str) {
     if (!str) {
-        return 0;
+        return -1;
     }
     int i1;
     int i2;
@@ -1560,7 +1567,7 @@ static int _utf16_to_char(bool be, char* buf, int cp) {
 
 int lib_utf32_char_seq(const char* str) {
     if (!str) {
-        return 0;
+        return -1;
     }
     return 4;
 }
