@@ -47,7 +47,7 @@ static const int LIB_UTF8_SEQ[256] = {
 
 //// static
 
-static int _utf8_to_code(const char* str, int len);
+static int _utf8_to_code(const char* str, int* cp, int len);
 
 static int _utf8_to_char(char* buf, int cp, int len);
 
@@ -64,8 +64,13 @@ static void _reset_buf(char* buf);
 //// utf8
 
 int lib_utf8_code_seq(int cp) {
-    if (cp < 0) {
-        return 0; /* error */
+    // if (cp < 0) {
+    //     return -1; /* error */
+    // }
+
+    int err = lib_uni_check_range(cp);
+    if (err != 0) {
+        return err;
     }
 
     if (cp <= 0x7F) {
@@ -99,7 +104,7 @@ int lib_utf8_code_seq(int cp) {
     }
     
     /* error */
-    return 0;
+    return -1;
 }
 
 // by array (strong)
@@ -189,7 +194,7 @@ int lib_utf8_to_char(char* buf, int cp) {
         return 0;
     }
 
-    size_t len = lib_utf8_code_seq(cp);
+    int len = lib_utf8_code_seq(cp);
     return _utf8_to_char(buf, cp, len);
 }
 
@@ -224,9 +229,9 @@ int lib_utf8_get_char_info(const char* str, int* cp, int* len) {
     }
 
     // Convert UTF-8 char to codepoint
-    *cp = _utf8_to_code(str, *len);
-    if (*cp < 0)  {
-        return -1;
+    int err = _utf8_to_code(str, cp, *len);
+    if (err != 0)  {
+        return err;
     }
 
     return 0;
@@ -270,8 +275,8 @@ const char* lib_utf8_strnext(const char* str) {
     }
 
     // Get sequence len of char by first byte 
-    size_t len = lib_utf8_byte_seq(str[0]);
-    if (len == 0) {
+    int len = lib_utf8_byte_seq(str[0]);
+    if (len <= 0) {
         // error
         return NULL;
     }
@@ -486,11 +491,17 @@ int lib_utf8_get_char_n(const char* str, size_t num, char* buf, int index) {
         if (k == index) {
 
             // Convert UTF-8 char to codepoint
-            cp = _utf8_to_code(s, len);
-            if (cp < 0) {
+            int err = _utf8_to_code(s, &cp, len);
+            if (err != 0) {
                 // error: invalid codepoint
-                return -1;
+                return err;
             }
+
+            // cp = _utf8_to_code(s, len);
+            // if (cp < 0) {
+            //     // error: invalid codepoint
+            //     return -1;
+            // }
 
             // Copy current UTF-8 char to the buffer
             lib_utf8_chrcpy(buf, s, len);
@@ -800,7 +811,7 @@ bool lib_utf_is_utf_n(const char* str, size_t num) {
 /**
  * Convert UTF-8 char to the codepoint
  */
-static int _utf8_to_code(const char* str, int len) {
+static int _utf8_to_code(const char* str, int* cp, int len) {
 
     // Get first byte
     uint8_t c = _u8(str[0]);
@@ -808,7 +819,9 @@ static int _utf8_to_code(const char* str, int len) {
     if (len == 1) {
 
         /* 1 byte utf8 codepoint */
-        return c;
+        //return c;
+        *cp = c;
+        return 0;
     } else if (len == 2) {
 
         /* 2 byte utf8 codepoint */
@@ -820,7 +833,9 @@ static int _utf8_to_code(const char* str, int len) {
         if (c <= 0xC1) {
             return LIB_UTF8_BAD_BYTE;
 	    }
-        return ((0x1F & c) << 6) | (0x3F & d);
+        //return ((0x1F & c) << 6) | (0x3F & d);
+        *cp = ((0x1F & c) << 6) | (0x3F & d);
+        return 0;
     } else if (len == 3) {
 
         /* 3 byte utf8 codepoint */
@@ -858,7 +873,9 @@ static int _utf8_to_code(const char* str, int len) {
             return err;
         }
 
-        return r;
+        //return r;
+        *cp = r;
+        return 0;
 
     } else if (len == 4) {
 
@@ -885,12 +902,7 @@ static int _utf8_to_code(const char* str, int len) {
 
         int r = ((0x07 & c) << 18) | ((0x3F & d) << 12) | ((0x3F & e) << 6) | (0x3F & f);
 
-        // if (r > LIB_UNI_MAX) {
-        //     return LIB_UNI_TOO_BIG;
-	    // }
-
-        int err = 0;
-        err = lib_uni_check_range(r);
+        int err = lib_uni_check_range(r);
         if (err != 0) {
             return err;
         }
@@ -906,8 +918,9 @@ static int _utf8_to_code(const char* str, int len) {
         minimum value of UCS-2 if there are four bytes of UTF-8 is 0x10000. 
         */
 
-        return r;
-
+        //return r;
+        *cp = r;
+        return 0;
     }
 
     // error: invalid lenght
