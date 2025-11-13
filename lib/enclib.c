@@ -68,9 +68,9 @@ static int _init_ctx(lib_enc_context_t* ctx) {
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-static size_t _enc_char_seq(bool is_mbc, int enc_id, const char* str);
+static int _enc_char_seq(bool is_mbc, int enc_id, const char* str);
 
-static size_t _enc_code_seq(bool is_mbc, int enc_id, int cp);
+static int _enc_code_seq(bool is_mbc, int enc_id, int cp);
 
 static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp);
 
@@ -690,18 +690,18 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     int ocode;
     int ucode;
 
-    char* new_data      = NULL;
-    size_t new_len      = 0;
+    char* new_data   = NULL;
+    size_t new_len   = 0;
+    size_t total     = 0;
     int from_seq     = 0;
-    size_t total        = 0;
 
-    size_t from_bom_len = lib_enc_bom_len(from_id);
-    size_t to_bom_len   = lib_enc_bom_len(to_id);
+    int from_bom_len = lib_enc_bom_len(from_id);
+    int to_bom_len   = lib_enc_bom_len(to_id);
 
     char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
 
-    char* data     = from_data + from_bom_len;
-    int i          = from_bom_len;
+    char* data       = from_data + from_bom_len;
+    int i            = from_bom_len;
 
     #ifdef DEBUG
     fprintf(stderr, ">> conv_to_utf7: starting...\n");
@@ -716,8 +716,8 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     size_t block_u16_len = 0;     // Lenght of UTF16 block
     size_t block_b64_len = 0;     // Lenght of base64 block
     size_t u16_len       = 0;     // Max lenght of UTF16 block
-    size_t u16_seq       = 0;
     size_t u16_count     = 0;
+    int u16_seq          = 0;
 
     char* u16_data       = NULL;  // UTF16 block data
     char* out_data       = NULL;
@@ -1110,20 +1110,19 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
     int icode;
     int ucode;
 
-    char* new_data      = NULL;
-    size_t new_len      = 0;
-    size_t from_seq     = 0;
-    size_t total        = 0;
+    char* new_data   = NULL;
+    size_t new_len   = 0;
+    size_t total     = 0;
+    int from_seq     = 0;
 
-    size_t from_bom_len = lib_enc_bom_len(from_id);
-    size_t to_bom_len   = lib_enc_bom_len(to_id);
-
+    int from_bom_len = lib_enc_bom_len(from_id);
+    int to_bom_len   = lib_enc_bom_len(to_id);
 
     char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
 
-    char* data     = from_data + from_bom_len;
-    int i          = from_bom_len;
-    int j          = 0;
+    char* data       = from_data + from_bom_len;
+    int i            = from_bom_len;
+    int j            = 0;
 
     #ifdef DEBUG
     fprintf(stderr, ">> conv_from_utf7: starting...\n");
@@ -1431,7 +1430,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-static size_t _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
+static int _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
     #ifdef DEBUG_L2
     fprintf(stderr, ">> enc_char_seq\n");
     #endif
@@ -1455,7 +1454,7 @@ static size_t _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
     return lib_utf_char_seq(enc_id, str);
 }
 
-static size_t _enc_code_seq(bool is_mbc, int enc_id, int cp) {
+static int _enc_code_seq(bool is_mbc, int enc_id, int cp) {
     if (!is_mbc) {
         return 1;  // Lenght is always one
     }
@@ -1583,9 +1582,9 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
 
     char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
 
-    char* data     = from_data + from_bom_len;
-    int i          = from_bom_len;
-    int j          = 0;
+    char* data          = from_data + from_bom_len;
+    int i               = from_bom_len;
+    int j               = 0;
 
     #ifdef DEBUG
     fprintf(stderr, ">> conv_ctx: starting...\n");

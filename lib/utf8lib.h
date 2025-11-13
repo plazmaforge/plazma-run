@@ -6,21 +6,21 @@
 /*
  * Return lenght of UTF-8 char by codepoint or error (0).
  */
-size_t lib_utf8_code_seq(int cp);
+int lib_utf8_code_seq(int cp);
 
 // by array (strong)
-size_t lib_utf8_byte_seq_array(char first);
+int lib_utf8_byte_seq_array(char first);
 
 // by range (strong)
-size_t lib_utf8_byte_seq_strong(char first);
+int lib_utf8_byte_seq_strong(char first);
 
 // by range
-size_t lib_utf8_byte_seq_range(char first);
+int lib_utf8_byte_seq_range(char first);
 
 /*
  * Return lenght of UTF-8 char by first byte or error (0).
  */
-size_t lib_utf8_byte_seq(char first);
+int lib_utf8_byte_seq(char first);
 
 /*
  * Return codepoint by UTF-8 char or error (-1).
@@ -309,7 +309,7 @@ int lib_utf16be_to_code(const char* str, int* cp);
 
 int lib_utf16le_to_code(const char* str, int* cp);
 
-size_t lib_utf16_code_seq(int cp);
+int lib_utf16_code_seq(int cp);
 
 int lib_utf16_to_char(char* buf, int cp);
 
@@ -328,7 +328,7 @@ int lib_utf32be_to_code(const char* str, int* cp);
 
 int lib_utf32le_to_code(const char* str, int* cp);
 
-size_t lib_utf32_code_seq(int cp);
+int lib_utf32_code_seq(int cp);
 
 int lib_utf32_to_char(char* buf, int cp);
 
@@ -338,18 +338,18 @@ int lib_utf32le_to_char(char* buf, int cp);
 
 //// UTF
 
-size_t lib_utf_char_seq(int utf_id, const char* str);
+int lib_utf_char_seq(int utf_id, const char* str);
 
-size_t lib_utf_code_seq(int utf_id, int cp);
+int lib_utf_code_seq(int utf_id, int cp);
 
 /*
  * Convert a codepount to a char and return lenght of the char.
  */
-int lib_utf_to_char(int utf_id, char* buf, int cp);
+int lib_utf_to_char(int enc_id, char* buf, int cp);
 
 /*
  * Convert a char to a codepount and return lenght of the char.
  */
-int lib_utf_to_code(int utf_id, const char* str, int* cp);
+int lib_utf_to_code(int enc_id, const char* str, int* cp);
 
 #endif // PLAZMA_LIB_UTF8LIB_H

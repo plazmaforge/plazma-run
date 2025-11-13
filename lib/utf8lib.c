@@ -4,6 +4,7 @@
 
 #include "encpre.h"
 #include "encbom.h"
+#include "unidef.h"
 #include "unilib.h"
 #include "intlib.h"
 #include "utf8lib.h"
@@ -42,36 +43,36 @@ static const int LIB_UTF8_SEQ[256] = {
     4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0, /* F: 4: 0xF0 - 0xFF */ /* 0xF0 - 0xF4 */
 };
 
-/* Surrogate pair zone. */
-#define LIB_UNI_SUR_HIGH_START  0xD800
-#define LIB_UNI_SUR_HIGH_END    0xDBFF
-#define LIB_UNI_SUR_LOW_START   0xDC00
-#define LIB_UNI_SUR_LOW_END     0xDFFF
+// /* Surrogate pair zone. */
+// #define LIB_UNI_SUR_HIGH_START  0xD800
+// #define LIB_UNI_SUR_HIGH_END    0xDBFF
+// #define LIB_UNI_SUR_LOW_START   0xDC00
+// #define LIB_UNI_SUR_LOW_END     0xDFFF
 
-/* Start of the "not character" range. */
-#define LIB_UNI_NOT_CHAR_MIN    0xFDD0
+// /* Start of the "not character" range. */
+// #define LIB_UNI_NOT_CHAR_MIN    0xFDD0
 
-/* End of the "not character" range.  */
-#define LIB_UNI_NOT_CHAR_MAX    0xFDEF
+// /* End of the "not character" range.  */
+// #define LIB_UNI_NOT_CHAR_MAX    0xFDEF
 
-/* Error codes                        */
-#define LIB_UNI_SUR_PAIR       -2
-#define LIB_UNI_TOO_BIG        -7
-#define LIB_UNI_NOT_CHAR       -8
+// /* Error codes                        */
+// #define LIB_UNI_SUR_PAIR       -2
+// #define LIB_UNI_TOO_BIG        -7
+// #define LIB_UNI_NOT_CHAR       -8
 
 #define LIB_UTF8_BAD_BYTE      -1
 
-/* The maximum possible value of a Unicode code point. See
-   http://www.cl.cam.ac.uk/~mgk25/unicode.html#ucs. */
+// /* The maximum possible value of a Unicode code point. See
+//    http://www.cl.cam.ac.uk/~mgk25/unicode.html#ucs. */
 
-#define LI__UNI_MAX            0x10ffff
-#define LIB_UNI_MAX            0x10FFFF
+// #define LI__UNI_MAX            0x10ffff
+// #define LIB_UNI_MAX            0x10FFFF
 
-/* The maximum possible value which will fit into four bytes of
-   UTF-8. This is larger than UNICODE_MAXIMUM. */
+// /* The maximum possible value which will fit into four bytes of
+//    UTF-8. This is larger than UNICODE_MAXIMUM. */
 
-#define LI__UTF8_4             0x1fffff
-#define LIB_UTF8_4             0x1FFFFF
+// #define LI__UTF8_4             0x1fffff
+// #define LIB_UTF8_4             0x1FFFFF
 
 //// static
 
@@ -89,54 +90,28 @@ static void _reset_val(int* val);
 
 static void _reset_buf(char* buf);
 
-// static uint8_t _u8(char value) {
-//     return (uint8_t) value;
+
+// //// uni: is
+
+// bool lib_uni_is_not_char(int cp) {
+//     return _uni_check_not_char(cp) != 0;
 // }
 
-//// uni: check
+// bool lib_uni_is_char(int cp) {
+//     return _uni_check_not_char(cp) == 0;
+// }
 
-static int _uni_check_ffff(int cp) {
-    if ((cp & 0xFFFF) >= 0xFFFE) {
-        return LIB_UNI_NOT_CHAR;
-    }
-    return 0;
-}
+// bool lib_uni_is_sur(int cp) {
+//     return _uni_check_sur(cp) != 0;
+// }
 
-static int _uni_check_not_char(int cp) {
-    if (cp >= LIB_UNI_NOT_CHAR_MIN && cp <= LIB_UNI_NOT_CHAR_MAX) {
-	  return LIB_UNI_NOT_CHAR;
-    }
-    return 0;
-}
-
-static int _uni_check_sur(int cp) {
-    if (cp >= LIB_UNI_SUR_HIGH_START && cp <= LIB_UNI_SUR_LOW_END) {
-        return LIB_UNI_SUR_PAIR;
-    }
-    return 0;
-}
-
-//// uni: is
-
-bool lib_uni_is_not_char(int cp) {
-    return _uni_check_not_char(cp) != 0;
-}
-
-bool lib_uni_is_char(int cp) {
-    return _uni_check_not_char(cp) == 0;
-}
-
-bool lib_uni_is_sur(int cp) {
-    return _uni_check_sur(cp) != 0;
-}
-
-int lib_uni_is_not_ffff(int cp) {
-    return _uni_check_ffff(cp) == 0;
-}
+// int lib_uni_is_not_ffff(int cp) {
+//     return _uni_check_ffff(cp) == 0;
+// }
 
 //// utf8
 
-size_t lib_utf8_code_seq(int cp) {
+int lib_utf8_code_seq(int cp) {
     if (cp < 0) {
         return 0; /* error */
     }
@@ -178,7 +153,7 @@ size_t lib_utf8_code_seq(int cp) {
 // by array (strong)
 //  1 000 000:  1.497s
 // 10 000 000: 14.500s
-size_t lib_utf8_byte_seq_array(char first) {
+int lib_utf8_byte_seq_array(char first) {
     uint8_t u = _u8(first);
     return LIB_UTF8_SEQ[u];
 }
@@ -186,7 +161,7 @@ size_t lib_utf8_byte_seq_array(char first) {
 // by range (strong)
 //  1 000 000:  1.043s
 // 10 000 000: 10.000s
-size_t lib_utf8_byte_seq_strong(char first) {
+int lib_utf8_byte_seq_strong(char first) {
     uint8_t u = _u8(first);
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
@@ -207,7 +182,7 @@ size_t lib_utf8_byte_seq_strong(char first) {
 // by range
 //  1 000 000: 0.980s
 // 10 000 000: 9.500s
-size_t lib_utf8_byte_seq_range(char first) {
+int lib_utf8_byte_seq_range(char first) {
     uint8_t u = _u8(first);
     if (u <= 0x7F) {
         // 0x00 .. 0x7F
@@ -227,7 +202,7 @@ size_t lib_utf8_byte_seq_range(char first) {
     return 0;
 }
 
-size_t lib_utf8_byte_seq_alt(char first) {
+int lib_utf8_byte_seq_alt(char first) {
     uint8_t u = _u8(first);
     if (0xF0 == (0xF8 & u)) {
         return 4;
@@ -241,7 +216,7 @@ size_t lib_utf8_byte_seq_alt(char first) {
 
 ////
 
-size_t lib_utf8_byte_seq(char first) {
+int lib_utf8_byte_seq(char first) {
     return lib_utf8_byte_seq_array(first);
 }
 
@@ -964,7 +939,7 @@ static int _utf8_to_code(const char* str, int len) {
 
         /* Non-characters U+nFFFE..U+nFFFF on plane 1-16 */
 
-        int err = _uni_check_ffff(c);
+        int err = _uni_check_ffff(r);
         if (err != 0) {
             return err;
         }
@@ -1477,10 +1452,6 @@ bool lib_utf8_strieq(const char* str1, const char* str2) {
 
 //// UTF-16
 
-static uint16_t _u16(uint8_t b1, uint8_t b2) {
-    return (b1 << 8) | b2;
-}
-
 static int _utf16_char_seq(bool be, const char* str) {
     if (!str) {
         return 0;
@@ -1561,7 +1532,7 @@ int lib_utf16le_to_code(const char* str, int* cp) {
     return _utf16_to_code(false, str, cp);
 }
 
-size_t lib_utf16_code_seq(int cp) {
+int lib_utf16_code_seq(int cp) {
     if (cp < 0 || cp > 0x10FFFF) {
         return 0;
     }
@@ -1654,7 +1625,7 @@ static int _utf32_to_code(bool be, const char* str, int* cp) {
     return 4;
 }
 
-size_t lib_utf32_code_seq(int cp) {
+int lib_utf32_code_seq(int cp) {
     if (cp < 0 || cp > 0x10FFFF) {
         return 0;
     }
@@ -1743,7 +1714,7 @@ int lib_utf32le_to_char(char* buf, int cp) {
 
 //// UTF
 
-size_t lib_utf_char_seq(int enc_id, const char* str) {
+int lib_utf_char_seq(int enc_id, const char* str) {
     if (!str /*|| str[0] == '\0'*/) {
         return 0;
     }
@@ -1782,7 +1753,7 @@ size_t lib_utf_char_seq(int enc_id, const char* str) {
     return 0;
 }
 
-size_t lib_utf_code_seq(int enc_id, int cp) {
+int lib_utf_code_seq(int enc_id, int cp) {
 
     // UTF-8
     if (enc_id == LIB_ENC_UTF8_ID 

@@ -28,15 +28,15 @@ typedef struct lib_enc_context_t {
 
 } lib_enc_context_t;
 
-/**
- * Return lenght of BOM
- */
-size_t lib_enc_bom_len(int enc_id);
+// /**
+//  * Return lenght of BOM
+//  */
+// int lib_enc_bom_len(int enc_id);
 
-/**
- * Set BOM and return lenght of BOM
- */
-size_t lib_enc_set_bom(int enc_id, char* str);
+// /**
+//  * Set BOM and return lenght of BOM
+//  */
+// int lib_enc_set_bom(int enc_id, char* str);
 
 /**
  * Return true if the Encoding ID supports conversion

@@ -118,7 +118,7 @@ static int lib_enc_get_bom_n(const char* str, size_t num) {
 /**
  * Return lenght of BOM
  */
-static size_t lib_enc_bom_len(int enc_id) {
+static int lib_enc_bom_len(int enc_id) {
 
     // UTF-8
     if (enc_id == LIB_ENC_UTF8_ID) {
@@ -176,9 +176,9 @@ static size_t lib_enc_bom_len(int enc_id) {
 }
 
 /**
- * Set BOM and return lenght of BOM
+ * Set BOM and return lenght of BOM or error (-1)
  */
-static size_t lib_enc_set_bom(int enc_id, char* str) {
+static int lib_enc_set_bom(int enc_id, char* str) {
     if (!str) {
         return 0;
     }
