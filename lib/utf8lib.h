@@ -220,12 +220,6 @@ bool lib_utf8_is_utf8(const char* str);
  */
 bool lib_utf8_is_utf8_n(const char* str, size_t num);
 
-/**
- * Return true if UTF (UTF-8, UTF-16, UTF-32) string is valid.
- * First numbers only.
- */
-bool lib_utf_is_utf_n(const char* str, size_t num);
-
 //// std: begin
 
 // strlen
@@ -296,21 +290,5 @@ bool lib_utf8_strceq(const char* str1, const char* str2);
 bool lib_utf8_strieq(const char* str1, const char* str2);
 
 //// alt: end
-
-//// UTF
-
-int lib_utf_char_seq(int utf_id, const char* str);
-
-int lib_utf_code_seq(int utf_id, int cp);
-
-/*
- * Convert a codepount to a char and return lenght of the char.
- */
-int lib_utf_to_char(int enc_id, char* buf, int cp);
-
-/*
- * Convert a char to a codepount and return lenght of the char.
- */
-int lib_utf_to_code(int enc_id, const char* str, int* cp);
 
 #endif // PLAZMA_LIB_UTF8LIB_H

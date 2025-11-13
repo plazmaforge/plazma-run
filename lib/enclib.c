@@ -5,9 +5,7 @@
 
 #include "intlib.h"
 #include "utf7lib.h"
-#include "utf8lib.h"
-#include "utf16lib.h"
-#include "utf32lib.h"
+#include "utflib.h"
 #include "encbom.h"
 #include "enclib.h"
 
