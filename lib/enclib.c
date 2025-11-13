@@ -6,6 +6,8 @@
 #include "intlib.h"
 #include "utf7lib.h"
 #include "utf8lib.h"
+#include "utf16lib.h"
+#include "utf32lib.h"
 #include "encbom.h"
 #include "enclib.h"
 
@@ -329,7 +331,7 @@ static int _char_block(lib_enc_context_t* ctx, char* idata, char* odata, size_t 
 
 ///////////////////////////////////////////////////////////////////////
 
-static int _utf16_to_code(const char* str) {
+static int _enc_utf16_to_code(const char* str) {
     int cp = 0;
     int err = lib_utf16_to_code(str, &cp);
     return cp;
@@ -453,7 +455,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             seq_len = lib_utf16_char_seq(buf);
             if (seq_len == 4) {
 
-                ucode = _utf16_to_code(buf);
+                ucode = _enc_utf16_to_code(buf);
                 out_seq = _enc_code_seq(is_mbc, to_id, ucode);
                 out_len += out_seq;
 
@@ -465,7 +467,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
                 b = 0;
             } else if (seq_len == 2) {
                     
-                ucode = _utf16_to_code(buf);
+                ucode = _enc_utf16_to_code(buf);
                 out_seq = _enc_code_seq(is_mbc, to_id, ucode);
                 out_len += out_seq;
 
@@ -478,7 +480,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
                 seq_len = lib_utf16_char_seq(buf + 2);
                 if (seq_len == 2) {
 
-                    ucode = _utf16_to_code(buf + 2);
+                    ucode = _enc_utf16_to_code(buf + 2);
                     out_seq = _enc_code_seq(is_mbc, to_id, ucode);
                     out_len += out_seq;
 
@@ -516,7 +518,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             seq_len = lib_utf16_char_seq(buf);
             if (seq_len == 2) {
 
-                ucode = _utf16_to_code(buf);
+                ucode = _enc_utf16_to_code(buf);
                 out_seq = _enc_code_seq(is_mbc, to_id, ucode);
                 out_len += out_seq;
 
@@ -551,7 +553,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
         seq_len = lib_utf16_char_seq(buf);
         if (seq_len == 4) {
 
-            ucode = _utf16_to_code(buf);
+            ucode = _enc_utf16_to_code(buf);
             out_seq = _enc_code_seq(is_mbc, to_id, ucode);
             out_len += out_seq;
 
@@ -563,7 +565,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             b = 0;
         } else if (seq_len == 2) {
                     
-            ucode = _utf16_to_code(buf);
+            ucode = _enc_utf16_to_code(buf);
             out_seq = _enc_code_seq(is_mbc, to_id, ucode);
             out_len += out_seq;
 
@@ -576,7 +578,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             seq_len = lib_utf16_char_seq(buf + 2);
             if (seq_len == 2) {
 
-                ucode = _utf16_to_code(buf + 2);
+                ucode = _enc_utf16_to_code(buf + 2);
                 out_seq = _enc_code_seq(is_mbc, to_id, ucode);
                 out_len += out_seq;
 
@@ -613,7 +615,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
         seq_len = lib_utf16_char_seq(buf);
         if (seq_len == 2) {
 
-            ucode = _utf16_to_code(buf);
+            ucode = _enc_utf16_to_code(buf);
             out_seq = _enc_code_seq(is_mbc, to_id, ucode);
             out_len += out_seq;
 
