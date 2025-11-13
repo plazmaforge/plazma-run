@@ -43,36 +43,7 @@ static const int LIB_UTF8_SEQ[256] = {
     4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0, /* F: 4: 0xF0 - 0xFF */ /* 0xF0 - 0xF4 */
 };
 
-// /* Surrogate pair zone. */
-// #define LIB_UNI_SUR_HIGH_START  0xD800
-// #define LIB_UNI_SUR_HIGH_END    0xDBFF
-// #define LIB_UNI_SUR_LOW_START   0xDC00
-// #define LIB_UNI_SUR_LOW_END     0xDFFF
-
-// /* Start of the "not character" range. */
-// #define LIB_UNI_NOT_CHAR_MIN    0xFDD0
-
-// /* End of the "not character" range.  */
-// #define LIB_UNI_NOT_CHAR_MAX    0xFDEF
-
-// /* Error codes                        */
-// #define LIB_UNI_SUR_PAIR       -2
-// #define LIB_UNI_TOO_BIG        -7
-// #define LIB_UNI_NOT_CHAR       -8
-
 #define LIB_UTF8_BAD_BYTE      -1
-
-// /* The maximum possible value of a Unicode code point. See
-//    http://www.cl.cam.ac.uk/~mgk25/unicode.html#ucs. */
-
-// #define LI__UNI_MAX            0x10ffff
-// #define LIB_UNI_MAX            0x10FFFF
-
-// /* The maximum possible value which will fit into four bytes of
-//    UTF-8. This is larger than UNICODE_MAXIMUM. */
-
-// #define LI__UTF8_4             0x1fffff
-// #define LIB_UTF8_4             0x1FFFFF
 
 //// static
 
@@ -89,25 +60,6 @@ static void _reset_var(int* var1, int* var2);
 static void _reset_val(int* val);
 
 static void _reset_buf(char* buf);
-
-
-// //// uni: is
-
-// bool lib_uni_is_not_char(int cp) {
-//     return _uni_check_not_char(cp) != 0;
-// }
-
-// bool lib_uni_is_char(int cp) {
-//     return _uni_check_not_char(cp) == 0;
-// }
-
-// bool lib_uni_is_sur(int cp) {
-//     return _uni_check_sur(cp) != 0;
-// }
-
-// int lib_uni_is_not_ffff(int cp) {
-//     return _uni_check_ffff(cp) == 0;
-// }
 
 //// utf8
 
@@ -889,19 +841,19 @@ static int _utf8_to_code(const char* str, int len) {
         int r = ((0x0F & c) << 12) | ((0x3F & d) << 6) | (0x3F & e);
 
         // Check: surrogate
-        int err = _uni_check_sur(r);
+        int err = lib_uni_check_sur(r);
         if (err != 0) {
             return err;
         }
 
         // Check: FFFF
-        err = _uni_check_ffff(r);
+        err = lib_uni_check_ffff(r);
         if (err != 0) {
             return err;
         }
 
         // Check: not char
-        err = _uni_check_not_char(r);
+        err = lib_uni_check_not_char(r);
         if (err != 0) {
             return err;
         }
@@ -933,18 +885,23 @@ static int _utf8_to_code(const char* str, int len) {
 
         int r = ((0x07 & c) << 18) | ((0x3F & d) << 12) | ((0x3F & e) << 6) | (0x3F & f);
 
-        if (r > LIB_UNI_MAX) {
-            return LIB_UNI_TOO_BIG;
-	    }
+        // if (r > LIB_UNI_MAX) {
+        //     return LIB_UNI_TOO_BIG;
+	    // }
 
-        /* Non-characters U+nFFFE..U+nFFFF on plane 1-16 */
-
-        int err = _uni_check_ffff(r);
+        int err = 0;
+        err = lib_uni_check_range(r);
         if (err != 0) {
             return err;
         }
 
-        /* 
+        /* Non-characters U+nFFFE..U+nFFFF on plane 1-16 */
+        err = lib_uni_check_ffff(r);
+        if (err != 0) {
+            return err;
+        }
+
+        /*
         We don't need to check for surrogate pairs here, since the
         minimum value of UCS-2 if there are four bytes of UTF-8 is 0x10000. 
         */
@@ -985,13 +942,13 @@ static int _utf8_to_char(char* buf, int cp, int len) {
         buf[3] = '\0';
 
         // Check: surrogate
-        int err =  _uni_check_sur(cp);
+        int err =  lib_uni_check_sur(cp);
         if (err != 0) {
             return err;
         }
 
         // Check: not char
-        err =  _uni_check_not_char(cp);
+        err =  lib_uni_check_not_char(cp);
         if (err != 0) {
             return err;
         }
@@ -1533,9 +1490,12 @@ int lib_utf16le_to_code(const char* str, int* cp) {
 }
 
 int lib_utf16_code_seq(int cp) {
-    if (cp < 0 || cp > 0x10FFFF) {
-        return 0;
+
+    int err = lib_uni_check_range(cp);
+    if (err != 0) {
+        return err;
     }
+
     if(cp < 0xD800 || (cp > 0xDFFF && cp < 0x10000)) {
         return 2;
     }
@@ -1547,10 +1507,12 @@ int lib_utf16_code_seq(int cp) {
  * Store the result ot the buffer.
  */
 static int _utf16_to_char(bool be, char* buf, int cp) {
-    if (cp < 0 || cp > 0x10FFFF) {
-        //return -1;
-        return 0;
+
+    int err = lib_uni_check_range(cp);
+    if (err != 0) {
+        return err;
     }
+
     int i1, i2, i3, i4;
     if (be) {
         i1 = 0; 
@@ -1626,8 +1588,10 @@ static int _utf32_to_code(bool be, const char* str, int* cp) {
 }
 
 int lib_utf32_code_seq(int cp) {
-    if (cp < 0 || cp > 0x10FFFF) {
-        return 0;
+
+    int err = lib_uni_check_range(cp);
+    if (err != 0) {
+        return err;
     }
     return 4;
 }
@@ -1637,9 +1601,10 @@ int lib_utf32_code_seq(int cp) {
  * Store the result ot the buffer.
  */
 int _utf32_to_char(bool be, char* buf, int cp) {
-    if (cp < 0 || cp > 0x10FFFF) {
-        //return -1;
-        return 0;
+
+    int err = lib_uni_check_range(cp);
+    if (err != 0) {
+        return err;
     }
 
     // 128640
