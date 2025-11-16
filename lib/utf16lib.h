@@ -35,6 +35,7 @@ static int lib_utf16le_to_char(char* buf, int cp);
 
 static int _utf16_char_seq(bool be, const char* str) {
     if (!str) {
+        // error
         return -1;
     }
     int i1;
@@ -68,8 +69,14 @@ static int lib_utf16le_char_seq(const char* str) {
     return _utf16_char_seq(false, str);
 }
 
+/*
+ * Convert UTF-16 char to a codepoint.
+ * Store the result to the codepoint.
+ * Return lenght of the char or error (-1)
+ */
 static int _utf16_to_code(bool be, const char* str, int* cp) {
     if (!str) {
+        // error
         return -1;
     }
     int i1, i2, i3, i4;
@@ -93,11 +100,9 @@ static int _utf16_to_code(bool be, const char* str, int* cp) {
         uint8_t b4  = _u8(str[i4]);
         uint16_t c2 = _u16(b3, b4);
         *cp = ((c1 & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
-        //return 0;
         return 4;
     }
     *cp = c1;
-    //return 0;
     return 2;
 }
 
@@ -114,9 +119,9 @@ static int lib_utf16le_to_code(const char* str, int* cp) {
 }
 
 static int lib_utf16_code_seq(int cp) {
-
     int err = lib_uni_check_range(cp);
     if (err != 0) {
+        // error
         return err;
     }
 
@@ -128,12 +133,13 @@ static int lib_utf16_code_seq(int cp) {
 
 /**
  * Convert the codepoint to UTF-16 char.
- * Store the result ot the buffer.
+ * Store the result to the buffer.
+ * Return lenght of the char or error (-1)
  */
 static int _utf16_to_char(bool be, char* buf, int cp) {
-
     int err = lib_uni_check_range(cp);
     if (err != 0) {
+        // error
         return err;
     }
 
@@ -154,7 +160,6 @@ static int _utf16_to_char(bool be, char* buf, int cp) {
         buf[i2] = cp & 0xFF;
         buf[i3] = 0;
         buf[i4] = 0;            
-        //return 0;
         return 2;
     }
 
@@ -168,7 +173,6 @@ static int _utf16_to_char(bool be, char* buf, int cp) {
     buf[i3] = (lo >> 8) & 0xFF;;
     buf[i4] = lo & 0xFF;;
 
-    //return 0;
     return 4;
 }
 

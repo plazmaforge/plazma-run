@@ -10,6 +10,10 @@
 
 static int lib_utf32_char_seq(const char* str);
 
+static int lib_utf32be_char_seq(const char* str);
+
+static int lib_utf32le_char_seq(const char* str);
+
 static int lib_utf32_to_code(const char* str, int* cp);
 
 static int lib_utf32be_to_code(const char* str, int* cp);
@@ -28,16 +32,30 @@ static int lib_utf32le_to_char(char* buf, int cp);
 
 static int lib_utf32_char_seq(const char* str) {
     if (!str) {
+        // error
         return -1;
     }
     return 4;
 }
 
-/**
- * Convert UTF-32 char to the codepoint
+// alias
+static int lib_utf32be_char_seq(const char* str) {
+    return lib_utf32_char_seq(str);
+}
+
+// alias
+static int lib_utf32le_char_seq(const char* str) {
+    return lib_utf32_char_seq(str);
+}
+
+/*
+ * Convert UTF-32 char to a codepoint.
+ * Store the result to the codepoint.
+ * Return lenght of the char or error (-1)
  */
 static int _utf32_to_code(bool be, const char* str, int* cp) {
     if (!str) {
+        // error
         return -1;
     }
 
@@ -59,7 +77,6 @@ static int _utf32_to_code(bool be, const char* str, int* cp) {
     uint8_t b3 = (uint8_t) str[i3];
     uint8_t b4 = (uint8_t) str[i4];
     *cp = (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
-    //return 0;
     return 4;
 }
 
@@ -67,6 +84,7 @@ static int lib_utf32_code_seq(int cp) {
 
     int err = lib_uni_check_range(cp);
     if (err != 0) {
+        // error
         return err;
     }
     return 4;
@@ -74,12 +92,13 @@ static int lib_utf32_code_seq(int cp) {
 
 /**
  * Convert the codepoint to UTF-32 char.
- * Store the result ot the buffer.
+ * Store the result to the buffer.
+ * Return lenght of the char or error (-1)
  */
 static int _utf32_to_char(bool be, char* buf, int cp) {
-
     int err = lib_uni_check_range(cp);
     if (err != 0) {
+        // error
         return err;
     }
 
@@ -107,7 +126,6 @@ static int _utf32_to_char(bool be, char* buf, int cp) {
     buf[i3] = (cp >> 8) & 0xFF;
     buf[i4] = cp & 0xFF;
 
-    //return 0;
     return 4;
 }
 

@@ -4,14 +4,18 @@
 /* The maximum possible value of a Unicode code point. See
    http://www.cl.cam.ac.uk/~mgk25/unicode.html#ucs. */
 
-#define LI__UNI_MAX             0x10ffff
-#define LIB_UNI_MAX             0x10FFFF
+#define LIB_UNI_MAX             0x10FFFF   /*     1 114 111 */
 
-/* The maximum possible value which will fit into four bytes of
-   UTF-8. This is larger than UNICODE_MAXIMUM. */
+/* The maximum possible value which will fit into four bytes of UTF-8.
+   This is larger than UNICODE_MAXIMUM. */
 
-#define LI__UTF8_4              0x1fffff
-#define LIB_UTF8_4              0x1FFFFF
+#define LIB_UTF8_4              0x1FFFFF   /*     2 097 151 */
+
+/* The maximum possible value of UCS.
+   The maximum possible value of int32_t = 0x7FFFFFFF, 2 147 483 647 
+   We can use 'int' (int32_t) to implement a Unicode code point */
+
+#define LIB_UCS_MAX             0x7FFFFFFF /* 2 147 483 647 */
 
 /* Surrogate pair zone. */
 #define LIB_UNI_SUR_HIGH_START  0xD800

@@ -24,6 +24,12 @@ Char. number range     |        UTF-8 octet sequence
 
 // https://tools.ietf.org/html/rfc3629
 
+/* The maximum possible value of UCS     = 0x7FFFFFFF, 2 147 483 647
+   The maximum possible value of int32_t = 0x7FFFFFFF, 2 147 483 647 
+
+   We can use 'int' (int32_t) to implement a Unicode code point
+*/
+
 static const int LIB_UTF8_SEQ[256] = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 0: 1: 0x00 - 0x0F */ /* 0x00 - 0x7F */
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /* 1: 1: 0x10 - 0x1F */
@@ -64,9 +70,9 @@ static void _reset_buf(char* buf);
 //// utf8
 
 int lib_utf8_code_seq(int cp) {
-
     int err = lib_uni_check_range(cp);
     if (err != 0) {
+        // error
         return err;
     }
 
@@ -180,19 +186,27 @@ int lib_utf8_get_code(const char* str) {
     return cp;
 }
 
+/**
+ * Convert the codepoint to UTF-8 char.
+ * Store the result to the buffer.
+ * Return lenght of the char or error (-1)
+ */
 int lib_utf8_to_char(char* buf, int cp) {
     if (!buf) {
+        // error
         return -1;
     }
 
     int err = lib_uni_check_range(cp);
     if (err != 0) {
         _reset_buf(buf);
+        // error
         return err;
     }
 
     int len = lib_utf8_code_seq(cp);
     if (len <= 0) {
+        // error
         return len;
     }
     return _utf8_to_char(buf, cp, len);
@@ -200,6 +214,7 @@ int lib_utf8_to_char(char* buf, int cp) {
 
 size_t lib_utf8_get_char_len(const char* str) {
     if (!str || str[0] == '\0') {
+        // safe result
         return 0;
     }
     return lib_utf8_byte_seq(str[0]);
@@ -219,18 +234,21 @@ int lib_utf8_get_char_info(const char* str, int* cp, int* len) {
     _reset_var(cp, len);
 
     if (!str) {
+        // error
         return -1;
     }
 
     // Get sequence len of char by first byte 
     int seq = lib_utf8_byte_seq(str[0]);
     if (seq <= 0) {
+        // error
         return seq == 0 ? -1 : seq;
     }
 
     // Convert UTF-8 char to codepoint
     seq = _utf8_to_code(str, cp, seq);
     if (seq <= 0)  {
+        // error
         return seq == 0 ? -1 : seq;
     }
 
@@ -238,17 +256,24 @@ int lib_utf8_get_char_info(const char* str, int* cp, int* len) {
     return 0;
 }
 
+/*
+ * Convert UTF-8 char to a codepoint.
+ * Store the result to the codepoint.
+ * Return lenght of the char or error (-1)
+ */
 int lib_utf8_to_code(const char* str, int* cp) {
 
     _reset_val(cp);
 
     if (!str) {
+        // error
         return -1;
     }
 
     int len;
     int err = lib_utf8_get_char_info(str, cp, &len);
     if (err != 0) {
+        // error
         return -1;
     }
     return len;
@@ -258,6 +283,7 @@ int lib_utf8_to_code(const char* str, int* cp) {
 
 const char* lib_utf8_strlast(const char* str) {
     if (!str) {
+        // error
         return NULL;
     }
     size_t len = strlen(str);
@@ -271,7 +297,11 @@ const char* lib_utf8_strlast(const char* str) {
 }
 
 const char* lib_utf8_strnext(const char* str) {
-    if (!str || str[0] == '\0') {
+    if (!str) {
+        // error
+        return NULL;
+    }
+    if (str[0] == '\0') {
         return NULL;
     }
 
@@ -298,6 +328,7 @@ const char* lib_utf8_strnext(const char* str) {
 const char* lib_utf8_strprev(const char* str) {
     //printf(">> strprev: start\n");
     if (!str) {
+        // error
         return NULL;
     }
     char* s = (char*) str;

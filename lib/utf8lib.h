@@ -18,7 +18,7 @@ int lib_utf8_byte_seq_strong(char first);
 int lib_utf8_byte_seq_range(char first);
 
 /*
- * Return lenght of UTF-8 char by first byte or error (0).
+ * Return lenght of the char by first byte or error (0).
  */
 int lib_utf8_byte_seq(char first);
 
@@ -27,15 +27,17 @@ int lib_utf8_byte_seq(char first);
  */
 int lib_utf8_get_code(const char* str);
 
-/*
- * Convert codepoint to UTF-8 char and store it to the buffer
- * Return lenght of UTF-8 char or error (-1).
+/**
+ * Convert the codepoint to UTF-8 char.
+ * Store the result to the buffer.
+ * Return lenght of the char or error (-1)
  */
 int lib_utf8_to_char(char* buf, int cp);
 
 /*
- * Convert UTF-8 char to codepoint.
- * Return lenght of utf8 char or error (-1).
+ * Convert UTF-8 char to a codepoint.
+ * Store the result to the codepoint.
+ * Return lenght of the char or error (-1)
  */
 int lib_utf8_to_code(const char* str, int* cp);
 
