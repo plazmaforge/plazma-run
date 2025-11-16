@@ -20,9 +20,9 @@
  */
 static bool lib_utf_is_utf_n(const char* str, size_t num);
 
-static int lib_utf_char_seq(int utf_id, const char* str);
+static int lib_utf_char_seq(int enc_id, const char* str);
 
-static int lib_utf_code_seq(int utf_id, int cp);
+static int lib_utf_code_seq(int enc_id, int cp);
 
 /*
  * Convert a codepount to a char and return lenght of the char.

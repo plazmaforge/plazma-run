@@ -6,6 +6,7 @@
 #include "intlib.h"
 #include "utf7lib.h"
 #include "utflib.h"
+#include "ucslib.h"
 #include "encbom.h"
 #include "enclib.h"
 
@@ -90,7 +91,16 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx);
  * Return true if the Encoding ID supports conversion
  */
 bool lib_enc_supports_conv(int enc_id) {
+
+    if (lib_enc_is_utf7(enc_id)) {
+        return true;
+    }
+    
     if (lib_enc_is_utf(enc_id)) {
+        return true;
+    }
+
+    if (lib_enc_is_ucs(enc_id)) {
         return true;
     }
 
@@ -1443,6 +1453,8 @@ static int _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
 
         return 0;
     }
+
+    // 1-BYTE
     if (!is_mbc) {
         #ifdef DEBUG_L2
         fprintf(stderr, ">> enc_char_seq: return 1\n");
@@ -1450,20 +1462,44 @@ static int _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
         return 1;
     }
 
+    // UCS
+    if (lib_enc_is_ucs(enc_id)) {
+        return lib_ucs_char_seq(enc_id, str);
+    }
+
     // UTF
-    return lib_utf_char_seq(enc_id, str);
+    if (lib_enc_is_utf(enc_id)) {
+        return lib_utf_char_seq(enc_id, str);
+    }
+
+    // OTHER
+    return -1;
 }
 
 static int _enc_code_seq(bool is_mbc, int enc_id, int cp) {
+
+    // 1-BYTE
     if (!is_mbc) {
         return 1;  // Lenght is always one
     }
 
+    // UCS
+    if (lib_enc_is_ucs(enc_id)) {
+        return lib_ucs_code_seq(enc_id, cp);
+    }
+
     // UTF
-    return lib_utf_code_seq(enc_id, cp);
+    if (lib_enc_is_utf(enc_id)) {
+        return lib_utf_code_seq(enc_id, cp);
+    }
+
+    // OTHER
+    return -1;
 }
 
 static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
+
+    // 1-BYTE
     if (!ctx->from_is_mbc) {
 
         // Get unsigned code
@@ -1475,12 +1511,23 @@ static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int
         return 1; // Lenght is always one
     }
 
+    // UCS
+    if (lib_enc_is_ucs(enc_id)) {
+        return lib_ucs_to_code(enc_id, str, cp);
+    }
+
     // UTF
-    return lib_utf_to_code(enc_id, str, cp);
+    if (lib_enc_is_utf(enc_id)) {
+        return lib_utf_to_code(enc_id, str, cp);
+    }
+
+    // OTHER
+    return -1;
 }
 
 static int _enc_to_char(lib_enc_context_t* ctx, int enc_id, char* buf, int cp) {
 
+    // 1-BYTE
     if (!ctx->to_is_mbc) {
         int ocode = 0;
 
@@ -1494,7 +1541,18 @@ static int _enc_to_char(lib_enc_context_t* ctx, int enc_id, char* buf, int cp) {
         return 1;
     }
 
-    return lib_utf_to_char(enc_id, buf, cp);
+    // UCS
+    if (lib_enc_is_ucs(enc_id)) {
+        return lib_ucs_to_char(enc_id, buf, cp);
+    }
+
+    // UTF
+    if (lib_enc_is_utf(enc_id)) {
+        return lib_utf_to_char(enc_id, buf, cp);
+    }
+
+    // OTHER
+    return -1;
 }
 
 static int _enc_check_ctx(lib_enc_context_t* ctx) {

@@ -143,8 +143,9 @@ static bool lib_enc_is_utf16or32_encoding(int enc_id) {
  * Return true if the encoding id is UTF type 
  */
 static bool lib_enc_is_utf(int enc_id) {
-    return ( lib_enc_is_utf7(enc_id)
-          || lib_enc_is_utf8(enc_id)
+    return (
+          //lib_enc_is_utf7(enc_id)
+          lib_enc_is_utf8(enc_id)
           || lib_enc_is_utf16(enc_id)
           || lib_enc_is_utf32(enc_id)
           );

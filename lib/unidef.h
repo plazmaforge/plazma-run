@@ -11,11 +11,16 @@
 
 #define LIB_UTF8_4              0x1FFFFF   /*     2 097 151 */
 
+#define LIB_UCS2_MAX            0xFFFF     /*        65 536 */
+
+#define LIB_UCS4_MAX            0x7FFFFFFF /* 2 147 483 647 */
+
 /* The maximum possible value of UCS.
    The maximum possible value of int32_t = 0x7FFFFFFF, 2 147 483 647 
    We can use 'int' (int32_t) to implement a Unicode code point */
 
 #define LIB_UCS_MAX             0x7FFFFFFF /* 2 147 483 647 */
+
 
 /* Surrogate pair zone. */
 #define LIB_UNI_SUR_HIGH_START  0xD800
