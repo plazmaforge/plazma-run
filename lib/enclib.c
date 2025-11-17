@@ -10,11 +10,11 @@
 #include "encbom.h"
 #include "enclib.h"
 
-#define DEBUG    1
-#define DEBUG_LL 1
-#define DEBUG_L1 1
-#define DEBUG_L2 1
-#define ERROR    1
+// #define DEBUG    1
+// #define DEBUG_LL 1
+// #define DEBUG_L1 1
+// #define DEBUG_L2 1
+// #define ERROR    1
 
 static char* _char_new(size_t size) {
   return (char*) calloc(size, sizeof(char));
@@ -718,7 +718,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     #endif
 
     #ifdef DEBUG
-    fprintf(stderr, "DEBUG: from_bom_len=%lu, to_bom_len=%lu\n", from_bom_len, to_bom_len);
+    fprintf(stderr, "DEBUG: from_bom_len=%d, to_bom_len=%d\n", from_bom_len, to_bom_len);
     #endif
 
     bool start_block     = false; // Start UTF7 block flag
@@ -1069,7 +1069,7 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     *to_len  = new_len + to_bom_len;
 
     #ifdef DEBUG
-    fprintf(stderr, ">> conv_utf7: SUCCESS\n");
+    fprintf(stderr, ">> conv_utf7: SUCCESS: total=%lu\n", total);  
     #endif
 
     return 0;
@@ -1139,7 +1139,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
     #endif
 
     #ifdef DEBUG
-    fprintf(stderr, "DEBUG: from_bom_len=%lu, to_bom_len=%lu\n", from_bom_len, to_bom_len);
+    fprintf(stderr, "DEBUG: from_bom_len=%d, to_bom_len=%d\n", from_bom_len, to_bom_len);
     #endif
 
     bool start_block     = false; // Start UTF7 block flag
@@ -1678,7 +1678,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         }
 
         #ifdef DEBUG_LL
-        fprintf(stderr, "DEBUG: >> 1: to_seq=%d\n", to_seq);
+        fprintf(stderr, "DEBUG: >> 1: from_seq=%d, to_seq=%d\n", from_seq, to_seq);
         #endif
 
         data += from_seq;
@@ -1746,7 +1746,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         }
 
         #ifdef DEBUG_LL
-        fprintf(stderr, "DEBUG: >> 2: to_seq=%d\n", to_seq);
+        fprintf(stderr, "DEBUG: >> 2: from_seq=%d, to_seq=%d\n", from_seq, to_seq);
         #endif
 
         // Copy data from buffer to output
@@ -1775,7 +1775,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     *to_len  = new_len + to_bom_len;
 
     #ifdef DEBUG
-    fprintf(stderr, ">> conv_ctx: SUCCESS\n");
+    fprintf(stderr, ">> conv_ctx: SUCCESS: total=%lu\n", total);
     #endif
 
     return 0;

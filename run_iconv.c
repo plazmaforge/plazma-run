@@ -213,8 +213,9 @@ int main(int argc, char* argv[]) {
 
     to_data[to_size] = '\0';
 
-    if (lib_enc_is_utf16or32_encoding(to_id)) {
+    if (lib_enc_is_utf16or32(to_id) || lib_enc_is_ucs2or4(to_id)) {
         // UTF-16/16BE/16LE/32/32BE/32LE
+        // UCS-2 / 2BE/ 2LE/ 4/ 4BE/ 4LE
         for (int i = 0; i < to_size; i++) {
            printf("%c", to_data[i]);
         }

@@ -132,15 +132,15 @@ static bool lib_enc_is_utf32(int enc_id) {
 }
 
 /**
- * Return true if the encoding id is UTF-16 or UTF-32 type 
+ * Return true if the encoding id is UTF-16 or UTF-32 type
  */
-static bool lib_enc_is_utf16or32_encoding(int enc_id) {
+static bool lib_enc_is_utf16or32(int enc_id) {
   return (   lib_enc_is_utf16(enc_id)
           || lib_enc_is_utf32(enc_id) );
 }
 
 /**
- * Return true if the encoding id is UTF type 
+ * Return true if the encoding id is UTF type
  */
 static bool lib_enc_is_utf(int enc_id) {
     return (
@@ -152,17 +152,46 @@ static bool lib_enc_is_utf(int enc_id) {
 }
 
 /**
- * Return true if the encoding id is UCS type 
+ * Return true if the encoding id is UCS-2 type
  */
-static bool lib_enc_is_ucs(int enc_id) {
+static bool lib_enc_is_ucs2(int enc_id) {
   return (   enc_id == LIB_ENC_UCS2_ID
     /**/  || enc_id == LIB_ENC_UCS2BE_ID
-    /**/  || enc_id == LIB_ENC_UCS2LE_ID
+    /**/  || enc_id == LIB_ENC_UCS2LE_ID);
+}
 
-    /**/  || enc_id == LIB_ENC_UCS4_ID
+/**
+ * Return true if the encoding id is UCS-4 type
+ */
+static bool lib_enc_is_ucs4(int enc_id) {
+  return (   enc_id == LIB_ENC_UCS4_ID
     /**/  || enc_id == LIB_ENC_UCS4BE_ID
     /**/  || enc_id == LIB_ENC_UCS4BE_ID);
 }
+
+/**
+ * Return true if the encoding id is UCS-2 or UCS-4 type
+ */
+static bool lib_enc_is_ucs2or4(int enc_id) {
+  return (   lib_enc_is_ucs2(enc_id)
+          || lib_enc_is_ucs4(enc_id) );
+}
+
+/**
+ * Return true if the encoding id is UCS type
+ */
+static bool lib_enc_is_ucs(int enc_id) {
+  return (   lib_enc_is_ucs2(enc_id)
+          || lib_enc_is_ucs4(enc_id) );
+}  
+//   return (   enc_id == LIB_ENC_UCS2_ID
+//     /**/  || enc_id == LIB_ENC_UCS2BE_ID
+//     /**/  || enc_id == LIB_ENC_UCS2LE_ID
+
+//     /**/  || enc_id == LIB_ENC_UCS4_ID
+//     /**/  || enc_id == LIB_ENC_UCS4BE_ID
+//     /**/  || enc_id == LIB_ENC_UCS4BE_ID);
+// }
 
 /**
  * Return true if the encoding id is multi bytes type 
