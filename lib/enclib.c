@@ -10,11 +10,11 @@
 #include "encbom.h"
 #include "enclib.h"
 
-// #define DEBUG    1
-// #define DEBUG_LL 1
-// #define DEBUG_L1 1
-// #define DEBUG_L2 1
-// #define ERROR    1
+#define DEBUG    1
+#define DEBUG_LL 1
+#define DEBUG_L1 1
+#define DEBUG_L2 1
+#define ERROR    1
 
 static char* _char_new(size_t size) {
   return (char*) calloc(size, sizeof(char));
