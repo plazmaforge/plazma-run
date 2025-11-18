@@ -116,23 +116,27 @@ static const lib_encoding_t lib_encodings[] = {
 
     {1200,    "UTF-16",      "UTF-16 Big Endian with optional BOM", "UTF16       UTF_16"},
     {1201,    "UTF-16BE",    "UTF-16 Big Endian",                   "UTF16BE     UTF-16-BE      UTF16-BE     UTF_16_BE"},
-/**/{1202,    "UTF-16LE",    "UTF-16 Little Endian",                "UTF16LE     UTF-16-LE      UTF16-LE     UTF_16_LE"},                 /* codepage = 1200  */
-/**/{1203,    "UTF-16BE-BOM","UTF-16 Big Endian with BOM",          "UTF16BEBOM  UTF-16-BE-BOM  UTF16-BE-BOM UTF_16_BE_BOM UTF16BE-BOM"}, /* codepage = 1200  */
-/**/{1204,    "UTF-16LE-BOM","UTF-16 Little Endian with BOM",       "UTF16LEBOM  UTF-16-LE-BOM  UTF16-LE-BOM UTF_16_LE_BOM UTF16LE-BOM"}, /* codepage = 1200  */
+/**/{1202,    "UTF-16LE",    "UTF-16 Little Endian",                "UTF16LE     UTF-16-LE      UTF16-LE     UTF_16_LE"},                 /* codepage = 1202  */
+/**/{1203,    "UTF-16BE-BOM","UTF-16 Big Endian with BOM",          "UTF16BEBOM  UTF-16-BE-BOM  UTF16-BE-BOM UTF_16_BE_BOM UTF16BE-BOM"}, /* codepage = 1203  */
+/**/{1204,    "UTF-16LE-BOM","UTF-16 Little Endian with BOM",       "UTF16LEBOM  UTF-16-LE-BOM  UTF16-LE-BOM UTF_16_LE_BOM UTF16LE-BOM"}, /* codepage = 1204  */
 
     {12000,   "UTF-32",      "UTF-32 Big Endian with optional BOM", "UTF32       UTF_32"},
     {12001,   "UTF-32BE",    "UTF-32 Big Endian",                   "UTF32BE     UTF-32-BE      UTF32-BE     UTF_32_BE"},
-/**/{12002,   "UTF-32LE",    "UTF-32 Little Endian",                "UTF32LE     UTF-32-LE      UTF32-LE     UTF_32_LE"},                 /* codepage = 12000 */
-/**/{12003,   "UTF-32BE-BOM","UTF-32 Big Endian with BOM",          "UTF32BEBOM  UTF-32-BE-BOM  UTF32-BE-BOM UTF_32_BE_BOM UTF32BE-BOM"}, /* codepage = 12000 */
-/**/{12004,   "UTF-32LE-BOM","UTF-32 Little Endian with BOM",       "UTF32LE     UTF-32-LE-BOM  UTF32-LE-BOM UTF_32_LE_BOM UTF32LE-BOM"}, /* codepage = 12000 */
+/**/{12002,   "UTF-32LE",    "UTF-32 Little Endian",                "UTF32LE     UTF-32-LE      UTF32-LE     UTF_32_LE"},                 /* codepage = 12002 */
+/**/{12003,   "UTF-32BE-BOM","UTF-32 Big Endian with BOM",          "UTF32BEBOM  UTF-32-BE-BOM  UTF32-BE-BOM UTF_32_BE_BOM UTF32BE-BOM"}, /* codepage = 12003 */
+/**/{12004,   "UTF-32LE-BOM","UTF-32 Little Endian with BOM",       "UTF32LEBOM  UTF-32-LE-BOM  UTF32-LE-BOM UTF_32_LE_BOM UTF32LE-BOM"}, /* codepage = 12004 */
 
-/**/{1001200, "UCS-2",       "UCS-2",                               "UCS2        CSUNICODE      ISO-10646-UCS-2"},
-/**/{1001201, "UCS-2BE",     "UCS-2BE",                             "UCS2BE      CSUNICODE11    UNICODEBIG UNICODE-1-1"},
-/**/{1001202, "UCS-2LE",     "UCS-2LE",                             "UCS2LE                     UNICODELITTLE"},
+/**/{1001200, "UCS-2",       "UCS-2 Big Endian with optional BOM",  "UCS2        CSUNICODE      ISO-10646-UCS-2"},
+/**/{1001201, "UCS-2BE",     "UCS-2BE Big Endian",                  "UCS2BE      CSUNICODE11    UNICODEBIG UNICODE-1-1"},
+/**/{1001202, "UCS-2LE",     "UCS-2LE Little Endian",               "UCS2LE                     UNICODELITTLE"},
+/**/{1001203, "UCS-2BE-BOM", "UCS-2BE Big Endian with BOM",         "UCS2BEBOM   UCS-2-BE-BOM   UCS2-BE-BOM"},
+/**/{1001204, "UCS-2LE-BOM", "UCS-2LE Little Endian with BOM",      "UCS2LEBOM   UCS-2-LE-BOM   UCS2-LE-BOM"},
 
-/**/{1012000, "UCS-4",       "UCS-4",                               "UCS4        CSUCS4         ISO-10646-UCS-4"},
-/**/{1012001, "UCS-4BE",     "UCS-4BE",                             "UCS4BE"},
-/**/{1012002, "UCS-4LE",     "UCS-4LE",                             "UCS4LE"}
+/**/{1012000, "UCS-4",       "UCS-4 Big Endian with optional BOM",  "UCS4        CSUCS4         ISO-10646-UCS-4"},
+/**/{1012001, "UCS-4BE",     "UCS-4BE Big Endian",                  "UCS4BE"},
+/**/{1012002, "UCS-4LE",     "UCS-4LE Little Endian",               "UCS4LE"},
+/**/{1012003, "UCS-4BE-BOM", "UCS-4BE Big Endian with BOM",         "UCS4BEBOM  UCS-4-BE-BOM   UCS4-BE-BOM"},
+/**/{1012004, "UCS-4LE-BOM", "UCS-4LE Little Endian with BOM",      "UCS4LEBOM  UCS-4-LE-BOM   UCS4-LE-BOM"}
 
 };
 

@@ -97,16 +97,18 @@ static int lib_ucs_to_char(int enc_id, char* buf, int cp) {
     if (enc_id == LIB_ENC_UCS2_ID) {
         return lib_ucs2_to_char(buf, cp);
     }
-    if (enc_id == LIB_ENC_UCS2BE_ID) {
+    if (enc_id == LIB_ENC_UCS2BE_ID
+     || enc_id == LIB_ENC_UCS2BE_BOM_ID) {
         return lib_ucs2be_to_char(buf, cp);
     }
-    if (enc_id == LIB_ENC_UCS2LE_ID) {
+    if (enc_id == LIB_ENC_UCS2LE_ID
+     || enc_id == LIB_ENC_UCS2LE_BOM_ID) {
         return lib_ucs2le_to_char(buf, cp);
     }
     // if (enc_id == LIB_ENC_UCS2BE_BOM_ID) {
     //     return lib_ucs2be_to_char(buf, cp);
     // }
-    // if (enc_id == LIB_ENC_UCS26LE_BOM_ID) {
+    // if (enc_id == LIB_ENC_UCS2LE_BOM_ID) {
     //     return lib_ucs2le_to_char(buf, cp);
     // }
 
@@ -114,18 +116,14 @@ static int lib_ucs_to_char(int enc_id, char* buf, int cp) {
     if (enc_id == LIB_ENC_UCS4_ID) {
         return lib_ucs4_to_char(buf, cp);
     }
-    if (enc_id == LIB_ENC_UCS4BE_ID) {
+    if (enc_id == LIB_ENC_UCS4BE_ID
+     || enc_id == LIB_ENC_UCS4BE_BOM_ID) {
         return lib_ucs4be_to_char(buf, cp);
     }
-    if (enc_id == LIB_ENC_UCS4LE_ID) {
+    if (enc_id == LIB_ENC_UCS4LE_ID
+     || enc_id == LIB_ENC_UCS4LE_BOM_ID) {
         return lib_ucs4le_to_char(buf, cp);
     }
-    // if (enc_id == LIB_ENC_UCS4BE_BOM_ID) {
-    //     return lib_ucs4be_to_char(buf, cp);
-    // }
-    // if (enc_id == LIB_ENC_UCS4LE_BOM_ID) {
-    //     return lib_ucs4le_to_char(buf, cp);
-    // }
 
     return -1;
 }
@@ -135,25 +133,29 @@ static int lib_ucs_to_char(int enc_id, char* buf, int cp) {
  */
 static int lib_ucs_to_code(int enc_id, const char* str, int* cp) {
     
-    // UTF-16
+    // UCS-2
     if (enc_id == LIB_ENC_UCS2_ID) {
         return lib_ucs2_to_code(str, cp);
     }
-    if (enc_id == LIB_ENC_UCS2BE_ID) {
+    if (enc_id == LIB_ENC_UCS2BE_ID
+     || enc_id == LIB_ENC_UCS2BE_BOM_ID) {
         return lib_ucs2be_to_code(str, cp);
     }
-    if (enc_id == LIB_ENC_UCS2LE_ID) {
+    if (enc_id == LIB_ENC_UCS2LE_ID
+     || enc_id == LIB_ENC_UCS2LE_BOM_ID) {
         return lib_ucs2le_to_code(str, cp);
     }
 
-    // UTF-32
+    // UCS-4
     if (enc_id == LIB_ENC_UCS4_ID) {
         return lib_ucs4_to_code(str, cp);
     }
-    if (enc_id == LIB_ENC_UCS4BE_ID) {
+    if (enc_id == LIB_ENC_UCS4BE_ID
+     || enc_id == LIB_ENC_UCS4BE_BOM_ID) {
         return lib_ucs4be_to_code(str, cp);
     }
-    if (enc_id == LIB_ENC_UCS4LE_ID) {
+    if (enc_id == LIB_ENC_UCS4LE_ID
+     || enc_id == LIB_ENC_UCS4LE_BOM_ID) {
         return lib_ucs4le_to_code(str, cp);
     }
 

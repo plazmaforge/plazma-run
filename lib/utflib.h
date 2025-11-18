@@ -138,7 +138,8 @@ static int lib_utf_code_seq(int enc_id, int cp) {
 static int lib_utf_to_char(int enc_id, char* buf, int cp) {
 
     // UTF-8
-    if (enc_id == LIB_ENC_UTF8_ID || enc_id == LIB_ENC_UTF8_BOM_ID) {
+    if (enc_id == LIB_ENC_UTF8_ID 
+      || enc_id == LIB_ENC_UTF8_BOM_ID) {
         return lib_utf8_to_char(buf, cp);
     }
 
@@ -146,16 +147,12 @@ static int lib_utf_to_char(int enc_id, char* buf, int cp) {
     if (enc_id == LIB_ENC_UTF16_ID) {
         return lib_utf16_to_char(buf, cp);
     }
-    if (enc_id == LIB_ENC_UTF16BE_ID) {
+    if (enc_id == LIB_ENC_UTF16BE_ID
+     || enc_id == LIB_ENC_UTF16BE_BOM_ID) {
         return lib_utf16be_to_char(buf, cp);
     }
-    if (enc_id == LIB_ENC_UTF16LE_ID) {
-        return lib_utf16le_to_char(buf, cp);
-    }
-    if (enc_id == LIB_ENC_UTF16BE_BOM_ID) {
-        return lib_utf16be_to_char(buf, cp);
-    }
-    if (enc_id == LIB_ENC_UTF16LE_BOM_ID) {
+    if (enc_id == LIB_ENC_UTF16LE_ID
+     || enc_id == LIB_ENC_UTF16LE_BOM_ID) {
         return lib_utf16le_to_char(buf, cp);
     }
 
@@ -163,16 +160,12 @@ static int lib_utf_to_char(int enc_id, char* buf, int cp) {
     if (enc_id == LIB_ENC_UTF32_ID) {
         return lib_utf32_to_char(buf, cp);
     }
-    if (enc_id == LIB_ENC_UTF32BE_ID) {
+    if (enc_id == LIB_ENC_UTF32BE_ID
+     || enc_id == LIB_ENC_UTF32BE_BOM_ID) {
         return lib_utf32be_to_char(buf, cp);
     }
-    if (enc_id == LIB_ENC_UTF32LE_ID) {
-        return lib_utf32le_to_char(buf, cp);
-    }
-    if (enc_id == LIB_ENC_UTF32BE_BOM_ID) {
-        return lib_utf32be_to_char(buf, cp);
-    }
-    if (enc_id == LIB_ENC_UTF32LE_BOM_ID) {
+    if (enc_id == LIB_ENC_UTF32LE_ID
+     || enc_id == LIB_ENC_UTF32LE_BOM_ID) {
         return lib_utf32le_to_char(buf, cp);
     }
 
@@ -185,7 +178,8 @@ static int lib_utf_to_char(int enc_id, char* buf, int cp) {
 static int lib_utf_to_code(int enc_id, const char* str, int* cp) {
     
     // UTF-8
-    if (enc_id == LIB_ENC_UTF8_ID || enc_id == LIB_ENC_UTF8_BOM_ID) {
+    if (enc_id == LIB_ENC_UTF8_ID 
+     || enc_id == LIB_ENC_UTF8_BOM_ID) {
         return lib_utf8_to_code(str, cp);
     }
 
@@ -193,10 +187,12 @@ static int lib_utf_to_code(int enc_id, const char* str, int* cp) {
     if (enc_id == LIB_ENC_UTF16_ID) {
         return lib_utf16_to_code(str, cp);
     }
-    if (enc_id == LIB_ENC_UTF16BE_ID) {
+    if (enc_id == LIB_ENC_UTF16BE_ID
+     || enc_id == LIB_ENC_UTF16BE_BOM_ID) {
         return lib_utf16be_to_code(str, cp);
     }
-    if (enc_id == LIB_ENC_UTF16LE_ID) {
+    if (enc_id == LIB_ENC_UTF16LE_ID
+     || enc_id == LIB_ENC_UTF16LE_BOM_ID) {
         return lib_utf16le_to_code(str, cp);
     }
 
@@ -204,10 +200,12 @@ static int lib_utf_to_code(int enc_id, const char* str, int* cp) {
     if (enc_id == LIB_ENC_UTF32_ID) {
         return lib_utf32_to_code(str, cp);
     }
-    if (enc_id == LIB_ENC_UTF32BE_ID) {
+    if (enc_id == LIB_ENC_UTF32BE_ID
+     || enc_id == LIB_ENC_UTF32BE_BOM_ID) {
         return lib_utf32be_to_code(str, cp);
     }
-    if (enc_id == LIB_ENC_UTF32LE_ID) {
+    if (enc_id == LIB_ENC_UTF32LE_ID
+     || enc_id == LIB_ENC_UTF32LE_BOM_ID) {
         return lib_utf32le_to_code(str, cp);
     }
 

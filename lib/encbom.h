@@ -130,7 +130,7 @@ static int lib_enc_bom_len(int enc_id) {
 
     // UTF-16
     if (enc_id == LIB_ENC_UTF16_ID) {
-        // UTF16 by default with BOM
+        // UTF-16 by default with BOM (!)
         return 2;
     }
 
@@ -148,7 +148,7 @@ static int lib_enc_bom_len(int enc_id) {
 
     // UTF-32
     if (enc_id == LIB_ENC_UTF32_ID) {
-        // UTF32 by default with BOM
+        // UTF-32 by default with BOM (!)
         return 4;
     }
 
@@ -169,6 +169,44 @@ static int lib_enc_bom_len(int enc_id) {
         return 0;
     }
     if (enc_id == LIB_ENC_UTF7_BOM_ID) {
+        return 4;
+    }
+
+    // UCS-2
+    if (enc_id == LIB_ENC_UCS2_ID) {
+        // UCS-2 by default without BOM (!)
+        // UTF16 by default with BOM    (!)
+        return 0;
+    }
+
+    // UCS-2 (BE/LE)
+    if (enc_id == LIB_ENC_UCS2BE_ID
+     || enc_id == LIB_ENC_UCS2LE_ID) {
+        return 0;
+    }
+
+    // UCS-2-BOM
+    if (enc_id == LIB_ENC_UCS2BE_BOM_ID
+     || enc_id == LIB_ENC_UCS2LE_BOM_ID) {
+        return 2;
+    }
+
+    // UCS-4
+    if (enc_id == LIB_ENC_UCS4_ID) {
+        // UCS-4  by default without BOM (!)
+        // UTF-32 by default with BOM    (!)
+        return 0;
+    }
+
+    // UCS-4 (BE/LE)
+    if (enc_id == LIB_ENC_UCS4BE_ID
+     || enc_id == LIB_ENC_UCS4LE_ID) {
+        return 0;
+    }
+
+    // UCS-4-BOM
+    if (enc_id == LIB_ENC_UCS4BE_BOM_ID
+     || enc_id == LIB_ENC_UCS4LE_BOM_ID) {
         return 4;
     }
 
@@ -194,37 +232,51 @@ static int lib_enc_set_bom(int enc_id, char* str) {
         return 3;
     }
 
-    // UTF-16
+    // UTF-16, UCS-2
     if (enc_id == LIB_ENC_UTF16_ID
-     // UTF-16 by default with BOM
-     || enc_id == LIB_ENC_UTF16BE_BOM_ID) {
+     // UTF-16 by default with BOM (!)
+     || enc_id == LIB_ENC_UTF16BE_BOM_ID
+     || enc_id == LIB_ENC_UCS2BE_BOM_ID  /* like UTF-16 */
+     ) {
         str[0] = 0xFE;
         str[1] = 0xFF;
         return 2;
     }
-    if (enc_id == LIB_ENC_UTF16LE_BOM_ID) {
+    if (enc_id == LIB_ENC_UTF16LE_BOM_ID
+     || enc_id == LIB_ENC_UCS2LE_BOM_ID  /* like UTF-16 */
+    ) {
         str[0] = 0xFF;
         str[1] = 0xFE;
         return 2;
     }
 
-    // UTF-16 (BE/LE)
+    // UTF-16, UCS-2 (BE/LE)
     if (enc_id == LIB_ENC_UTF16BE_ID
-     || enc_id == LIB_ENC_UTF16LE_ID) {
+     || enc_id == LIB_ENC_UTF16LE_ID
+     || enc_id == LIB_ENC_UCS2BE_ID      /* like UTF-16 */
+     || enc_id == LIB_ENC_UCS2LE_ID      /* like UTF-16 */
+     // UCS-2 by default without BOM (!)
+     || enc_id == LIB_ENC_UCS2_ID
+
+     ) {
         return 0;
     }
 
     // UTF-32
     if (enc_id == LIB_ENC_UTF32_ID
-     // UTF-32 by default with BOM 
-     || enc_id == LIB_ENC_UTF32BE_BOM_ID) {
+     // UTF-32 by default with BOM (!)
+     || enc_id == LIB_ENC_UTF32BE_BOM_ID
+     || enc_id == LIB_ENC_UCS4BE_BOM_ID  /* like UTF-32 */
+     ) {
         str[0] = 0x00;
         str[1] = 0x00;
         str[2] = 0xFE;
         str[3] = 0xFF;
         return 4;
     }
-    if (enc_id == LIB_ENC_UTF32LE_BOM_ID) {
+    if (enc_id == LIB_ENC_UTF32LE_BOM_ID
+     || enc_id == LIB_ENC_UCS4LE_BOM_ID  /* like UTF-32 */
+    ) {
         str[0] = 0xFF;
         str[1] = 0xFE;
         str[2] = 0x00;
@@ -234,7 +286,13 @@ static int lib_enc_set_bom(int enc_id, char* str) {
 
     // UTF-32 (BE/LE)
     if (enc_id == LIB_ENC_UTF32BE_ID
-     || enc_id == LIB_ENC_UTF32LE_ID) {
+     || enc_id == LIB_ENC_UTF32LE_ID
+     || enc_id == LIB_ENC_UCS4BE_ID      /* like UTF-32 */
+     || enc_id == LIB_ENC_UCS4LE_ID      /* like UTF-32 */
+     // UCS-4 by default without BOM (!)
+     || enc_id == LIB_ENC_UCS4_ID
+
+     ) {
         return 0;
     }
 
