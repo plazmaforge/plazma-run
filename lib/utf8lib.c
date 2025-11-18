@@ -1431,6 +1431,8 @@ bool lib_utf8_strieq(const char* str1, const char* str2) {
 
 /*
 
+https://habr.com/ru/articles/751616/
+
 https://github.com/benkasminbullock/unicode-c/blob/master/unicode.c
 
 https://dev.to/rdentato/utf-8-strings-in-c-1-3-42a4

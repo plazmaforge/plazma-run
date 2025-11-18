@@ -1850,6 +1850,9 @@ https://github.com/nijel/enca/blob/master/src/filebuf.c
 https://github.com/nijel/enca/blob/master/src/getopt_long.c
 https://github.com/nijel/enca/blob/master/src/options.c
 
+UTF8
+https://habr.com/ru/articles/751616/
+
 UTF7 RFC
 https://datatracker.ietf.org/doc/html/rfc2152
 
