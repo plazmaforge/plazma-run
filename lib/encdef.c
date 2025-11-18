@@ -126,17 +126,17 @@ static const lib_encoding_t lib_encodings[] = {
 /**/{12003,   "UTF-32BE-BOM","UTF-32 Big Endian with BOM",          "UTF32BEBOM  UTF-32-BE-BOM  UTF32-BE-BOM UTF_32_BE_BOM UTF32BE-BOM"}, /* codepage = 12003 */
 /**/{12004,   "UTF-32LE-BOM","UTF-32 Little Endian with BOM",       "UTF32LEBOM  UTF-32-LE-BOM  UTF32-LE-BOM UTF_32_LE_BOM UTF32LE-BOM"}, /* codepage = 12004 */
 
-/**/{1001200, "UCS-2",       "UCS-2 Big Endian with optional BOM",  "UCS2        CSUNICODE      ISO-10646-UCS-2"},
-/**/{1001201, "UCS-2BE",     "UCS-2BE Big Endian",                  "UCS2BE      CSUNICODE11    UNICODEBIG UNICODE-1-1"},
-/**/{1001202, "UCS-2LE",     "UCS-2LE Little Endian",               "UCS2LE                     UNICODELITTLE"},
-/**/{1001203, "UCS-2BE-BOM", "UCS-2BE Big Endian with BOM",         "UCS2BEBOM   UCS-2-BE-BOM   UCS2-BE-BOM"},
-/**/{1001204, "UCS-2LE-BOM", "UCS-2LE Little Endian with BOM",      "UCS2LEBOM   UCS-2-LE-BOM   UCS2-LE-BOM"},
+/**/{1001200, "UCS-2",       "UCS-2 Big Endian with optional BOM",  "UCS2        UCS_2          CSUNICODE    ISO-10646-UCS-2"},
+/**/{1001201, "UCS-2BE",     "UCS-2BE Big Endian",                  "UCS2BE      UCS-2-BE       UCS2-BE      UCS_2_BE      CSUNICODE11    UNICODEBIG UNICODE-1-1"},
+/**/{1001202, "UCS-2LE",     "UCS-2LE Little Endian",               "UCS2LE      UCS-2-LE       UCS2-LE      UCS_2_LE      UNICODELITTLE"},
+/**/{1001203, "UCS-2BE-BOM", "UCS-2BE Big Endian with BOM",         "UCS2BEBOM   UCS-2-BE-BOM   UCS2-BE-BOM  UCS_2_BE_BOM"},
+/**/{1001204, "UCS-2LE-BOM", "UCS-2LE Little Endian with BOM",      "UCS2LEBOM   UCS-2-LE-BOM   UCS2-LE-BOM  UCS_2_LE_BOM"},
 
-/**/{1012000, "UCS-4",       "UCS-4 Big Endian with optional BOM",  "UCS4        CSUCS4         ISO-10646-UCS-4"},
-/**/{1012001, "UCS-4BE",     "UCS-4BE Big Endian",                  "UCS4BE"},
-/**/{1012002, "UCS-4LE",     "UCS-4LE Little Endian",               "UCS4LE"},
-/**/{1012003, "UCS-4BE-BOM", "UCS-4BE Big Endian with BOM",         "UCS4BEBOM  UCS-4-BE-BOM   UCS4-BE-BOM"},
-/**/{1012004, "UCS-4LE-BOM", "UCS-4LE Little Endian with BOM",      "UCS4LEBOM  UCS-4-LE-BOM   UCS4-LE-BOM"}
+/**/{1012000, "UCS-4",       "UCS-4 Big Endian with optional BOM",  "UCS4        UCS_4          CSUCS4       ISO-10646-UCS-4"},
+/**/{1012001, "UCS-4BE",     "UCS-4BE Big Endian",                  "UCS4BE      UCS-4-BE       UCS4-BE      UCS_4_BE"},
+/**/{1012002, "UCS-4LE",     "UCS-4LE Little Endian",               "UCS4LE      UCS-4-LE       UCS4-LE      UCS_4_LE"},
+/**/{1012003, "UCS-4BE-BOM", "UCS-4BE Big Endian with BOM",         "UCS4BEBOM   UCS-4-BE-BOM   UCS4-BE-BOM  UCS_4_BE_BOM"},
+/**/{1012004, "UCS-4LE-BOM", "UCS-4LE Little Endian with BOM",      "UCS4LEBOM   UCS-4-LE-BOM   UCS4-LE-BOM  UCS_4_LE_BOM"}
 
 };
 

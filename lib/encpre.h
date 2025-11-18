@@ -171,11 +171,11 @@ static bool lib_enc_is_ucs2(int enc_id) {
  * Return true if the encoding id is UCS-4 type
  */
 static bool lib_enc_is_ucs4(int enc_id) {
-  return (   enc_id == LIB_ENC_UCS4_ID       /* codepage = 1001200 */
-    /**/  || enc_id == LIB_ENC_UCS4BE_ID     /* codepage = 1001201 */
-    /**/  || enc_id == LIB_ENC_UCS4LE_ID     /* codepage = 1001202 */
-    /**/  || enc_id == LIB_ENC_UCS4BE_BOM_ID /* codepage = 1001203 */
-    /**/  || enc_id == LIB_ENC_UCS4LE_BOM_ID /* codepage = 1001204 */
+  return (   enc_id == LIB_ENC_UCS4_ID       /* codepage = 10012000 */
+    /**/  || enc_id == LIB_ENC_UCS4BE_ID     /* codepage = 10012001 */
+    /**/  || enc_id == LIB_ENC_UCS4LE_ID     /* codepage = 10012002 */
+    /**/  || enc_id == LIB_ENC_UCS4BE_BOM_ID /* codepage = 10012003 */
+    /**/  || enc_id == LIB_ENC_UCS4LE_BOM_ID /* codepage = 10012004 */
     );
 }
 
