@@ -138,8 +138,8 @@ static const lib_encoding_t lib_encodings[] = {
 /**/{1012003, "UCS-4BE-BOM", "UCS-4BE Big Endian with BOM",         "UCS4BEBOM   UCS-4-BE-BOM   UCS4-BE-BOM  UCS_4_BE_BOM"},
 /**/{1012004, "UCS-4LE-BOM", "UCS-4LE Little Endian with BOM",      "UCS4LEBOM   UCS-4-LE-BOM   UCS4-LE-BOM  UCS_4_LE_BOM"},
 
-/**/{7000001, "KOI8-R",      "KOI8-R",                              "KOI8R       KOI-8-R"},
-/**/{7000002, "KOI8-U",      "KOI8-U",                              "KOI8U       KOI-8-U"}
+    {LIB_ENC_KOI8R_ID,   "KOI8-R",      "KOI8-R",                              "KOI8R       KOI-8-R"},
+    {LIB_ENC_KOI8U_ID,   "KOI8-U",      "KOI8-U",                              "KOI8U       KOI-8-U"}
 
 };
 

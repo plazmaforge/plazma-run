@@ -963,9 +963,9 @@ static int* _get_map_by_id(int enc_id) {
     }
 
     // KOI
-    if (enc_id == 7000001) {
+    if (enc_id == LIB_ENC_KOI8R_ID) {
         return (int*) unimap_koi8r;
-    } else if (enc_id == 7000002) {
+    } else if (enc_id == LIB_ENC_KOI8U_ID) {
         return (int*) unimap_koi8u;
     }
 

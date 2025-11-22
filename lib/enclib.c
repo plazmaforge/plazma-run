@@ -1839,6 +1839,12 @@ int lib_enc_test() {
 
 /*
 
+Microsoft Code Page Identifiers
+https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+
+Windows Code Page (with IBM equivalent)
+https://en.wikipedia.org/wiki/Windows_code_page
+
 iconv
 https://github.com/pillarjs/iconv-lite/tree/master/encodings/tables
 
