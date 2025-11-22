@@ -70,6 +70,9 @@
 #define LIB_ENC_BOCU1_BOM_ID      999010 /**/
 #define LIB_ENC_GB18030_BOM_ID    999011 /**/
 
+/* KOI */
+#define LIB_ENC_KOI8R_ID          7000001 /**/
+#define LIB_ENC_KOI8U_ID          7000002 /**/
 
 /**
  * Return true if the encoding id is ISO type 
