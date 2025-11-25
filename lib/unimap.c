@@ -3,14 +3,15 @@
 #include  <stdint.h>
 
 #include "unimap.h"
+#include "unimapx.h"
 #include "encpre.h"
 
 // #define DEBUG    1
 // #define DEBUG_LL 1
 // #define ERROR    1
 
-#define NO_CHR 0xFFFD
-#define NO_DAT '?'
+//#define NO_CHR 0xFFFD
+//#define NO_DAT '?'
 
 // Windows-1125,
 // Macintosh (?) Baltic, 
@@ -969,6 +970,11 @@ static int* _get_map_by_id(int enc_id) {
         return (int*) unimap_koi8u;
     }
 
+    // WIN-EXT
+    if (enc_id == 950) {
+        return (int*) unimap_cp950;
+    }
+
     return NULL;
 }
 
@@ -1014,6 +1020,13 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int enc_id) {
         unimap->start = 0;
         unimap->len   = 0;
         return -1;
+    }
+
+    // CP950
+    if (enc_id == 950) {
+        unimap->start = 41280; // 0xA140
+        unimap->len   = 22719; // 0xA140 - 0xF9FE + 1 [63 998 - 41 280 + 1 = 22 718 + 1];
+        return 0;
     }
     
     unimap->start = 128;
