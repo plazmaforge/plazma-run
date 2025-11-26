@@ -74,6 +74,13 @@
 #define LIB_ENC_KOI8R_ID           20866
 #define LIB_ENC_KOI8U_ID           21866
 
+/* CP */
+#define LIB_ENC_CP932_ID           932
+#define LIB_ENC_CP936_ID           936
+#define LIB_ENC_CP949_ID           949
+#define LIB_ENC_CP950_ID           950
+
+
 /**
  * Return true if the encoding id is ISO type 
  */
@@ -207,5 +214,15 @@ static bool lib_enc_is_mbc(int enc_id) {
           );
 }
 
+/**
+ * Return true if the encoding id is hieroglyphs multi bytes type
+ */
+static bool lib_enc_is_hrg(int enc_id) {
+  return (enc_id == LIB_ENC_CP932_ID
+       || enc_id == LIB_ENC_CP936_ID
+       || enc_id == LIB_ENC_CP949_ID
+       || enc_id == LIB_ENC_CP950_ID
+    );
+}
 
 #endif // PLAZMA_LIB_ENCPRE_H

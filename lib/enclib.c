@@ -1440,6 +1440,37 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+static int lib_cp950_to_code(const char* str, int* cp) {
+    // TODO
+    return -1;
+}
+
+/*
+ * Convert a char to a codepount and return lenght of the char.
+ */
+static int lib_hrg_to_code(int enc_id, const char* str, int* cp) {
+    
+    // CP932
+    //if (enc_id == LIB_ENC_CP950_ID) {
+    //    return lib_cp932_to_code(str, cp);
+    //}
+    // CP936
+    //if (enc_id == LIB_ENC_CP950_ID) {
+    //    return lib_cp936_to_code(str, cp);
+    //}
+    // CP949
+    //if (enc_id == LIB_ENC_CP950_ID) {
+    //    return lib_cp949_to_code(str, cp);
+    //}
+    // CP950
+    if (enc_id == LIB_ENC_CP950_ID) {
+        return lib_cp950_to_code(str, cp);
+    }
+
+    return -1;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
 static int _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
     #ifdef DEBUG_L2
     fprintf(stderr, ">> enc_char_seq\n");
@@ -1519,6 +1550,11 @@ static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int
     // UTF
     if (lib_enc_is_utf(enc_id)) {
         return lib_utf_to_code(enc_id, str, cp);
+    }
+
+    // HRG
+    if (lib_enc_is_hrg(enc_id)) {
+        return lib_hrg_to_code(enc_id, str, cp);
     }
 
     // OTHER

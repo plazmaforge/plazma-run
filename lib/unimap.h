@@ -11,10 +11,12 @@
 #define LIB_UNIMAP_ERR_CONV_TO_USUPPORTED    -1002
 
 typedef struct lib_unimap_t {
-    int id;       /* encoding id     */
-    int* map;     /* data  map       */
-    size_t start; /* start index     */
-    size_t len;   /* lenght of array */
+    int id;            /* encoding id      */
+    int* map;          /* data  map        */
+    size_t start;      /* start index      */
+    size_t len;        /* lenght of array  */
+    size_t lead_start; /* lead start index */
+    size_t lead_end;   /* lead end index   */  
 } lib_unimap_t;
 
 /**
