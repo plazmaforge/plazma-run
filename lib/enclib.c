@@ -1440,31 +1440,128 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-static int lib_cp950_to_code(const char* str, int* cp) {
+/**
+ * Return Unicode by Bytecode
+ */
+static int _enc_get_ucode(lib_unimap_t* from_map, int icode) {
+
+    // 1. icode -> icode
+    if (icode < from_map->start) {
+        #ifdef DEBUG_LL
+        fprintf(stderr, ">> icode : skip\n");
+        #endif
+        return icode;
+    }
+
+    // 2. icode -> 'from_map'
+    int idx = icode - from_map->start;
+    #ifdef DEBUG_LL
+    fprintf(stderr, ">> oidx  : %d\n", idx);
+    #endif
+
+    // Get Unicode from 'from_map"
+    if (idx >= from_map->len) {
+        // error: NO_CHR (?)
+        #ifdef ERROR
+        fprintf(stderr, ">> error: NO_CHR (-13)\n");
+        #endif
+        return -13;
+    }
+
+    int ucode = from_map->map[idx];
+    return ucode;
+}
+
+static bool _enc_is_lead(lib_unimap_t* map, int ucode) {
     // TODO
-    return -1;
+    return false;
+}
+
+static int lib_cp950_to_code(lib_enc_context_t* ctx, const char* str, int* cp) {
+    if (!str) {
+        // error
+        return -1;
+    }
+
+    // Get unsigned code
+    int icode = _u8(*str);
+
+    lib_unimap_t* from_map = ctx->from_map;
+
+    // 1. icode -> icode
+    if (icode < from_map->start) {
+        #ifdef DEBUG_LL
+        fprintf(stderr, ">> icode : skip\n");
+        #endif
+        *cp = icode;
+        return 1;
+    }
+
+    // 2. icode -> 'from_map'
+    int idx = icode - from_map->start;
+    #ifdef DEBUG_LL
+    fprintf(stderr, ">> oidx  : %d\n", idx);
+    #endif
+
+    // Get Unicode from 'from_map"
+    if (idx >= from_map->len) {
+        // error: NO_CHR (?)
+        #ifdef ERROR
+        fprintf(stderr, ">> error: NO_CHR (-13)\n");
+        #endif
+        return -13;
+    }
+
+    int ucode = from_map->map[idx];
+    if (_enc_is_lead(from_map, ucode)) {
+        if (str[1] == '\0') {
+            return -1;
+        }
+        uint8_t b1 = ucode;
+        uint8_t b2 = _u8(str[1]);
+        icode = _u16(b1, b2);
+        idx = icode - from_map->ext_start;
+
+        if (idx >= from_map->ext_len) {
+            // error: NO_CHR (?)
+            #ifdef ERROR
+            fprintf(stderr, ">> error: NO_CHR (-13)\n");
+            #endif
+            return -14;
+        }
+        ucode = from_map->map[idx];
+        *cp = ucode;
+        return 2;
+    }
+
+    *cp = icode;
+    return 1;
+
+    // Convert char to  Unicode codepoint
+    //*cp = lib_unimap_conv_icode(ctx->from_map, icode);
+
 }
 
 /*
  * Convert a char to a codepount and return lenght of the char.
  */
-static int lib_hrg_to_code(int enc_id, const char* str, int* cp) {
+static int lib_hrg_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
     
     // CP932
     //if (enc_id == LIB_ENC_CP950_ID) {
-    //    return lib_cp932_to_code(str, cp);
+    //    return lib_cp932_to_code(ctx, str, cp);
     //}
     // CP936
     //if (enc_id == LIB_ENC_CP950_ID) {
-    //    return lib_cp936_to_code(str, cp);
+    //    return lib_cp936_to_code(ctx, str, cp);
     //}
     // CP949
     //if (enc_id == LIB_ENC_CP950_ID) {
-    //    return lib_cp949_to_code(str, cp);
+    //    return lib_cp949_to_code(ctx, str, cp);
     //}
     // CP950
     if (enc_id == LIB_ENC_CP950_ID) {
-        return lib_cp950_to_code(str, cp);
+        return lib_cp950_to_code(ctx, str, cp);
     }
 
     return -1;
@@ -1554,7 +1651,7 @@ static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int
 
     // HRG
     if (lib_enc_is_hrg(enc_id)) {
-        return lib_hrg_to_code(enc_id, str, cp);
+        return lib_hrg_to_code(ctx, enc_id, str, cp);
     }
 
     // OTHER
