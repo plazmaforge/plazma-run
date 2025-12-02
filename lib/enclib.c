@@ -1472,12 +1472,12 @@ static int _enc_get_ucode(lib_unimap_t* from_map, int icode) {
     return ucode;
 }
 
-static bool _enc_is_lead(lib_unimap_t* map, int ucode) {
-    // TODO
-    return false;
-}
+// static bool _enc_is_lead(lib_unimap_t* map, int ucode) {
+//     // TODO
+//     return false;
+// }
 
-static int lib_cp950_to_code(lib_enc_context_t* ctx, const char* str, int* cp) {
+static int lib_hrg_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
     if (!str) {
         // error
         return -1;
@@ -1513,7 +1513,8 @@ static int lib_cp950_to_code(lib_enc_context_t* ctx, const char* str, int* cp) {
     }
 
     int ucode = from_map->map[idx];
-    if (_enc_is_lead(from_map, ucode)) {
+    //if (_enc_is_lead(from_map, ucode)) {
+    if (ucode == LD_CHR) {
         if (str[1] == '\0') {
             return -1;
         }
@@ -1525,7 +1526,7 @@ static int lib_cp950_to_code(lib_enc_context_t* ctx, const char* str, int* cp) {
         if (idx >= from_map->ext_len) {
             // error: NO_CHR (?)
             #ifdef ERROR
-            fprintf(stderr, ">> error: NO_CHR (-13)\n");
+            fprintf(stderr, ">> error: NO_CHR (-14)\n");
             #endif
             return -14;
         }
@@ -1545,29 +1546,30 @@ static int lib_cp950_to_code(lib_enc_context_t* ctx, const char* str, int* cp) {
 /*
  * Convert a char to a codepount and return lenght of the char.
  */
-static int lib_hrg_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
+// static int lib_hrg_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
     
-    // CP932
-    //if (enc_id == LIB_ENC_CP950_ID) {
-    //    return lib_cp932_to_code(ctx, str, cp);
-    //}
-    // CP936
-    //if (enc_id == LIB_ENC_CP950_ID) {
-    //    return lib_cp936_to_code(ctx, str, cp);
-    //}
-    // CP949
-    //if (enc_id == LIB_ENC_CP950_ID) {
-    //    return lib_cp949_to_code(ctx, str, cp);
-    //}
-    // CP950
-    if (enc_id == LIB_ENC_CP950_ID) {
-        return lib_cp950_to_code(ctx, str, cp);
-    }
+//     // CP932
+//     //if (enc_id == LIB_ENC_CP950_ID) {
+//     //    return lib_cp932_to_code(ctx, str, cp);
+//     //}
+//     // CP936
+//     //if (enc_id == LIB_ENC_CP950_ID) {
+//     //    return lib_cp936_to_code(ctx, str, cp);
+//     //}
+//     // CP949
+//     //if (enc_id == LIB_ENC_CP950_ID) {
+//     //    return lib_cp949_to_code(ctx, str, cp);
+//     //}
+//     // CP950
+//     if (enc_id == LIB_ENC_CP950_ID) {
+//         return lib_cp950_to_code(ctx, str, cp);
+//     }
 
-    return -1;
-}
+//     return -1;
+// }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+
 static int _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
     #ifdef DEBUG_L2
     fprintf(stderr, ">> enc_char_seq\n");

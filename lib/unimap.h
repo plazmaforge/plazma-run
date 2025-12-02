@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #define NO_CHR 0xFFFD
+#define LD_CHR 0xFFFF
 #define NO_DAT '?'
 
 #define LIB_UNIMAP_ERR_CONV_USUPPORTED       -1000
