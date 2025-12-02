@@ -1477,7 +1477,7 @@ static int _enc_get_ucode(lib_unimap_t* from_map, int icode) {
 //     return false;
 // }
 
-static int lib_hrg_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
+static int lib_dbc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
     if (!str) {
         // error
         return -1;
@@ -1521,9 +1521,9 @@ static int lib_hrg_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, 
         uint8_t b1 = ucode;
         uint8_t b2 = _u8(str[1]);
         icode = _u16(b1, b2);
-        idx = icode - from_map->ext_start;
+        idx = icode - from_map->dbc_start;
 
-        if (idx >= from_map->ext_len) {
+        if (idx >= from_map->dbc_len) {
             // error: NO_CHR (?)
             #ifdef ERROR
             fprintf(stderr, ">> error: NO_CHR (-14)\n");
@@ -1652,8 +1652,8 @@ static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int
     }
 
     // HRG
-    if (lib_enc_is_hrg(enc_id)) {
-        return lib_hrg_to_code(ctx, enc_id, str, cp);
+    if (lib_enc_is_dbc(enc_id)) {
+        return lib_dbc_to_code(ctx, enc_id, str, cp);
     }
 
     // OTHER

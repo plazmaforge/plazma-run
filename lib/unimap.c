@@ -994,6 +994,19 @@ static uint8_t _u8(char value) {
     return (uint8_t) value;
 }
 
+int lib_unimap_init(lib_unimap_t* unimap) {
+    if (!unimap) {
+        return -1;
+    }
+    unimap->id        = 0;
+    unimap->map       = NULL;
+    unimap->start     = 0;
+    unimap->len       = 0;
+    unimap->dbc_start = 0;
+    unimap->dbc_len   = 0;
+    return 0;
+}
+
 ////
 
 /**
@@ -1010,6 +1023,7 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int enc_id) {
     if (!unimap) {
         return -1;
     }
+    lib_unimap_init(unimap);
     int* map = _get_map_by_id(enc_id);
     if (!map) {
         return -1;
@@ -1017,20 +1031,20 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int enc_id) {
     unimap->map = map;
     unimap->id  = enc_id;
     if (!map) {
-        unimap->start = 0;
-        unimap->len   = 0;
+        //unimap->start = 0;
+        //unimap->len   = 0;
         return -1;
-    }
-
-    // CP950
-    if (enc_id == 950) {
-        unimap->start = 41280; // 0xA140
-        unimap->len   = 22719; // 0xA140 - 0xF9FE + 1 [63 998 - 41 280 + 1 = 22 718 + 1];
-        return 0;
     }
     
     unimap->start = 128;
     unimap->len   = 128;
+
+    // CP950
+    if (enc_id == 950) {
+        unimap->dbc_start = 41280; // 0xA140
+        unimap->dbc_len   = 22719; // 0xA140 - 0xF9FE + 1 [63 998 - 41 280 + 1 = 22 718 + 1];
+        return 0;
+    }
 
     if (lib_enc_is_iso(enc_id)) {
         // Shift for ISO-8859 only

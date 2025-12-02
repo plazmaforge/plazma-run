@@ -215,9 +215,9 @@ static bool lib_enc_is_mbc(int enc_id) {
 }
 
 /**
- * Return true if the encoding id is hieroglyphs multi bytes type
+ * Return true if the encoding id is double bytes type
  */
-static bool lib_enc_is_hrg(int enc_id) {
+static bool lib_enc_is_dbc(int enc_id) {
   return (enc_id == LIB_ENC_CP932_ID
        || enc_id == LIB_ENC_CP936_ID
        || enc_id == LIB_ENC_CP949_ID
