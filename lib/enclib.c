@@ -73,7 +73,8 @@ static int _enc_char_seq(bool is_mbc, int enc_id, const char* str);
 
 static int _enc_code_seq(bool is_mbc, int enc_id, int cp);
 
-static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp);
+//static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp);
+static int _enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp);
 
 static int _enc_to_char(lib_enc_context_t* ctx, int enc_id, char* buf, int cp);
 
@@ -268,7 +269,8 @@ static int _u16_block(lib_enc_context_t* ctx, char* idata, char* odata, size_t o
     while (i < count) {
 
         // char [EncodingID] -> codepoint
-        from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        //from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        from_seq = _enc_to_code(ctx->from_map, from_id, data, &ucode);
         if (from_seq <= 0) {
             // error
             #ifdef ERROR
@@ -738,7 +740,8 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // char [EncodingID] -> codepoint
-        from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        //from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        from_seq = _enc_to_code(ctx->from_map, from_id, data, &ucode);
         if (from_seq <= 0) {
             // error
             #ifdef ERROR
@@ -909,7 +912,8 @@ static int _enc_conv_to_utf7_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // char [EncodingID] -> codepoint
-        from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        //from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        from_seq = _enc_to_code(ctx->from_map, from_id, data, &ucode);
         if (from_seq <= 0) {
             // error
             #ifdef ERROR
@@ -1477,7 +1481,7 @@ static int _enc_get_ucode(lib_unimap_t* from_map, int icode) {
 //     return false;
 // }
 
-static int lib_dbc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
+static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
     if (!str) {
         // error
         return -1;
@@ -1486,10 +1490,10 @@ static int lib_dbc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, 
     // Get unsigned code
     int icode = _u8(*str);
 
-    lib_unimap_t* from_map = ctx->from_map;
+    //lib_unimap_t* from_map = ctx->from_map;
 
     // 1. icode -> icode
-    if (icode < from_map->start) {
+    if (icode < unimap->start) {
         #ifdef DEBUG_LL
         fprintf(stderr, ">> icode : skip\n");
         #endif
@@ -1498,13 +1502,13 @@ static int lib_dbc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, 
     }
 
     // 2. icode -> 'from_map'
-    int idx = icode - from_map->start;
+    int idx = icode - unimap->start;
     #ifdef DEBUG_LL
     fprintf(stderr, ">> oidx  : %d\n", idx);
     #endif
 
     // Get Unicode from 'from_map"
-    if (idx >= from_map->len) {
+    if (idx >= unimap->len) {
         // error: NO_CHR (?)
         #ifdef ERROR
         fprintf(stderr, ">> error: NO_CHR (-13)\n");
@@ -1512,8 +1516,7 @@ static int lib_dbc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, 
         return -13;
     }
 
-    int ucode = from_map->map[idx];
-    //if (_enc_is_lead(from_map, ucode)) {
+    int ucode = unimap->map[idx];
     if (ucode == LD_CHR) {
         if (str[1] == '\0') {
             return -1;
@@ -1521,25 +1524,22 @@ static int lib_dbc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, 
         uint8_t b1 = ucode;
         uint8_t b2 = _u8(str[1]);
         icode = _u16(b1, b2);
-        idx = icode - from_map->dbc_start;
+        idx = icode - unimap->dbc_start;
 
-        if (idx >= from_map->dbc_len) {
+        if (idx >= unimap->dbc_len) {
             // error: NO_CHR (?)
             #ifdef ERROR
             fprintf(stderr, ">> error: NO_CHR (-14)\n");
             #endif
             return -14;
         }
-        ucode = from_map->map[idx];
+        ucode = unimap->map[idx];
         *cp = ucode;
         return 2;
     }
 
     *cp = icode;
     return 1;
-
-    // Convert char to  Unicode codepoint
-    //*cp = lib_unimap_conv_icode(ctx->from_map, icode);
 
 }
 
@@ -1627,16 +1627,21 @@ static int _enc_code_seq(bool is_mbc, int enc_id, int cp) {
     return -1;
 }
 
-static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
+//static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
+static int _enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
+
+    bool mbc = !unimap ? true : unimap->dbc_start > 0;
 
     // 1-BYTE
-    if (!ctx->from_is_mbc) {
+    //if (!ctx->from_is_mbc) {
+    if (!mbc) {
 
         // Get unsigned code
         int icode = _u8(*str);
 
         // Convert char to  Unicode codepoint
-        *cp = lib_unimap_conv_icode(ctx->from_map, icode);
+        //*cp = lib_unimap_conv_icode(ctx->from_map, icode);
+        *cp = lib_unimap_conv_icode(unimap, icode);
 
         return 1; // Lenght is always one
     }
@@ -1653,7 +1658,7 @@ static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int
 
     // HRG
     if (lib_enc_is_dbc(enc_id)) {
-        return lib_dbc_to_code(ctx, enc_id, str, cp);
+        return lib_dbc_to_code(unimap, enc_id, str, cp);
     }
 
     // OTHER
@@ -1791,7 +1796,8 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // char [EncodingID] -> codepoint
-        from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        //from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        from_seq = _enc_to_code(ctx->from_map, from_id, data, &ucode);
         if (from_seq <= 0) {
             // error
             #ifdef ERROR
@@ -1859,7 +1865,8 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // char [EncodingID] -> codepoint
-        from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        //from_seq = _enc_to_code(ctx, from_id, data, &ucode);
+        from_seq = _enc_to_code(ctx->from_map, from_id, data, &ucode);
         if (from_seq <= 0) {
             // error
             #ifdef ERROR
