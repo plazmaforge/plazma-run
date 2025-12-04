@@ -69,9 +69,11 @@ static int _init_ctx(lib_enc_context_t* ctx) {
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-static int _enc_char_seq(bool is_mbc, int enc_id, const char* str);
+//static int _enc_char_seq(bool is_mbc, int enc_id, const char* str);
+static int _enc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str);
 
-static int _enc_code_seq(bool is_mbc, int enc_id, int cp);
+//static int _enc_code_seq(bool is_mbc, int enc_id, int cp);
+static int _enc_code_seq(lib_unimap_t* unimap, int enc_id, int cp);
 
 //static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp);
 static int _enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp);
@@ -356,7 +358,8 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
         *count = 0;
     }
     int to_id   = ctx->to_id;
-    bool is_mbc = ctx->to_is_mbc;
+    //bool is_mbc = ctx->to_is_mbc;
+    lib_unimap_t* to_map = ctx->to_map;
 
     size_t i = 0;
     size_t j = 0;
@@ -466,7 +469,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             if (seq_len == 4) {
 
                 ucode = _enc_utf16_to_code(buf);
-                out_seq = _enc_code_seq(is_mbc, to_id, ucode);
+                out_seq = _enc_code_seq(to_map, to_id, ucode);
                 out_len += out_seq;
 
                 #ifdef DEBUG_L2
@@ -478,7 +481,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             } else if (seq_len == 2) {
                     
                 ucode = _enc_utf16_to_code(buf);
-                out_seq = _enc_code_seq(is_mbc, to_id, ucode);
+                out_seq = _enc_code_seq(to_map, to_id, ucode);
                 out_len += out_seq;
 
                 #ifdef DEBUG_L2
@@ -491,7 +494,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
                 if (seq_len == 2) {
 
                     ucode = _enc_utf16_to_code(buf + 2);
-                    out_seq = _enc_code_seq(is_mbc, to_id, ucode);
+                    out_seq = _enc_code_seq(to_map, to_id, ucode);
                     out_len += out_seq;
 
                     #ifdef DEBUG_L2
@@ -529,7 +532,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             if (seq_len == 2) {
 
                 ucode = _enc_utf16_to_code(buf);
-                out_seq = _enc_code_seq(is_mbc, to_id, ucode);
+                out_seq = _enc_code_seq(to_map, to_id, ucode);
                 out_len += out_seq;
 
                 #ifdef DEBUG_L2
@@ -564,7 +567,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
         if (seq_len == 4) {
 
             ucode = _enc_utf16_to_code(buf);
-            out_seq = _enc_code_seq(is_mbc, to_id, ucode);
+            out_seq = _enc_code_seq(to_map, to_id, ucode);
             out_len += out_seq;
 
             #ifdef DEBUG_L2
@@ -576,7 +579,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
         } else if (seq_len == 2) {
                     
             ucode = _enc_utf16_to_code(buf);
-            out_seq = _enc_code_seq(is_mbc, to_id, ucode);
+            out_seq = _enc_code_seq(to_map, to_id, ucode);
             out_len += out_seq;
 
             #ifdef DEBUG_L2
@@ -589,7 +592,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
             if (seq_len == 2) {
 
                 ucode = _enc_utf16_to_code(buf + 2);
-                out_seq = _enc_code_seq(is_mbc, to_id, ucode);
+                out_seq = _enc_code_seq(to_map, to_id, ucode);
                 out_len += out_seq;
 
                 #ifdef DEBUG_L2
@@ -626,7 +629,7 @@ int base64_decode_count(lib_enc_context_t* ctx, char* idata, size_t isize, size_
         if (seq_len == 2) {
 
             ucode = _enc_utf16_to_code(buf);
-            out_seq = _enc_code_seq(is_mbc, to_id, ucode);
+            out_seq = _enc_code_seq(to_map, to_id, ucode);
             out_len += out_seq;
 
             #ifdef DEBUG_L2
@@ -1574,7 +1577,11 @@ static bool _enc_is_mbc(lib_unimap_t* unimap) {
     return !unimap ? true : unimap->dbc_start > 0;
 }
 
-static int _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
+//static int _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
+static int _enc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {
+
+    bool is_mbc = _enc_is_mbc(unimap);
+
     #ifdef DEBUG_L2
     fprintf(stderr, ">> enc_char_seq\n");
     #endif
@@ -1610,7 +1617,10 @@ static int _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
     return -1;
 }
 
-static int _enc_code_seq(bool is_mbc, int enc_id, int cp) {
+//static int _enc_code_seq(bool is_mbc, int enc_id, int cp) {
+static int _enc_code_seq(lib_unimap_t* unimap, int enc_id, int cp) {    
+
+    bool is_mbc = _enc_is_mbc(unimap);
 
     // 1-BYTE
     if (!is_mbc) {
@@ -1757,15 +1767,17 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         return 0;
     }
 
-    int from_id      = ctx->from_id;
-    char* from_data  = ctx->from_data;
-    size_t from_len  = ctx->from_len;
-    bool from_is_mbc = ctx->from_is_mbc;
+    int from_id            = ctx->from_id;
+    char* from_data        = ctx->from_data;
+    size_t from_len        = ctx->from_len;
+    //bool from_is_mbc = ctx->from_is_mbc;
+    lib_unimap_t* from_map = ctx->from_map;
 
-    int to_id        = ctx->to_id;
-    char** to_data   = ctx->to_data;
-    size_t* to_len   = ctx->to_len;
-    bool to_is_mbc   = ctx->to_is_mbc;
+    int to_id              = ctx->to_id;
+    char** to_data         = ctx->to_data;
+    size_t* to_len         = ctx->to_len;
+    //bool to_is_mbc   = ctx->to_is_mbc;
+    lib_unimap_t* to_map   = ctx->to_map;
 
     #ifdef DEBUG
     fprintf(stderr, ">> conv_ctx: from_id=%d, to_id=%d, len=%lu\n", from_id, to_id, from_len);
@@ -1802,7 +1814,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
 
         // char [EncodingID] -> codepoint
         //from_seq = _enc_to_code(ctx, from_id, data, &ucode);
-        from_seq = _enc_to_code(ctx->from_map, from_id, data, &ucode);
+        from_seq = _enc_to_code(from_map, from_id, data, &ucode);
         if (from_seq <= 0) {
             // error
             #ifdef ERROR
@@ -1813,7 +1825,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         }
 
         // codepoint -> char [EncodingID]
-        to_seq = _enc_code_seq(to_is_mbc, to_id, ucode);
+        to_seq = _enc_code_seq(to_map, to_id, ucode);
         if (to_seq <= 0) {
             // error
             #ifdef ERROR
@@ -1871,7 +1883,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
 
         // char [EncodingID] -> codepoint
         //from_seq = _enc_to_code(ctx, from_id, data, &ucode);
-        from_seq = _enc_to_code(ctx->from_map, from_id, data, &ucode);
+        from_seq = _enc_to_code(from_map, from_id, data, &ucode);
         if (from_seq <= 0) {
             // error
             #ifdef ERROR
