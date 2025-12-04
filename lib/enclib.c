@@ -1476,11 +1476,6 @@ static int _enc_get_ucode(lib_unimap_t* from_map, int icode) {
     return ucode;
 }
 
-// static bool _enc_is_lead(lib_unimap_t* map, int ucode) {
-//     // TODO
-//     return false;
-// }
-
 static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
     if (!str) {
         // error
@@ -1570,6 +1565,15 @@ static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Return true if:
+ * - unimap is NULL
+ * - unimap has dbc array
+ */
+static bool _enc_is_mbc(lib_unimap_t* unimap) {
+    return !unimap ? true : unimap->dbc_start > 0;
+}
+
 static int _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
     #ifdef DEBUG_L2
     fprintf(stderr, ">> enc_char_seq\n");
@@ -1627,14 +1631,15 @@ static int _enc_code_seq(bool is_mbc, int enc_id, int cp) {
     return -1;
 }
 
+
 //static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
 static int _enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
 
-    bool mbc = !unimap ? true : unimap->dbc_start > 0;
+    bool is_mbc = _enc_is_mbc(unimap);
 
     // 1-BYTE
     //if (!ctx->from_is_mbc) {
-    if (!mbc) {
+    if (!is_mbc) {
 
         // Get unsigned code
         int icode = _u8(*str);
@@ -1656,7 +1661,7 @@ static int _enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* 
         return lib_utf_to_code(enc_id, str, cp);
     }
 
-    // HRG
+    // DBC
     if (lib_enc_is_dbc(enc_id)) {
         return lib_dbc_to_code(unimap, enc_id, str, cp);
     }

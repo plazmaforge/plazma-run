@@ -994,7 +994,7 @@ static uint8_t _u8(char value) {
     return (uint8_t) value;
 }
 
-int lib_unimap_init(lib_unimap_t* unimap) {
+static int _init_map(lib_unimap_t* unimap) {
     if (!unimap) {
         return -1;
     }
@@ -1023,7 +1023,7 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int enc_id) {
     if (!unimap) {
         return -1;
     }
-    lib_unimap_init(unimap);
+    _init_map(unimap);
     int* map = _get_map_by_id(enc_id);
     if (!map) {
         return -1;
