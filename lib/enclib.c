@@ -91,6 +91,12 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+static int lib_dbc_code_seq(lib_unimap_t* unimap, int enc_id, int cp);
+
+static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp);
+
+////////////////////////////////////////////////////////////////////////////////////////
+
 /**
  * Return true if the Encoding ID supports conversion
  */
@@ -1449,36 +1455,98 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Return Unicode by Bytecode
- */
-static int _enc_get_ucode(lib_unimap_t* from_map, int icode) {
-
-    // 1. icode -> icode
-    if (icode < from_map->start) {
-        #ifdef DEBUG_LL
-        fprintf(stderr, ">> icode : skip\n");
-        #endif
-        return icode;
+static int _enc_find_idx(int* map, size_t start, size_t len, int ucode) {
+    if (!map || len == 0 || ucode < 0) {
+        return -1;
     }
+    for (size_t i = start; i < len; i++) {
+        if (ucode == map[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
 
-    // 2. icode -> 'from_map'
-    int idx = icode - from_map->start;
+// /**
+//  * Return Unicode by Bytecode
+//  */
+// static int _enc_get_ucode(lib_unimap_t* from_map, int icode) {
+
+//     // 1. icode -> icode
+//     if (icode < from_map->start) {
+//         #ifdef DEBUG_LL
+//         fprintf(stderr, ">> icode : skip\n");
+//         #endif
+//         return icode;
+//     }
+
+//     // 2. icode -> 'from_map'
+//     int idx = icode - from_map->start;
+//     #ifdef DEBUG_LL
+//     fprintf(stderr, ">> oidx  : %d\n", idx);
+//     #endif
+
+//     // Get Unicode from 'from_map"
+//     if (idx >= from_map->len) {
+//         // error: NO_CHR (?)
+//         #ifdef ERROR
+//         fprintf(stderr, ">> error: NO_CHR (-13)\n");
+//         #endif
+//         return -13;
+//     }
+
+//     int ucode = from_map->map[idx];
+//     return ucode;
+// }
+
+/**
+ * Return Bytecode by Unicode
+ */
+static int _enc_get_icode(lib_unimap_t* conv_map, int ucode) {
+
     #ifdef DEBUG_LL
-    fprintf(stderr, ">> oidx  : %d\n", idx);
+    fprintf(stderr, ">> ucode : 0x%02X\n", (unsigned int) ucode);
     #endif
 
-    // Get Unicode from 'from_map"
-    if (idx >= from_map->len) {
-        // error: NO_CHR (?)
+    // Find index in 'to_map' by ucode
+    int ocode = 0;
+    if (ucode == 0xFFFD) {
         #ifdef ERROR
-        fprintf(stderr, ">> error: NO_CHR (-13)\n");
+        fprintf(stderr, ">> error : ucode is NO_CHR (U+FFFD)\n");
         #endif
-        return -13;
+        ocode = NO_DAT;
+    } else {
+        int idx = _enc_find_idx(conv_map->map, 0, conv_map->len, ucode);
+        if (idx < 0) {
+            #ifdef ERROR
+            fprintf(stderr, ">> error : ocode not found\n");
+            #endif
+            ocode = NO_DAT;
+        } else {
+            #ifdef DEBUG_LL
+            fprintf(stderr, ">> oidx  : %d\n", idx);
+            #endif
+            ocode = idx + conv_map->start;
+        }
     }
 
-    int ucode = from_map->map[idx];
-    return ucode;
+    #ifdef DEBUG_LL
+    fprintf(stderr, ">> ocode : 0x%02X\n\n", (unsigned int) ocode);
+    #endif
+
+    return ocode;
+}
+
+static int lib_dbc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {
+    int cp;
+    return lib_dbc_to_code(unimap, enc_id, str, &cp);
+}
+
+static int lib_dbc_code_seq(lib_unimap_t* unimap, int enc_id, int cp) {
+    //int cp;
+    //return lib_dbc_to_code(unimap, enc_id, str, &cp);
+    // TODO
+    return -1;
 }
 
 static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
@@ -1489,8 +1557,6 @@ static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
 
     // Get unsigned code
     int icode = _u8(*str);
-
-    //lib_unimap_t* from_map = ctx->from_map;
 
     // 1. icode -> icode
     if (icode < unimap->start) {
@@ -1541,6 +1607,61 @@ static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
     *cp = icode;
     return 1;
 
+}
+
+static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) {
+
+    int ocode = 0;
+    int ucode = cp;
+    int seq   = 0;
+
+    // Convert [EncodingID] codepoint to code by map
+    if (cp < unimap->start) {
+        ocode = cp;
+        seq   = 1;
+    } else {
+        if (ucode == 0xFFFD) {
+            #ifdef ERROR
+            fprintf(stderr, ">> error : ucode is NO_CHR (U+FFFD)\n");
+            #endif
+            ocode = NO_DAT;
+            seq   = 1;
+        } else {
+            int idx = _enc_find_idx(unimap->map, 0, unimap->len, ucode);
+            if (idx < 0) {
+                idx = _enc_find_idx(unimap->map, unimap->dbc_start, unimap->dbc_len, ucode);
+                if (idx < 0) {
+                    #ifdef ERROR
+                    fprintf(stderr, ">> error : ocode not found\n");
+                    #endif
+                    ocode = NO_DAT;
+                    seq   = 1;
+                } else {
+                    #ifdef DEBUG_LL
+                    fprintf(stderr, ">> oidx  : %d\n", idx);
+                    #endif
+                    ocode = idx + unimap->dbc_start;
+                    seq   = 2;
+                }
+            } else {
+                #ifdef DEBUG_LL
+                fprintf(stderr, ">> oidx  : %d\n", idx);
+                #endif
+                ocode = idx + unimap->start;
+                seq   = 1;
+            }
+        }
+
+    }
+
+    if (seq == 1) {
+        *buf = (char) ocode;
+    } else if (seq == 2) {
+        // TODO: u16 -> u8, u8
+        *buf = (char) ocode;
+    }
+    
+    return seq;
 }
 
 /*
