@@ -78,7 +78,8 @@ static int _enc_code_seq(lib_unimap_t* unimap, int enc_id, int cp);
 //static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp);
 static int _enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp);
 
-static int _enc_to_char(lib_enc_context_t* ctx, int enc_id, char* buf, int cp);
+//static int _enc_to_char(lib_enc_context_t* ctx, int enc_id, char* buf, int cp);
+static int _enc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp);
 
 static int _enc_check_ctx(lib_enc_context_t* ctx);
 
@@ -322,7 +323,8 @@ static int _char_block(lib_enc_context_t* ctx, char* idata, char* odata, size_t 
         i += u16_seq;
 
         // codepoint -> char [EncodingID]
-        to_seq = _enc_to_char(ctx, to_id, buf, ucode);
+        //to_seq = _enc_to_char(ctx, to_id, buf, ucode);
+        to_seq = _enc_to_char(ctx->to_map, to_id, buf, ucode);
         if (to_seq <= 0) {
             // error
             #ifdef ERROR
@@ -1680,17 +1682,25 @@ static int _enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* 
     return -1;
 }
 
-static int _enc_to_char(lib_enc_context_t* ctx, int enc_id, char* buf, int cp) {
+
+//static int _enc_to_char(lib_enc_context_t* ctx, int enc_id, char* buf, int cp) {
+static int _enc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) {    
+
+    bool is_mbc = _enc_is_mbc(unimap);
 
     // 1-BYTE
-    if (!ctx->to_is_mbc) {
+    //if (!ctx->to_is_mbc) {
+    if (!is_mbc) {
+
         int ocode = 0;
 
         // Convert [EncodingID] codepoint to code by map
-        if (cp < ctx->to_map->start) {
+        //if (cp < ctx->to_map->start) {
+        if (cp < unimap->start) {
             ocode = cp; 
         } else {
-            ocode = lib_unimap_conv_ucode(ctx->to_map, cp);
+            //ocode = lib_unimap_conv_ucode(ctx->to_map, cp);
+            ocode = lib_unimap_conv_ucode(unimap, cp);
         }
         *buf = (char) ocode;
         return 1;
@@ -1894,7 +1904,8 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         }
 
         // codepoint -> char [EncodingID]          
-        to_seq = _enc_to_char(ctx, to_id, buf, ucode);
+        //to_seq = _enc_to_char(ctx, to_id, buf, ucode);
+        to_seq = _enc_to_char(ctx->to_map, to_id, buf, ucode);
         if (to_seq <= 0) {
             // error
             #ifdef ERROR
