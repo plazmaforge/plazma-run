@@ -91,9 +91,13 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+static int lib_dbc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str);
+
 static int lib_dbc_code_seq(lib_unimap_t* unimap, int enc_id, int cp);
 
 static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp);
+
+static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1459,9 +1463,11 @@ static int _enc_find_idx(int* map, size_t start, size_t len, int ucode) {
     if (!map || len == 0 || ucode < 0) {
         return -1;
     }
-    for (size_t i = start; i < len; i++) {
-        if (ucode == map[i]) {
-            return i;
+    size_t idx;
+    for (size_t i = 0; i < len; i++) {
+        idx = i + start;
+        if (ucode == map[idx]) {
+            return idx;
         }
     }
     return -1;
@@ -1499,43 +1505,43 @@ static int _enc_find_idx(int* map, size_t start, size_t len, int ucode) {
 //     return ucode;
 // }
 
-/**
- * Return Bytecode by Unicode
- */
-static int _enc_get_icode(lib_unimap_t* conv_map, int ucode) {
+// /**
+//  * Return Bytecode by Unicode
+//  */
+// static int _enc_get_icode(lib_unimap_t* conv_map, int ucode) {
 
-    #ifdef DEBUG_LL
-    fprintf(stderr, ">> ucode : 0x%02X\n", (unsigned int) ucode);
-    #endif
+//     #ifdef DEBUG_LL
+//     fprintf(stderr, ">> ucode : 0x%02X\n", (unsigned int) ucode);
+//     #endif
 
-    // Find index in 'to_map' by ucode
-    int ocode = 0;
-    if (ucode == 0xFFFD) {
-        #ifdef ERROR
-        fprintf(stderr, ">> error : ucode is NO_CHR (U+FFFD)\n");
-        #endif
-        ocode = NO_DAT;
-    } else {
-        int idx = _enc_find_idx(conv_map->map, 0, conv_map->len, ucode);
-        if (idx < 0) {
-            #ifdef ERROR
-            fprintf(stderr, ">> error : ocode not found\n");
-            #endif
-            ocode = NO_DAT;
-        } else {
-            #ifdef DEBUG_LL
-            fprintf(stderr, ">> oidx  : %d\n", idx);
-            #endif
-            ocode = idx + conv_map->start;
-        }
-    }
+//     // Find index in 'to_map' by ucode
+//     int ocode = 0;
+//     if (ucode == 0xFFFD) {
+//         #ifdef ERROR
+//         fprintf(stderr, ">> error : ucode is NO_CHR (U+FFFD)\n");
+//         #endif
+//         ocode = NO_DAT;
+//     } else {
+//         int idx = _enc_find_idx(conv_map->map, 0, conv_map->len, ucode);
+//         if (idx < 0) {
+//             #ifdef ERROR
+//             fprintf(stderr, ">> error : ocode not found\n");
+//             #endif
+//             ocode = NO_DAT;
+//         } else {
+//             #ifdef DEBUG_LL
+//             fprintf(stderr, ">> oidx  : %d\n", idx);
+//             #endif
+//             ocode = idx + conv_map->start;
+//         }
+//     }
 
-    #ifdef DEBUG_LL
-    fprintf(stderr, ">> ocode : 0x%02X\n\n", (unsigned int) ocode);
-    #endif
+//     #ifdef DEBUG_LL
+//     fprintf(stderr, ">> ocode : 0x%02X\n\n", (unsigned int) ocode);
+//     #endif
 
-    return ocode;
-}
+//     return ocode;
+// }
 
 static int lib_dbc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {
     int cp;
@@ -1543,10 +1549,9 @@ static int lib_dbc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {
 }
 
 static int lib_dbc_code_seq(lib_unimap_t* unimap, int enc_id, int cp) {
-    //int cp;
-    //return lib_dbc_to_code(unimap, enc_id, str, &cp);
-    // TODO
-    return -1;
+    // TODO    
+    char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
+    return lib_dbc_to_char(unimap, enc_id, buf, cp);
 }
 
 static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
@@ -1657,8 +1662,10 @@ static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) 
     if (seq == 1) {
         *buf = (char) ocode;
     } else if (seq == 2) {
-        // TODO: u16 -> u8, u8
-        *buf = (char) ocode;
+        //buf[0] = (ocode >> 8) & 0xFF;
+        //buf[1] = ocode & 0xFF;
+        buf[0] = _u81(ocode);
+        buf[1] = _u82(ocode);
     }
     
     return seq;
