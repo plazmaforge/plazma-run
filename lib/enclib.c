@@ -1616,6 +1616,10 @@ static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
 
 static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) {
 
+    #ifdef DEBUG_LL
+    fprintf(stderr, ">> dbc_to_char\n");
+    #endif
+
     int ocode = 0;
     int ucode = cp;
     int seq   = 0;
@@ -1634,10 +1638,13 @@ static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) 
         } else {
             int idx = _enc_find_idx(unimap->map, 0, unimap->len, ucode);
             if (idx < 0) {
-                idx = _enc_find_idx(unimap->map, unimap->dbc_start, unimap->dbc_len, ucode);
+                //idx = _enc_find_idx(unimap->map, unimap->dbc_start, unimap->dbc_len, ucode);
+                idx = _enc_find_idx(unimap->map, unimap->start + unimap->len, unimap->dbc_len, ucode);
                 if (idx < 0) {
                     #ifdef ERROR
                     fprintf(stderr, ">> error : ocode not found\n");
+                    fprintf(stderr, ">> dbc_start : %lu, dbc_len: %lu\n", unimap->dbc_start, unimap->dbc_len);
+                    // dbc_start : 41280, dbc_len: 22719
                     #endif
                     ocode = NO_DAT;
                     seq   = 1;
@@ -1959,7 +1966,7 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     #endif
 
     #ifdef DEBUG
-    fprintf(stderr, "DEBUG: from_is_mbc=%d, to_is_mbc=%d\n", from_is_mbc, to_is_mbc);
+    //fprintf(stderr, "DEBUG: from_is_mbc=%d, to_is_mbc=%d\n", from_is_mbc, to_is_mbc);
     fprintf(stderr, "DEBUG: from_bom_len=%lu, to_bom_len=%lu\n", from_bom_len, to_bom_len);
     #endif
 
