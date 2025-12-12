@@ -139,7 +139,9 @@ static const lib_encoding_t lib_encodings[] = {
 /**/{1012004, "UCS-4LE-BOM", "UCS-4LE Little Endian with BOM",      "UCS4LEBOM   UCS-4-LE-BOM   UCS4-LE-BOM  UCS_4_LE_BOM"},
 
     {LIB_ENC_KOI8R_ID,   "KOI8-R",      "KOI8-R",                              "KOI8R       KOI-8-R"},
-    {LIB_ENC_KOI8U_ID,   "KOI8-U",      "KOI8-U",                              "KOI8U       KOI-8-U"}
+    {LIB_ENC_KOI8U_ID,   "KOI8-U",      "KOI8-U",                              "KOI8U       KOI-8-U"},
+
+    {LIB_ENC_CP950_ID,    "CP950",      "Windows China", "950 WINDOWS-950"}
 
 };
 

@@ -1743,6 +1743,11 @@ static int _enc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {
         return lib_utf_char_seq(enc_id, str);
     }
 
+    // DBC
+    if (lib_enc_is_dbc(enc_id)) {
+        return lib_dbc_char_seq(unimap, enc_id, str);
+    }
+
     // OTHER
     return -1;
 }
@@ -1765,6 +1770,11 @@ static int _enc_code_seq(lib_unimap_t* unimap, int enc_id, int cp) {
     // UTF
     if (lib_enc_is_utf(enc_id)) {
         return lib_utf_code_seq(enc_id, cp);
+    }
+
+    // DBC
+    if (lib_enc_is_dbc(enc_id)) {
+        return lib_dbc_code_seq(unimap, enc_id, cp);
     }
 
     // OTHER
@@ -1842,6 +1852,11 @@ static int _enc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) {
     // UTF
     if (lib_enc_is_utf(enc_id)) {
         return lib_utf_to_char(enc_id, buf, cp);
+    }
+
+    // DBC
+    if (lib_enc_is_dbc(enc_id)) {
+        return lib_dbc_to_char(unimap, enc_id, buf, cp);
     }
 
     // OTHER
