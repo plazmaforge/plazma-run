@@ -1621,8 +1621,12 @@ static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) 
     #endif
 
     int ocode = 0;
-    int ucode = cp;
+    int ucode = cp; //0xFE5E; //0x3008; //0x2606; //0x4E2D; //0x3000; //cp;
     int seq   = 0;
+
+    #ifdef DEBUG_L1
+    fprintf(stderr, ">> ucode: 0x%04x \n", (unsigned int) ucode);
+    #endif
 
     // Convert [EncodingID] codepoint to code by map
     if (cp < unimap->start) {
@@ -1638,21 +1642,21 @@ static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) 
         } else {
             int idx = _enc_find_idx(unimap->map, 0, unimap->len, ucode);
             if (idx < 0) {
-                //idx = _enc_find_idx(unimap->map, unimap->dbc_start, unimap->dbc_len, ucode);
-                idx = _enc_find_idx(unimap->map, unimap->start + unimap->len, unimap->dbc_len, ucode);
+                idx = _enc_find_idx(unimap->map, unimap->len, unimap->dbc_len, ucode);
                 if (idx < 0) {
                     #ifdef ERROR
                     fprintf(stderr, ">> error : ocode not found\n");
                     fprintf(stderr, ">> dbc_start : %lu, dbc_len: %lu\n", unimap->dbc_start, unimap->dbc_len);
-                    // dbc_start : 41280, dbc_len: 22719
                     #endif
                     ocode = NO_DAT;
                     seq   = 1;
                 } else {
+
                     #ifdef DEBUG_LL
                     fprintf(stderr, ">> oidx  : %d\n", idx);
                     #endif
-                    ocode = idx + unimap->dbc_start;
+                    ocode = idx - unimap->len + unimap->dbc_start;
+
                     seq   = 2;
                 }
             } else {
@@ -1665,6 +1669,10 @@ static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) 
         }
 
     }
+
+    #ifdef DEBUG_L1
+    fprintf(stderr, "<< ocode: 0x%04x \n", (unsigned int) ocode);
+    #endif
 
     if (seq == 1) {
         *buf = (char) ocode;
