@@ -17,6 +17,7 @@ int RUN_UNIMAP_FORMAT_ARRAY = 5;
 typedef struct run_unimap_config_t {
     int format;
     bool use_comments;
+    int check_code;
 } run_unimap_config_t;
 
 typedef struct run_unimap_entry_t {
@@ -26,6 +27,11 @@ typedef struct run_unimap_entry_t {
     char prev_name[255];
     int number;
     bool is_start;
+
+    bool check;
+    int check_number;
+    int check_count;
+
     run_unimap_config_t* config;
 } run_unimap_entry_t;
 
@@ -323,6 +329,59 @@ int run_line(run_unimap_entry_t* entry, char* line) {
     }
 
     _read_line(entry, line);
+
+    if (entry->config->check_code > 0) {
+
+        int cur_code = strtol(entry->icode, NULL, 16);
+        if (entry->check) {
+            int new_code = entry->check_number + 1;
+            if (cur_code > new_code) {
+
+                // GAP
+
+                run_unimap_entry_t gap_entry;
+                gap_entry.config = entry->config;
+                gap_entry.is_start = entry->is_start;
+                gap_entry.number = entry->number;
+                strcpy(gap_entry.prev_name, entry->prev_name);
+
+                strncpy(gap_entry.name, "GAP", 3);
+                gap_entry.name[3] = '\0';
+
+                strncpy(gap_entry.ucode, "0xFFFF", 6);
+                gap_entry.ucode[6] = '\0';
+
+                while (new_code < cur_code) {
+                    snprintf(gap_entry.icode, 16, "0x%04X", new_code);
+                    _print_line(&gap_entry);
+                    strcpy(gap_entry.prev_name, gap_entry.name);
+                    
+                    gap_entry.number++;
+                    entry->number++;
+                    entry->check_count++;
+                    new_code++;                    
+                }
+
+                strcpy(entry->prev_name, gap_entry.name);
+
+                entry->check_number = cur_code;
+                entry->check_count++;
+            } else if (cur_code == new_code) {
+                entry->check_number = cur_code;
+                entry->check_count++;
+            } else {
+                // ERROR
+                fprintf(stderr, ">> SEQUENCE: ERROR\n");
+            }
+
+        } else if (cur_code == entry->config->check_code) {
+            entry->check_number = entry->config->check_code;
+            entry->check = true;
+            entry->check_count = 1;
+        }
+        
+    }
+
     _print_line(entry);
 
     return 0;
@@ -348,6 +407,10 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
     entry.config   = config;
     entry.number   = 0;
     entry.is_start = false;
+
+    entry.check = false;
+    entry.check_number = 0;
+    entry.check_count = 0;
 
     if (config->format == RUN_UNIMAP_FORMAT_MAP) {
         printf("static const int unicode_map[][2] = {");
@@ -384,6 +447,11 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
         _print_line_separator();
         printf("};");
         _print_line_separator();
+        if (entry.check_count > 0) {
+            printf("/* check_count = %d*/", entry.check_count);
+
+        }
+        _print_line_separator();
     } else if (config->format == RUN_UNIMAP_FORMAT_ARRAY) {
 
         if (entry.number > 0 && config->use_comments) {
@@ -398,6 +466,10 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
 
         _print_line_separator();
         printf("};");
+        _print_line_separator();
+        if (entry.check_count > 0) {
+            printf("/* check_count = %d*/", entry.check_count);
+        }
         _print_line_separator();
     }
 
@@ -463,6 +535,8 @@ int main(int argc, char* argv[]) {
     run_unimap_config_t config;
     config.format = format;
     config.use_comments = use_comments;
+
+    //config.check_code = 0xA140;
 
     char* file_name = argv[optind];
 

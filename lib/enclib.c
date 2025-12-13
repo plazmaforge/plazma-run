@@ -1555,6 +1555,11 @@ static int lib_dbc_code_seq(lib_unimap_t* unimap, int enc_id, int cp) {
 }
 
 static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
+
+    #ifdef DEBUG_LL
+    fprintf(stderr, ">> _dbc_to_code\n");
+    #endif
+
     if (!str) {
         // error
         return -1;
@@ -1562,11 +1567,12 @@ static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
 
     // Get unsigned code
     int icode = _u8(*str);
+    int ucode = 0;
 
     // 1. icode -> icode
     if (icode < unimap->start) {
         #ifdef DEBUG_LL
-        fprintf(stderr, ">> icode : skip\n");
+        fprintf(stderr, ">> icode : asc\n");
         #endif
         *cp = icode;
         return 1;
@@ -1578,32 +1584,48 @@ static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
     fprintf(stderr, ">> oidx  : %d\n", idx);
     #endif
 
+    // if (idx < unimap->len) {
+    //     #ifdef DEBUG_LL
+    //     fprintf(stderr, ">> icode : map\n");
+    //     #endif
+    //     ucode = unimap->map[idx];
+    //     *cp = ucode;
+    //     return 1;
+    // }
+
     // Get Unicode from 'from_map"
     if (idx >= unimap->len) {
-        // error: NO_CHR (?)
+        // ACSII tab only or Leader chars
+        // Leader chars in range [128 .. 255] (unimap->start .. unimap->len)
         #ifdef ERROR
         fprintf(stderr, ">> error: NO_CHR (-13)\n");
         #endif
         return -13;
     }
 
-    int ucode = unimap->map[idx];
-    if (ucode == LD_CHR) {
+    int mcode = unimap->map[idx];
+    //int ucode = icode;
+    if (mcode == LD_CHR) {
+
+        // Leader char
         if (str[1] == '\0') {
             return -1;
         }
-        uint8_t b1 = ucode;
-        uint8_t b2 = _u8(str[1]);
-        icode = _u16(b1, b2);
-        idx = icode - unimap->dbc_start;
 
-        if (idx >= unimap->dbc_len) {
-            // error: NO_CHR (?)
-            #ifdef ERROR
-            fprintf(stderr, ">> error: NO_CHR (-14)\n");
-            #endif
-            return -14;
-        }
+        uint8_t b1 = _u8(str[0]); // icode;
+        uint8_t b2 = _u8(str[1]);
+
+        int dcode = _u16(b1, b2);
+        idx = dcode - unimap->dbc_start + unimap->start;
+
+        // if (idx >= unimap->dbc_len) {
+        //     // error: NO_CHR (?)
+        //     #ifdef ERROR
+        //     fprintf(stderr, ">> error: NO_CHR (-14)\n");
+        //     #endif
+        //     return -14;
+        // }
+        
         ucode = unimap->map[idx];
         *cp = ucode;
         return 2;
@@ -1621,7 +1643,7 @@ static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) 
     #endif
 
     int ocode = 0;
-    int ucode = cp; //0xFE5E; //0x3008; //0x2606; //0x4E2D; //0x3000; //cp;
+    int ucode = cp;
     int seq   = 0;
 
     #ifdef DEBUG_L1
@@ -1651,12 +1673,10 @@ static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) 
                     ocode = NO_DAT;
                     seq   = 1;
                 } else {
-
                     #ifdef DEBUG_LL
                     fprintf(stderr, ">> oidx  : %d\n", idx);
                     #endif
                     ocode = idx - unimap->len + unimap->dbc_start;
-
                     seq   = 2;
                 }
             } else {
@@ -1677,8 +1697,6 @@ static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) 
     if (seq == 1) {
         *buf = (char) ocode;
     } else if (seq == 2) {
-        //buf[0] = (ocode >> 8) & 0xFF;
-        //buf[1] = ocode & 0xFF;
         buf[0] = _u81(ocode);
         buf[1] = _u82(ocode);
     }
