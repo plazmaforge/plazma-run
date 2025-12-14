@@ -1585,17 +1585,9 @@ static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
     fprintf(stderr, ">> oidx  : %d\n", idx);
     #endif
 
-    // if (idx < unimap->len) {
-    //     #ifdef DEBUG_LL
-    //     fprintf(stderr, ">> icode : map\n");
-    //     #endif
-    //     ucode = unimap->map[idx];
-    //     *cp = ucode;
-    //     return 1;
-    // }
-
     // Get Unicode from 'from_map"
     if (idx >= unimap->len) {
+        // error: NO_CHR (?)
         // ACSII tab only or Leader chars
         // Leader chars in range [128 .. 255] (unimap->start .. unimap->len)
         #ifdef ERROR
@@ -1604,29 +1596,34 @@ static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
         return -13;
     }
 
-    int mcode = unimap->map[idx];
-    //int ucode = icode;
-    if (mcode == LD_CHR) {
+    icode = unimap->map[idx];
+    if (icode == LD_CHR) {
 
         // Leader char
+        // Check next char
         if (str[1] == '\0') {
             return -1;
         }
 
-        uint8_t b1 = _u8(str[0]); // icode;
+        // Get two chars
+        uint8_t b1 = _u8(str[0]);
         uint8_t b2 = _u8(str[1]);
 
-        int dcode = _u16(b1, b2);
-        idx = dcode - unimap->dbc_start + unimap->start;
+        // Convert two chars to DCS code
+        icode = _u16(b1, b2);
 
-        // if (idx >= unimap->dbc_len) {
-        //     // error: NO_CHR (?)
-        //     #ifdef ERROR
-        //     fprintf(stderr, ">> error: NO_CHR (-14)\n");
-        //     #endif
-        //     return -14;
-        // }
+        // Shift index
+        idx = icode - unimap->dbc_start + unimap->start;
 
+        if (idx >= unimap->len + unimap->dbc_len) {
+            // error: NO_CHR (?)
+            #ifdef ERROR
+            fprintf(stderr, ">> error: NO_CHR (-14)\n");
+            #endif
+            return -14;
+        }
+
+        // Get Unicode by index in DCS table
         ucode = unimap->map[idx];
         *cp = ucode;
         return 2;
