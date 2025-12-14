@@ -70,16 +70,12 @@ static int _init_ctx(lib_enc_context_t* ctx) {
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-//static int _enc_char_seq(bool is_mbc, int enc_id, const char* str);
 static int _enc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str);
 
-//static int _enc_code_seq(bool is_mbc, int enc_id, int cp);
 static int _enc_code_seq(lib_unimap_t* unimap, int enc_id, int cp);
 
-//static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp);
 static int _enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp);
 
-//static int _enc_to_char(lib_enc_context_t* ctx, int enc_id, char* buf, int cp);
 static int _enc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp);
 
 static int _enc_check_ctx(lib_enc_context_t* ctx);
@@ -1474,76 +1470,6 @@ static int _enc_find_idx(int* map, size_t start, size_t len, int ucode) {
     return -1;
 }
 
-// /**
-//  * Return Unicode by Bytecode
-//  */
-// static int _enc_get_ucode(lib_unimap_t* from_map, int icode) {
-
-//     // 1. icode -> icode
-//     if (icode < from_map->start) {
-//         #ifdef DEBUG_LL
-//         fprintf(stderr, ">> icode : skip\n");
-//         #endif
-//         return icode;
-//     }
-
-//     // 2. icode -> 'from_map'
-//     int idx = icode - from_map->start;
-//     #ifdef DEBUG_LL
-//     fprintf(stderr, ">> oidx  : %d\n", idx);
-//     #endif
-
-//     // Get Unicode from 'from_map"
-//     if (idx >= from_map->len) {
-//         // error: NO_CHR (?)
-//         #ifdef ERROR
-//         fprintf(stderr, ">> error: NO_CHR (-13)\n");
-//         #endif
-//         return -13;
-//     }
-
-//     int ucode = from_map->map[idx];
-//     return ucode;
-// }
-
-// /**
-//  * Return Bytecode by Unicode
-//  */
-// static int _enc_get_icode(lib_unimap_t* conv_map, int ucode) {
-
-//     #ifdef DEBUG_LL
-//     fprintf(stderr, ">> ucode : 0x%02X\n", (unsigned int) ucode);
-//     #endif
-
-//     // Find index in 'to_map' by ucode
-//     int ocode = 0;
-//     if (ucode == 0xFFFD) {
-//         #ifdef ERROR
-//         fprintf(stderr, ">> error : ucode is NO_CHR (U+FFFD)\n");
-//         #endif
-//         ocode = NO_DAT;
-//     } else {
-//         int idx = _enc_find_idx(conv_map->map, 0, conv_map->len, ucode);
-//         if (idx < 0) {
-//             #ifdef ERROR
-//             fprintf(stderr, ">> error : ocode not found\n");
-//             #endif
-//             ocode = NO_DAT;
-//         } else {
-//             #ifdef DEBUG_LL
-//             fprintf(stderr, ">> oidx  : %d\n", idx);
-//             #endif
-//             ocode = idx + conv_map->start;
-//         }
-//     }
-
-//     #ifdef DEBUG_LL
-//     fprintf(stderr, ">> ocode : 0x%02X\n\n", (unsigned int) ocode);
-//     #endif
-
-//     return ocode;
-// }
-
 static int lib_dbc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {
     int cp;
     return lib_dbc_to_code(unimap, enc_id, str, &cp);
@@ -1702,31 +1628,6 @@ static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) 
     return seq;
 }
 
-/*
- * Convert a char to a codepount and return lenght of the char.
- */
-// static int lib_hrg_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
-    
-//     // CP932
-//     //if (enc_id == LIB_ENC_CP950_ID) {
-//     //    return lib_cp932_to_code(ctx, str, cp);
-//     //}
-//     // CP936
-//     //if (enc_id == LIB_ENC_CP950_ID) {
-//     //    return lib_cp936_to_code(ctx, str, cp);
-//     //}
-//     // CP949
-//     //if (enc_id == LIB_ENC_CP950_ID) {
-//     //    return lib_cp949_to_code(ctx, str, cp);
-//     //}
-//     // CP950
-//     if (enc_id == LIB_ENC_CP950_ID) {
-//         return lib_cp950_to_code(ctx, str, cp);
-//     }
-
-//     return -1;
-// }
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -1738,7 +1639,6 @@ static bool _enc_is_mbc(lib_unimap_t* unimap) {
     return !unimap ? true : unimap->dbc_start > 0;
 }
 
-//static int _enc_char_seq(bool is_mbc, int enc_id, const char* str) {
 static int _enc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {
 
     bool is_mbc = _enc_is_mbc(unimap);
@@ -1783,7 +1683,6 @@ static int _enc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {
     return -1;
 }
 
-//static int _enc_code_seq(bool is_mbc, int enc_id, int cp) {
 static int _enc_code_seq(lib_unimap_t* unimap, int enc_id, int cp) {    
 
     bool is_mbc = _enc_is_mbc(unimap);
@@ -1812,21 +1711,17 @@ static int _enc_code_seq(lib_unimap_t* unimap, int enc_id, int cp) {
     return -1;
 }
 
-
-//static int _enc_to_code(lib_enc_context_t* ctx, int enc_id, const char* str, int* cp) {
 static int _enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
 
     bool is_mbc = _enc_is_mbc(unimap);
 
     // 1-BYTE
-    //if (!ctx->from_is_mbc) {
     if (!is_mbc) {
 
         // Get unsigned code
         int icode = _u8(*str);
 
         // Convert char to  Unicode codepoint
-        //*cp = lib_unimap_conv_icode(ctx->from_map, icode);
         *cp = lib_unimap_conv_icode(unimap, icode);
 
         return 1; // Lenght is always one
@@ -1851,24 +1746,19 @@ static int _enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* 
     return -1;
 }
 
-
-//static int _enc_to_char(lib_enc_context_t* ctx, int enc_id, char* buf, int cp) {
 static int _enc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) {    
 
     bool is_mbc = _enc_is_mbc(unimap);
 
     // 1-BYTE
-    //if (!ctx->to_is_mbc) {
     if (!is_mbc) {
 
         int ocode = 0;
 
         // Convert [EncodingID] codepoint to code by map
-        //if (cp < ctx->to_map->start) {
         if (cp < unimap->start) {
             ocode = cp; 
         } else {
-            //ocode = lib_unimap_conv_ucode(ctx->to_map, cp);
             ocode = lib_unimap_conv_ucode(unimap, cp);
         }
         *buf = (char) ocode;
@@ -1954,13 +1844,11 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     int from_id            = ctx->from_id;
     char* from_data        = ctx->from_data;
     size_t from_len        = ctx->from_len;
-    //bool from_is_mbc = ctx->from_is_mbc;
     lib_unimap_t* from_map = ctx->from_map;
 
     int to_id              = ctx->to_id;
     char** to_data         = ctx->to_data;
     size_t* to_len         = ctx->to_len;
-    //bool to_is_mbc   = ctx->to_is_mbc;
     lib_unimap_t* to_map   = ctx->to_map;
 
     #ifdef DEBUG
@@ -1997,7 +1885,6 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // char [EncodingID] -> codepoint
-        //from_seq = _enc_to_code(ctx, from_id, data, &ucode);
         from_seq = _enc_to_code(from_map, from_id, data, &ucode);
         if (from_seq <= 0) {
             // error
@@ -2066,7 +1953,6 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     while (i < from_len) {
 
         // char [EncodingID] -> codepoint
-        //from_seq = _enc_to_code(ctx, from_id, data, &ucode);
         from_seq = _enc_to_code(from_map, from_id, data, &ucode);
         if (from_seq <= 0) {
             // error
@@ -2078,7 +1964,6 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
         }
 
         // codepoint -> char [EncodingID]          
-        //to_seq = _enc_to_char(ctx, to_id, buf, ucode);
         to_seq = _enc_to_char(ctx->to_map, to_id, buf, ucode);
         if (to_seq <= 0) {
             // error
