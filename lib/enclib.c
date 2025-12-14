@@ -12,6 +12,7 @@
 
 // #define DEBUG    1
 // #define DEBUG_LL 1
+
 // #define DEBUG_L1 1
 // #define DEBUG_L2 1
 // #define ERROR    1
@@ -1625,7 +1626,7 @@ static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
         //     #endif
         //     return -14;
         // }
-        
+
         ucode = unimap->map[idx];
         *cp = ucode;
         return 2;
