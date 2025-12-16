@@ -10,13 +10,13 @@
 #include "unimap.h"
 #include "encpre.h"
 
-static int lib_dbc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str);
+static int lib_dcs_char_seq(lib_unimap_t* unimap, int enc_id, const char* str);
 
-static int lib_dbc_code_seq(lib_unimap_t* unimap, int enc_id, int cp);
+static int lib_dcs_code_seq(lib_unimap_t* unimap, int enc_id, int cp);
 
-static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp);
+static int lib_dcs_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp);
 
-static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp);
+static int lib_dcs_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp);
 
 ////
 
@@ -36,18 +36,18 @@ static int _enc_find_idx(int* map, size_t start, size_t len, int ucode) {
 
 ////
 
-static int lib_dbc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {
+static int lib_dcs_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {
     int cp;
-    return lib_dbc_to_code(unimap, enc_id, str, &cp);
+    return lib_dcs_to_code(unimap, enc_id, str, &cp);
 }
 
-static int lib_dbc_code_seq(lib_unimap_t* unimap, int enc_id, int cp) {
+static int lib_dcs_code_seq(lib_unimap_t* unimap, int enc_id, int cp) {
     // TODO    
     char buf[] = "\0\0\0\0\0"; // buffer to exchange (max size = 4 + 1)
-    return lib_dbc_to_char(unimap, enc_id, buf, cp);
+    return lib_dcs_to_char(unimap, enc_id, buf, cp);
 }
 
-static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
+static int lib_dcs_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
 
     #ifdef DEBUG_LL
     fprintf(stderr, ">> _dbc_to_code\n");
@@ -126,7 +126,7 @@ static int lib_dbc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
 
 }
 
-static int lib_dbc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) {
+static int lib_dcs_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) {
 
     #ifdef DEBUG_LL
     fprintf(stderr, ">> dbc_to_char\n");

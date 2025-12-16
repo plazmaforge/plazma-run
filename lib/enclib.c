@@ -1450,7 +1450,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
 /**
  * Return true if:
  * - unimap is NULL
- * - unimap has dbc array
+ * - unimap has DCS array
  */
 static bool _enc_is_mbc(lib_unimap_t* unimap) {
     return !unimap ? true : unimap->dbc_start > 0;
@@ -1491,9 +1491,9 @@ static int _enc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {
         return lib_utf_char_seq(enc_id, str);
     }
 
-    // DBC
-    if (lib_enc_is_dbc(enc_id)) {
-        return lib_dbc_char_seq(unimap, enc_id, str);
+    // DCS
+    if (lib_enc_is_dcs(enc_id)) {
+        return lib_dcs_char_seq(unimap, enc_id, str);
     }
 
     // OTHER
@@ -1519,9 +1519,9 @@ static int _enc_code_seq(lib_unimap_t* unimap, int enc_id, int cp) {
         return lib_utf_code_seq(enc_id, cp);
     }
 
-    // DBC
-    if (lib_enc_is_dbc(enc_id)) {
-        return lib_dbc_code_seq(unimap, enc_id, cp);
+    // DCS
+    if (lib_enc_is_dcs(enc_id)) {
+        return lib_dcs_code_seq(unimap, enc_id, cp);
     }
 
     // OTHER
@@ -1554,9 +1554,9 @@ static int _enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* 
         return lib_utf_to_code(enc_id, str, cp);
     }
 
-    // DBC
-    if (lib_enc_is_dbc(enc_id)) {
-        return lib_dbc_to_code(unimap, enc_id, str, cp);
+    // DCS
+    if (lib_enc_is_dcs(enc_id)) {
+        return lib_dcs_to_code(unimap, enc_id, str, cp);
     }
 
     // OTHER
@@ -1592,9 +1592,9 @@ static int _enc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) {
         return lib_utf_to_char(enc_id, buf, cp);
     }
 
-    // DBC
-    if (lib_enc_is_dbc(enc_id)) {
-        return lib_dbc_to_char(unimap, enc_id, buf, cp);
+    // DCS
+    if (lib_enc_is_dcs(enc_id)) {
+        return lib_dcs_to_char(unimap, enc_id, buf, cp);
     }
 
     // OTHER
