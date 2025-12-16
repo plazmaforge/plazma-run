@@ -1002,8 +1002,8 @@ static int _init_map(lib_unimap_t* unimap) {
     unimap->map       = NULL;
     unimap->start     = 0;
     unimap->len       = 0;
-    unimap->dbc_start = 0;
-    unimap->dbc_len   = 0;
+    unimap->ext_start = 0;
+    unimap->ext_len   = 0;
     return 0;
 }
 
@@ -1041,8 +1041,8 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int enc_id) {
 
     // CP950
     if (enc_id == 950) {
-        unimap->dbc_start = 41280; // 0xA140
-        unimap->dbc_len   = 22719; // 0xA140 - 0xF9FE + 1 [63 998 - 41 280 + 1 = 22 718 + 1];
+        unimap->ext_start = 41280; // 0xA140
+        unimap->ext_len   = 22719; // 0xA140 - 0xF9FE + 1 [63 998 - 41 280 + 1 = 22 718 + 1];
         return 0;
     }
 

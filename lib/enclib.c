@@ -1453,7 +1453,7 @@ static int _enc_conv_from_utf7_ctx(lib_enc_context_t* ctx) {
  * - unimap has DCS array
  */
 static bool _enc_is_mbc(lib_unimap_t* unimap) {
-    return !unimap ? true : unimap->dbc_start > 0;
+    return !unimap ? true : unimap->ext_start > 0;
 }
 
 static int _enc_char_seq(lib_unimap_t* unimap, int enc_id, const char* str) {

@@ -50,7 +50,7 @@ static int lib_dcs_code_seq(lib_unimap_t* unimap, int enc_id, int cp) {
 static int lib_dcs_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
 
     #ifdef DEBUG_LL
-    fprintf(stderr, ">> _dbc_to_code\n");
+    fprintf(stderr, ">> _dcs_to_code\n");
     #endif
 
     if (!str) {
@@ -105,9 +105,9 @@ static int lib_dcs_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
         icode = _u16(b1, b2);
 
         // Shift index
-        idx = icode - unimap->dbc_start + unimap->start;
+        idx = icode - unimap->ext_start + unimap->start;
 
-        if (idx >= unimap->len + unimap->dbc_len) {
+        if (idx >= unimap->len + unimap->ext_len) {
             // error: NO_CHR (?)
             #ifdef ERROR
             fprintf(stderr, ">> error: NO_CHR (-14)\n");
@@ -129,7 +129,7 @@ static int lib_dcs_to_code(lib_unimap_t* unimap, int enc_id, const char* str, in
 static int lib_dcs_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) {
 
     #ifdef DEBUG_LL
-    fprintf(stderr, ">> dbc_to_char\n");
+    fprintf(stderr, ">> dcs_to_char\n");
     #endif
 
     int ocode = 0;
@@ -154,11 +154,11 @@ static int lib_dcs_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) 
         } else {
             int idx = _enc_find_idx(unimap->map, 0, unimap->len, ucode);
             if (idx < 0) {
-                idx = _enc_find_idx(unimap->map, unimap->len, unimap->dbc_len, ucode);
+                idx = _enc_find_idx(unimap->map, unimap->len, unimap->ext_len, ucode);
                 if (idx < 0) {
                     #ifdef ERROR
                     fprintf(stderr, ">> error : ocode not found\n");
-                    fprintf(stderr, ">> dbc_start : %lu, dbc_len: %lu\n", unimap->dbc_start, unimap->dbc_len);
+                    fprintf(stderr, ">> ext_start : %lu, ext_len: %lu\n", unimap->ext_start, unimap->ext_len);
                     #endif
                     ocode = NO_DAT;
                     seq   = 1;
@@ -166,7 +166,7 @@ static int lib_dcs_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) 
                     #ifdef DEBUG_LL
                     fprintf(stderr, ">> oidx  : %d\n", idx);
                     #endif
-                    ocode = idx - unimap->len + unimap->dbc_start;
+                    ocode = idx - unimap->len + unimap->ext_start;
                     seq   = 2;
                 }
             } else {
