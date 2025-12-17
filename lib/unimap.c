@@ -971,7 +971,9 @@ static int* _get_map_by_id(int enc_id) {
     }
 
     // WIN-EXT
-    if (enc_id == 950) {
+    if (enc_id == 949) {
+        return (int*) unimap_cp949;
+    } else if (enc_id == 950) {
         return (int*) unimap_cp950;
     }
 
@@ -1038,6 +1040,13 @@ int lib_unimap_get_unimap_by_id(lib_unimap_t* unimap, int enc_id) {
     
     unimap->start = 128;
     unimap->len   = 128;
+
+    // CP949
+    if (enc_id == 949) {
+        unimap->ext_start = 0x8141;
+        unimap->ext_len   = 31934;
+        return 0;
+    }
 
     // CP950
     if (enc_id == 950) {
