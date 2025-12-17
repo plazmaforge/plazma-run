@@ -330,7 +330,13 @@ int run_line(run_unimap_entry_t* entry, char* line) {
 
     _read_line(entry, line);
 
-    if (entry->config->check_code > 0) {
+    int check_code = entry->config->check_code;
+    if (check_code == 0) {
+        check_code = 0xFF + 1;
+    }
+
+    //if (entry->config->check_code > 0) {
+    if (check_code > 0) {    
 
         int cur_code = strtol(entry->icode, NULL, 16);
         if (entry->check) {
@@ -374,8 +380,11 @@ int run_line(run_unimap_entry_t* entry, char* line) {
                 fprintf(stderr, ">> SEQUENCE: ERROR\n");
             }
 
-        } else if (cur_code == entry->config->check_code) {
-            entry->check_number = entry->config->check_code;
+        //} else if (cur_code == entry->config->check_code) {
+        } else if (cur_code >= check_code) {    
+            //entry->check_number = entry->config->check_code;
+            //entry->check_number = check_code;
+            entry->check_number = cur_code;
             entry->check = true;
             entry->check_count = 1;
         }
