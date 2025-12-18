@@ -141,7 +141,8 @@ static const lib_encoding_t lib_encodings[] = {
     {LIB_ENC_KOI8R_ID,   "KOI8-R",      "KOI8-R",                              "KOI8R       KOI-8-R"},
     {LIB_ENC_KOI8U_ID,   "KOI8-U",      "KOI8-U",                              "KOI8U       KOI-8-U"},
 
-    {LIB_ENC_CP950_ID,    "CP950",      "Windows China", "950 WINDOWS-950"}
+    {LIB_ENC_CP949_ID,    "CP949",      "Windows Korean", "949 WINDOWS-949"},
+    {LIB_ENC_CP950_ID,    "CP950",      "Windows China",  "950 WINDOWS-950"}
 
 };
 
