@@ -105,6 +105,9 @@ static const lib_encoding_t lib_encodings[] = {
 
     {874,     "CP874",      "Windows Thai",                              "874  WINDOWS-874"},
 
+    {LIB_ENC_CP949_ID,    "CP949",      "Windows Korean",   "949  WINDOWS-949"},
+    {LIB_ENC_CP950_ID,    "CP950",      "Windows Chinese",  "950  WINDOWS-950"},
+
     /*
       Unicode
     */
@@ -139,10 +142,7 @@ static const lib_encoding_t lib_encodings[] = {
 /**/{1012004, "UCS-4LE-BOM", "UCS-4LE Little Endian with BOM",      "UCS4LEBOM   UCS-4-LE-BOM   UCS4-LE-BOM  UCS_4_LE_BOM"},
 
     {LIB_ENC_KOI8R_ID,   "KOI8-R",      "KOI8-R",                              "KOI8R       KOI-8-R"},
-    {LIB_ENC_KOI8U_ID,   "KOI8-U",      "KOI8-U",                              "KOI8U       KOI-8-U"},
-
-    {LIB_ENC_CP949_ID,    "CP949",      "Windows Korean", "949 WINDOWS-949"},
-    {LIB_ENC_CP950_ID,    "CP950",      "Windows China",  "950 WINDOWS-950"}
+    {LIB_ENC_KOI8U_ID,   "KOI8-U",      "KOI8-U",                              "KOI8U       KOI-8-U"}
 
 };
 
@@ -185,6 +185,8 @@ bool lib_enc_is_win(int enc_id) {
 
           /* CP874 */ /* WINDOWS-874 ?*/
           || enc_id == 874
+          || enc_id == LIB_ENC_CP949_ID
+          || enc_id == LIB_ENC_CP950_ID
           
           );
 }
@@ -260,6 +262,8 @@ int lib_enc_get_type(int enc_id) {
     return LIB_ENC_UTF_TYPE;
   } else if (lib_enc_is_ucs(enc_id)) {
     return LIB_ENC_UCS_TYPE;
+  } else if (lib_enc_is_msc(enc_id)) {
+    return LIB_ENC_MSC_TYPE;
   }
 
   return 0;
@@ -283,6 +287,8 @@ const char* lib_enc_get_type_name(int enc_id) {
     return "UTF";
   } else if (type == LIB_ENC_UCS_TYPE) {
     return "UCS";
+  } else if (type == LIB_ENC_MSC_TYPE) {
+    return "MISC";
   }
 
   return "";

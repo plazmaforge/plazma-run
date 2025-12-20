@@ -20,8 +20,8 @@
 // Macintosh Cyrillic
 // ECMA Cyrillic
 // KOI8-CS2
-// KOI8-R
-// KOI8-U
+// +KOI8-R
+// +KOI8-U
 // KOI8-UNI
 // Cork
 //

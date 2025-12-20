@@ -10,7 +10,7 @@
  Predefined encodings
 */
 
-/* ISO */
+/* ISO    */
 #define LIB_ENC_ISO_8859_1        28591
 #define LIB_ENC_ISO_8859_2        28592
 #define LIB_ENC_ISO_8859_3        28593
@@ -30,7 +30,7 @@
 #define LIB_ENC_ISO_8859_15       28605
 #define LIB_ENC_ISO_8859_16       28606
 
-/* UTF */
+/* UTF    */
 #define LIB_ENC_UTF7_ID           65000
 #define LIB_ENC_UTF7_BOM_ID       1065000 /**/
 
@@ -49,7 +49,7 @@
 #define LIB_ENC_UTF32BE_BOM_ID    12003 /**/
 #define LIB_ENC_UTF32LE_BOM_ID    12004 /**/
 
-/* UCS */
+/* UCS    */
 #define LIB_ENC_UCS2_ID           1001200 /**/
 #define LIB_ENC_UCS2BE_ID         1001201 /**/
 #define LIB_ENC_UCS2LE_ID         1001202 /**/
@@ -62,7 +62,7 @@
 #define LIB_ENC_UCS4BE_BOM_ID     1012003 /**/
 #define LIB_ENC_UCS4LE_BOM_ID     1012004 /**/
 
-/* OTHER */
+/* OTHER  */
 #define LIB_ENC_UTF1_BOM_ID       999007 /**/
 #define LIB_ENC_UTF_EBCDIC_BOM_ID 999008 /**/
 
@@ -70,15 +70,19 @@
 #define LIB_ENC_BOCU1_BOM_ID      999010 /**/
 #define LIB_ENC_GB18030_BOM_ID    999011 /**/
 
-/* KOI */
-#define LIB_ENC_KOI8R_ID           20866
-#define LIB_ENC_KOI8U_ID           21866
 
-/* CP */
+/* CP     */
+#define LIB_ENC_CP874_ID           874
+
+/* CP EXT */
 #define LIB_ENC_CP932_ID           932
 #define LIB_ENC_CP936_ID           936
 #define LIB_ENC_CP949_ID           949
 #define LIB_ENC_CP950_ID           950
+
+/* KOI    */
+#define LIB_ENC_KOI8R_ID           20866
+#define LIB_ENC_KOI8U_ID           21866
 
 
 /**
@@ -222,6 +226,12 @@ static bool lib_enc_is_dcs(int enc_id) {
        || enc_id == LIB_ENC_CP936_ID
        || enc_id == LIB_ENC_CP949_ID
        || enc_id == LIB_ENC_CP950_ID
+    );
+}
+
+static bool lib_enc_is_msc(int enc_id) {
+  return (enc_id == LIB_ENC_KOI8R_ID
+       || enc_id == LIB_ENC_KOI8U_ID
     );
 }
 

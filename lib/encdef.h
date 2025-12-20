@@ -9,6 +9,7 @@
 #define LIB_ENC_WIN_TYPE 3
 #define LIB_ENC_UTF_TYPE 10
 #define LIB_ENC_UCS_TYPE 11
+#define LIB_ENC_MSC_TYPE 12
 
 typedef struct lib_encoding_t {
     int id;                  /* 437           , 1251               */
