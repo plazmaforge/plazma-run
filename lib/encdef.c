@@ -262,7 +262,8 @@ int lib_enc_get_type(int enc_id) {
     return LIB_ENC_DOS_TYPE;
   } else if (lib_enc_is_win(enc_id)) {
     return LIB_ENC_WIN_TYPE;
-  } else if (lib_enc_is_utf(enc_id)) {
+  } else if (lib_enc_is_utf(enc_id) 
+          || lib_enc_is_utf7(enc_id)) { /* For display only */
     return LIB_ENC_UTF_TYPE;
   } else if (lib_enc_is_ucs(enc_id)) {
     return LIB_ENC_UCS_TYPE;
