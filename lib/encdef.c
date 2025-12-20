@@ -105,6 +105,8 @@ static const lib_encoding_t lib_encodings[] = {
 
     {874,     "CP874",      "Windows Thai",                              "874  WINDOWS-874"},
 
+    {LIB_ENC_CP932_ID,    "CP932",      "Windows Japanese", "932  WINDOWS-932  SHIFT-JIS SHIFT_JIS"},
+
     {LIB_ENC_CP949_ID,    "CP949",      "Windows Korean",   "949  WINDOWS-949"},
     {LIB_ENC_CP950_ID,    "CP950",      "Windows Chinese",  "950  WINDOWS-950"},
 
@@ -185,6 +187,7 @@ bool lib_enc_is_win(int enc_id) {
 
           /* CP874 */ /* WINDOWS-874 ?*/
           || enc_id == 874
+          || enc_id == LIB_ENC_CP932_ID
           || enc_id == LIB_ENC_CP949_ID
           || enc_id == LIB_ENC_CP950_ID
           
