@@ -103,13 +103,12 @@ static const lib_encoding_t lib_encodings[] = {
     {1257,    "CP1257",      "Windows Baltic",                           "1257 WINDOWS-1257 WINBALTRIM"},
     {1258,    "CP1258",      "Windows Vietnamese",                       "1258 WINDOWS-1258"},
 
-    {874,     "CP874",      "Windows Thai",                              "874  WINDOWS-874"},
+    {LIB_ENC_CP874_ID,  "CP874",      "Windows Thai",                        "874  WINDOWS-874"},
 
-    {LIB_ENC_CP932_ID,    "CP932",      "Windows Japanese",                    "932  WINDOWS-932  SHIFT-JIS SHIFT_JIS"},
-    {LIB_ENC_CP936_ID,    "CP936",      "Windows Simplified Chinese (GB2312)", "936  WINDOWS-936"},
-
-    {LIB_ENC_CP949_ID,    "CP949",      "Windows Korean",                      "949  WINDOWS-949"},
-    {LIB_ENC_CP950_ID,    "CP950",      "Windows Traditional Chinese (Big5)",  "950  WINDOWS-950"},
+    {LIB_ENC_CP932_ID,  "CP932",      "Windows Japanese",                    "932  WINDOWS-932 SHIFT-JIS SHIFT_JIS"},
+    {LIB_ENC_CP936_ID,  "CP936",      "Windows Simplified Chinese (GB2312)", "936  WINDOWS-936"},
+    {LIB_ENC_CP949_ID,  "CP949",      "Windows Korean",                      "949  WINDOWS-949"},
+    {LIB_ENC_CP950_ID,  "CP950",      "Windows Traditional Chinese (Big5)",  "950  WINDOWS-950"},
 
     /*
       Unicode
@@ -187,8 +186,9 @@ bool lib_enc_is_win(int enc_id) {
           || enc_id == 1258
 
           /* CP874 */ /* WINDOWS-874 ?*/
-          || enc_id == 874
+          || enc_id == LIB_ENC_CP874_ID
           || enc_id == LIB_ENC_CP932_ID
+          || enc_id == LIB_ENC_CP936_ID
           || enc_id == LIB_ENC_CP949_ID
           || enc_id == LIB_ENC_CP950_ID
           

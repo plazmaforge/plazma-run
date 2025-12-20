@@ -15,13 +15,11 @@
 #define LIB_ENC_ISO_8859_2        28592
 #define LIB_ENC_ISO_8859_3        28593
 #define LIB_ENC_ISO_8859_4        28594
-
 #define LIB_ENC_ISO_8859_5        28595
 #define LIB_ENC_ISO_8859_6        28596
 #define LIB_ENC_ISO_8859_7        28597
 #define LIB_ENC_ISO_8859_8        28598
 #define LIB_ENC_ISO_8859_9        28599
-
 #define LIB_ENC_ISO_8859_10       28600
 #define LIB_ENC_ISO_8859_11       28601
 
@@ -210,15 +208,6 @@ static bool lib_enc_is_ucs(int enc_id) {
 }  
 
 /**
- * Return true if the encoding id is multi bytes type 
- */
-static bool lib_enc_is_mbc(int enc_id) {
-    return ( lib_enc_is_utf(enc_id)
-          || lib_enc_is_ucs(enc_id)
-          );
-}
-
-/**
  * Return true if the encoding id is double bytes type
  */
 static bool lib_enc_is_dcs(int enc_id) {
@@ -229,6 +218,19 @@ static bool lib_enc_is_dcs(int enc_id) {
     );
 }
 
+/**
+ * Return true if the encoding id is multi bytes type 
+ */
+static bool lib_enc_is_mbc(int enc_id) {
+    return ( lib_enc_is_utf(enc_id)
+          || lib_enc_is_ucs(enc_id)
+          || lib_enc_is_dcs(enc_id)
+          );
+}
+
+/**
+ * Return true if the encoding id is misc type
+ */
 static bool lib_enc_is_msc(int enc_id) {
   return (enc_id == LIB_ENC_KOI8R_ID
        || enc_id == LIB_ENC_KOI8U_ID
