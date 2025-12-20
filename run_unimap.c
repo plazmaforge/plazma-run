@@ -365,7 +365,7 @@ int run_line(run_unimap_entry_t* entry, char* line) {
                     gap_entry.number++;
                     entry->number++;
                     entry->check_count++;
-                    new_code++;                    
+                    new_code++;
                 }
 
                 strcpy(entry->prev_name, gap_entry.name);
@@ -457,7 +457,7 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
         printf("};");
         _print_line_separator();
         if (entry.check_count > 0) {
-            printf("/* check_count = %d*/", entry.check_count);
+            printf("/* check_count = %d */", entry.check_count);
 
         }
         _print_line_separator();
@@ -477,7 +477,7 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
         printf("};");
         _print_line_separator();
         if (entry.check_count > 0) {
-            printf("/* check_count = %d*/", entry.check_count);
+            printf("/* check_count = %d */", entry.check_count);
         }
         _print_line_separator();
     }
