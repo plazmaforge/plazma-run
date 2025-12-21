@@ -45,24 +45,24 @@ static const lib_encoding_t lib_encodings[] = {
       SE European: South or Eastern European
     */
 
-    {28591,   "ISO-8859-1", "Latin-1//Western European",        "ISO-IR-100 ISO8859-1   ISO_8859-1  ISO_8859-1:1987  L1  LATIN1  LATIN-1  CSISOLATIN1  CSISO88591  ISO_8859-1:1998 CP819 IBM819"},
-    {28592,   "ISO-8859-2", "Latin-2/Central-Eastern European", "ISO-IR-101 ISO8859-2   ISO_8859-2  ISO_8859-2:1987  L2  LATIN2  LATIN-2  CSISOLATIN2  CSISO88592  ISO_8859-2:1999"},
-    {28593,   "ISO-8859-3", "Latin-3/South European",           "ISO-IR-109 ISO8859-3   ISO_8859-3  ISO_8859-3:1988  L3  LATIN3  LATIN-3  CSISOLATIN3  CSISO88593  ISO_8859-3:1999"},
-    {28594,   "ISO-8859-4", "Latin-4/North European",           "ISO-IR-110 ISO8859-4   ISO_8859-4  ISO_8859-4:1988  L4  LATIN4  LATIN-4  CSISOLATIN4  CSISO88594  ISO_8859-4:1998"},
+    {LIB_ENC_ISO_8859_1,     "ISO-8859-1", "Latin-1//Western European",        "ISO-IR-100 ISO8859-1   ISO_8859-1  ISO_8859-1:1987  L1  LATIN1  LATIN-1  CSISOLATIN1  CSISO88591  ISO_8859-1:1998 CP819 IBM819"},
+    {LIB_ENC_ISO_8859_2,     "ISO-8859-2", "Latin-2/Central-Eastern European", "ISO-IR-101 ISO8859-2   ISO_8859-2  ISO_8859-2:1987  L2  LATIN2  LATIN-2  CSISOLATIN2  CSISO88592  ISO_8859-2:1999"},
+    {LIB_ENC_ISO_8859_3,     "ISO-8859-3", "Latin-3/South European",           "ISO-IR-109 ISO8859-3   ISO_8859-3  ISO_8859-3:1988  L3  LATIN3  LATIN-3  CSISOLATIN3  CSISO88593  ISO_8859-3:1999"},
+    {LIB_ENC_ISO_8859_4,     "ISO-8859-4", "Latin-4/North European",           "ISO-IR-110 ISO8859-4   ISO_8859-4  ISO_8859-4:1988  L4  LATIN4  LATIN-4  CSISOLATIN4  CSISO88594  ISO_8859-4:1998"},
 
-    {28595,   "ISO-8859-5", "Latin/Cyrillic",                   "ISO-IR-144 ISO8859-5   ISO_8859-5  ISO_8859-5:1988  CYRILLIC    CSISOLATINCYRILLIC    CSISO88595  ISO_8859-5:1999"},
-    {28596,   "ISO-8859-6", "Latin/Arabic",                     "ISO-IR-127 ISO8859-6   ISO_8859-6  ISO_8859-6:1987  ARABIC      CSISOLATINARABIC      CSISO88596  ISO_8859-6:1999 ECMA-114 ASMO-708"}, 
-    {28597,   "ISO-8859-7", "Latin/Greek",                      "ISO-IR-126 ISO8859-7   ISO_8859-7  ISO_8859-7:1987  GREEK       CSISOLATINGREEK       CSISO88597  ISO_8859-7:2003 ECMA-118 ELOT_928 GREEK8"},
-    {28598,   "ISO-8859-8", "Latin/Hebrew",                     "ISO-IR-138 ISO8859-8   ISO_8859-8  ISO_8859-8:1988  HEBREW      CSISOLATINHEBREW      CSISO88598  ISO_8859-8:1999"},
-    {28599,   "ISO-8859-9", "Latin-5/Turkish",                  "ISO-IR-148 ISO8859-9   ISO_8859-9  ISO_8859-9:1989  L5  LATIN5  LATIN-5  CSISOLATIN5  CSISO88599  ISO_8859-9:1999"},
+    {LIB_ENC_ISO_8859_5,     "ISO-8859-5", "Latin/Cyrillic",                   "ISO-IR-144 ISO8859-5   ISO_8859-5  ISO_8859-5:1988  CYRILLIC    CSISOLATINCYRILLIC    CSISO88595  ISO_8859-5:1999"},
+    {LIB_ENC_ISO_8859_6,     "ISO-8859-6", "Latin/Arabic",                     "ISO-IR-127 ISO8859-6   ISO_8859-6  ISO_8859-6:1987  ARABIC      CSISOLATINARABIC      CSISO88596  ISO_8859-6:1999 ECMA-114 ASMO-708"}, 
+    {LIB_ENC_ISO_8859_7,     "ISO-8859-7", "Latin/Greek",                      "ISO-IR-126 ISO8859-7   ISO_8859-7  ISO_8859-7:1987  GREEK       CSISOLATINGREEK       CSISO88597  ISO_8859-7:2003 ECMA-118 ELOT_928 GREEK8"},
+    {LIB_ENC_ISO_8859_8,     "ISO-8859-8", "Latin/Hebrew",                     "ISO-IR-138 ISO8859-8   ISO_8859-8  ISO_8859-8:1988  HEBREW      CSISOLATINHEBREW      CSISO88598  ISO_8859-8:1999"},
+    {LIB_ENC_ISO_8859_9,     "ISO-8859-9", "Latin-5/Turkish",                  "ISO-IR-148 ISO8859-9   ISO_8859-9  ISO_8859-9:1989  L5  LATIN5  LATIN-5  CSISOLATIN5  CSISO88599  ISO_8859-9:1999"},
 
-    {28600,   "ISO-8859-10", "Latin-6/Nordic",                  "ISO-IR-157 ISO8859-10  ISO_8859-10 ISO_8859-10:1992 L6  LATIN6  LATIN-6  CSISOLATIN6  CSISO885910 ISO_8859-10:1998"},
-    {28601,   "ISO-8859-11", "Latin/Thai",                      "           ISO8859-11  ISO_8859-11 ISO_8859-11:2001                                   CSISO885911"},
+    {LIB_ENC_ISO_8859_10,    "ISO-8859-10", "Latin-6/Nordic",                  "ISO-IR-157 ISO8859-10  ISO_8859-10 ISO_8859-10:1992 L6  LATIN6  LATIN-6  CSISOLATIN6  CSISO885910 ISO_8859-10:1998"},
+    {LIB_ENC_ISO_8859_11,    "ISO-8859-11", "Latin/Thai",                      "           ISO8859-11  ISO_8859-11 ISO_8859-11:2001                                   CSISO885911"},
 
-    {28603,   "ISO-8859-13", "Latin-7/Baltic Rim",              "ISO-IR-179 ISO8859-13  ISO_8859-13 ISO_8859-13:1998 L7  LATIN7  LATIN-7  CSISOLATIN7  CSISO885913"}, // WINDOWS-1257
-    {28604,   "ISO-8859-14", "Latin-8/Celtic",                  "ISO-IR-199 ISO8859-14  ISO_8859-14 ISO_8859-14:1998 L8  LATIN8  LATIN-8  CSISOLATIN8  CSISO885914 ISO-CELTIC"},
-    {28605,   "ISO-8859-15", "Latin-9/Western European",        "ISO-IR-203 ISO8859-15  ISO_8859-15 ISO_8859-15:1999 L9  LATIN9  LATIN-9  CSISOLATIN9  CSISO885915 LATIN0 LATIN-0"},
-    {28606,   "ISO-8859-16", "Latin-10/South-Eastern European", "ISO-IR-226 ISO8859-16  ISO_8859-16 ISO_8859-16:2001 L10 LATIN10 LATIN-10 CSISOLATIN10 CSISO885916"},
+    {LIB_ENC_ISO_8859_13,    "ISO-8859-13", "Latin-7/Baltic Rim",              "ISO-IR-179 ISO8859-13  ISO_8859-13 ISO_8859-13:1998 L7  LATIN7  LATIN-7  CSISOLATIN7  CSISO885913"}, // WINDOWS-1257
+    {LIB_ENC_ISO_8859_14,    "ISO-8859-14", "Latin-8/Celtic",                  "ISO-IR-199 ISO8859-14  ISO_8859-14 ISO_8859-14:1998 L8  LATIN8  LATIN-8  CSISOLATIN8  CSISO885914 ISO-CELTIC"},
+    {LIB_ENC_ISO_8859_15,    "ISO-8859-15", "Latin-9/Western European",        "ISO-IR-203 ISO8859-15  ISO_8859-15 ISO_8859-15:1999 L9  LATIN9  LATIN-9  CSISOLATIN9  CSISO885915 LATIN0 LATIN-0"},
+    {LIB_ENC_ISO_8859_16,    "ISO-8859-16", "Latin-10/South-Eastern European", "ISO-IR-226 ISO8859-16  ISO_8859-16 ISO_8859-16:2001 L10 LATIN10 LATIN-10 CSISOLATIN10 CSISO885916"},
 
 
     /*
@@ -73,127 +73,80 @@ static const lib_encoding_t lib_encodings[] = {
       >> CP874 WINDOWS-874
     */
 
-    {437,     "CP437",       "DOS Latin US",                             "437  IBM437 CSPC8CODEPAGE437"},
-    {737,     "CP737",       "DOS Greek 1",                              "737  IBM737"},
-    {775,     "CP775",       "DOS Baltic Rim",                           "775  IBM775 CSPC775BALTIC"},
-    {850,     "CP850",       "DOS Latin 1",                              "850  IBM850 CSPC850MULTILINGUAL"},
-    {852,     "CP852",       "DOS Latin 2",                              "852  IBM852 CSPCP852"},
-    {855,     "CP855",       "DOS Cyrillic",                             "855  IBM855 CSIBM855"},
-    {857,     "CP857",       "DOS Turkish",                              "857  IBM857 CSIBM857"},
-    {860,     "CP860",       "DOS Portuguese",                           "860  IBM860 CSIBM860"},
-    {861,     "CP861",       "DOS Icelandic",                            "861  IBM861 CSIBM861 CP-IS"},
-    {862,     "CP862",       "DOS Hebrew",                               "862  IBM862 CSPC862LATINHEBREW"},
-    {863,     "CP863",       "DOS French Canada",                        "863  IBM863 CSIBM863"},
-    {864,     "CP864",       "DOS Arabic",                               "864  IBM864 CSIBM864"},
-    {865,     "CP865",       "DOS Nordic",                               "865  IBM865 CSIBM865"},
-    {866,     "CP866",       "DOS Cyrillic",                             "866  IBM866 CSIBM866"},
-    {869,     "CP869",       "DOS Greek 2",                              "869  IBM869 CSIBM869 CP-GR"},
+    {LIB_ENC_CP437_ID,       "CP437",       "DOS Latin US",                             "437  IBM437 CSPC8CODEPAGE437"},
+    {LIB_ENC_CP737_ID,       "CP737",       "DOS Greek 1",                              "737  IBM737"},
+    {LIB_ENC_CP775_ID,       "CP775",       "DOS Baltic Rim",                           "775  IBM775 CSPC775BALTIC"},
+    {LIB_ENC_CP850_ID,       "CP850",       "DOS Latin 1",                              "850  IBM850 CSPC850MULTILINGUAL"},
+    {LIB_ENC_CP852_ID,       "CP852",       "DOS Latin 2",                              "852  IBM852 CSPCP852"},
+    {LIB_ENC_CP855_ID,       "CP855",       "DOS Cyrillic",                             "855  IBM855 CSIBM855"},
+    {LIB_ENC_CP857_ID,       "CP857",       "DOS Turkish",                              "857  IBM857 CSIBM857"},
+    {LIB_ENC_CP860_ID,       "CP860",       "DOS Portuguese",                           "860  IBM860 CSIBM860"},
+    {LIB_ENC_CP861_ID,       "CP861",       "DOS Icelandic",                            "861  IBM861 CSIBM861 CP-IS"},
+    {LIB_ENC_CP862_ID,       "CP862",       "DOS Hebrew",                               "862  IBM862 CSPC862LATINHEBREW"},
+    {LIB_ENC_CP863_ID,       "CP863",       "DOS French Canada",                        "863  IBM863 CSIBM863"},
+    {LIB_ENC_CP864_ID,       "CP864",       "DOS Arabic",                               "864  IBM864 CSIBM864"},
+    {LIB_ENC_CP865_ID,       "CP865",       "DOS Nordic",                               "865  IBM865 CSIBM865"},
+    {LIB_ENC_CP866_ID,       "CP866",       "DOS Cyrillic",                             "866  IBM866 CSIBM866"},
+    {LIB_ENC_CP869_ID,       "CP869",       "DOS Greek 2",                              "869  IBM869 CSIBM869 CP-GR"},
 
     /*
       WINDOWS
     */
 
-    {1250,    "CP1250",      "Windows Latin 2/Central-Eastern European", "1250 WINDOWS-1250 MS-EE"},
-    {1251,    "CP1251",      "Windows Cyrillic",                         "1251 WINDOWS-1251 MS-CYRL"},
-    {1252,    "CP1252",      "Windows Latin 1/Western European",         "1252 WINDOWS-1252 MS-ANSI"},
-    {1253,    "CP1253",      "Windows Greek",                            "1253 WINDOWS-1253 MS-GREEK"},
-    {1254,    "CP1254",      "Windows Turkish",                          "1254 WINDOWS-1254 MS-TURK"},
-    {1255,    "CP1255",      "Windows Hebrew",                           "1255 WINDOWS-1255 MS-HEBR"},
-    {1256,    "CP1256",      "Windows Arabic",                           "1256 WINDOWS-1256 MS-ARAB"},
-    {1257,    "CP1257",      "Windows Baltic",                           "1257 WINDOWS-1257 WINBALTRIM"},
-    {1258,    "CP1258",      "Windows Vietnamese",                       "1258 WINDOWS-1258"},
+    {LIB_ENC_CP1250_ID,      "CP1250",      "Windows Latin 2/Central-Eastern European", "1250 WINDOWS-1250 MS-EE"},
+    {LIB_ENC_CP1251_ID,      "CP1251",      "Windows Cyrillic",                         "1251 WINDOWS-1251 MS-CYRL"},
+    {LIB_ENC_CP1252_ID,      "CP1252",      "Windows Latin 1/Western European",         "1252 WINDOWS-1252 MS-ANSI"},
+    {LIB_ENC_CP1253_ID,      "CP1253",      "Windows Greek",                            "1253 WINDOWS-1253 MS-GREEK"},
+    {LIB_ENC_CP1254_ID,      "CP1254",      "Windows Turkish",                          "1254 WINDOWS-1254 MS-TURK"},
+    {LIB_ENC_CP1255_ID,      "CP1255",      "Windows Hebrew",                           "1255 WINDOWS-1255 MS-HEBR"},
+    {LIB_ENC_CP1256_ID,      "CP1256",      "Windows Arabic",                           "1256 WINDOWS-1256 MS-ARAB"},
+    {LIB_ENC_CP1257_ID,      "CP1257",      "Windows Baltic",                           "1257 WINDOWS-1257 WINBALTRIM"},
+    {LIB_ENC_CP1258_ID,      "CP1258",      "Windows Vietnamese",                       "1258 WINDOWS-1258"},
 
-    {LIB_ENC_CP874_ID,  "CP874",      "Windows Thai",                        "874  WINDOWS-874"},
+    {LIB_ENC_CP874_ID,       "CP874",      "Windows Thai",                        "874  WINDOWS-874"},
 
-    {LIB_ENC_CP932_ID,  "CP932",      "Windows Japanese",                    "932  WINDOWS-932 SHIFT-JIS SHIFT_JIS"},
-    {LIB_ENC_CP936_ID,  "CP936",      "Windows Simplified Chinese (GB2312)", "936  WINDOWS-936"},
-    {LIB_ENC_CP949_ID,  "CP949",      "Windows Korean",                      "949  WINDOWS-949"},
-    {LIB_ENC_CP950_ID,  "CP950",      "Windows Traditional Chinese (Big5)",  "950  WINDOWS-950"},
+    {LIB_ENC_CP932_ID,       "CP932",      "Windows Japanese",                    "932  WINDOWS-932 SHIFT-JIS SHIFT_JIS"},
+    {LIB_ENC_CP936_ID,       "CP936",      "Windows Simplified Chinese (GB2312)", "936  WINDOWS-936"},
+    {LIB_ENC_CP949_ID,       "CP949",      "Windows Korean",                      "949  WINDOWS-949"},
+    {LIB_ENC_CP950_ID,       "CP950",      "Windows Traditional Chinese (Big5)",  "950  WINDOWS-950"},
 
     /*
       Unicode
     */
 
-    {65000,   "UTF-7",       "UTF-7",                               "UTF7        CSUNICODE11UTF7 UNICODE-1-1-UTF-7"},
-/**/{1065000, "UTF-7-BOM",   "UTF-7 with BOM",                      "UTF7BOM     UTF7-BOM"},
-    {65001,   "UTF-8",       "UTF-8",                               "UTF8"},
-/**/{1065001, "UTF-8-BOM",   "UTF-8 with BOM",                      "UTF8BOM     UTF8-BOM"},
+    {LIB_ENC_UTF7_ID,        "UTF-7",       "UTF-7",                               "UTF7        CSUNICODE11UTF7 UNICODE-1-1-UTF-7"},
+/**/{LIB_ENC_UTF7_BOM_ID,    "UTF-7-BOM",   "UTF-7 with BOM",                      "UTF7BOM     UTF7-BOM"},
+    {LIB_ENC_UTF8_ID,        "UTF-8",       "UTF-8",                               "UTF8"},
+/**/{LIB_ENC_UTF8_BOM_ID,    "UTF-8-BOM",   "UTF-8 with BOM",                      "UTF8BOM     UTF8-BOM"},
 
-    {1200,    "UTF-16",      "UTF-16 Big Endian with optional BOM", "UTF16       UTF_16"},
-    {1201,    "UTF-16BE",    "UTF-16 Big Endian",                   "UTF16BE     UTF-16-BE      UTF16-BE     UTF_16_BE"},
-/**/{1202,    "UTF-16LE",    "UTF-16 Little Endian",                "UTF16LE     UTF-16-LE      UTF16-LE     UTF_16_LE"},                 /* codepage = 1202  */
-/**/{1203,    "UTF-16BE-BOM","UTF-16 Big Endian with BOM",          "UTF16BEBOM  UTF-16-BE-BOM  UTF16-BE-BOM UTF_16_BE_BOM UTF16BE-BOM"}, /* codepage = 1203  */
-/**/{1204,    "UTF-16LE-BOM","UTF-16 Little Endian with BOM",       "UTF16LEBOM  UTF-16-LE-BOM  UTF16-LE-BOM UTF_16_LE_BOM UTF16LE-BOM"}, /* codepage = 1204  */
+    {LIB_ENC_UTF16_ID,       "UTF-16",      "UTF-16 Big Endian with optional BOM", "UTF16       UTF_16"},
+    {LIB_ENC_UTF16BE_ID,     "UTF-16BE",    "UTF-16 Big Endian",                   "UTF16BE     UTF-16-BE      UTF16-BE     UTF_16_BE"},
+/**/{LIB_ENC_UTF16LE_ID,     "UTF-16LE",    "UTF-16 Little Endian",                "UTF16LE     UTF-16-LE      UTF16-LE     UTF_16_LE"},                 /* codepage = 1202  */
+/**/{LIB_ENC_UTF16BE_BOM_ID, "UTF-16BE-BOM","UTF-16 Big Endian with BOM",          "UTF16BEBOM  UTF-16-BE-BOM  UTF16-BE-BOM UTF_16_BE_BOM UTF16BE-BOM"}, /* codepage = 1203  */
+/**/{LIB_ENC_UTF16LE_BOM_ID, "UTF-16LE-BOM","UTF-16 Little Endian with BOM",       "UTF16LEBOM  UTF-16-LE-BOM  UTF16-LE-BOM UTF_16_LE_BOM UTF16LE-BOM"}, /* codepage = 1204  */
 
-    {12000,   "UTF-32",      "UTF-32 Big Endian with optional BOM", "UTF32       UTF_32"},
-    {12001,   "UTF-32BE",    "UTF-32 Big Endian",                   "UTF32BE     UTF-32-BE      UTF32-BE     UTF_32_BE"},
-/**/{12002,   "UTF-32LE",    "UTF-32 Little Endian",                "UTF32LE     UTF-32-LE      UTF32-LE     UTF_32_LE"},                 /* codepage = 12002 */
-/**/{12003,   "UTF-32BE-BOM","UTF-32 Big Endian with BOM",          "UTF32BEBOM  UTF-32-BE-BOM  UTF32-BE-BOM UTF_32_BE_BOM UTF32BE-BOM"}, /* codepage = 12003 */
-/**/{12004,   "UTF-32LE-BOM","UTF-32 Little Endian with BOM",       "UTF32LEBOM  UTF-32-LE-BOM  UTF32-LE-BOM UTF_32_LE_BOM UTF32LE-BOM"}, /* codepage = 12004 */
+    {LIB_ENC_UTF32_ID,       "UTF-32",      "UTF-32 Big Endian with optional BOM", "UTF32       UTF_32"},
+    {LIB_ENC_UTF32BE_ID,     "UTF-32BE",    "UTF-32 Big Endian",                   "UTF32BE     UTF-32-BE      UTF32-BE     UTF_32_BE"},
+/**/{LIB_ENC_UTF32LE_ID,     "UTF-32LE",    "UTF-32 Little Endian",                "UTF32LE     UTF-32-LE      UTF32-LE     UTF_32_LE"},                 /* codepage = 12002 */
+/**/{LIB_ENC_UTF32BE_BOM_ID, "UTF-32BE-BOM","UTF-32 Big Endian with BOM",          "UTF32BEBOM  UTF-32-BE-BOM  UTF32-BE-BOM UTF_32_BE_BOM UTF32BE-BOM"}, /* codepage = 12003 */
+/**/{LIB_ENC_UTF32LE_BOM_ID, "UTF-32LE-BOM","UTF-32 Little Endian with BOM",       "UTF32LEBOM  UTF-32-LE-BOM  UTF32-LE-BOM UTF_32_LE_BOM UTF32LE-BOM"}, /* codepage = 12004 */
 
-/**/{1001200, "UCS-2",       "UCS-2 Big Endian with optional BOM",  "UCS2        UCS_2          CSUNICODE    ISO-10646-UCS-2"},
-/**/{1001201, "UCS-2BE",     "UCS-2BE Big Endian",                  "UCS2BE      UCS-2-BE       UCS2-BE      UCS_2_BE      CSUNICODE11    UNICODEBIG UNICODE-1-1"},
-/**/{1001202, "UCS-2LE",     "UCS-2LE Little Endian",               "UCS2LE      UCS-2-LE       UCS2-LE      UCS_2_LE      UNICODELITTLE"},
-/**/{1001203, "UCS-2BE-BOM", "UCS-2BE Big Endian with BOM",         "UCS2BEBOM   UCS-2-BE-BOM   UCS2-BE-BOM  UCS_2_BE_BOM"},
-/**/{1001204, "UCS-2LE-BOM", "UCS-2LE Little Endian with BOM",      "UCS2LEBOM   UCS-2-LE-BOM   UCS2-LE-BOM  UCS_2_LE_BOM"},
+/**/{LIB_ENC_UCS2_ID,        "UCS-2",       "UCS-2 Big Endian with optional BOM",  "UCS2        UCS_2          CSUNICODE    ISO-10646-UCS-2"},
+/**/{LIB_ENC_UCS2BE_ID,      "UCS-2BE",     "UCS-2BE Big Endian",                  "UCS2BE      UCS-2-BE       UCS2-BE      UCS_2_BE      CSUNICODE11    UNICODEBIG UNICODE-1-1"},
+/**/{LIB_ENC_UCS2LE_ID,      "UCS-2LE",     "UCS-2LE Little Endian",               "UCS2LE      UCS-2-LE       UCS2-LE      UCS_2_LE      UNICODELITTLE"},
+/**/{LIB_ENC_UCS2BE_BOM_ID,  "UCS-2BE-BOM", "UCS-2BE Big Endian with BOM",         "UCS2BEBOM   UCS-2-BE-BOM   UCS2-BE-BOM  UCS_2_BE_BOM"},
+/**/{LIB_ENC_UCS2LE_BOM_ID,  "UCS-2LE-BOM", "UCS-2LE Little Endian with BOM",      "UCS2LEBOM   UCS-2-LE-BOM   UCS2-LE-BOM  UCS_2_LE_BOM"},
 
-/**/{1012000, "UCS-4",       "UCS-4 Big Endian with optional BOM",  "UCS4        UCS_4          CSUCS4       ISO-10646-UCS-4"},
-/**/{1012001, "UCS-4BE",     "UCS-4BE Big Endian",                  "UCS4BE      UCS-4-BE       UCS4-BE      UCS_4_BE"},
-/**/{1012002, "UCS-4LE",     "UCS-4LE Little Endian",               "UCS4LE      UCS-4-LE       UCS4-LE      UCS_4_LE"},
-/**/{1012003, "UCS-4BE-BOM", "UCS-4BE Big Endian with BOM",         "UCS4BEBOM   UCS-4-BE-BOM   UCS4-BE-BOM  UCS_4_BE_BOM"},
-/**/{1012004, "UCS-4LE-BOM", "UCS-4LE Little Endian with BOM",      "UCS4LEBOM   UCS-4-LE-BOM   UCS4-LE-BOM  UCS_4_LE_BOM"},
+/**/{LIB_ENC_UCS4_ID,        "UCS-4",       "UCS-4 Big Endian with optional BOM",  "UCS4        UCS_4          CSUCS4       ISO-10646-UCS-4"},
+/**/{LIB_ENC_UCS4BE_ID,      "UCS-4BE",     "UCS-4BE Big Endian",                  "UCS4BE      UCS-4-BE       UCS4-BE      UCS_4_BE"},
+/**/{LIB_ENC_UCS4LE_ID,      "UCS-4LE",     "UCS-4LE Little Endian",               "UCS4LE      UCS-4-LE       UCS4-LE      UCS_4_LE"},
+/**/{LIB_ENC_UCS4BE_BOM_ID,  "UCS-4BE-BOM", "UCS-4BE Big Endian with BOM",         "UCS4BEBOM   UCS-4-BE-BOM   UCS4-BE-BOM  UCS_4_BE_BOM"},
+/**/{LIB_ENC_UCS4LE_BOM_ID,  "UCS-4LE-BOM", "UCS-4LE Little Endian with BOM",      "UCS4LEBOM   UCS-4-LE-BOM   UCS4-LE-BOM  UCS_4_LE_BOM"},
 
-    {LIB_ENC_KOI8R_ID,   "KOI8-R",      "KOI8-R",                              "KOI8R       KOI-8-R"},
-    {LIB_ENC_KOI8U_ID,   "KOI8-U",      "KOI8-U",                              "KOI8U       KOI-8-U"}
+    {LIB_ENC_KOI8R_ID,       "KOI8-R",      "KOI8-R",                              "KOI8R       KOI-8-R"},
+    {LIB_ENC_KOI8U_ID,       "KOI8-U",      "KOI8-U",                              "KOI8U       KOI-8-U"}
 
 };
-
-/**
- * Return true if the encoding id is DOS type 
- */
-bool lib_enc_is_dos(int enc_id) {
-  return (   enc_id == 437
-          || enc_id == 737
-          || enc_id == 775
-          || enc_id == 850
-          || enc_id == 852
-          || enc_id == 855
-          || enc_id == 857
-
-          || enc_id == 860
-          || enc_id == 861
-          || enc_id == 862
-          || enc_id == 863
-          || enc_id == 864
-          || enc_id == 865
-          || enc_id == 866
-
-          || enc_id == 869);
-}
-
-/**
- * Return true if the encoding id is WIN type 
- */
-bool lib_enc_is_win(int enc_id) {
-  return (   enc_id == 1250
-          || enc_id == 1251
-          || enc_id == 1252
-          || enc_id == 1253
-          || enc_id == 1254
-          || enc_id == 1255
-          || enc_id == 1256
-          || enc_id == 1257
-          || enc_id == 1258
-
-          /* CP874 */ /* WINDOWS-874 ?*/
-          || enc_id == LIB_ENC_CP874_ID
-          || enc_id == LIB_ENC_CP932_ID
-          || enc_id == LIB_ENC_CP936_ID
-          || enc_id == LIB_ENC_CP949_ID
-          || enc_id == LIB_ENC_CP950_ID
-          
-          );
-}
 
 /**
  * Convert DOS encoding id to WIN encoding id

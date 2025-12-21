@@ -10,7 +10,7 @@
  Predefined encodings
 */
 
-/* ISO    */
+/* ISO     */
 #define LIB_ENC_ISO_8859_1        28591
 #define LIB_ENC_ISO_8859_2        28592
 #define LIB_ENC_ISO_8859_3        28593
@@ -28,7 +28,43 @@
 #define LIB_ENC_ISO_8859_15       28605
 #define LIB_ENC_ISO_8859_16       28606
 
-/* UTF    */
+/* DOS     */
+#define LIB_ENC_CP437_ID          437
+#define LIB_ENC_CP737_ID          737
+#define LIB_ENC_CP775_ID          775
+#define LIB_ENC_CP850_ID          850
+#define LIB_ENC_CP852_ID          852
+#define LIB_ENC_CP855_ID          855
+#define LIB_ENC_CP857_ID          857
+#define LIB_ENC_CP860_ID          860
+#define LIB_ENC_CP861_ID          861
+#define LIB_ENC_CP862_ID          862
+#define LIB_ENC_CP863_ID          863
+#define LIB_ENC_CP864_ID          864
+#define LIB_ENC_CP865_ID          865
+#define LIB_ENC_CP866_ID          866
+#define LIB_ENC_CP869_ID          869
+
+/* WIN     */
+#define LIB_ENC_CP1250_ID         1250
+#define LIB_ENC_CP1251_ID         1251
+#define LIB_ENC_CP1252_ID         1252
+#define LIB_ENC_CP1253_ID         1253
+#define LIB_ENC_CP1254_ID         1254
+#define LIB_ENC_CP1255_ID         1255
+#define LIB_ENC_CP1256_ID         1256
+#define LIB_ENC_CP1257_ID         1257
+#define LIB_ENC_CP1258_ID         1258
+
+#define LIB_ENC_CP874_ID          874
+
+/* WIN EXT  */
+#define LIB_ENC_CP932_ID          932
+#define LIB_ENC_CP936_ID          936
+#define LIB_ENC_CP949_ID          949
+#define LIB_ENC_CP950_ID          950
+
+/* UTF     */
 #define LIB_ENC_UTF7_ID           65000
 #define LIB_ENC_UTF7_BOM_ID       1065000 /**/
 
@@ -47,7 +83,7 @@
 #define LIB_ENC_UTF32BE_BOM_ID    12003 /**/
 #define LIB_ENC_UTF32LE_BOM_ID    12004 /**/
 
-/* UCS    */
+/* UCS     */
 #define LIB_ENC_UCS2_ID           1001200 /**/
 #define LIB_ENC_UCS2BE_ID         1001201 /**/
 #define LIB_ENC_UCS2LE_ID         1001202 /**/
@@ -60,7 +96,7 @@
 #define LIB_ENC_UCS4BE_BOM_ID     1012003 /**/
 #define LIB_ENC_UCS4LE_BOM_ID     1012004 /**/
 
-/* OTHER  */
+/* OTHER   */
 #define LIB_ENC_UTF1_BOM_ID       999007 /**/
 #define LIB_ENC_UTF_EBCDIC_BOM_ID 999008 /**/
 
@@ -68,19 +104,9 @@
 #define LIB_ENC_BOCU1_BOM_ID      999010 /**/
 #define LIB_ENC_GB18030_BOM_ID    999011 /**/
 
-
-/* CP     */
-#define LIB_ENC_CP874_ID           874
-
-/* CP EXT */
-#define LIB_ENC_CP932_ID           932
-#define LIB_ENC_CP936_ID           936
-#define LIB_ENC_CP949_ID           949
-#define LIB_ENC_CP950_ID           950
-
 /* KOI    */
-#define LIB_ENC_KOI8R_ID           20866
-#define LIB_ENC_KOI8U_ID           21866
+#define LIB_ENC_KOI8R_ID          20866
+#define LIB_ENC_KOI8U_ID          21866
 
 
 /**
@@ -103,6 +129,53 @@ static bool lib_enc_is_iso(int enc_id) {
           || enc_id == LIB_ENC_ISO_8859_14
           || enc_id == LIB_ENC_ISO_8859_15
           || enc_id == LIB_ENC_ISO_8859_16);
+}
+
+/**
+ * Return true if the encoding id is DOS type 
+ */
+static bool lib_enc_is_dos(int enc_id) {
+  return (   enc_id == LIB_ENC_CP437_ID
+          || enc_id == LIB_ENC_CP737_ID
+          || enc_id == LIB_ENC_CP775_ID
+          || enc_id == LIB_ENC_CP850_ID
+          || enc_id == LIB_ENC_CP852_ID
+          || enc_id == LIB_ENC_CP855_ID
+          || enc_id == LIB_ENC_CP857_ID
+
+          || enc_id == LIB_ENC_CP860_ID
+          || enc_id == LIB_ENC_CP861_ID
+          || enc_id == LIB_ENC_CP862_ID
+          || enc_id == LIB_ENC_CP863_ID
+          || enc_id == LIB_ENC_CP864_ID
+          || enc_id == LIB_ENC_CP865_ID
+          || enc_id == LIB_ENC_CP866_ID
+
+          || enc_id == LIB_ENC_CP869_ID);
+}
+
+/**
+ * Return true if the encoding id is WIN type 
+ */
+static bool lib_enc_is_win(int enc_id) {
+  return (   enc_id == LIB_ENC_CP1250_ID
+          || enc_id == LIB_ENC_CP1251_ID
+          || enc_id == LIB_ENC_CP1252_ID
+          || enc_id == LIB_ENC_CP1253_ID
+          || enc_id == LIB_ENC_CP1254_ID
+          || enc_id == LIB_ENC_CP1255_ID
+          || enc_id == LIB_ENC_CP1256_ID
+          || enc_id == LIB_ENC_CP1257_ID
+          || enc_id == LIB_ENC_CP1258_ID
+
+          /* CP874 */ /* WINDOWS-874 ?*/
+          || enc_id == LIB_ENC_CP874_ID
+          || enc_id == LIB_ENC_CP932_ID
+          || enc_id == LIB_ENC_CP936_ID
+          || enc_id == LIB_ENC_CP949_ID
+          || enc_id == LIB_ENC_CP950_ID
+          
+          );
 }
 
 /**
