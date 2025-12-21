@@ -126,7 +126,6 @@ void usage() {
 int main(int argc, char* argv[]) {
 
     prog_name = lib_cli_prog_name(argv);
-
     if (argc < 2) {
         usage();
         return 0;
@@ -160,30 +159,44 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    error = 0;
     if (flag_string) {
         //BY_STRING
         //fprintf(stderr, ">> BY_STRING: optind=%d\n", optind);
-
-        if (argc - optind >= 1) {
-            fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
-            usage();
-            return 1;
+ 
+        if (!data) {
+            fprintf(stderr, "%s: Input string is required\n", prog_name);
+            error = 1;
+        } else {
+            size = strlen(data);
+            if (size == 0) {
+                fprintf(stderr, "%s: Input string is empty\n", prog_name);
+                error = 1;
+            }
         }
-
-        size = strlen(data);
-        return run_hex2dat_data(data, size);
-
     } else {
         //BY_FILE
         //fprintf(stderr, ">> BY_FILE: optind=%d\n", optind);
 
-        //if (argc - optind < 1) {
-        //    fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
-        //    usage(config);
-        //    return 1;
-        //}
-
-        const char* file_name = argv[1]; // argv[optind];
-        return run_hex2dat_file(file_name);
+        if (optind >= argc) {
+            fprintf(stderr, "%s: File name is required\n", prog_name);
+            error = 1;
+        } else {
+            file_name = argv[optind];
+        }
     }
+
+    if (error) {
+        usage();
+        return 1;
+    }
+
+    error = 0;
+    if (flag_string) {
+        error = run_hex2dat_data(data, size);
+    } else {
+        error = run_hex2dat_file(file_name);
+    }
+    
+    return error == 0 ? 0 : 1;
 }
