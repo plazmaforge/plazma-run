@@ -13,30 +13,10 @@ static int _check_byte(char b) {
       );
 }
 
-int run_hex2dat(const char* file_name) {
+int run_hex2dat_data(char* data, size_t size) {
     
-    if (!file_name) {
-        fprintf(stderr, "%s: File name is empty\n", prog_name);
-        return 1;
-    }
-
-    ////
-    char* data  = NULL;
-    size_t size = 0;
-
-    int retval = lib_io_read_all_bytes(file_name, &data, &size);
-    if (retval < 0) {
-        fprintf(stderr, "%s: I/O error\n", prog_name);
-        free(data);
-        return 1;
-    }
-    ////
-
-    //fprintf(stderr, "DEBUG: file_size=%lu\n", size);
-
     if (size == 0 || !data) {
         fprintf(stderr, "%s: No input data\n", prog_name);
-        free(data);
         return 1;
     }
 
@@ -44,7 +24,6 @@ int run_hex2dat(const char* file_name) {
         fprintf(stderr, "%s: Invalid input data: file_size=%lu, mod(file_size, 2)=%lu > 0\n", prog_name, size, size % 2);
         //fprintf(stderr, "Invalid input data: file size [mod] 2 > 0\n");
         //fprintf(stderr, "Invalid input data: file size [mod] 2 > 0. Ignore last byte.\n");
-        free(data);
         return 1;
     }
 
@@ -72,7 +51,6 @@ int run_hex2dat(const char* file_name) {
         if (!_check_byte(b1) || !_check_byte(b2)) {
            fprintf(stderr, "%s: Invalid byte data\n", prog_name);
            //fprintf(stderr, "Invalid byte data. Ignore following data\n");
-           free(data);
            free(out_data);
            return 1;
            //break;
@@ -92,23 +70,120 @@ int run_hex2dat(const char* file_name) {
     return 0;
 }
 
+int run_hex2dat_file(const char* file_name) {
+    
+    if (!file_name) {
+        fprintf(stderr, "%s: File name is empty\n", prog_name);
+        return 1;
+    }
+
+    char* data  = NULL;
+    size_t size = 0;
+    int error = lib_io_read_all_bytes(file_name, &data, &size);
+    if (error != 0) {
+        fprintf(stderr, "%s: I/O error\n", prog_name);
+        if (data) {
+            free(data);
+        }        
+        return 1;
+    }
+
+    int i = size - 1;
+    while (i >= 0) {
+
+        // Truncate data by CR/LF.
+
+        // Classic MacOS  : CR   = \r, 
+        // Unix and MacOS : LF   = \n, 
+        // Windows        : CRLF = \r\n.
+
+        if (data[i] == '\n') {
+            size--;          // NIX/MAC, WIN (\r\n?)
+            if (i - 1 >= 0) {
+                if (data[i - 1] == '\r') {
+                    size--; // WIN
+                    i--;
+                }
+            }
+        } else if (data[i] == '\r') {
+            size--;          // MAC (Classic)
+        }
+
+        i--;
+    }
+
+    error = run_hex2dat_data(data, size);
+    if (data) {
+        free(data);
+    }
+    return error;    
+}
+
 void usage() {
-    fprintf(stderr, "Usage: run-hex2dat file\n");
+    fprintf(stderr, "Usage: run-hex2dat -s string | file\n");
 }
 
 int main(int argc, char* argv[]) {
+
+    prog_name = lib_cli_prog_name(argv);
 
     if (argc < 2) {
         usage();
         return 0;
     }
 
-    prog_name = lib_cli_prog_name(argv);
+    int error = 0;
+    int opt;
 
-    const char* file_name = argv[1];
-    
-    //lib_io_buf_init();
+    bool flag_string       = false;
+    char* data             = NULL;
+    size_t size            = 0;
+    const char* file_name  = NULL;
 
-    return run_hex2dat(file_name);
+    while ((opt = lib_getopt(argc, argv, "s:")) != -1) {        
+        switch (opt) {
+        case 's':
+            flag_string = true;
+            data = optarg;
+            break;
+        case '?':
+            error = 1;
+            break;
+        case ':':
+            error = 1;
+            break;
+        }
+    }
 
+    if (error) {
+        usage();
+        return 1;
+    }
+
+    if (flag_string) {
+        //BY_STRING
+        //fprintf(stderr, ">> BY_STRING: optind=%d\n", optind);
+
+        if (argc - optind >= 1) {
+            fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
+            usage();
+            return 1;
+        }
+
+        size = strlen(data);
+        return run_hex2dat_data(data, size);
+
+    } else {
+        //BY_FILE
+        //fprintf(stderr, ">> BY_FILE: optind=%d\n", optind);
+
+        //if (argc - optind < 1) {
+        //    fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
+        //    usage(config);
+        //    return 1;
+        //}
+
+        const char* file_name = argv[1]; // argv[optind];
+        return run_hex2dat_file(file_name);
+    }
 }
