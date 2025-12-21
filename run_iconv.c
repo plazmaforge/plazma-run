@@ -83,13 +83,15 @@ void usage() {
 
 int main(int argc, char* argv[]) {
 
-    int min_arg = 1;
-    if (argc < min_arg + 1) {
+    lib_cli_prog_init(argv);
+
+    int argm = 1;
+    //if (argc < argm + 1) {
+    if (lib_cli_not_argind(argc, argm)) {        
         usage();
         return 1;
     }
-
-    prog_name = lib_cli_prog_name(argv);
+    
     int error = 0;
     int opt;
 
@@ -135,7 +137,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    //if (argc - optind < min_arg) {
+    //if (argc - optind < argm) {
     //    fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
     //    usage();
     //    return 0;

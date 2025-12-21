@@ -143,6 +143,7 @@ static int run_tok_file(run_tok_config_t* config, const char* file_name) {
             free(data);
         }
         //_file_error(file_name);
+        fprintf(stderr, "%s: %s: No such file or directory\n", prog_name, file_name);
         return 1;
     }
     error = run_tok_data(config, data, size);
@@ -159,7 +160,8 @@ void usage() {
 
 int main(int argc, char* argv[]) {
     
-    prog_name = lib_cli_prog_name(argv);
+    lib_cli_prog_init(argv);
+
     int error = 0;
     int opt;
     int long_ind;
@@ -256,7 +258,8 @@ int main(int argc, char* argv[]) {
             }
         }
     } else {
-        if (optind >= argc) {
+        //if (optind >= argc) {
+        if (lib_cli_not_argind(argc, optind)) {    
             fprintf(stderr, "%s: File name is required\n", prog_name);
             error = 1;
         } else {
@@ -289,10 +292,6 @@ int main(int argc, char* argv[]) {
     } else {
         error = run_tok_file(&config, file_name);
     }
-
-    if (error != 0) {
-        return 1;
-    }
     
-    return 0;
+    return error == 0 ? 0 : 1;
 }

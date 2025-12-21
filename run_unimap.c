@@ -406,7 +406,7 @@ int run_unimap(run_unimap_config_t* config, const char* file_name) {
     FILE* file = fopen(file_name, "rb");
 
     if (!file) {
-        fprintf(stderr, "%s: %s: Unable to open file\n", prog_name, file_name);
+        fprintf(stderr, "%s: %s: No such file or directory\n", prog_name, file_name);
         return 1;
     }
 
@@ -493,13 +493,15 @@ void usage() {
 
 int main(int argc, char* argv[]) {
 
-    int min_arg = 1; // <file>
-    if (argc < min_arg + 1) {
+    lib_cli_prog_init(argv);
+
+    int argm = 1; // <file>
+    //if (argc < argm + 1) {
+    if (lib_cli_not_argind(argc, argm)) {
         usage();
-        return 0;
+        return 1;
     }
 
-    prog_name = lib_cli_prog_name(argv);
     int error = 0;
     int opt;
 
@@ -535,10 +537,11 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    if (argc - optind < min_arg) {
+    //if (argc - optind < argm) {
+    if (lib_cli_not_argmin(argc, optind, argm)) {
         fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
         usage();
-        return 0;
+        return 1;
     }
 
     run_unimap_config_t config;

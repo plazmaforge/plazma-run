@@ -81,7 +81,7 @@ int run_hex2dat_file(const char* file_name) {
     size_t size = 0;
     int error = lib_io_read_all_bytes(file_name, &data, &size);
     if (error != 0) {
-        fprintf(stderr, "%s: I/O error\n", prog_name);
+        fprintf(stderr, "%s: %s: No such file or directory\n", prog_name, file_name);
         if (data) {
             free(data);
         }        
@@ -125,10 +125,11 @@ void usage() {
 
 int main(int argc, char* argv[]) {
 
-    prog_name = lib_cli_prog_name(argv);
-    if (argc < 2) {
+    lib_cli_prog_init(argv);
+
+    if (lib_cli_not_arg(argc)) {
         usage();
-        return 0;
+        return 1;
     }
 
     int error = 0;
@@ -159,11 +160,19 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    if (flag_string) {
+        optind--;
+    }
+
+    if (lib_cli_not_argmin(argc, optind, 1)) {
+        fprintf(stderr, "%s: Incorrect argument count\n", prog_name);
+        usage();
+        return 1;
+    }
+
     error = 0;
     if (flag_string) {
         //BY_STRING
-        //fprintf(stderr, ">> BY_STRING: optind=%d\n", optind);
- 
         if (!data) {
             fprintf(stderr, "%s: Input string is required\n", prog_name);
             error = 1;
@@ -176,9 +185,8 @@ int main(int argc, char* argv[]) {
         }
     } else {
         //BY_FILE
-        //fprintf(stderr, ">> BY_FILE: optind=%d\n", optind);
-
-        if (optind >= argc) {
+        //if (optind >= argc) {
+        if (lib_cli_not_argind(argc, optind)) {
             fprintf(stderr, "%s: File name is required\n", prog_name);
             error = 1;
         } else {
