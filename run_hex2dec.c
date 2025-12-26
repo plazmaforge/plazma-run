@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 
     const char* str = argv[1];
     uint64_t num = 0;
-    int error = lib_str2num(str, 16, &num);
+    int error = run_str2num(str, 16, &num);
     if (error == 0) {
         fprintf(stdout, "%llu\n", num);
     }
