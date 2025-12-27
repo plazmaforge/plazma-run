@@ -126,6 +126,7 @@ $CC $CFLAGS run_diff.c -o run_diff.o
 $CC $CFLAGS run_tok.c -o run_tok.o
 
 $CC $CFLAGS run_hex2dec.c -o run_hex2dec.o
+$CC $CFLAGS run_dec2hex.c -o run_dec2hex.o
 
 $CC $CFLAGS test_getopt.c -o test_getopt.o
 $CC $CFLAGS test_echo.c -o test_echo.o
@@ -188,6 +189,7 @@ $CC $LDFLAGS getopt.o run_diff.o -o run-diff
 $CC $LDFLAGS getopt.o iolib.o run_tok.o -o run-tok
 
 $CC $LDFLAGS getopt.o run_hex2dec.o -o run-hex2dec
+$CC $LDFLAGS getopt.o run_dec2hex.o -o run-dec2hex
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo

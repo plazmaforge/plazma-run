@@ -178,6 +178,7 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 %CC% %LDFLAGS% getopt.o iolib.o run_tok.o -o run-tok.exe
 
 %CC% %LDFLAGS% getopt.o run_hex2dec.o -o run-hex2dec.exe
+%CC% %LDFLAGS% getopt.o run_dec2hex.o -o run-dec2hex.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
