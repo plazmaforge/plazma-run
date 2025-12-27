@@ -22,9 +22,10 @@ int main(int argc, char* argv[]) {
     const char* str = argv[1];
     uint64_t num = 0;
     int error = run_str2num(str, 10, &num);
-    if (error == 0) {
-        fprintf(stdout, "%llX\n", num);
+    if (error != 0) {
+        return 1;
     }
-
-    return error == 0 ? 0 : 1;
+    
+    fprintf(stdout, "%llX\n", num);
+    return 0;
 }
