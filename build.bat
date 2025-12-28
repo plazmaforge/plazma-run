@@ -117,8 +117,11 @@ rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 
 %CC% %CFLAGS% run_hex2dec.c -o run_hex2dec.o
 %CC% %CFLAGS% run_hex2oct.c -o run_hex2oct.o
+%CC% %CFLAGS% run_hex2bin.c -o run_hex2bin.o
+
 %CC% %CFLAGS% run_dec2hex.c -o run_dec2hex.o
 %CC% %CFLAGS% run_dec2oct.c -o run_dec2oct.o
+%CC% %CFLAGS% run_dec2bin.c -o run_dec2bin.o
 
 %CC% %CFLAGS% test_getopt.c -o test_getopt.o
 %CC% %CFLAGS% test_echo.c -o test_echo.o
@@ -182,8 +185,11 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 
 %CC% %LDFLAGS% getopt.o run_hex2dec.o -o run-hex2dec.exe
 %CC% %LDFLAGS% getopt.o run_hex2oct.o -o run-hex2oct.exe
+%CC% %LDFLAGS% getopt.o run_hex2bin.o -o run-hex2bin.exe
+
 %CC% %LDFLAGS% getopt.o run_dec2hex.o -o run-dec2hex.exe
 %CC% %LDFLAGS% getopt.o run_dec2oct.o -o run-dec2oct.exe
+%CC% %LDFLAGS% getopt.o run_dec2bin.o -o run-dec2bin.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe

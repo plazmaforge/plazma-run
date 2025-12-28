@@ -127,8 +127,13 @@ $CC $CFLAGS run_tok.c -o run_tok.o
 
 $CC $CFLAGS run_hex2dec.c -o run_hex2dec.o
 $CC $CFLAGS run_hex2oct.c -o run_hex2oct.o
+$CC $CFLAGS run_hex2bin.c -o run_hex2bin.o
+
 $CC $CFLAGS run_dec2hex.c -o run_dec2hex.o
 $CC $CFLAGS run_dec2oct.c -o run_dec2oct.o
+$CC $CFLAGS run_dec2bin.c -o run_dec2bin.o
+
+$CC $CFLAGS run_oct2bin.c -o run_oct2bin.o
 
 $CC $CFLAGS test_getopt.c -o test_getopt.o
 $CC $CFLAGS test_echo.c -o test_echo.o
@@ -192,8 +197,13 @@ $CC $LDFLAGS getopt.o iolib.o run_tok.o -o run-tok
 
 $CC $LDFLAGS getopt.o run_hex2dec.o -o run-hex2dec
 $CC $LDFLAGS getopt.o run_hex2oct.o -o run-hex2oct
+$CC $LDFLAGS getopt.o run_hex2bin.o -o run-hex2bin
+
 $CC $LDFLAGS getopt.o run_dec2hex.o -o run-dec2hex
 $CC $LDFLAGS getopt.o run_dec2oct.o -o run-dec2oct
+$CC $LDFLAGS getopt.o run_dec2bin.o -o run-dec2bin
+
+$CC $LDFLAGS getopt.o run_oct2bin.o -o run-oct2bin
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo
