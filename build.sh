@@ -133,6 +133,8 @@ $CC $CFLAGS run_dec2hex.c -o run_dec2hex.o
 $CC $CFLAGS run_dec2oct.c -o run_dec2oct.o
 $CC $CFLAGS run_dec2bin.c -o run_dec2bin.o
 
+$CC $CFLAGS run_oct2hex.c -o run_oct2hex.o
+$CC $CFLAGS run_oct2dec.c -o run_oct2dec.o
 $CC $CFLAGS run_oct2bin.c -o run_oct2bin.o
 
 $CC $CFLAGS test_getopt.c -o test_getopt.o
@@ -203,6 +205,8 @@ $CC $LDFLAGS getopt.o run_dec2hex.o -o run-dec2hex
 $CC $LDFLAGS getopt.o run_dec2oct.o -o run-dec2oct
 $CC $LDFLAGS getopt.o run_dec2bin.o -o run-dec2bin
 
+$CC $LDFLAGS getopt.o run_oct2hex.o -o run-oct2hex
+$CC $LDFLAGS getopt.o run_oct2dec.o -o run-oct2dec
 $CC $LDFLAGS getopt.o run_oct2bin.o -o run-oct2bin
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
