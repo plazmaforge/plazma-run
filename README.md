@@ -6,12 +6,12 @@ Plazma Run is cross-platform command line utilities
 | ------------ | -------------- |
 | run-ascii    | Print ASCII table |
 | run-ask      | Find data in files |
-| run-cat      | Concatenate and print files |
 | run-base16   | Encode/Decode Base16 |
 | run-base32   | Encode/Decode Base32, Z-Base32, Base32Hex, Crockford’s Base32 |
 | run-base58   | Encode/Decode Base58 |
 | run-base64   | Encode/Decode Base64 |
 | run-basename | Print base file name of a path |
+| run-cat      | Concatenate and print files |
 | run-cp       | Copy files
 | run-ctype    | Print "C" type info
 | run-dirname  | Print directory name of a path |
@@ -26,8 +26,8 @@ Plazma Run is cross-platform command line utilities
 | run-ls       | List directory entries
 | run-md5      | Calculate MD5 hash
 | run-mkdir    | Make directories
-| run-pwd      | Print name of current/working directory
 | run-mv       | Move files
+| run-pwd      | Print name of current/working directory
 | run-realpath | Print canonicalized absolute path name
 | run-rm       | Remove files
 | run-rmdir    | Remove directories
