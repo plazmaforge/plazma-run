@@ -137,6 +137,10 @@ $CC $CFLAGS run_oct2hex.c -o run_oct2hex.o
 $CC $CFLAGS run_oct2dec.c -o run_oct2dec.o
 $CC $CFLAGS run_oct2bin.c -o run_oct2bin.o
 
+$CC $CFLAGS run_bin2hex.c -o run_bin2hex.o
+$CC $CFLAGS run_bin2dec.c -o run_bin2dec.o
+$CC $CFLAGS run_bin2oct.c -o run_bin2oct.o
+
 $CC $CFLAGS test_getopt.c -o test_getopt.o
 $CC $CFLAGS test_echo.c -o test_echo.o
 $CC $CFLAGS test_locale.c -o test_locale.o
@@ -208,6 +212,10 @@ $CC $LDFLAGS getopt.o run_dec2bin.o -o run-dec2bin
 $CC $LDFLAGS getopt.o run_oct2hex.o -o run-oct2hex
 $CC $LDFLAGS getopt.o run_oct2dec.o -o run-oct2dec
 $CC $LDFLAGS getopt.o run_oct2bin.o -o run-oct2bin
+
+$CC $LDFLAGS getopt.o run_bin2hex.o -o run-bin2hex
+$CC $LDFLAGS getopt.o run_bin2dec.o -o run-bin2dec
+$CC $LDFLAGS getopt.o run_bin2oct.o -o run-bin2oct
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo
