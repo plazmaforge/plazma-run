@@ -133,6 +133,8 @@ rem %CC% %CFLAGS% run_ssldump.c -o run_ssldump.o
 
 %CC% %CFLAGS% run_dconv.c -o run_dconv.o
 
+%CC% %CFLAGS% run_txt2html.c -o run_txt2html.o
+
 %CC% %CFLAGS% test_getopt.c -o test_getopt.o
 %CC% %CFLAGS% test_echo.c -o test_echo.o
 %CC% %CFLAGS% test_locale.c -o test_locale.o
@@ -210,6 +212,8 @@ rem %CC% %LDFLAGS% getopt.o iodef.o iolib.o run_ssldump.o -o run-ssldump.exe
 %CC% %LDFLAGS% getopt.o run_bin2oct.o -o run-bin2oct.exe
 
 %CC% %LDFLAGS% getopt.o run_dconv.o -o run-dconv.exe
+
+%CC% %LDFLAGS% getopt.o iodef.o iolib.o run_txt2html.o -o run-txt2html.exe
 
 %CC% %LDFLAGS% getopt.o test_getopt.o -o test-getopt.exe
 %CC% %LDFLAGS% iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo.exe
