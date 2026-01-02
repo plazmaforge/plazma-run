@@ -5,89 +5,27 @@
 #include "getopt.h"
 #include "clilib.h"
 #include "iolib.h"
+#include "run_htmllib.h"
 
-#define LIB_HTML_UNIT      "px"
-#define LIB_HTML_MAARGIN   "5px"
-#define LIB_HTML_FONT_NAME "Helvetica"
-#define LIB_HTML_FONT_WEIGHT NULL
-#define LIB_HTML_FONT_SIZE "12px"
-
-typedef struct run_html_config_t {
-    const char* title;
-    const char* margin;
-    const char* font_name;
-    const char* font_weight;
-    const char* font_size;
-} run_html_config_t;
-
-bool _isdigit(char c) {
-    return c == '0' 
-    || c == '1'
-    || c == '2'
-    || c == '3'
-    || c == '4'
-    || c == '5'
-    || c == '6'
-    || c == '7'
-    || c == '8'
-    || c == '9';
+const char* lib_html_unitdef(const char* value) {
+    return lib_is_digit(value) ? LIB_HTML_UNIT : "";
 }
 
-bool lib_is_digit(const char* str) {
-    if (!str) {
-        return false;
-    }
-    
-    if (*str == '\0') {
-        // End string
-        return false;
-    }
-
-    const char* ptr = str;
-    while (*ptr != '\0') {
-        if (!_isdigit(*ptr)) {
-            return false;
-        }
-        ptr++;
-    }
-    return true;
-}
-
-bool lib_is_normal_digit(const char* str) {
-    if (!str) {
-        return false;
-    }
-
-    if (*str == '\0') {
-        // End string
-        return false;
-    }
-
-    if (*str == '0') {
-        // Start with '0'
-        // '0'                - correct
-        // '01', '001', '000' - incorrect
-        return *(str + 1) == '\0';
-    }
-
-    return lib_is_digit(str);
-}
-
-int run_txt2html_data(run_html_config_t* config, char* data, size_t size) {
+int run_txt2html_data(lib_html_config_t* config, char* data, size_t size) {
     
     if (size == 0 || !data) {
         fprintf(stderr, "%s: No input data\n", prog_name);
         return 1;
     }
 
-    const char* charset     = "utf-8";
+    const char* charset     = LIB_HTML_CHARSET;
     const char* title       = config->title;
     const char* margin      = config->margin;
-    const char* margin_unit = lib_is_digit(margin) ? LIB_HTML_UNIT : "";
+    const char* margin_unit = lib_html_unitdef(margin);    
     const char* font_name   = config->font_name;
     const char* font_weight = config->font_weight;
     const char* font_size   = config->font_size;
-    const char* font_unit = lib_is_digit(font_size) ? LIB_HTML_UNIT : "";
+    const char* font_unit = lib_html_unitdef(font_size);
     
     bool use_charset        = true;
     bool use_title          = title;
@@ -144,7 +82,7 @@ int run_txt2html_data(run_html_config_t* config, char* data, size_t size) {
     return 0;
 }
 
-int run_txt2html_file(run_html_config_t* config, const char* file_name) {
+int run_txt2html_file(lib_html_config_t* config, const char* file_name) {
     
     if (!file_name) {
         fprintf(stderr, "%s: File name is empty\n", prog_name);
@@ -212,7 +150,6 @@ int main(int argc, char* argv[]) {
           {NULL,          0,                 0, 0 }
     };
 
-    //while ((opt = lib_getopt(argc, argv, "s:")) != -1) {
     while ((opt = lib_getopt_long(argc, argv, "s:", long_options, &long_ind)) != -1) {
 
         switch (opt) {
@@ -295,12 +232,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    run_html_config_t config;
-    config.title       = NULL;
-    config.margin      = NULL;
-    config.font_name   = NULL;
-    config.font_weight = NULL;
-    config.font_size   = NULL;
+    lib_html_config_t config;
+    lib_html_init(&config);
 
     config.title       = title;
     config.margin      = flag_margin ? margin : LIB_HTML_MAARGIN;
