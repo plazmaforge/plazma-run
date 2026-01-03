@@ -1,3 +1,6 @@
+#ifndef PLAZMA_LIB_DOCIB_H
+#define PLAZMA_LIB_DOCIB_H
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -95,10 +98,12 @@ inline static int lib_ifi(bool flag, int i1, int i2) {
     return flag ? i1 : i2;
 }
 
-inline static long lib_ifl(bool flag, long l1, long l2) {
+static long lib_ifl(bool flag, long l1, long l2) {
     return flag ? l1 : l2;
 }
 
 inline static const char* lib_defs(const char* s1, const char* s2) {
     return s1 ? s1 : s2;
 }
+
+#endif // PLAZMA_LIB_DOCLIB_H

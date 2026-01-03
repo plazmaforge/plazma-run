@@ -11,7 +11,7 @@
 #define LIB_HTML_FONT_SIZE   "12px"
 
 /**
- * HTML Config
+ * HTML Config (temp solution: config -> context)
  */
 typedef struct lib_html_config_t {
     const char* charset;
@@ -84,21 +84,14 @@ static int lib_html_init(lib_html_config_t* cnf) {
     return 0;
 }
 
-static int lib_html_ctx_init(lib_html_config_t* cnf, lib_html_context_t* ctx) {
-    if (!cnf || !ctx) {
+static int lib_html_prepare(lib_html_context_t* ctx) {
+    if (!ctx) {
         return 1;
     }
 
-    ctx->charset     = cnf->charset;
-    ctx->title       = cnf->title;
-    ctx->margin      = cnf->margin;
     ctx->margin_unit = lib_html_unitdef(ctx->margin);
-    ctx->font_name   = cnf->font_name;
-    ctx->font_style  = cnf->font_style;
-    ctx->font_weight = cnf->font_weight;
-    ctx->font_size   = cnf->font_size;
     ctx->font_unit   = lib_html_unitdef(ctx->font_size);
-    
+
     ctx->use_charset        = ctx->charset;
     ctx->use_title          = ctx->title;
     ctx->use_head           = ctx->use_charset || ctx->use_title;
@@ -111,6 +104,26 @@ static int lib_html_ctx_init(lib_html_config_t* cnf, lib_html_context_t* ctx) {
     ctx->use_font           = ctx->use_font_name || ctx->use_font_style || ctx->use_font_weight || ctx->use_font_size;
     ctx->use_style          = ctx->use_margin || ctx->use_font;
 
+    return 0;
+
+}
+
+static int lib_html_ctx_init(lib_html_config_t* cnf, lib_html_context_t* ctx) {
+    if (!cnf || !ctx) {
+        return 1;
+    }
+
+    // config -> context
+    ctx->charset     = cnf->charset;
+    ctx->title       = cnf->title;
+    ctx->margin      = cnf->margin;
+    ctx->font_name   = cnf->font_name;
+    ctx->font_style  = cnf->font_style;
+    ctx->font_weight = cnf->font_weight;
+    ctx->font_size   = cnf->font_size;
+
+    lib_html_prepare(ctx);
+    
     ctx->data               = NULL;
     ctx->size               = 0;
 
@@ -178,10 +191,10 @@ static int lib_html_body(lib_html_context_t* ctx) {
     if (ctx->use_style) {
         fprintf(stdout, "  <body style=\"");
         if (ctx->use_margin) {
-            lib_html_margin(ctx);
+           lib_html_margin(ctx);
         }
         if (ctx->use_font) {
-            lib_html_font(ctx);
+           lib_html_font(ctx);
         }
         fprintf(stdout, "\">\n");
     } else {
