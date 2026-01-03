@@ -10,6 +10,9 @@
 #define LIB_HTML_FONT_WEIGHT LIB_DOC_FONT_WEIGHT
 #define LIB_HTML_FONT_SIZE   "12px"
 
+/**
+ * HTML Config
+ */
 typedef struct lib_html_config_t {
     const char* charset;
     const char* title;
@@ -20,98 +23,189 @@ typedef struct lib_html_config_t {
     const char* font_size;
 } lib_html_config_t;
 
-int lib_html_config_init(lib_html_config_t* config) {
-    if (!config) {
-        return 1;
-    }
+/**
+ * HTML Context
+ */
+typedef struct lib_html_context_t {
+    const char* charset;
+    const char* title;
+    const char* margin;
+    const char* margin_unit; 
+    const char* font_name;
+    const char* font_style;
+    const char* font_weight;
+    const char* font_size;
+    const char* font_unit;    
 
-    config->charset     = NULL;
-    config->title       = NULL;
-    config->margin      = NULL;
-    config->font_name   = NULL;
-    config->font_style  = NULL;
-    config->font_weight = NULL;
-    config->font_size   = NULL;
-    return 0;
-}
+    bool use_charset;
+    bool use_title;
+    bool use_head;
+
+    bool use_margin;
+    bool use_font_name;
+    bool use_font_style;
+    bool use_font_weight;
+    bool use_font_size;
+    bool use_font;
+    bool use_style;
+
+    char* data;
+    size_t size;
+
+} lib_html_context_t;
+
+static int lib_html_document(lib_html_context_t* ctx);
+
+static int lib_html_head(lib_html_context_t* ctx);
+
+static int lib_html_margin(lib_html_context_t* ctx);
+
+static int lib_html_font(lib_html_context_t* ctx);
+
+static int lib_html_body(lib_html_context_t* ctx);
+
 
 static const char* lib_html_unitdef(const char* value) {
     return lib_is_digit(value) ? LIB_HTML_UNIT : "";
 }
 
-int run_html(lib_html_config_t* config, char* data, size_t size) {
-    
-    if (size == 0 || !data) {
-        fprintf(stderr, "%s: No input data\n", prog_name);
+static int lib_html_init(lib_html_config_t* cnf) {
+    if (!cnf) {
         return 1;
     }
 
-    const char* charset     = config->charset;
-    const char* title       = config->title;
-    const char* margin      = config->margin;
-    const char* margin_unit = lib_html_unitdef(margin);    
-    const char* font_name   = config->font_name;
-    const char* font_style  = config->font_style;
-    const char* font_weight = config->font_weight;
-    const char* font_size   = config->font_size;
-    const char* font_unit   = lib_html_unitdef(font_size);
+    cnf->charset     = NULL;
+    cnf->title       = NULL;
+    cnf->margin      = NULL;
+    cnf->font_name   = NULL;
+    cnf->font_style  = NULL;
+    cnf->font_weight = NULL;
+    cnf->font_size   = NULL;
+    return 0;
+}
+
+static int lib_html_ctx_init(lib_html_config_t* cnf, lib_html_context_t* ctx) {
+    if (!cnf || !ctx) {
+        return 1;
+    }
+
+    ctx->charset     = cnf->charset;
+    ctx->title       = cnf->title;
+    ctx->margin      = cnf->margin;
+    ctx->margin_unit = lib_html_unitdef(ctx->margin);
+    ctx->font_name   = cnf->font_name;
+    ctx->font_style  = cnf->font_style;
+    ctx->font_weight = cnf->font_weight;
+    ctx->font_size   = cnf->font_size;
+    ctx->font_unit   = lib_html_unitdef(ctx->font_size);
     
-    bool use_charset        = charset;
-    bool use_title          = title;
-    bool use_head           = use_charset || use_title;
+    ctx->use_charset        = ctx->charset;
+    ctx->use_title          = ctx->title;
+    ctx->use_head           = ctx->use_charset || ctx->use_title;
 
-    bool use_margin         = margin;
-    bool use_font_name      = font_name;
-    bool use_font_style     = font_style;
-    bool use_font_weight    = font_weight;
-    bool use_font_size      = font_size;
-    bool use_style          = use_margin || use_font_name || use_font_weight || use_font_size;
+    ctx->use_margin         = ctx->margin;
+    ctx->use_font_name      = ctx->font_name;
+    ctx->use_font_style     = ctx->font_style;
+    ctx->use_font_weight    = ctx->font_weight;
+    ctx->use_font_size      = ctx->font_size;
+    ctx->use_font           = ctx->use_font_name || ctx->use_font_style || ctx->use_font_weight || ctx->use_font_size;
+    ctx->use_style          = ctx->use_margin || ctx->use_font;
 
+    ctx->data               = NULL;
+    ctx->size               = 0;
+
+    return 0;
+}
+
+static int lib_html_document(lib_html_context_t* ctx) {
+    
     // DOCUMENT
     fprintf(stdout, "<!DOCTYPE html>\n");
     fprintf(stdout, "<html>\n");
 
     // HEAD
-    if (use_head) {
-        fprintf(stdout, "  <head>\n");
-
-        if (use_charset) {
-            fprintf(stdout, "  <meta charset=\"%s\">\n", charset);
-        }
-        if (use_title) {
-            fprintf(stdout, "  <title>%s</title>\n", title);
-        }
-
-        fprintf(stdout, "  </head>\n");
+    if (ctx->use_head) {
+        lib_html_head(ctx);
     }
 
     // BODY
-    if (use_style) {
+    lib_html_body(ctx);
+    
+    fprintf(stdout, "</html>\n");
+
+    return 0;
+}
+
+static int lib_html_head(lib_html_context_t* ctx) {
+
+    fprintf(stdout, "  <head>\n");
+    if (ctx->use_charset) {
+        fprintf(stdout, "    <meta charset=\"%s\">\n", ctx->charset);
+    }
+    if (ctx->use_title) {
+        fprintf(stdout, "    <title>%s</title>\n", ctx->title);
+    }
+    fprintf(stdout, "  </head>\n");
+
+    return 0;
+}
+
+static int lib_html_margin(lib_html_context_t* ctx) {
+    fprintf(stdout, "margin: %s%s;", ctx->margin, ctx->margin_unit);
+    return 0;
+}
+
+static int lib_html_font(lib_html_context_t* ctx) {
+
+    if (ctx->use_font_name) {
+        fprintf(stdout, "font-family: %s;", ctx->font_name);
+    }
+    if (ctx->use_font_style) {
+        fprintf(stdout, "font-style: %s;", ctx->font_style);
+    }
+    if (ctx->use_font_weight) {
+        fprintf(stdout, "font-weight: %s;", ctx->font_weight);
+    }
+    if (ctx->use_font_size) {
+        fprintf(stdout, "font-size: %s%s;", ctx->font_size, ctx->font_unit);
+    }
+    
+    return 0;
+}
+
+static int lib_html_body(lib_html_context_t* ctx) {
+
+    if (ctx->use_style) {
         fprintf(stdout, "  <body style=\"");
-        if (use_margin) {
-            fprintf(stdout, "margin: %s%s;", margin, margin_unit);
+        if (ctx->use_margin) {
+            lib_html_margin(ctx);
         }
-        if (use_font_name) {
-            fprintf(stdout, "font-family: %s;", font_name);
-        }
-        if (use_font_style) {
-            fprintf(stdout, "font-style: %s;", font_style);
-        }
-        if (use_font_weight) {
-            fprintf(stdout, "font-weight: %s;", font_weight);
-        }
-        if (use_font_size) {
-            fprintf(stdout, "font-size: %s%s;", font_size, font_unit);
+        if (ctx->use_font) {
+            lib_html_font(ctx);
         }
         fprintf(stdout, "\">\n");
     } else {
         fprintf(stdout, "  <body>\n");
     }    
 
-    fprintf(stdout, "%s\n", data);
+    fprintf(stdout, "%s\n", ctx->data);
     fprintf(stdout, "  </body>\n");
-    fprintf(stdout, "</html>\n");
 
     return 0;
+}
+
+static int run_html(lib_html_config_t* config, char* data, size_t size) {
+    
+    if (size == 0 || !data) {
+        fprintf(stderr, "%s: No input data\n", prog_name);
+        return 1;
+    }
+
+    lib_html_context_t ctx;
+    lib_html_ctx_init(config, &ctx);
+    ctx.data = data;
+    ctx.size = size;
+
+    return lib_html_document(&ctx);
 }
 

@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
     }
 
     lib_html_config_t config;
-    lib_html_config_init(&config);
+    lib_html_init(&config);
 
     config.charset     = lib_ifs(flag_charset, charset, LIB_HTML_CHARSET);
     config.title       = lib_ifs(flag_title, title, LIB_HTML_TITLE);
