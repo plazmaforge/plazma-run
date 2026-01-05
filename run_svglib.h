@@ -1,6 +1,5 @@
 #include "run_doclib.h"
 #include "run_htmllib.h"
-// #include "run_svglib.h"
 
 #define LIB_SVG_CHARSET     LIB_DOC_CHARSET
 #define LIB_SVG_TITLE       NULL
@@ -137,6 +136,59 @@ static int lib_svg_ctx_init(lib_svg_config_t* cnf, lib_svg_context_t* ctx) {
 //     return 0;
 // }
 
+static int lib_svg_margin(lib_html_context_t* ctx) {
+    fprintf(stdout, "margin: %s%s;", ctx->margin, ctx->margin_unit);
+    return 0;
+}
+
+static int lib_svg_font(lib_svg_context_t* ctx) {
+
+    if (ctx->use_font_name) {
+        fprintf(stdout, " font-family=\"%s\"", ctx->font_name);
+    }
+    if (ctx->use_font_style) {
+        fprintf(stdout, " font-style=\"%s\"", ctx->font_style);
+    }
+    if (ctx->use_font_weight) {
+        fprintf(stdout, " font-weight=\"%s\"", ctx->font_weight);
+    }
+    if (ctx->use_font_size) {
+        fprintf(stdout, " font-size=\"%s%s", ctx->font_size, ctx->font_unit);
+    }
+    
+    return 0;
+}
+
+static int lib_svg_text(lib_svg_context_t* ctx) {
+    fprintf(stdout, "  <text x=\"0\" y=\"20\" ");
+
+    if (ctx->use_style) {
+        if (ctx->use_font) {
+           lib_svg_font(ctx);
+        }
+    }
+    fprintf(stdout, "\">\n");
+
+    fprintf(stdout, "%s\n", ctx->data);
+    fprintf(stdout, "</text>\n");
+    return 0;
+}
+
+static int lib_svg_document(lib_svg_context_t* ctx) {
+    
+    // DOCUMENT
+    fprintf(stdout, "<svg");
+    //fprintf(stdout, " width=\"600\" height=\"300\"");
+    fprintf(stdout, " xmlns=\"http://www.w3.org/2000/svg\">\n");
+
+    // TEXT
+    lib_svg_text(ctx);
+    
+    fprintf(stdout, "</svg>\n");
+
+    return 0;
+}
+
 static int run_svg(lib_svg_config_t* config, char* data, size_t size) {
     
     if (size == 0 || !data) {
@@ -149,7 +201,5 @@ static int run_svg(lib_svg_config_t* config, char* data, size_t size) {
     ctx.data = data;
     ctx.size = size;
 
-    return 0;
-
-    //return lib_html_document(&ctx2);
+    return lib_svg_document(&ctx);
 }

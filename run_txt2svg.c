@@ -103,8 +103,6 @@ int main(int argc, char* argv[]) {
         case LIB_OPT_MARGIN_ID:      // margin
             flag_margin = true;
             margin = optarg;
-            //fprintf(stderr, "margin-str: %s\n", optarg);
-            //fprintf(stderr, "margin-int: %d\n", optarg ? atoi(optarg) : 0);
             break;
         case LIB_OPT_FONT_NAME_ID:   // font-name
             flag_font_name = true;
