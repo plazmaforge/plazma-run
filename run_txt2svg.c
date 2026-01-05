@@ -7,11 +7,11 @@
 #include "iolib.h"
 #include "run_svglib.h"
 
-int run_txt2svg_data(lib_svg_context_t* config, char* data, size_t size) {
+int run_txt2svg_data(lib_svg_config_t* config, char* data, size_t size) {
     return run_svg(config, data, size);    
 }
 
-int run_txt2svg_file(lib_svg_context_t* config, const char* file_name) {
+int run_txt2svg_file(lib_svg_config_t* config, const char* file_name) {
     
     if (!file_name) {
         fprintf(stderr, "%s: File name is empty\n", prog_name);
@@ -174,22 +174,22 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    lib_svg_context_t ctx;
-    lib_svg_init(&ctx);
+    lib_svg_config_t config;
+    lib_svg_init(&config);
 
-    ctx.charset     = lib_ifs(flag_charset, charset, LIB_SVG_CHARSET);
-    ctx.title       = lib_ifs(flag_title, title, LIB_SVG_TITLE);
-    ctx.margin      = lib_ifs(flag_margin, margin, LIB_SVG_MARGIN);
-    ctx.font_name   = lib_ifs(flag_font_name, font_name, LIB_SVG_FONT_NAME);
-    ctx.font_style  = lib_ifs(flag_font_style, font_style, LIB_SVG_FONT_STYLE);
-    ctx.font_weight = lib_ifs(flag_font_weight, font_weight, LIB_SVG_FONT_WEIGHT);
-    ctx.font_size   = lib_ifs(flag_font_size, font_size, LIB_SVG_FONT_SIZE);
+    config.charset     = lib_ifs(flag_charset, charset, LIB_SVG_CHARSET);
+    config.title       = lib_ifs(flag_title, title, LIB_SVG_TITLE);
+    config.margin      = lib_ifs(flag_margin, margin, LIB_SVG_MARGIN);
+    config.font_name   = lib_ifs(flag_font_name, font_name, LIB_SVG_FONT_NAME);
+    config.font_style  = lib_ifs(flag_font_style, font_style, LIB_SVG_FONT_STYLE);
+    config.font_weight = lib_ifs(flag_font_weight, font_weight, LIB_SVG_FONT_WEIGHT);
+    config.font_size   = lib_ifs(flag_font_size, font_size, LIB_SVG_FONT_SIZE);
 
     error = 0;
     if (flag_string) {
-        error = run_txt2svg_data(&ctx, data, size);
+        error = run_txt2svg_data(&config, data, size);
     } else {
-        error = run_txt2svg_file(&ctx, file_name);
+        error = run_txt2svg_file(&config, file_name);
     }
 
     if (error) {

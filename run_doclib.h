@@ -106,4 +106,10 @@ inline static const char* lib_defs(const char* s1, const char* s2) {
     return s1 ? s1 : s2;
 }
 
+////
+
+static const char* lib_doc_unitdef(const char* value) {
+    return lib_is_digit(value) ? LIB_DOC_UNIT : "";
+}
+
 #endif // PLAZMA_LIB_DOCLIB_H

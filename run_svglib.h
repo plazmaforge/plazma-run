@@ -4,7 +4,7 @@
 
 #define LIB_SVG_CHARSET     LIB_DOC_CHARSET
 #define LIB_SVG_TITLE       NULL
-#define LIB_SVGL_UNIT        "px"
+#define LIB_SVG_UNIT        "px"
 #define LIB_SVG_MARGIN      "5px"
 #define LIB_SVG_FONT_NAME   LIB_DOC_FONT_NAME
 #define LIB_SVG_FONT_STYLE  LIB_DOC_FONT_STYLE
@@ -12,7 +12,20 @@
 #define LIB_SVG_FONT_SIZE   "12px"
 
 /**
- * HTML Context
+ * SVG Config
+ */
+typedef struct lib_svg_config_t {
+    const char* charset;
+    const char* title;
+    const char* margin;
+    const char* font_name;
+    const char* font_style;
+    const char* font_weight;
+    const char* font_size;
+} lib_svg_config_t;
+
+/**
+ * SVG Context
  */
 typedef struct lib_svg_context_t {
     const char* charset;
@@ -42,51 +55,101 @@ typedef struct lib_svg_context_t {
 
 } lib_svg_context_t;
 
-static int lib_svg_init(lib_svg_context_t* ctx) {
-    if (!ctx) {
+static const char* lib_svg_unitdef(const char* value) {
+    return lib_is_digit(value) ? LIB_SVG_UNIT : "";
+}
+
+static int lib_svg_init(lib_svg_config_t* config) {
+    if (!config) {
         return 1;
     }
 
-    ctx->charset     = NULL;
-    ctx->title       = NULL;
-    ctx->margin      = NULL;
-    ctx->font_name   = NULL;
-    ctx->font_style  = NULL;
-    ctx->font_weight = NULL;
-    ctx->font_size   = NULL;
+    config->charset     = NULL;
+    config->title       = NULL;
+    config->margin      = NULL;
+    config->font_name   = NULL;
+    config->font_style  = NULL;
+    config->font_weight = NULL;
+    config->font_size   = NULL;
 
     return 0;
 }
 
-static int lib_html_init2(lib_html_context_t* ctx2, lib_svg_context_t* ctx) {
+static int lib_svg_prepare(lib_svg_context_t* ctx) {
     if (!ctx) {
         return 1;
     }
 
-    ctx2->charset     = ctx->charset;
-    ctx2->title       = ctx->title;
-    ctx2->margin      = ctx->margin;
-    ctx2->font_name   = ctx->font_name;
-    ctx2->font_style  = ctx->font_style;
-    ctx2->font_weight = ctx->font_weight;
-    ctx2->font_size   = ctx->font_size;
+    ctx->margin_unit = lib_svg_unitdef(ctx->margin);
+    ctx->font_unit   = lib_svg_unitdef(ctx->font_size);
+
+    ctx->use_charset        = ctx->charset;
+    ctx->use_title          = ctx->title;
+    ctx->use_head           = ctx->use_charset || ctx->use_title;
+
+    ctx->use_margin         = ctx->margin;
+    ctx->use_font_name      = ctx->font_name;
+    ctx->use_font_style     = ctx->font_style;
+    ctx->use_font_weight    = ctx->font_weight;
+    ctx->use_font_size      = ctx->font_size;
+    ctx->use_font           = ctx->use_font_name || ctx->use_font_style || ctx->use_font_weight || ctx->use_font_size;
+    ctx->use_style          = ctx->use_margin || ctx->use_font;
+
+    return 0;
+
+}
+
+static int lib_svg_ctx_init(lib_svg_config_t* cnf, lib_svg_context_t* ctx) {
+    if (!cnf || !ctx) {
+        return 1;
+    }
+
+    // config -> context
+    ctx->charset     = cnf->charset;
+    ctx->title       = cnf->title;
+    ctx->margin      = cnf->margin;
+    ctx->font_name   = cnf->font_name;
+    ctx->font_style  = cnf->font_style;
+    ctx->font_weight = cnf->font_weight;
+    ctx->font_size   = cnf->font_size;
+
+    lib_svg_prepare(ctx);
+    
+    ctx->data               = NULL;
+    ctx->size               = 0;
 
     return 0;
 }
 
-static int run_svg(lib_svg_context_t* ctx, char* data, size_t size) {
+// static int lib_html_init2(lib_html_context_t* ctx2, lib_svg_context_t* ctx) {
+//     if (!ctx) {
+//         return 1;
+//     }
+
+//     ctx2->charset     = ctx->charset;
+//     ctx2->title       = ctx->title;
+//     ctx2->margin      = ctx->margin;
+//     ctx2->font_name   = ctx->font_name;
+//     ctx2->font_style  = ctx->font_style;
+//     ctx2->font_weight = ctx->font_weight;
+//     ctx2->font_size   = ctx->font_size;
+
+//     return 0;
+// }
+
+static int run_svg(lib_svg_config_t* config, char* data, size_t size) {
     
     if (size == 0 || !data) {
         fprintf(stderr, "%s: No input data\n", prog_name);
         return 1;
     }
 
-    lib_html_context_t ctx2;
-    lib_html_init2(&ctx2, ctx);
-    lib_html_prepare(&ctx2);
+    lib_svg_context_t ctx;
+    lib_svg_ctx_init(config, &ctx);
+    ctx.data = data;
+    ctx.size = size;
 
-    ctx2.data = data;
-    ctx2.size = size;
+    return 0;
 
-    return lib_html_document(&ctx2);
+    //return lib_html_document(&ctx2);
 }
