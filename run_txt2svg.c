@@ -65,6 +65,8 @@ int main(int argc, char* argv[]) {
     const char* font_style  = NULL;
     const char* font_weight = NULL;
     const char* font_size   = NULL;
+    const char* width       = NULL;
+    const char* height      = NULL;
 
     bool flag_charset       = false;
     bool flag_title         = false;
@@ -82,6 +84,8 @@ int main(int argc, char* argv[]) {
         {LIB_OPT_FONT_STYLE,  optional_argument, 0, LIB_OPT_FONT_STYLE_ID},
         {LIB_OPT_FONT_WEIGHT, optional_argument, 0, LIB_OPT_FONT_WEIGHT_ID},
         {LIB_OPT_FONT_SIZE,   optional_argument, 0, LIB_OPT_FONT_SIZE_ID},
+        {LIB_OPT_WIDTH,       required_argument, 0, LIB_OPT_WIDTH_ID},
+        {LIB_OPT_HEIGHT,      required_argument, 0, LIB_OPT_HEIGHT_ID},
         {NULL,                0,                 0, 0 }
     };
 
@@ -119,6 +123,12 @@ int main(int argc, char* argv[]) {
         case LIB_OPT_FONT_SIZE_ID:   // font-size
             flag_font_size = true;
             font_size = optarg;
+            break;
+        case LIB_OPT_WIDTH_ID:       // width
+            width = optarg;
+            break;
+        case LIB_OPT_HEIGHT_ID:      // height
+            height = optarg;
             break;
         case '?':
             error = 1;
@@ -182,6 +192,8 @@ int main(int argc, char* argv[]) {
     config.font_style  = lib_ifs(flag_font_style, font_style, LIB_SVG_FONT_STYLE);
     config.font_weight = lib_ifs(flag_font_weight, font_weight, LIB_SVG_FONT_WEIGHT);
     config.font_size   = lib_ifs(flag_font_size, font_size, LIB_SVG_FONT_SIZE);
+    config.width       = width;
+    config.height       = height;
 
     error = 0;
     if (flag_string) {

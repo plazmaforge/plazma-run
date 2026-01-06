@@ -23,6 +23,8 @@
 #define LIB_OPT_FONT_STYLE      "font-style"
 #define LIB_OPT_FONT_WEIGHT     "font-weight"
 #define LIB_OPT_FONT_SIZE       "font-size"
+#define LIB_OPT_WIDTH           "width"
+#define LIB_OPT_HEIGHT          "height"
 
 #define LIB_OPT_ENCODING_ID     1000
 #define LIB_OPT_CHARSET_ID      1001
@@ -32,6 +34,8 @@
 #define LIB_OPT_FONT_STYLE_ID   4002
 #define LIB_OPT_FONT_WEIGHT_ID  4003
 #define LIB_OPT_FONT_SIZE_ID    4004
+#define LIB_OPT_WIDTH_ID        5001
+#define LIB_OPT_HEIGHT_ID       5002
 
 static bool _isdigit(char c) {
     return c == '0' 

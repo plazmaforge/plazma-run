@@ -21,6 +21,9 @@ typedef struct lib_svg_config_t {
     const char* font_style;
     const char* font_weight;
     const char* font_size;
+
+    const char* width;
+    const char* height;
 } lib_svg_config_t;
 
 /**
@@ -37,6 +40,11 @@ typedef struct lib_svg_context_t {
     const char* font_size;
     const char* font_unit;
 
+    const char* width;
+    const char* width_unit;
+    const char* height;
+    const char* height_unit;
+
     bool use_charset;
     bool use_title;
     bool use_head;
@@ -48,6 +56,10 @@ typedef struct lib_svg_context_t {
     bool use_font_size;
     bool use_font;
     bool use_style;
+
+    bool use_width;
+    bool use_height;
+    bool use_size;
 
     char* data;
     size_t size;
@@ -71,6 +83,9 @@ static int lib_svg_init(lib_svg_config_t* config) {
     config->font_weight = NULL;
     config->font_size   = NULL;
 
+    config->width       = NULL;
+    config->height      = NULL;
+
     return 0;
 }
 
@@ -79,8 +94,11 @@ static int lib_svg_prepare(lib_svg_context_t* ctx) {
         return 1;
     }
 
-    ctx->margin_unit = lib_svg_unitdef(ctx->margin);
-    ctx->font_unit   = lib_svg_unitdef(ctx->font_size);
+    ctx->margin_unit        = lib_svg_unitdef(ctx->margin);
+    ctx->font_unit          = lib_svg_unitdef(ctx->font_size);
+
+    ctx->width_unit         = lib_svg_unitdef(ctx->width);
+    ctx->height_unit        = lib_svg_unitdef(ctx->height);
 
     ctx->use_charset        = ctx->charset;
     ctx->use_title          = ctx->title;
@@ -93,6 +111,10 @@ static int lib_svg_prepare(lib_svg_context_t* ctx) {
     ctx->use_font_size      = ctx->font_size;
     ctx->use_font           = ctx->use_font_name || ctx->use_font_style || ctx->use_font_weight || ctx->use_font_size;
     ctx->use_style          = ctx->use_margin || ctx->use_font;
+
+    ctx->use_width          = ctx->width;
+    ctx->use_height         = ctx->height;
+    ctx->use_size           = ctx->use_width | ctx->use_height;
 
     return 0;
 
@@ -112,32 +134,34 @@ static int lib_svg_ctx_init(lib_svg_config_t* cnf, lib_svg_context_t* ctx) {
     ctx->font_weight = cnf->font_weight;
     ctx->font_size   = cnf->font_size;
 
+    ctx->width       = cnf->width;
+    ctx->height      = cnf->height;
+
     lib_svg_prepare(ctx);
     
-    ctx->data               = NULL;
-    ctx->size               = 0;
+    ctx->data        = NULL;
+    ctx->size        = 0;
 
     return 0;
 }
 
-// static int lib_html_init2(lib_html_context_t* ctx2, lib_svg_context_t* ctx) {
-//     if (!ctx) {
-//         return 1;
-//     }
-
-//     ctx2->charset     = ctx->charset;
-//     ctx2->title       = ctx->title;
-//     ctx2->margin      = ctx->margin;
-//     ctx2->font_name   = ctx->font_name;
-//     ctx2->font_style  = ctx->font_style;
-//     ctx2->font_weight = ctx->font_weight;
-//     ctx2->font_size   = ctx->font_size;
-
-//     return 0;
-// }
+////
 
 static int lib_svg_margin(lib_html_context_t* ctx) {
     fprintf(stdout, "margin: %s%s;", ctx->margin, ctx->margin_unit);
+    return 0;
+}
+
+static int lib_svg_size(lib_svg_context_t* ctx) {
+    
+    // SIZE
+    if (ctx->use_width) {
+        fprintf(stdout, " width=\"%s%s\"", ctx->width, ctx->width_unit);
+    }
+    if (ctx->use_height) {
+        fprintf(stdout, " height=\"%s%s\"", ctx->height, ctx->height_unit);
+    }
+
     return 0;
 }
 
@@ -160,7 +184,7 @@ static int lib_svg_font(lib_svg_context_t* ctx) {
 }
 
 static int lib_svg_text(lib_svg_context_t* ctx) {
-    fprintf(stdout, "  <text x=\"0\" y=\"20\" ");
+    fprintf(stdout, "  <text x=\"0\" y=\"20\"");
 
     if (ctx->use_style) {
         if (ctx->use_font) {
@@ -178,7 +202,12 @@ static int lib_svg_document(lib_svg_context_t* ctx) {
     
     // DOCUMENT
     fprintf(stdout, "<svg");
-    //fprintf(stdout, " width=\"600\" height=\"300\"");
+
+    // SIZE
+    if (ctx->use_size) {
+        lib_svg_size(ctx);
+
+    }
     fprintf(stdout, " xmlns=\"http://www.w3.org/2000/svg\">\n");
 
     // TEXT
