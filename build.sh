@@ -146,6 +146,7 @@ $CC $CFLAGS run_dconv.c -o run_dconv.o
 $CC $CFLAGS run_txt2html.c -o run_txt2html.o
 $CC $CFLAGS run_txt2svg.c -o run_txt2svg.o
 $CC $CFLAGS run_txt2rtf.c -o run_txt2rtf.o
+$CC $CFLAGS run_txt2pdf.c -o run_txt2pdf.o
 
 $CC $CFLAGS test_getopt.c -o test_getopt.o
 $CC $CFLAGS test_echo.c -o test_echo.o
@@ -228,6 +229,7 @@ $CC $LDFLAGS getopt.o run_dconv.o -o run-dconv
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_txt2html.o -o run-txt2html
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_txt2svg.o -o run-txt2svg
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_txt2rtf.o -o run-txt2rtf
+$CC $LDFLAGS getopt.o iodef.o iolib.o run_txt2pdf.o -o run-txt2pdf
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo
