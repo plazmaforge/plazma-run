@@ -14,44 +14,14 @@
  * HTML Config (temp solution: config -> context)
  */
 typedef struct lib_html_config_t {
-    const char* charset;
-    const char* title;
-    const char* margin;
-    const char* font_name;
-    const char* font_style;
-    const char* font_weight;
-    const char* font_size;
+    LIB_DOC_CONFIG_0
 } lib_html_config_t;
 
 /**
  * HTML Context
  */
 typedef struct lib_html_context_t {
-    const char* charset;
-    const char* title;
-    const char* margin;
-    const char* margin_unit; 
-    const char* font_name;
-    const char* font_style;
-    const char* font_weight;
-    const char* font_size;
-    const char* font_unit;    
-
-    bool use_charset;
-    bool use_title;
-    bool use_head;
-
-    bool use_margin;
-    bool use_font_name;
-    bool use_font_style;
-    bool use_font_weight;
-    bool use_font_size;
-    bool use_font;
-    bool use_style;
-
-    char* data;
-    size_t size;
-
+    LIB_DOC_CONTEXT_0
 } lib_html_context_t;
 
 static int lib_html_document(lib_html_context_t* ctx);

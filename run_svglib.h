@@ -14,13 +14,14 @@
  * SVG Config
  */
 typedef struct lib_svg_config_t {
-    const char* charset;
-    const char* title;
-    const char* margin;
-    const char* font_name;
-    const char* font_style;
-    const char* font_weight;
-    const char* font_size;
+    LIB_DOC_CONFIG_0
+    // const char* charset;
+    // const char* title;
+    // const char* margin;
+    // const char* font_name;
+    // const char* font_style;
+    // const char* font_weight;
+    // const char* font_size;
 
     const char* width;
     const char* height;
@@ -30,39 +31,46 @@ typedef struct lib_svg_config_t {
  * SVG Context
  */
 typedef struct lib_svg_context_t {
-    const char* charset;
-    const char* title;
-    const char* margin;
-    const char* margin_unit; 
-    const char* font_name;
-    const char* font_style;
-    const char* font_weight;
-    const char* font_size;
-    const char* font_unit;
+    LIB_DOC_CONTEXT_0
+
+    // const char* charset;
+    // const char* title;
+    // const char* margin;
+    // const char* margin_unit; 
+    // const char* font_name;
+    // const char* font_style;
+    // const char* font_weight;
+    // const char* font_size;
+    // const char* font_unit;
+
+    // const char* width;
+    // const char* width_unit;
+    // const char* height;
+    // const char* height_unit;
+
+    // bool use_charset;
+    // bool use_title;
+    // bool use_head;
+
+    // bool use_margin;
+    // bool use_font_name;
+    // bool use_font_style;
+    // bool use_font_weight;
+    // bool use_font_size;
+    // bool use_font;
+    // bool use_style;
 
     const char* width;
     const char* width_unit;
     const char* height;
     const char* height_unit;
 
-    bool use_charset;
-    bool use_title;
-    bool use_head;
-
-    bool use_margin;
-    bool use_font_name;
-    bool use_font_style;
-    bool use_font_weight;
-    bool use_font_size;
-    bool use_font;
-    bool use_style;
-
     bool use_width;
     bool use_height;
     bool use_size;
 
-    char* data;
-    size_t size;
+    // char* data;
+    // size_t size;
 
 } lib_svg_context_t;
 

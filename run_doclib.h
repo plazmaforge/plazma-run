@@ -37,6 +37,80 @@
 #define LIB_OPT_WIDTH_ID        5001
 #define LIB_OPT_HEIGHT_ID       5002
 
+typedef struct lib_margin_t {
+    const char* value;
+    const char* unit;
+} lib_margin_t;
+
+typedef struct lib_font_t {
+    const char* name;
+    const char* style;
+    const char* weight;
+    const char* size;
+    const char* unit;
+} lib_font_t;
+
+#define LIB_DOC_CONFIG_0      \
+    const char* charset;      \
+    const char* title;        \
+    const char* margin;       \
+    const char* margin_unit;  \
+    const char* font_name;    \
+    const char* font_style;   \
+    const char* font_weight;  \
+    const char* font_size;    \
+    const char* font_unit;    \
+
+#define LIB_DOC_CONTEXT_0     \
+    const char* charset;      \
+    const char* title;        \
+    const char* margin;       \
+    const char* margin_unit;  \
+    const char* font_name;    \
+    const char* font_style;   \
+    const char* font_weight;  \
+    const char* font_size;    \
+    const char* font_unit;    \
+    bool use_charset;         \
+    bool use_title;           \
+    bool use_head;            \
+    bool use_margin;          \
+    bool use_font_name;       \
+    bool use_font_style;      \
+    bool use_font_weight;     \
+    bool use_font_size;       \
+    bool use_font;            \
+    bool use_style;           \
+    char* data;               \
+    size_t size;              \
+
+
+#define LIB_DOC_CONFIG        \
+    const char* charset;      \
+    const char* title;        \
+    const char* margin;       \
+    const char* margin_unit;  \
+    lib_font_t* font;         \
+
+#define LIB_DOC_CONTEXT       \
+    const char* charset;      \
+    const char* title;        \
+    const char* margin;       \
+    const char* margin_unit;  \
+    lib_font_t* font;         \
+    bool use_charset;         \
+    bool use_title;           \
+    bool use_head;            \
+    bool use_margin;          \
+    bool use_font_name;       \
+    bool use_font_style;      \
+    bool use_font_weight;     \
+    bool use_font_size;       \
+    bool use_font;            \
+    bool use_style;           \
+    char* data;               \
+    size_t size;              \
+
 static bool _isdigit(char c) {
     return c == '0' 
     || c == '1'
