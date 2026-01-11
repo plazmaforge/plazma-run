@@ -111,6 +111,21 @@ typedef struct lib_font_t {
     char* data;               \
     size_t size;              \
 
+/**
+ * DOC Config
+ */
+typedef struct lib_doc_config_t {
+    LIB_DOC_CONFIG
+} lib_doc_config_t;
+
+/**
+ * DOC Context
+ */
+typedef struct lib_doc_context_t {
+    LIB_DOC_CONTEXT
+} lib_doc_context_t;
+
+
 static bool _isdigit(char c) {
     return c == '0' 
     || c == '1'
@@ -188,6 +203,70 @@ inline static const char* lib_defs(const char* s1, const char* s2) {
 
 static const char* lib_doc_unitdef(const char* value) {
     return lib_is_digit(value) ? LIB_DOC_UNIT : "";
+}
+
+static int lib_doc_font_init(lib_font_t* font, 
+    const char* font_name, 
+    const char* font_style,  
+    const char* font_weight,
+    const char* font_size
+) {
+    if (!font) {
+        return 1;
+    }
+    font->name = font_name;
+    font->style = font_style;
+    font->weight = font_weight;
+    font->size = font_size;
+    return 0;
+}
+
+static int lib_doc_config_init(lib_doc_config_t* cnf) {
+    if (!cnf) {
+        return 1;
+    }
+
+    cnf->charset     = NULL;
+    cnf->title       = NULL;
+    cnf->margin      = NULL;
+    cnf->margin_unit = NULL;
+
+    cnf->font = NULL;
+    return 0;
+}
+
+static int lib_doc_context_prepare(lib_doc_context_t* ctx) {
+    if (!ctx) {
+        return 1;
+    }
+
+    //ctx->margin_unit = lib_rtf_unitdef(ctx->margin);
+    //ctx->font->unit   = lib_rtf_unitdef(ctx->font->size);
+
+    ctx->use_charset        = ctx->charset;
+    ctx->use_title          = ctx->title;
+    ctx->use_head           = ctx->use_charset || ctx->use_title;
+
+    ctx->use_margin         = ctx->margin;
+
+    if (ctx->font) {
+        ctx->use_font_name      = ctx->font->name;
+        ctx->use_font_style     = ctx->font->style;
+        ctx->use_font_weight    = ctx->font->weight;
+        ctx->use_font_size      = ctx->font->size;
+        ctx->use_font           = ctx->use_font_name || ctx->use_font_style || ctx->use_font_weight || ctx->use_font_size;
+    } else {
+        ctx->use_font_name      = false;
+        ctx->use_font_style     = false;
+        ctx->use_font_weight    = false;
+        ctx->use_font_size      = false;
+        ctx->use_font           = false;        
+    }
+
+    ctx->use_style          = ctx->use_margin || ctx->use_font;
+
+    return 0;
+
 }
 
 #endif // PLAZMA_LIB_DOCLIB_H

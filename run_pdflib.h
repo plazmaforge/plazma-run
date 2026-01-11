@@ -14,14 +14,14 @@
  * PDF Config
  */
 typedef struct lib_pdf_config_t {
-    LIB_DOC_CONFIG_0
+    LIB_DOC_CONFIG
 } lib_pdf_config_t;
 
 /**
  * PDF Context
  */
 typedef struct lib_pdf_context_t {
-    LIB_DOC_CONTEXT_0
+    LIB_DOC_CONTEXT
 
 } lib_pdf_context_t;
 
@@ -45,14 +45,7 @@ static int lib_pdf_init(lib_pdf_config_t* cnf) {
         return 1;
     }
 
-    cnf->charset     = NULL;
-    cnf->title       = NULL;
-    cnf->margin      = NULL;
-    cnf->font_name   = NULL;
-    cnf->font_style  = NULL;
-    cnf->font_weight = NULL;
-    cnf->font_size   = NULL;
-    return 0;
+    return lib_doc_config_init((lib_doc_config_t*) cnf);
 }
 
 static int lib_pdf_prepare(lib_pdf_context_t* ctx) {
@@ -60,23 +53,12 @@ static int lib_pdf_prepare(lib_pdf_context_t* ctx) {
         return 1;
     }
 
-    ctx->margin_unit = lib_pdf_unitdef(ctx->margin);
-    ctx->font_unit   = lib_pdf_unitdef(ctx->font_size);
+    ctx->margin_unit    = lib_pdf_unitdef(ctx->margin);
+    if (ctx->font) {
+        ctx->font->unit = lib_pdf_unitdef(ctx->font->size);
+    }
 
-    ctx->use_charset        = ctx->charset;
-    ctx->use_title          = ctx->title;
-    ctx->use_head           = ctx->use_charset || ctx->use_title;
-
-    ctx->use_margin         = ctx->margin;
-    ctx->use_font_name      = ctx->font_name;
-    ctx->use_font_style     = ctx->font_style;
-    ctx->use_font_weight    = ctx->font_weight;
-    ctx->use_font_size      = ctx->font_size;
-    ctx->use_font           = ctx->use_font_name || ctx->use_font_style || ctx->use_font_weight || ctx->use_font_size;
-    ctx->use_style          = ctx->use_margin || ctx->use_font;
-
-    return 0;
-
+    return lib_doc_context_prepare((lib_doc_context_t*) ctx);
 }
 
 static int lib_pdf_ctx_init(lib_pdf_config_t* cnf, lib_pdf_context_t* ctx) {
@@ -85,20 +67,14 @@ static int lib_pdf_ctx_init(lib_pdf_config_t* cnf, lib_pdf_context_t* ctx) {
     }
 
     // config -> context
-    ctx->charset     = cnf->charset;
-    ctx->title       = cnf->title;
-    ctx->margin      = cnf->margin;
-    ctx->font_name   = cnf->font_name;
-    ctx->font_style  = cnf->font_style;
-    ctx->font_weight = cnf->font_weight;
-    ctx->font_size   = cnf->font_size;
+    ctx->charset = cnf->charset;
+    ctx->title   = cnf->title;
+    ctx->margin  = cnf->margin;
+    ctx->font    = cnf->font;
+    ctx->data    = NULL;
+    ctx->size    = 0;
 
-    lib_pdf_prepare(ctx);
-    
-    ctx->data               = NULL;
-    ctx->size               = 0;
-
-    return 0;
+    return lib_pdf_prepare(ctx);
 }
 
 static int lib_pdf_document(lib_pdf_context_t* ctx) {
@@ -142,16 +118,16 @@ static int lib_pdf_margin(lib_pdf_context_t* ctx) {
 static int lib_pdf_font(lib_pdf_context_t* ctx) {
 
     if (ctx->use_font_name) {
-        fprintf(stdout, "font-family: %s;", ctx->font_name);
+        fprintf(stdout, "font-family: %s;", ctx->font->name);
     }
     if (ctx->use_font_style) {
-        fprintf(stdout, "font-style: %s;", ctx->font_style);
+        fprintf(stdout, "font-style: %s;", ctx->font->style);
     }
     if (ctx->use_font_weight) {
-        fprintf(stdout, "font-weight: %s;", ctx->font_weight);
+        fprintf(stdout, "font-weight: %s;", ctx->font->weight);
     }
     if (ctx->use_font_size) {
-        fprintf(stdout, "font-size: %s%s;", ctx->font_size, ctx->font_unit);
+        fprintf(stdout, "font-size: %s%s;", ctx->font->size, ctx->font->unit);
     }
     
     return 0;
@@ -213,7 +189,12 @@ static int run_pdf(lib_pdf_config_t* config, char* data, size_t size) {
     }
 
     lib_pdf_context_t ctx;
-    lib_pdf_ctx_init(config, &ctx);
+    int error = lib_pdf_ctx_init(config, &ctx);
+    if (error != 0) {
+        fprintf(stderr, "%s: Initialization error\n", prog_name);
+        return error;
+    }
+
     ctx.data = data;
     ctx.size = size;
 

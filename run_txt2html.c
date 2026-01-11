@@ -180,10 +180,17 @@ int main(int argc, char* argv[]) {
     config.charset     = lib_ifs(flag_charset, charset, LIB_HTML_CHARSET);
     config.title       = lib_ifs(flag_title, title, LIB_HTML_TITLE);
     config.margin      = lib_ifs(flag_margin, margin, LIB_HTML_MARGIN);
-    config.font_name   = lib_ifs(flag_font_name, font_name, LIB_HTML_FONT_NAME);
-    config.font_style  = lib_ifs(flag_font_style, font_style, LIB_HTML_FONT_STYLE);
-    config.font_weight = lib_ifs(flag_font_weight, font_weight, LIB_HTML_FONT_WEIGHT);
-    config.font_size   = lib_ifs(flag_font_size, font_size, LIB_HTML_FONT_SIZE);
+
+    font_name   = lib_ifs(flag_font_name, font_name, LIB_HTML_FONT_NAME);
+    font_style  = lib_ifs(flag_font_style, font_style, LIB_HTML_FONT_STYLE);
+    font_weight = lib_ifs(flag_font_weight, font_weight, LIB_HTML_FONT_WEIGHT);
+    font_size   = lib_ifs(flag_font_size, font_size, LIB_HTML_FONT_SIZE);
+
+    if (font_name || font_style || font_weight || font_size) {
+        lib_font_t font;
+        config.font = &font;
+        lib_doc_font_init(&font, font_name, font_style, font_weight, font_size);
+    }
 
     error = 0;
     if (flag_string) {
