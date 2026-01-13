@@ -5,7 +5,7 @@
 #define LIB_RTF_TITLE       NULL
 #define LIB_RTF_UNIT        "px"
 #define LIB_RTF_MARGIN      "5px"
-#define LIB_RTF_FONT_NAME   LIB_DOC_FONT_NAME
+#define LIB_RTF_FONT_NAME   "Arial"
 #define LIB_RTF_FONT_STYLE  LIB_DOC_FONT_STYLE
 #define LIB_RTF_FONT_WEIGHT LIB_DOC_FONT_WEIGHT
 #define LIB_RTF_FONT_SIZE   "12px"
@@ -27,6 +27,8 @@ typedef struct lib_rtf_context_t {
 static int lib_rtf_document(lib_rtf_context_t* ctx);
 
 static int lib_rtf_head(lib_rtf_context_t* ctx);
+
+static int lib_rtf_charset(lib_rtf_context_t* ctx);
 
 static int lib_rtf_margin(lib_rtf_context_t* ctx);
 
@@ -85,16 +87,11 @@ static int lib_rtf_document(lib_rtf_context_t* ctx) {
     
     // DOCUMENT
     fprintf(stdout, "{\\rtf1\\ansi\\deff0\n");
-    //fprintf(stdout, "\\fni1\\fcharset204\n");
 
     // HEAD
-    //if (ctx->use_charset) {
-    //    lib_rtf_charset(ctx);
-    //}
-
-    //if (ctx->use_font) {
-    //    lib_rtf_font(ctx);
-    //}
+    if (ctx->use_head) {
+       lib_rtf_head(ctx);
+    }
 
     // BODY
     lib_rtf_body(ctx);
@@ -106,13 +103,25 @@ static int lib_rtf_document(lib_rtf_context_t* ctx) {
 
 static int lib_rtf_head(lib_rtf_context_t* ctx) {
 
+    // CHARSET    
     if (ctx->use_charset) {
-        // TODO
-    }
-    if (ctx->use_title) {
-        // TODO
+        lib_rtf_charset(ctx);
     }
 
+    //if (ctx->use_title) {
+    //}
+
+    // FONT
+    if (ctx->use_font) {
+        lib_rtf_font(ctx);
+    }
+
+    return 0;
+}
+
+static int lib_rtf_charset(lib_rtf_context_t* ctx) {
+    // TODO
+    //fprintf(stdout, "\\fni1\\fcharset204\n");
     return 0;
 }
 
@@ -124,17 +133,55 @@ static int lib_rtf_margin(lib_rtf_context_t* ctx) {
 static int lib_rtf_font(lib_rtf_context_t* ctx) {
 
     if (ctx->use_font_name) {
-        // TODO
+        fprintf(stdout, "{\\fonttbl {\\f0 %s;}}\n", ctx->font->name);
+        fprintf(stdout, "\\f0\n");
     }
+
     if (ctx->use_font_style) {
         // TODO
+        if (lib_stricmp(ctx->font->style, "italic") == 0) {
+            fprintf(stdout, "\\i\n");
+        }
     }
+
     if (ctx->use_font_weight) {
         // TODO
+        if (lib_stricmp(ctx->font->weight, "bold") == 0) {
+            fprintf(stdout, "\\b\n");
+        }
     }
+
     if (ctx->use_font_size) {
         // TODO
+        if (lib_is_digit(ctx->font->size)) {
+            int size = atoi(ctx->font->size);
+            int size_pt = size;
+            int fs = size_pt * 2;
+            fprintf(stdout, "\\fs%d\n", fs);
+        }
     }
+
+    /*
+
+    - Font Underline:
+    \ul       - solid
+    \ulth     - solid?
+    \uldb     - double
+    \ulthdash - dash
+    \uld      - dott
+
+    - Font line-throught
+    \strike
+
+    - Font Color
+    {\colortbl;red0\gren0\blue0;red0\green0\blue255;}
+    \cf1
+
+    - Font Unicode
+    \u<dec><c>
+    \198?
+
+    */
     
     return 0;
 }
