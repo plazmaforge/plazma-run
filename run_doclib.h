@@ -202,6 +202,113 @@ inline static const char* lib_defs(const char* s1, const char* s2) {
 
 ////
 
+// strstr
+
+const char* lib_strstr(const char* str, const char* find) {
+  if (!str || !find) {
+    return NULL;
+  }
+  //return strstr(str, find);
+
+  char* s = (char*) str;
+  char* f;
+  size_t flen = strlen(find);
+
+  while (*s) {
+    f = (char*) find;
+    if (*s == *f) {
+      size_t j = 1;
+      while (*s == *f) {
+        if (j == flen) {
+          return (char*) (s - flen + 1);
+        }
+        s++;
+        f++;
+        j++;
+      }      
+    }
+    s++;
+  }
+  return NULL;
+}
+
+const char* lib_stristr(const char* str, const char* find) {
+  if (!str || !find) {
+    return NULL;
+  }
+
+  char* s = (char*) str;
+  char* f;
+  size_t flen = strlen(find);
+
+  while (*s) {
+    f = (char*) find;
+    if (tolower(*s) == tolower(*f)) {
+      size_t j = 1;
+      // TODO: Use do/while
+      while (tolower(*s) == tolower(*f)) {
+        if (j == flen) {
+          return (char*) (s - flen + 1);
+        }
+        s++;
+        f++;
+        j++;
+      }      
+    }
+    s++;
+  }
+  return NULL;
+}
+
+////
+
+static bool lib_strin(const char* str, const char* find) {
+    if (!str || !find) {
+        return false;
+    }
+
+    // if (strcmp(str, find) == 0) {
+    //     return true;
+    // }
+
+    size_t len = strlen(find);
+    if (len == 0) {
+        return false;
+    }
+
+    const char* s = lib_strstr(str, find);
+    if (!s) {
+      return false;
+    }
+
+    int start = (int) (s - str);
+    int end   = start + len - 1;
+
+    //fprintf(stderr, ">> name     : %s\n", uname);
+    //fprintf(stderr, ">> alias    : %s\n", alias);
+    //fprintf(stderr, ">> start    : %d\n", start);
+    //fprintf(stderr, ">> end      : %d\n", end);
+    //fprintf(stderr, ">> alias[%d]: %c\n", start, alias[start]);
+    //fprintf(stderr, ">> alias[%d]: %c\n", end, alias[end]);
+
+    bool is_start = false;
+    bool is_end = false;
+
+    if (start == 0 || str[start - 1] == ' ') {
+      is_start = true;
+    }
+    if (end == strlen(str) - 1 || str[end + 1] == ' ') {
+      is_end = true;
+    }
+
+    //fprintf(stderr, ">> is_start : %d\n", is_start);
+    //fprintf(stderr, ">> is_end   : %d\n", is_end);
+
+    return is_start && is_end;
+}
+
+////
+
 int lib_stricmp(const char* str1, const char* str2) {
   if (!str1 && !str2) {
     return 0;
@@ -270,6 +377,10 @@ int lib_stricmp(const char* str1, const char* str2) {
 
 static const char* lib_doc_unitdef(const char* value) {
     return lib_is_digit(value) ? LIB_DOC_UNIT : "";
+}
+
+static bool lib_has_value(const char* str, const char* style) {
+    return lib_strin(str, style);
 }
 
 static int lib_doc_font_init(lib_font_t* font, 

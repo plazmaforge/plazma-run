@@ -132,18 +132,42 @@ static int lib_rtf_margin(lib_rtf_context_t* ctx) {
 
 static int lib_rtf_font(lib_rtf_context_t* ctx) {
 
+    // FONT TABLE
     if (ctx->use_font_name) {
         fprintf(stdout, "{\\fonttbl {\\f0 %s;}}\n", ctx->font->name);
         fprintf(stdout, "\\f0\n");
     }
 
+    // STYLE
     if (ctx->use_font_style) {
-        // TODO
-        if (lib_stricmp(ctx->font->style, "italic") == 0) {
+
+        // ITALIC
+        if (lib_has_value(ctx->font->style, "italic")) {    
             fprintf(stdout, "\\i\n");
+        }
+
+        // UNDERLINE
+        if (lib_has_value(ctx->font->style, "underline")) {
+            if (lib_has_value(ctx->font->style, "solid")) {
+                fprintf(stdout, "\\ulth\n");
+            } else if (lib_has_value(ctx->font->style, "double")) {
+                fprintf(stdout, "\\uldb\n");
+            } else if (lib_has_value(ctx->font->style, "dash")) {
+                fprintf(stdout, "\\ulthdash\n");
+            } else if (lib_has_value(ctx->font->style, "dott")) {
+                fprintf(stdout, "\\uld\n");
+            } else {
+                fprintf(stdout, "\\ul\n");
+            }
+        }
+
+        // STRIKE
+        if (lib_has_value(ctx->font->style, "strike")) {
+            fprintf(stdout, "\\strike\n");
         }
     }
 
+    // WEIGHT
     if (ctx->use_font_weight) {
         // TODO
         if (lib_stricmp(ctx->font->weight, "bold") == 0) {
@@ -151,6 +175,7 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
         }
     }
 
+    // SIZE
     if (ctx->use_font_size) {
         // TODO
         if (lib_is_digit(ctx->font->size)) {
