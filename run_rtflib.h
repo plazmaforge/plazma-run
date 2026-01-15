@@ -142,20 +142,33 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
     if (ctx->use_font_style) {
 
         // ITALIC
-        if (lib_has_value(ctx->font->style, "italic")) {    
+        if (lib_doc_has_style(ctx->font->style, "italic")) {    
             fprintf(stdout, "\\i\n");
         }
 
         // UNDERLINE
-        if (lib_has_value(ctx->font->style, "underline")) {
+        if (lib_doc_has_style(ctx->font->style, "underline")) {
 
-            if (lib_has_value(ctx->font->style, "thick")) {
+            if (lib_doc_has_style(ctx->font->style, "thick")) {
                 fprintf(stdout, "\\ulth\n");
-            } else if (lib_has_value(ctx->font->style, "double")) {
+            } else if (lib_doc_has_style(ctx->font->style, "double")) {
                 fprintf(stdout, "\\uldb\n");
-            } else if (lib_has_value(ctx->font->style, "dash")) {
+
+            } else if (lib_doc_has_thdash(ctx->font->style)) {
+                fprintf(stdout, "\\ulthdash\n");
+            } else if (lib_doc_has_thdashd(ctx->font->style)) {
+                fprintf(stdout, "\\ulthdashd\n");
+            } else if (lib_doc_has_thdashdd(ctx->font->style)) {
+                fprintf(stdout, "\\ulthdashdd\n");
+
+            } else if (lib_doc_has_dashd(ctx->font->style)) {
+                fprintf(stdout, "\\uldashd\n");
+            } else if (lib_doc_has_dashdd(ctx->font->style)) {
+                fprintf(stdout, "\\uldashdd\n");
+
+            } else if (lib_doc_has_dashed(ctx->font->style)) {
                 fprintf(stdout, "\\uldash\n");
-            } else if (lib_has_value(ctx->font->style, "dot")) {
+            } else if (lib_doc_has_dotted(ctx->font->style)) {    
                 fprintf(stdout, "\\uld\n");
             } else {
                 fprintf(stdout, "\\ul\n");
@@ -164,7 +177,7 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
         }
 
         // STRIKE
-        if (lib_has_value(ctx->font->style, "strike")) {
+        if (lib_doc_has_style(ctx->font->style, "strike")) {
             fprintf(stdout, "\\strike\n");
         }
     }
