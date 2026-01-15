@@ -148,17 +148,19 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
 
         // UNDERLINE
         if (lib_has_value(ctx->font->style, "underline")) {
-            if (lib_has_value(ctx->font->style, "solid")) {
+
+            if (lib_has_value(ctx->font->style, "thick")) {
                 fprintf(stdout, "\\ulth\n");
             } else if (lib_has_value(ctx->font->style, "double")) {
                 fprintf(stdout, "\\uldb\n");
             } else if (lib_has_value(ctx->font->style, "dash")) {
-                fprintf(stdout, "\\ulthdash\n");
-            } else if (lib_has_value(ctx->font->style, "dott")) {
+                fprintf(stdout, "\\uldash\n");
+            } else if (lib_has_value(ctx->font->style, "dot")) {
                 fprintf(stdout, "\\uld\n");
             } else {
                 fprintf(stdout, "\\ul\n");
             }
+
         }
 
         // STRIKE
@@ -189,11 +191,19 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
     /*
 
     - Font Underline:
-    \ul       - solid
-    \ulth     - solid?
-    \uldb     - double
-    \ulthdash - dash
-    \uld      - dott
+    \ul         - Underline
+    \uldb       - Double underline
+
+    \uld        - Dot underline
+
+    \uldash     - Dash underline
+    \uldashd    - Dot dash underline
+    \uldashdd   - Dot dot dash underline
+
+    \ulth       - Thick underline
+    \ulthdash   - Thick dash underline
+    \ulthdashd  - Thick dot dash underline
+    \ulthdashdd - Thick dot dot dash underline
 
     - Font line-throught
     \strike
