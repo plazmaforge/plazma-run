@@ -149,26 +149,31 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
         // UNDERLINE
         if (lib_doc_has_style(ctx->font->style, "underline")) {
 
-            if (lib_doc_has_style(ctx->font->style, "thick")) {
-                fprintf(stdout, "\\ulth\n");
-            } else if (lib_doc_has_style(ctx->font->style, "double")) {
+            if (lib_doc_has_double(ctx->font->style)) {
                 fprintf(stdout, "\\uldb\n");
+            } else if (lib_doc_has_word(ctx->font->style)) {
+                fprintf(stdout, "\\ulw\n");
+            } else if (lib_doc_has_wave(ctx->font->style)) {
+                fprintf(stdout, "\\ulwave\n");
 
-            } else if (lib_doc_has_thdash(ctx->font->style)) {
-                fprintf(stdout, "\\ulthdash\n");
-            } else if (lib_doc_has_thdashd(ctx->font->style)) {
-                fprintf(stdout, "\\ulthdashd\n");
             } else if (lib_doc_has_thdashdd(ctx->font->style)) {
                 fprintf(stdout, "\\ulthdashdd\n");
+            } else if (lib_doc_has_thdashd(ctx->font->style)) {
+                fprintf(stdout, "\\ulthdashd\n");
+            } else if (lib_doc_has_thdash(ctx->font->style)) {
+                fprintf(stdout, "\\ulthdash\n");
+            } else if (lib_doc_has_thdot(ctx->font->style)) {    
+                fprintf(stdout, "\\ulthd\n");
+            } else if (lib_doc_has_thick(ctx->font->style)) {
+                fprintf(stdout, "\\ulth\n");
 
-            } else if (lib_doc_has_dashd(ctx->font->style)) {
-                fprintf(stdout, "\\uldashd\n");
             } else if (lib_doc_has_dashdd(ctx->font->style)) {
                 fprintf(stdout, "\\uldashdd\n");
-
-            } else if (lib_doc_has_dashed(ctx->font->style)) {
+            } else if (lib_doc_has_dashd(ctx->font->style)) {
+                fprintf(stdout, "\\uldashd\n");
+            } else if (lib_doc_has_dash(ctx->font->style)) {
                 fprintf(stdout, "\\uldash\n");
-            } else if (lib_doc_has_dotted(ctx->font->style)) {    
+            } else if (lib_doc_has_dot(ctx->font->style)) {    
                 fprintf(stdout, "\\uld\n");
             } else {
                 fprintf(stdout, "\\ul\n");
@@ -204,19 +209,22 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
     /*
 
     - Font Underline:
+
     \ul         - Underline
-    \uldb       - Double underline
-
     \uld        - Dot underline
-
     \uldash     - Dash underline
     \uldashd    - Dot dash underline
     \uldashdd   - Dot dot dash underline
 
     \ulth       - Thick underline
+    \ulthd      - Thick dot underline
     \ulthdash   - Thick dash underline
     \ulthdashd  - Thick dot dash underline
     \ulthdashdd - Thick dot dot dash underline
+
+    \uldb       - Double underline
+    \ulw        - Word underline
+    \ulword     - Wave underline
 
     - Font line-throught
     \strike

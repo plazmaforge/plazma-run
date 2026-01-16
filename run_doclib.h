@@ -387,42 +387,70 @@ static bool lib_doc_has_thick(const char* str) {
     return lib_doc_has_style(str, "thick");
 }
 
+static bool lib_doc_has_double(const char* str) {
+    return lib_doc_has_style(str, "double");
+}
+
+static bool lib_doc_has_word(const char* str) {
+    return lib_doc_has_style(str, "word");
+}
+
+static bool lib_doc_has_wave(const char* str) {
+    return lib_doc_has_style(str, "wave");
+}
+
 static bool lib_doc_has_dashed(const char* str) {
-    return lib_doc_has_style(str, "dashed") || lib_doc_has_style(str, "dash");
+    return lib_doc_has_style(str, "dashed") 
+    || lib_doc_has_style(str, "dash");
 }
 
 static bool lib_doc_has_dotted(const char* str) {
-    return lib_doc_has_style(str, "dotted") || lib_doc_has_style(str, "dot");
+    return lib_doc_has_style(str, "dotted") 
+    || lib_doc_has_style(str, "dot");
 }
 
 ////
 
-static bool lib_doc_has_dash(const char* str) {
-    return lib_doc_has_dashed(str);
-}
-
+// dot
 static bool lib_doc_has_dot(const char* str) {
     return lib_doc_has_dotted(str);
 }
 
+// thdot
+static bool lib_doc_has_thdot(const char* str) {
+    return lib_doc_has_style(str, "thd") 
+    || lib_doc_has_style(str, "thdot")
+    || (lib_doc_has_thick(str) && lib_doc_has_dot(str));
+}
+
+// dash
+static bool lib_doc_has_dash(const char* str) {
+    return lib_doc_has_dashed(str);
+}
+
 static bool lib_doc_has_dashd(const char* str) {
-    return lib_doc_has_style(str, "dashd") || (lib_doc_has_dashed(str) && lib_doc_has_dotted(str));
+    return lib_doc_has_style(str, "dashd") 
+    || (lib_doc_has_dashed(str) && lib_doc_has_dotted(str));
 }
 
 static bool lib_doc_has_dashdd(const char* str) {
     return lib_doc_has_style(str, "dashdd"); // || (lib_doc_has_dashed(str) && lib_doc_has_dotted(str));
 }
 
+// thdash
 static bool lib_doc_has_thdash(const char* str) {
-    return lib_doc_has_style(str, "thdash") || (lib_doc_has_thick(str) && lib_doc_has_dash(str));
+    return lib_doc_has_style(str, "thdash") 
+    || (lib_doc_has_thick(str) && lib_doc_has_dash(str));
 }
 
 static bool lib_doc_has_thdashd(const char* str) {
-    return lib_doc_has_style(str, "thdashd") || (lib_doc_has_thick(str) && lib_doc_has_dashd(str));
+    return lib_doc_has_style(str, "thdashd") 
+    || (lib_doc_has_thick(str) && lib_doc_has_dashd(str));
 }
 
 static bool lib_doc_has_thdashdd(const char* str) {
-    return lib_doc_has_style(str, "thdashdd") || (lib_doc_has_thick(str) && lib_doc_has_dashdd(str));
+    return lib_doc_has_style(str, "thdashdd") 
+    || (lib_doc_has_thick(str) && lib_doc_has_dashdd(str));
 }
 
 // static bool lib_has_value(const char* str, const char* value) {
