@@ -383,6 +383,26 @@ static bool lib_doc_has_style(const char* str, const char* style) {
     return lib_strin(str, style);
 }
 
+////
+
+static bool lib_doc_has_italic(const char* str) {
+    return lib_doc_has_style(str, "italic");
+}
+
+static bool lib_doc_has_bold(const char* str) {
+    return lib_doc_has_style(str, "bold");
+}
+
+static bool lib_doc_has_underline(const char* str) {
+    return lib_doc_has_style(str, "underline");
+}
+
+static bool lib_doc_has_strike(const char* str) {
+    return lib_doc_has_style(str, "strike");
+}
+
+////
+
 static bool lib_doc_has_thick(const char* str) {
     return lib_doc_has_style(str, "thick");
 }
@@ -452,10 +472,6 @@ static bool lib_doc_has_thdashdd(const char* str) {
     return lib_doc_has_style(str, "thdashdd") 
     || (lib_doc_has_thick(str) && lib_doc_has_dashdd(str));
 }
-
-// static bool lib_has_value(const char* str, const char* value) {
-//     return lib_strin(str, value);
-// }
 
 static int lib_doc_font_init(lib_font_t* font, 
     const char* font_name, 

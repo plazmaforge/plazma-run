@@ -142,12 +142,12 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
     if (ctx->use_font_style) {
 
         // ITALIC
-        if (lib_doc_has_style(ctx->font->style, "italic")) {    
+        if (lib_doc_has_italic(ctx->font->style)) {
             fprintf(stdout, "\\i\n");
         }
 
         // UNDERLINE
-        if (lib_doc_has_style(ctx->font->style, "underline")) {
+        if (lib_doc_has_underline(ctx->font->style)) {
 
             if (lib_doc_has_double(ctx->font->style)) {
                 fprintf(stdout, "\\uldb\n");
@@ -182,15 +182,15 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
         }
 
         // STRIKE
-        if (lib_doc_has_style(ctx->font->style, "strike")) {
+        if (lib_doc_has_strike(ctx->font->style)) {
             fprintf(stdout, "\\strike\n");
         }
     }
 
     // WEIGHT
     if (ctx->use_font_weight) {
-        // TODO
-        if (lib_stricmp(ctx->font->weight, "bold") == 0) {
+        // TODO: bold = nnn
+        if (lib_doc_has_bold(ctx->font->style)) {
             fprintf(stdout, "\\b\n");
         }
     }
