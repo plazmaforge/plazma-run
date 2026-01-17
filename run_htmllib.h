@@ -177,7 +177,9 @@ static int lib_html_font(lib_html_context_t* ctx) {
                 }
                 fprintf(stdout, "; ");
 
-                // DECORATION-STYLE: Only one style (?)
+                // DECORATION-STYLE
+                // double | dotted | dashed | wavy: Only one style (?)
+                // word (?)
                 if (lib_doc_has_double(ctx->font->style)) {
                     fprintf(stdout, "text-decoration-style: %s; ", "double");
                 } else if (lib_doc_has_dotted(ctx->font->style)) {

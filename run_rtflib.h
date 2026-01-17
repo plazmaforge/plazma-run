@@ -131,12 +131,15 @@ static int lib_rtf_margin(lib_rtf_context_t* ctx) {
 }
 
 static int lib_rtf_font(lib_rtf_context_t* ctx) {
+    
 
     // FONT TABLE
     if (ctx->use_font_name) {
         fprintf(stdout, "{\\fonttbl {\\f0 %s;}}\n", ctx->font->name);
         fprintf(stdout, "\\f0\n");
     }
+
+    bool use_bold      = false;
 
     // STYLE
     if (ctx->use_font_style) {
@@ -146,9 +149,16 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
             fprintf(stdout, "\\i\n");
         }
 
+        // BOLD: has bold (!)
+        if (lib_doc_has_bold(ctx->font->style)) {
+            use_bold = true;
+            fprintf(stdout, "\\b\n");
+        }
+
         // UNDERLINE
         if (lib_doc_has_underline(ctx->font->style)) {
 
+            // double | word | wave: Only one style (?)
             if (lib_doc_has_double(ctx->font->style)) {
                 fprintf(stdout, "\\uldb\n");
             } else if (lib_doc_has_word(ctx->font->style)) {
@@ -191,7 +201,9 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
     if (ctx->use_font_weight) {
         // TODO: bold = nnn
         if (lib_doc_has_bold(ctx->font->style)) {
-            fprintf(stdout, "\\b\n");
+            if (!use_bold) {
+                fprintf(stdout, "\\b\n");
+            }
         }
     }
 
