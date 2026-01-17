@@ -115,23 +115,102 @@ static int lib_html_head(lib_html_context_t* ctx) {
 }
 
 static int lib_html_margin(lib_html_context_t* ctx) {
-    fprintf(stdout, "margin: %s%s;", ctx->margin, ctx->margin_unit);
+    fprintf(stdout, "margin: %s%s; ", ctx->margin, ctx->margin_unit);
     return 0;
 }
 
 static int lib_html_font(lib_html_context_t* ctx) {
 
+    bool use_css       = false;
+    bool use_bold      = false;
+    bool use_underline = false;
+    bool use_overline  = false;
+    bool use_strike    = false;
+
     if (ctx->use_font_name) {
-        fprintf(stdout, "font-family: %s;", ctx->font->name);
+        fprintf(stdout, "font-family: %s; ", ctx->font->name);
     }
+
     if (ctx->use_font_style) {
-        fprintf(stdout, "font-style: %s;", ctx->font->style);
+        if (use_css) {
+            fprintf(stdout, "font-style: %s; ", ctx->font->style);
+        } else {
+
+            // ITALIC
+            if (lib_doc_has_italic(ctx->font->style)) {
+                fprintf(stdout, "font-style: %s; ", "italic");
+            }
+
+            // BOLD: has bold (!)
+            if (lib_doc_has_bold(ctx->font->style)) {
+                use_bold = true;
+                fprintf(stdout, "font-weight: %s; ", "bold");
+            }
+
+            // UNDERLINE
+            if (lib_doc_has_underline(ctx->font->style)) {
+                use_underline = true;
+            }
+
+            // OVERLINE
+            if (lib_doc_has_overline(ctx->font->style)) {
+                use_overline = true;
+            }
+
+            // STRIKE
+            if (lib_doc_has_strike(ctx->font->style)) {
+                use_strike = true;
+            }
+
+            if (use_underline || use_overline || use_strike) {
+
+                // DECORATION-LINE
+                fprintf(stdout, "text-decoration-line:");
+                if (use_underline) {
+                    fprintf(stdout, " underline");
+                }
+                if (use_overline) {
+                    fprintf(stdout, " overline");
+                }
+                if (use_strike) {
+                    fprintf(stdout, " line-through");
+                }
+                fprintf(stdout, "; ");
+
+                // DECORATION-STYLE: Only one style (?)
+                if (lib_doc_has_double(ctx->font->style)) {
+                    fprintf(stdout, "text-decoration-style: %s; ", "double");
+                } else if (lib_doc_has_dotted(ctx->font->style)) {
+                    fprintf(stdout, "text-decoration-style: %s; ", "dotted");
+                } else if (lib_doc_has_dashed(ctx->font->style)) {
+                    fprintf(stdout, "text-decoration-style: %s; ", "dashed");
+                } else if (lib_doc_has_wave(ctx->font->style)) {
+                    fprintf(stdout, "text-decoration-style: %s; ", "wavy");
+                }
+
+            }
+
+        }
     }
+
     if (ctx->use_font_weight) {
-        fprintf(stdout, "font-weight: %s;", ctx->font->weight);
+        if (use_css) {
+            fprintf(stdout, "font-weight: %s; ", ctx->font->weight);
+        } else {
+            // BOLD: is bold (!)            
+            if (lib_doc_is_bold(ctx->font->weight)) {
+                if (!use_bold) {
+                    fprintf(stdout, "font-weight: %s; ", "bold");
+                }
+            } else {
+                // 100..900
+                fprintf(stdout, "font-weight: %s; ", ctx->font->weight);
+            }
+        }
     }
+
     if (ctx->use_font_size) {
-        fprintf(stdout, "font-size: %s%s;", ctx->font->size, ctx->font->unit);
+        fprintf(stdout, "font-size: %s%s; ", ctx->font->size, ctx->font->unit);
     }
     
     return 0;

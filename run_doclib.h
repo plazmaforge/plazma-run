@@ -262,7 +262,7 @@ const char* lib_stristr(const char* str, const char* find) {
 
 ////
 
-static bool lib_strin(const char* str, const char* find) {
+static bool _lib_strin(const char* str, const char* find, bool icase) {
     if (!str || !find) {
         return false;
     }
@@ -276,7 +276,7 @@ static bool lib_strin(const char* str, const char* find) {
         return false;
     }
 
-    const char* s = lib_strstr(str, find);
+    const char* s = icase ? lib_stristr(str, find) : lib_strstr(str, find);
     if (!s) {
       return false;
     }
@@ -305,6 +305,14 @@ static bool lib_strin(const char* str, const char* find) {
     //fprintf(stderr, ">> is_end   : %d\n", is_end);
 
     return is_start && is_end;
+}
+
+static bool lib_strin(const char* str, const char* find) {
+    return _lib_strin(str, find, false);
+}
+
+static bool lib_striin(const char* str, const char* find) {
+    return _lib_strin(str, find, true);
 }
 
 ////
@@ -380,7 +388,7 @@ static const char* lib_doc_unitdef(const char* value) {
 }
 
 static bool lib_doc_has_style(const char* str, const char* style) {
-    return lib_strin(str, style);
+    return lib_striin(str, style);
 }
 
 ////
@@ -397,8 +405,19 @@ static bool lib_doc_has_underline(const char* str) {
     return lib_doc_has_style(str, "underline");
 }
 
+static bool lib_doc_has_overline(const char* str) {
+    return lib_doc_has_style(str, "overline");
+}
+
 static bool lib_doc_has_strike(const char* str) {
     return lib_doc_has_style(str, "strike");
+}
+
+////
+
+static bool lib_doc_is_bold(const char* str) {
+    return lib_stricmp(str, "bold") == 0
+    || lib_stricmp(str, "700") == 0;
 }
 
 ////
@@ -416,7 +435,8 @@ static bool lib_doc_has_word(const char* str) {
 }
 
 static bool lib_doc_has_wave(const char* str) {
-    return lib_doc_has_style(str, "wave");
+    return lib_doc_has_style(str, "wave")
+    || lib_doc_has_style(str, "wavy");
 }
 
 static bool lib_doc_has_dashed(const char* str) {
