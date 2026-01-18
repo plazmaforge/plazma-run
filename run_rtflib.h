@@ -132,11 +132,59 @@ static int lib_rtf_margin(lib_rtf_context_t* ctx) {
 
 static int lib_rtf_font(lib_rtf_context_t* ctx) {
     
+    if (!ctx->font) {
+        return 0;
+    }
+
+    bool use_font_name = false;
+    int cf = 0;
+    int cb = 0;
 
     // FONT TABLE
     if (ctx->use_font_name) {
+        use_font_name = true;
         fprintf(stdout, "{\\fonttbl {\\f0 %s;}}\n", ctx->font->name);
+        //fprintf(stdout, "\\f0\n");
+    }
+
+    // COLOR TABLE
+    if (ctx->font->color || ctx->font->background) {
+        fprintf(stdout, "{\\colortbl;");
+
+        int rgb[3];
+
+        // FONT COLOR DEFINE
+        if (ctx->font->color) {
+            lib_doc_rgb_parse(ctx->font->color, rgb);
+            fprintf(stdout, "\\red%d\\green%d\\blue%d;", rgb[0], rgb[1], rgb[2]);
+            cf = 1;
+        }
+
+        // FONT BACKGROUND DEFINE
+        if (ctx->font->background) {
+            lib_doc_rgb_parse(ctx->font->background, rgb);
+            fprintf(stdout, "\\red%d\\green%d\\blue%d;", rgb[0], rgb[1], rgb[2]);
+            cb = cf + 1;
+        }
+
+        fprintf(stdout, "}\n");
+
+    }
+
+    // FONT NAME
+    if (use_font_name) {
         fprintf(stdout, "\\f0\n");
+    }
+
+    // FONT COLOR
+    if (cf > 0) {
+        fprintf(stdout, "\\cf%d\n", cf);
+    }
+
+    // FONT BACKGROUND
+    if (cb > 0) {
+        //fprintf(stdout, "\\highlight%d\n", fb);
+        fprintf(stdout, "\\cb%d\n", cb);
     }
 
     bool use_bold      = false;

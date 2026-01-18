@@ -391,6 +391,10 @@ int lib_stricmp(const char* str1, const char* str2) {
   return 0;
 }
 
+int lib_strieq(const char* str1, const char* str2) {
+    return lib_stricmp(str1, str2) == 0;
+}
+
 ////
 
 static const char* lib_doc_unitdef(const char* value) {
@@ -565,6 +569,68 @@ static int lib_doc_context_prepare(lib_doc_context_t* ctx) {
 
     return 0;
 
+}
+
+static int lib_doc_rgb_parse(const char* str, int val[3]) {
+    if (!str) {
+        val[0] = 0;
+        val[1] = 0;
+        val[2] = 0;
+        return 1;
+    }
+
+    // TODO: Optimize
+
+    //// RGB
+    if (lib_strieq(str, "red") || lib_strieq(str, "#FF0000")) {
+        val[0] = 255;
+        val[1] = 0;
+        val[2] = 0;
+    } else if (lib_strieq(str, "green") || lib_strieq(str, "#00FF00")) {
+        val[0] = 0;
+        val[1] = 255;
+        val[2] = 0;
+    } else if (lib_strieq(str, "blue") || lib_strieq(str, "#0000FF")) {
+        val[0] = 0;
+        val[1] = 0;
+        val[2] = 255;
+
+    //// CST
+    } else if (lib_strieq(str, "yellow") || lib_strieq(str, "FFFF00")) {
+        val[0] = 255;
+        val[1] = 255;
+        val[2] = 0;
+    } else if (lib_strieq(str, "grey") || lib_strieq(str, "808080")) {
+        val[0] = 128;
+        val[1] = 128;
+        val[2] = 128;
+    } else if (lib_strieq(str, "skyblue") || lib_strieq(str, "56B4E9")) {
+        val[0] = 86;
+        val[1] = 180;
+        val[2] = 233;
+    } else if (lib_strieq(str, "orange") || lib_strieq(str, "E69F00")) {
+        val[0] = 230;
+        val[1] = 159;
+        val[2] = 0;
+
+    //// W/B
+    } else if (lib_strieq(str, "white") || lib_strieq(str, "#FFFFFF")) {
+        val[0] = 255;
+        val[1] = 255;
+        val[2] = 255;
+    } else if (lib_strieq(str, "black") || lib_strieq(str, "#000000")) {
+        val[0] = 0;
+        val[1] = 0;
+        val[2] = 0;
+
+    } else {
+        val[0] = 0;
+        val[1] = 0;
+        val[2] = 0;
+        return 1;
+    }
+
+    return 0;
 }
 
 #endif // PLAZMA_LIB_DOCLIB_H
