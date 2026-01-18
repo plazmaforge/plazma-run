@@ -52,37 +52,41 @@ int main(int argc, char* argv[]) {
     int opt;
     int long_ind;
 
-    bool flag_string        = false;
-    char* data              = NULL;
-    size_t size             = 0;
-    const char* file_name   = NULL;
+    bool flag_string            = false;
+    char* data                  = NULL;
+    size_t size                 = 0;
+    const char* file_name       = NULL;
 
     // config
-    const char* charset     = NULL;
-    const char* title       = NULL;
-    const char* margin      = NULL;
-    const char* font_name   = NULL;
-    const char* font_style  = NULL;
-    const char* font_weight = NULL;
-    const char* font_size   = NULL;
+    const char* charset         = NULL;
+    const char* title           = NULL;
+    const char* margin          = NULL;
+    const char* font_name       = NULL;
+    const char* font_style      = NULL;
+    const char* font_weight     = NULL;
+    const char* font_size       = NULL;
+    const char* font_color      = NULL;
+    const char* font_background = NULL;
 
-    bool flag_charset       = false;
-    bool flag_title         = false;
-    bool flag_margin        = false;
-    bool flag_font_name     = false;
-    bool flag_font_style    = false;
-    bool flag_font_weight   = false;
-    bool flag_font_size     = false;
+    bool flag_charset           = false;
+    bool flag_title             = false;
+    bool flag_margin            = false;
+    bool flag_font_name         = false;
+    bool flag_font_style        = false;
+    bool flag_font_weight       = false;
+    bool flag_font_size         = false;
 
     static lib_option long_options[] = {
-        {LIB_OPT_CHARSET,     optional_argument, 0, LIB_OPT_CHARSET_ID},
-        {LIB_OPT_TITLE,       optional_argument, 0, LIB_OPT_TITLE_ID},
-        {LIB_OPT_MARGIN,      optional_argument, 0, LIB_OPT_MARGIN_ID},
-        {LIB_OPT_FONT_NAME,   optional_argument, 0, LIB_OPT_FONT_NAME_ID},
-        {LIB_OPT_FONT_STYLE,  optional_argument, 0, LIB_OPT_FONT_STYLE_ID},
-        {LIB_OPT_FONT_WEIGHT, optional_argument, 0, LIB_OPT_FONT_WEIGHT_ID},
-        {LIB_OPT_FONT_SIZE,   optional_argument, 0, LIB_OPT_FONT_SIZE_ID},
-        {NULL,                0,                 0, 0 }
+        {LIB_OPT_CHARSET,         optional_argument, 0, LIB_OPT_CHARSET_ID},
+        {LIB_OPT_TITLE,           optional_argument, 0, LIB_OPT_TITLE_ID},
+        {LIB_OPT_MARGIN,          optional_argument, 0, LIB_OPT_MARGIN_ID},
+        {LIB_OPT_FONT_NAME,       optional_argument, 0, LIB_OPT_FONT_NAME_ID},
+        {LIB_OPT_FONT_STYLE,      optional_argument, 0, LIB_OPT_FONT_STYLE_ID},
+        {LIB_OPT_FONT_WEIGHT,     optional_argument, 0, LIB_OPT_FONT_WEIGHT_ID},
+        {LIB_OPT_FONT_SIZE,       optional_argument, 0, LIB_OPT_FONT_SIZE_ID},
+        {LIB_OPT_FONT_COLOR,      optional_argument, 0, LIB_OPT_FONT_COLOR_ID},
+        {LIB_OPT_FONT_BACKGROUND, optional_argument, 0, LIB_OPT_FONT_BACKGROUND_ID},
+        {NULL,                    0,                 0, 0}
     };
 
     while ((opt = lib_getopt_long(argc, argv, "s:", long_options, &long_ind)) != -1) {
@@ -92,35 +96,38 @@ int main(int argc, char* argv[]) {
             flag_string = true;
             data = optarg;
             break;
-        case LIB_OPT_CHARSET_ID:     // charset
+        case LIB_OPT_CHARSET_ID:         // charset
             flag_charset = true;
             charset = optarg;
             break;
-        case LIB_OPT_TITLE_ID:       // title
+        case LIB_OPT_TITLE_ID:           // title
             flag_title = true;
             title = optarg;
             break;
-        case LIB_OPT_MARGIN_ID:      // margin
+        case LIB_OPT_MARGIN_ID:          // margin
             flag_margin = true;
             margin = optarg;
-            //fprintf(stderr, "margin-str: %s\n", optarg);
-            //fprintf(stderr, "margin-int: %d\n", optarg ? atoi(optarg) : 0);
             break;
-        case LIB_OPT_FONT_NAME_ID:   // font-name
+        case LIB_OPT_FONT_NAME_ID:       // font-name
             flag_font_name = true;
             font_name = optarg;
             break;
-        case LIB_OPT_FONT_STYLE_ID:  // font-style
+        case LIB_OPT_FONT_STYLE_ID:      // font-style
             flag_font_style = true;
             font_style = optarg;
             break;
-        case LIB_OPT_FONT_WEIGHT_ID: // font-weight
+        case LIB_OPT_FONT_WEIGHT_ID:     // font-weight
             flag_font_weight = true;
             font_weight = optarg;
             break;
-        case LIB_OPT_FONT_SIZE_ID:   // font-size
+        case LIB_OPT_FONT_SIZE_ID:       // font-size
             flag_font_size = true;
             font_size = optarg;
+        case LIB_OPT_FONT_COLOR_ID:      // font-color
+            font_color = optarg;
+            break;
+        case LIB_OPT_FONT_BACKGROUND_ID: // font-background
+            font_background = optarg;
             break;
         case '?':
             error = 1;
@@ -186,10 +193,12 @@ int main(int argc, char* argv[]) {
     font_weight = lib_ifs(flag_font_weight, font_weight, LIB_HTML_FONT_WEIGHT);
     font_size   = lib_ifs(flag_font_size, font_size, LIB_HTML_FONT_SIZE);
 
-    if (font_name || font_style || font_weight || font_size) {
+    if (font_name || font_style || font_weight || font_size || font_color || font_background) {
         lib_font_t font;
         config.font = &font;
         lib_doc_font_init(&font, font_name, font_style, font_weight, font_size);
+        config.font->color      = font_color;
+        config.font->background = font_background;
     }
 
     error = 0;

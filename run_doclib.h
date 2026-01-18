@@ -6,37 +6,45 @@
 #include <string.h>
 #include <ctype.h>
 
-#define LIB_DOC_ENCODING        "utf-8"
-#define LIB_DOC_CHARSET         LIB_DOC_ENCODING
-#define LIB_DOC_TITLE           NULL
-#define LIB_DOC_UNIT            "px"
-#define LIB_DOC_MARGIN          "5px"
-#define LIB_DOC_FONT_NAME       "Helvetica"
-#define LIB_DOC_FONT_STYLE      NULL
-#define LIB_DOC_FONT_WEIGHT     NULL
-#define LIB_DOC_FONT_SIZE       "12px"
+#define LIB_DOC_ENCODING           "utf-8"
+#define LIB_DOC_CHARSET            LIB_DOC_ENCODING
+#define LIB_DOC_TITLE              NULL
+#define LIB_DOC_UNIT               "px"
+#define LIB_DOC_MARGIN             "5px"
+#define LIB_DOC_FONT_NAME          "Helvetica"
+#define LIB_DOC_FONT_STYLE         NULL
+#define LIB_DOC_FONT_WEIGHT        NULL
+#define LIB_DOC_FONT_SIZE          "12px"
 
-#define LIB_OPT_ENCODING        "encoding"
-#define LIB_OPT_CHARSET         "charset"
-#define LIB_OPT_TITLE           "title"
-#define LIB_OPT_MARGIN          "margin"
-#define LIB_OPT_FONT_NAME       "font-name"
-#define LIB_OPT_FONT_STYLE      "font-style"
-#define LIB_OPT_FONT_WEIGHT     "font-weight"
-#define LIB_OPT_FONT_SIZE       "font-size"
-#define LIB_OPT_WIDTH           "width"
-#define LIB_OPT_HEIGHT          "height"
+#define LIB_OPT_ENCODING           "encoding"
+#define LIB_OPT_CHARSET            "charset"
+#define LIB_OPT_TITLE              "title"
+#define LIB_OPT_MARGIN             "margin"
+#define LIB_OPT_FONT_NAME          "font-name"
+#define LIB_OPT_FONT_STYLE         "font-style"
+#define LIB_OPT_FONT_WEIGHT        "font-weight"
+#define LIB_OPT_FONT_SIZE          "font-size"
+#define LIB_OPT_FONT_COLOR         "font-color"
+#define LIB_OPT_FONT_FOREGROUND    "font-foreground"
+#define LIB_OPT_FONT_BACKGROUND    "font-background"
+#define LIB_OPT_WIDTH              "width"
+#define LIB_OPT_HEIGHT             "height"
 
-#define LIB_OPT_ENCODING_ID     1000
-#define LIB_OPT_CHARSET_ID      1001
-#define LIB_OPT_TITLE_ID        2001
-#define LIB_OPT_MARGIN_ID       3001
-#define LIB_OPT_FONT_NAME_ID    4001
-#define LIB_OPT_FONT_STYLE_ID   4002
-#define LIB_OPT_FONT_WEIGHT_ID  4003
-#define LIB_OPT_FONT_SIZE_ID    4004
-#define LIB_OPT_WIDTH_ID        5001
-#define LIB_OPT_HEIGHT_ID       5002
+#define LIB_OPT_ENCODING_ID        1000
+#define LIB_OPT_CHARSET_ID         1001
+#define LIB_OPT_TITLE_ID           2001
+#define LIB_OPT_MARGIN_ID          3001
+#define LIB_OPT_FONT_NAME_ID       4001
+#define LIB_OPT_FONT_STYLE_ID      4002
+#define LIB_OPT_FONT_WEIGHT_ID     4003
+#define LIB_OPT_FONT_SIZE_ID       4004
+
+#define LIB_OPT_FONT_COLOR_ID      4005
+#define LIB_OPT_FONT_FOREGROUND_ID 4006
+#define LIB_OPT_FONT_BACKGROUND_ID 4007
+
+#define LIB_OPT_WIDTH_ID           5001
+#define LIB_OPT_HEIGHT_ID          5002
 
 typedef struct lib_margin_t {
     const char* value;
@@ -49,6 +57,8 @@ typedef struct lib_font_t {
     const char* weight;
     const char* size;
     const char* unit;
+    const char* color;
+    const char* background;
 } lib_font_t;
 
 #define LIB_DOC_CONFIG_0      \

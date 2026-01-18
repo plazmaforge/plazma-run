@@ -211,13 +211,21 @@ static int lib_html_font(lib_html_context_t* ctx) {
         }
     }
 
+    // FONT SIZE
     if (ctx->use_font_size) {
         fprintf(stdout, " font-size: %s%s;", ctx->font->size, ctx->font->unit);
     }
-    
-    //fprintf(stdout, " color: %s;", "red");
-    //fprintf(stdout, " background: %s;", "blue");
 
+    // FONT COLOR
+    if (ctx->font->color) {
+        fprintf(stdout, " color: %s;", ctx->font->color);
+    }
+
+    // FONT BACKGROUND
+    if (ctx->font->background) {
+        fprintf(stdout, " background: %s;", ctx->font->background);
+    }
+    
     return 0;
 }
 
