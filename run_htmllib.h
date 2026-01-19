@@ -229,6 +229,42 @@ static int lib_html_font(lib_html_context_t* ctx) {
     return 0;
 }
 
+static int lib_html_content(lib_html_context_t* ctx) {
+    if (!(ctx->data)) {
+        return 0;
+    }
+
+    bool use_break_line = true;
+
+    if (!use_break_line) {
+        fprintf(stdout, "%s", ctx->data);
+        return 0;
+    }
+
+    char c;
+    bool break_line;
+    for (size_t i = 0; i < ctx->size; i++) {
+        break_line = false;
+        c = ctx->data[i];
+        if (c == '\n') {
+            break_line = true;
+        } else if (c == '\r') {
+            if (i + 1 < ctx->size && ctx->data[i + 1] == '\n') {
+                i++;
+            }
+            break_line = true;
+        }
+
+        if (break_line) {
+            fprintf(stdout, "<br>\n");
+            continue;
+        }
+        fprintf(stdout, "%c", c);
+    }
+    
+    return 0;
+}
+
 static int lib_html_body(lib_html_context_t* ctx) {
 
     bool use_div = true;
@@ -255,7 +291,8 @@ static int lib_html_body(lib_html_context_t* ctx) {
     }
 
     // CONTENT
-    fprintf(stdout, "%s\n", ctx->data);
+    lib_html_content(ctx);
+    //fprintf(stdout, "%s\n", ctx->data);
 
     if (use_div) {        
         fprintf(stdout, "  </div>\n");

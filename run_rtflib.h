@@ -302,8 +302,44 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
     return 0;
 }
 
-static int lib_rtf_body(lib_rtf_context_t* ctx) {
-    fprintf(stdout, "%s", ctx->data);
+static int lib_rtf_content(lib_rtf_context_t* ctx) {
+    if (!(ctx->data)) {
+        return 0;
+    }
+
+    bool use_break_line = true;
+
+    if (!use_break_line) {
+        fprintf(stdout, "%s", ctx->data);
+        return 0;
+    }
+
+    char c;
+    bool break_line;
+    for (size_t i = 0; i < ctx->size; i++) {
+        break_line = false;
+        c = ctx->data[i];
+        if (c == '\n') {
+            break_line = true;
+        } else if (c == '\r') {
+            if (i + 1 < ctx->size && ctx->data[i + 1] == '\n') {
+                i++;
+            }
+            break_line = true;
+        }
+
+        if (break_line) {
+            fprintf(stdout, "\n\\line\n");
+            continue;
+        }
+        fprintf(stdout, "%c", c);
+    }
+
+    return 0;
+}
+
+static int lib_rtf_body(lib_rtf_context_t* ctx) {    
+    lib_rtf_content(ctx);
     fprintf(stdout, "\\par\n");
     return 0;
 }
