@@ -315,9 +315,11 @@ static int lib_rtf_content(lib_rtf_context_t* ctx) {
     }
 
     char c;
-    bool new_line;
+    bool break_line;
+    bool new_line = true;
     for (size_t i = 0; i < ctx->size; i++) {
-        new_line = false;
+
+        break_line = false;
         c = ctx->data[i];
         
         switch (c) {
@@ -331,32 +333,23 @@ static int lib_rtf_content(lib_rtf_context_t* ctx) {
             fprintf(stdout, "\\}");
             break;
         case '\n':
-            new_line = true;
+            break_line = true;
             break;
         case '\r':
             if (i + 1 < ctx->size && ctx->data[i + 1] == '\n') {
                 i++;
             }
+            break_line = true;
         default:
             fprintf(stdout, "%c", c);
             break;
         }
 
-        // if (c == '\n') {
-        //     break_line = true;
-        // } else if (c == '\r') {
-        //     if (i + 1 < ctx->size && ctx->data[i + 1] == '\n') {
-        //         i++;
-        //     }
-        //     break_line = true;
-        // }
-
-        if (new_line) {
+        new_line = break_line;
+        if (break_line) {
             fprintf(stdout, "\n\\line\n");
-            continue;
         }
 
-        //fprintf(stdout, "%c", c);
     }
 
     return 0;
