@@ -234,10 +234,10 @@ static int lib_html_content(lib_html_context_t* ctx) {
         return 0;
     }
 
-    bool use_raw  = true;
+    bool use_raw  = false;
     bool use_nbsp = true;
 
-    if (!use_raw) {
+    if (use_raw) {
         fprintf(stdout, "%s", ctx->data);
         return 0;
     }

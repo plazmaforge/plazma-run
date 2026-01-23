@@ -307,9 +307,9 @@ static int lib_rtf_content(lib_rtf_context_t* ctx) {
         return 0;
     }
 
-    bool use_break_line = true;
+    bool use_raw = false;
 
-    if (!use_break_line) {
+    if (use_raw) {
         fprintf(stdout, "%s", ctx->data);
         return 0;
     }
