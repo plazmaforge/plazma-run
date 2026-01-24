@@ -96,44 +96,42 @@ int main(int argc, char* argv[]) {
             flag_string = true;
             data = optarg;
             break;
-        case LIB_OPT_CHARSET_ID:     // charset
+        case LIB_OPT_CHARSET_ID:         // charset
             flag_charset = true;
             charset = optarg;
             break;
-        case LIB_OPT_TITLE_ID:       // title
+        case LIB_OPT_TITLE_ID:           // title
             flag_title = true;
             title = optarg;
             break;
-        case LIB_OPT_MARGIN_ID:      // margin
+        case LIB_OPT_MARGIN_ID:          // margin
             flag_margin = true;
             margin = optarg;
             //fprintf(stderr, "margin-str: %s\n", optarg);
             //fprintf(stderr, "margin-int: %d\n", optarg ? atoi(optarg) : 0);
             break;
-        case LIB_OPT_FONT_NAME_ID:   // font-name
+        case LIB_OPT_FONT_NAME_ID:       // font-name
             flag_font_name = true;
             font_name = optarg;
             break;
-        case LIB_OPT_FONT_STYLE_ID:  // font-style
+        case LIB_OPT_FONT_STYLE_ID:      // font-style
             flag_font_style = true;
             font_style = optarg;
             break;
-        case LIB_OPT_FONT_WEIGHT_ID: // font-weight
+        case LIB_OPT_FONT_WEIGHT_ID:     // font-weight
             flag_font_weight = true;
             font_weight = optarg;
             break;
-        case LIB_OPT_FONT_SIZE_ID:   // font-size
+        case LIB_OPT_FONT_SIZE_ID:       // font-size
             flag_font_size = true;
             font_size = optarg;
             break;
-
         case LIB_OPT_FONT_COLOR_ID:      // font-color
             font_color = optarg;
             break;
         case LIB_OPT_FONT_BACKGROUND_ID: // font-background
             font_background = optarg;
             break;
-
         case '?':
             error = 1;
             break;

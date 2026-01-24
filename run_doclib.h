@@ -29,11 +29,14 @@
 #define LIB_OPT_FONT_BACKGROUND    "font-background"
 #define LIB_OPT_WIDTH              "width"
 #define LIB_OPT_HEIGHT             "height"
+#define LIB_OPT_CONTENT_TYPE       "content-type"
+#define LIB_OPT_CONTAINER_TYPE     "container-type"
 
 #define LIB_OPT_ENCODING_ID        1000
 #define LIB_OPT_CHARSET_ID         1001
 #define LIB_OPT_TITLE_ID           2001
 #define LIB_OPT_MARGIN_ID          3001
+
 #define LIB_OPT_FONT_NAME_ID       4001
 #define LIB_OPT_FONT_STYLE_ID      4002
 #define LIB_OPT_FONT_WEIGHT_ID     4003
@@ -45,6 +48,9 @@
 
 #define LIB_OPT_WIDTH_ID           5001
 #define LIB_OPT_HEIGHT_ID          5002
+
+#define LIB_OPT_CONTENT_TYPE_ID    7001
+#define LIB_OPT_CONTAINER_TYPE_ID  7002
 
 typedef struct lib_margin_t {
     const char* value;
@@ -520,6 +526,11 @@ static int lib_doc_font_init(lib_font_t* font,
     font->style = font_style;
     font->weight = font_weight;
     font->size = font_size;
+
+    font->unit = NULL;
+    font->color = NULL;
+    font->background = NULL;
+
     return 0;
 }
 

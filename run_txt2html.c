@@ -67,6 +67,7 @@ int main(int argc, char* argv[]) {
     const char* font_size       = NULL;
     const char* font_color      = NULL;
     const char* font_background = NULL;
+    int container_type          = 0;
 
     bool flag_charset           = false;
     bool flag_title             = false;
@@ -86,6 +87,7 @@ int main(int argc, char* argv[]) {
         {LIB_OPT_FONT_SIZE,       optional_argument, 0, LIB_OPT_FONT_SIZE_ID},
         {LIB_OPT_FONT_COLOR,      optional_argument, 0, LIB_OPT_FONT_COLOR_ID},
         {LIB_OPT_FONT_BACKGROUND, optional_argument, 0, LIB_OPT_FONT_BACKGROUND_ID},
+        {LIB_OPT_CONTAINER_TYPE,  optional_argument, 0, LIB_OPT_CONTAINER_TYPE_ID},
         {NULL,                    0,                 0, 0}
     };
 
@@ -123,11 +125,24 @@ int main(int argc, char* argv[]) {
         case LIB_OPT_FONT_SIZE_ID:       // font-size
             flag_font_size = true;
             font_size = optarg;
+            break;
         case LIB_OPT_FONT_COLOR_ID:      // font-color
             font_color = optarg;
             break;
         case LIB_OPT_FONT_BACKGROUND_ID: // font-background
             font_background = optarg;
+            break;
+        case LIB_OPT_CONTAINER_TYPE_ID:
+            if (lib_stricmp("div", optarg) == 0) {
+                container_type = LIB_HTML_CONTAINER_TYPE_DIV;
+            } else if (lib_stricmp("code", optarg) == 0) {
+                container_type = LIB_HTML_CONTAINER_TYPE_CODE;
+            } else if (lib_stricmp("pre", optarg) == 0) {
+                container_type = LIB_HTML_CONTAINER_TYPE_PRE;
+            } else {
+                fprintf(stderr, "%s: Incorrect container-type: %s. The value must be: 'div', 'code', 'pre'\n", prog_name, optarg);
+                error = 1;
+            }
             break;
         case '?':
             error = 1;
@@ -188,10 +203,12 @@ int main(int argc, char* argv[]) {
     config.title       = lib_ifs(flag_title, title, LIB_HTML_TITLE);
     config.margin      = lib_ifs(flag_margin, margin, LIB_HTML_MARGIN);
 
-    font_name   = lib_ifs(flag_font_name, font_name, LIB_HTML_FONT_NAME);
-    font_style  = lib_ifs(flag_font_style, font_style, LIB_HTML_FONT_STYLE);
-    font_weight = lib_ifs(flag_font_weight, font_weight, LIB_HTML_FONT_WEIGHT);
-    font_size   = lib_ifs(flag_font_size, font_size, LIB_HTML_FONT_SIZE);
+    bool use_def_font = container_type != LIB_HTML_CONTAINER_TYPE_CODE;
+
+    font_name   = lib_ifs(flag_font_name, font_name, (use_def_font ? LIB_HTML_FONT_NAME : NULL));
+    font_style  = lib_ifs(flag_font_style, font_style, (use_def_font ? LIB_HTML_FONT_STYLE : NULL));
+    font_weight = lib_ifs(flag_font_weight, font_weight, (use_def_font ? LIB_HTML_FONT_WEIGHT : NULL));
+    font_size   = lib_ifs(flag_font_size, font_size, (use_def_font ? LIB_HTML_FONT_SIZE : NULL));
 
     if (font_name || font_style || font_weight || font_size || font_color || font_background) {
         lib_font_t font;
@@ -200,6 +217,7 @@ int main(int argc, char* argv[]) {
         config.font->color      = font_color;
         config.font->background = font_background;
     }
+    config.container_type = container_type;
 
     error = 0;
     if (flag_string) {

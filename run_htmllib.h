@@ -10,11 +10,24 @@
 #define LIB_HTML_FONT_WEIGHT LIB_DOC_FONT_WEIGHT
 #define LIB_HTML_FONT_SIZE   "12px"
 
+#define LIB_HTML_DIV         "div"
+#define LIB_HTML_CODE        "code"
+#define LIB_HTML_PRE         "pre"
+
+#define LIB_HTML_CONTAINER_TYPE_DIV    1
+#define LIB_HTML_CONTAINER_TYPE_CODE   2
+#define LIB_HTML_CONTAINER_TYPE_PRE    3
+
+#define LIB_HTML_CONTENT_TYPE_DOCUMENT 1
+#define LIB_HTML_CONTENT_TYPE_BODY     2
+#define LIB_HTML_CONTENT_TYPE_CONTENT  3
+
 /**
  * HTML Config (temp solution: config -> context)
  */
 typedef struct lib_html_config_t {
     LIB_DOC_CONFIG
+    int container_type;
 } lib_html_config_t;
 
 /**
@@ -22,6 +35,7 @@ typedef struct lib_html_config_t {
  */
 typedef struct lib_html_context_t {
     LIB_DOC_CONTEXT
+    int container_type;
 } lib_html_context_t;
 
 static int lib_html_document(lib_html_context_t* ctx);
@@ -44,6 +58,7 @@ static int lib_html_init(lib_html_config_t* cnf) {
         return 1;
     }
 
+    cnf->container_type = 0;
     return lib_doc_config_init((lib_doc_config_t*) cnf);
 }
 
@@ -77,6 +92,8 @@ static int lib_html_ctx_init(lib_html_config_t* cnf, lib_html_context_t* ctx) {
     ctx->font    = cnf->font;
     ctx->data    = NULL;
     ctx->size    = 0;
+
+    ctx->container_type = cnf->container_type;
 
     return lib_html_prepare(ctx);
 }
@@ -235,6 +252,7 @@ static int lib_html_content(lib_html_context_t* ctx) {
     }
 
     bool use_raw  = false;
+    bool use_pre  = ctx->container_type == LIB_HTML_CONTAINER_TYPE_PRE;
     bool use_nbsp = true;
 
     if (use_raw) {
@@ -270,12 +288,24 @@ static int lib_html_content(lib_html_context_t* ctx) {
         //    fprintf(stdout, "&apos;");  // &#39, &#x27
         //    break;
         case ' ':
+            if (use_pre) {
+                fprintf(stdout, "%c", c);
+                break;
+            }
             fprintf(stdout, (new_line || use_nbsp) ? "&nbsp;" : " ");
             break;
         case '\n':
+            if (use_pre) {
+                fprintf(stdout, "%c", c);
+                break;
+            }
             break_line = true;
             break;
         case '\r':
+            if (use_pre) {
+                fprintf(stdout, "%c", c);
+                break;
+            }
             if (i + 1 < ctx->size && ctx->data[i + 1] == '\n') {
                 i++;
             }
@@ -287,7 +317,9 @@ static int lib_html_content(lib_html_context_t* ctx) {
 
         new_line = break_line;
         if (break_line) {
-            fprintf(stdout, "<br>\n");
+            if (!use_pre) {
+                fprintf(stdout, "<br>\n");
+            }            
         }
 
     }
@@ -295,37 +327,64 @@ static int lib_html_content(lib_html_context_t* ctx) {
     return 0;
 }
 
-static int lib_html_body(lib_html_context_t* ctx) {
+static const char* lib_html_get_container(int container_type) {
+    if (container_type == LIB_HTML_CONTAINER_TYPE_DIV) {
+        return LIB_HTML_DIV;
+    } else if (container_type == LIB_HTML_CONTAINER_TYPE_CODE) {
+        return LIB_HTML_CODE;
+    } else if (container_type == LIB_HTML_CONTAINER_TYPE_PRE) {
+        return LIB_HTML_PRE;
+    }
+    return NULL;
+}
 
-    bool use_div = true;
+static int lib_html_body(lib_html_context_t* ctx) {
+    int container_type = ctx->container_type;
+    const char* container = lib_html_get_container(container_type);
+    bool use_container = container;
+    bool use_style = ctx->use_style;
+    bool use_body_style = ctx->use_style && ctx->use_margin;
+    bool use_next_style = ctx->use_style && ctx->use_font;
+
+    //fprintf(stderr, "container_type = %d\n", container_type);
+    //fprintf(stderr, "container      = %s\n", container);
+    //fprintf(stderr, "use_container  = %s\n", use_container ? "true" : "false");
+    //fprintf(stderr, "use_style      = %s\n", use_style ? "true" : "false");
+    //fprintf(stderr, "use_body_style = %s\n", use_body_style ? "true" : "false");
 
     fprintf(stdout, "  <body");
 
     // MARGIN
-    if (ctx->use_style && ctx->use_margin) {
+    if (use_body_style) {
+        fprintf(stdout, " style=\"");
         lib_html_margin(ctx);
     }
 
-    if (use_div) {
+    if (use_container) {
+        if (use_body_style) {
+            fprintf(stdout, "\"");
+        }
         fprintf(stdout, ">\n");
-        fprintf(stdout, "    <div");
+        fprintf(stdout, "    <%s", container);
     }
 
     // STYLE
-    if (ctx->use_style) {
-        fprintf(stdout, " style=\"");
+    if (use_next_style) {
+        if (use_container || !use_body_style) {
+            fprintf(stdout, " style=\"");
+        }        
         if (ctx->use_font) {
            lib_html_font(ctx);
         }
-        fprintf(stdout, "\">\n");
+        fprintf(stdout, "\"");
     }
+    fprintf(stdout, ">\n");
 
     // CONTENT
     lib_html_content(ctx);
-    //fprintf(stdout, "%s\n", ctx->data);
 
-    if (use_div) {        
-        fprintf(stdout, "  </div>\n");
+    if (use_container) {
+        fprintf(stdout, "  </%s>\n", container);
     }
     fprintf(stdout, "  </body>\n");
 
