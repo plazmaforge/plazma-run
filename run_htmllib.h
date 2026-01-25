@@ -14,9 +14,11 @@
 #define LIB_HTML_CODE        "code"
 #define LIB_HTML_PRE         "pre"
 
+#define LIB_HTML_CONTAINER_TYPE_NO     0
 #define LIB_HTML_CONTAINER_TYPE_DIV    1
 #define LIB_HTML_CONTAINER_TYPE_CODE   2
 #define LIB_HTML_CONTAINER_TYPE_PRE    3
+#define LIB_HTML_CONTAINER_TYPE_SVG    4
 
 #define LIB_HTML_CONTENT_TYPE_DOCUMENT 1
 #define LIB_HTML_CONTENT_TYPE_BODY     2
@@ -27,6 +29,7 @@
  */
 typedef struct lib_html_config_t {
     LIB_DOC_CONFIG
+    int content_type;
     int container_type;
 } lib_html_config_t;
 
@@ -35,6 +38,7 @@ typedef struct lib_html_config_t {
  */
 typedef struct lib_html_context_t {
     LIB_DOC_CONTEXT
+    int content_type;
     int container_type;
 } lib_html_context_t;
 
@@ -57,8 +61,8 @@ static int lib_html_init(lib_html_config_t* cnf) {
     if (!cnf) {
         return 1;
     }
-
-    cnf->container_type = 0;
+    cnf->content_type = LIB_HTML_CONTENT_TYPE_DOCUMENT;
+    cnf->container_type = LIB_HTML_CONTAINER_TYPE_NO;
     return lib_doc_config_init((lib_doc_config_t*) cnf);
 }
 
@@ -93,6 +97,7 @@ static int lib_html_ctx_init(lib_html_config_t* cnf, lib_html_context_t* ctx) {
     ctx->data    = NULL;
     ctx->size    = 0;
 
+    ctx->content_type = cnf->content_type;
     ctx->container_type = cnf->container_type;
 
     return lib_html_prepare(ctx);
