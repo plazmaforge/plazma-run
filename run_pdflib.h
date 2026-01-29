@@ -164,29 +164,142 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
     offset_4 = offset;
 
     // STREAM
-    const char* data_begin = "BT /F1 24 Tf 72 720 Td (";
-    const char* data_end   = ") Tj ET\n";
 
-    int data_begin_len = strlen(data_begin);
-    int data_end_len   = strlen(data_end);
-    int data_len       = ctx->size;
-    int stream_len     = data_begin_len + data_len + data_end_len;
+    const char* BUF_BT = "BT\n";                    // BEGIN
+    const char* BUF_HD = "/F1 12 Tf 72 720 Td\n";   // HEADER
+    const char* BUF_LF = "() Tj\n";                 // LINE FIRST
+    const char* BUF_LN = "0 -18 Td\n() Tj\n";       // LINE NEXT
+    const char* BUF_ET = "ET\n";                    // END
+
+    //const char* data_end   = ") Tj ET\n";
+    //const char* data_begin = "BT /F1 24 Tf 72 720 Td (";
+    //const char* data_end   = ") Tj ET\n";
+
+    //const char* data_end   = "0 -18 Td\n (...) Tj\n";
+
+    //int data_begin_len = strlen(data_begin);
+    //int data_end_len   = strlen(data_end);
+    //int data_len       = ctx->size;
+    //int stream_len     = data_begin_len + data_len + data_end_len;
 
     // fprintf(stdout, "4 0 obj << /Length 44 >> stream\n");
     // fprintf(stdout, "BT /F1 24 Tf 72 720 Td (%s) Tj ET\n", ctx->data);
     // fprintf(stdout, "endstream endobj\n");
 
+    int stream_len = 0;
+    stream_len  += strlen(BUF_BT);
+    stream_len  += strlen(BUF_HD);
+    stream_len  += strlen(BUF_LF);
+    stream_len  += strlen(BUF_ET);
+
+    int BUF_LN_LEN = strlen(BUF_LN);
+
+    char c;
+    bool break_line;
+    bool new_line;
+    int count;
+
+    break_line = false;
+    new_line = true;
+    count = 0;
+
+    for (size_t i = 0; i < ctx->size; i++) {
+
+        break_line = false;
+        c = ctx->data[i];
+
+        switch (c) {
+        case '\n':
+            break_line = true;
+            break;
+        case '\r':
+            if (i + 1 < ctx->size && ctx->data[i + 1] == '\n') {
+                i++;
+            }
+            break_line = true;
+        default:
+            count++;
+            break;
+        }
+
+        new_line = break_line;
+        if (break_line) {
+            count += BUF_LN_LEN;
+        }
+    }
+
+    stream_len  += ctx->size;
+
     len = fprintf(stdout, "4 0 obj << /Length %d >> stream\n", stream_len);
     offset  += len;
 
-    len = fprintf(stdout, "%s", data_begin);
+    //len = fprintf(stdout, "%s", data_begin);
+    //offset  += len;
+
+    len = fprintf(stdout, "%s", BUF_BT);
+    offset  += len;
+    len = fprintf(stdout, "%s", BUF_HD);
     offset  += len;
 
-    len = fprintf(stdout, "%s", ctx->data);
+    len = fprintf(stdout, "(");
     offset  += len;
 
-    len = fprintf(stdout, "%s", data_end);
+    // "() Tj\n"
+    //len = fprintf(stdout, "(%s) Tj\n", ctx->data);
+    //offset  += len;
+
+    break_line = false;
+    new_line = true;
+    count = 0;
+    bool break_line2 = false;
+
+    for (size_t i = 0; i < ctx->size; i++) {
+
+        break_line = false;
+        c = ctx->data[i];
+
+        switch (c) {
+        case '\n':
+            break_line = true;
+            break;
+        case '\r':
+            if (i + 1 < ctx->size && ctx->data[i + 1] == '\n') {
+                i++;
+            }
+            break_line = true;
+        default:
+            count++;
+            fprintf(stdout, "%c", c);
+            break;
+        }
+
+        //new_line = break_line;
+        if (break_line) {
+            //if (&& i > 0) {
+                count += fprintf(stdout, ") Tj\n");
+            //}
+            count += fprintf(stdout, "0 -18 Td\n(");
+            //count += BUF_LN_LEN
+            break_line2 = break_line;
+        }
+        
+        //new_line = break_line;
+    }
+
+    offset  += count;
+    len = fprintf(stdout, ") Tj\n");
     offset  += len;
+
+    // // >>> CONTENT: BEGIN
+    // len = fprintf(stdout, "%s", ctx->data);
+    // offset  += len;
+    // // >>> CONTENT: END
+
+    len = fprintf(stdout, "%s", BUF_ET);
+    offset  += len;
+
+    //len = fprintf(stdout, "%s", data_end);
+    //offset  += len;
 
     len = fprintf(stdout, "endstream endobj\n");
     offset  += len;
@@ -246,4 +359,6 @@ static int run_pdf(lib_pdf_config_t* config, char* data, size_t size) {
 
     return lib_pdf_document(&ctx);
 }
+
+// https://medium.com/@jberkenbilt/the-structure-of-a-pdf-file-6f08114a58f6
 
