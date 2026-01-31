@@ -16,6 +16,11 @@
 #define LIB_DOC_FONT_WEIGHT        NULL
 #define LIB_DOC_FONT_SIZE          "12px"
 
+#define LIB_OPT_INPUT_FILE         "input-file"
+#define LIB_OPT_OUTPUT_FILE        "output-file"
+#define LIB_OPT_ERROR_FILE         "error-file"
+#define LIB_OPT_LOG_FILE           "log-file"
+
 #define LIB_OPT_ENCODING           "encoding"
 #define LIB_OPT_CHARSET            "charset"
 #define LIB_OPT_TITLE              "title"
@@ -32,6 +37,12 @@
 #define LIB_OPT_CONTENT_TYPE       "content-type"
 #define LIB_OPT_CONTAINER_TYPE     "container-type"
 
+#define LIB_OPT_INPUT_FILE_ID      101
+#define LIB_OPT_OUTPUT_FILE_ID     102
+#define LIB_OPT_ERROR_FILE_ID      103
+#define LIB_OPT_LOG_FILE_ID        104
+
+#define LIB_OPT_CHARSET_ID         1001
 #define LIB_OPT_ENCODING_ID        1000
 #define LIB_OPT_CHARSET_ID         1001
 #define LIB_OPT_TITLE_ID           2001

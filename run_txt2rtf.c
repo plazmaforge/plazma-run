@@ -56,6 +56,7 @@ int main(int argc, char* argv[]) {
     char* data                  = NULL;
     size_t size                 = 0;
     const char* file_name       = NULL;
+    const char* out_file_name   = NULL;
 
     // config
     const char* charset         = NULL;
@@ -95,6 +96,9 @@ int main(int argc, char* argv[]) {
         case 's':
             flag_string = true;
             data = optarg;
+            break;
+        case 'o':
+            out_file_name = optarg;
             break;
         case LIB_OPT_CHARSET_ID:         // charset
             flag_charset = true;
