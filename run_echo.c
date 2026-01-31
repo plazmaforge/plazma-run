@@ -3,9 +3,9 @@
 #include <stdbool.h>
 
 //#include <iostream.h>
-#include <windows.h>
-#include <io.h>
-#include <fcntl.h>
+//#include <windows.h>
+//#include <io.h>
+//#include <fcntl.h>
 
 #include "getopt.h"
 #include "clilib.h"
