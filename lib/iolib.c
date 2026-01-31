@@ -184,12 +184,20 @@ static FILE* _fopen(const char* file_name, const char* mode) {
   return file;
 }
 
-static int	_fclose(FILE* file) {
+static int _fclose(FILE* file) {
   int retval = fclose(file);
   #ifdef LIB_DEBUG
   fprintf(stderr, "DEBUG: _fclose\n");
   #endif
   return retval;
+}
+
+FILE* lib_io_fopen(const char* file_name, const char* mode) {
+  return _fopen(file_name, mode);
+}
+
+int lib_io_fclose(FILE* file) {
+  return _fclose(file);
 }
 
 static int _lib_io_read(lib_io_mode_t* mode, const char* file_name, char** data, size_t size, size_t* out_size) {
