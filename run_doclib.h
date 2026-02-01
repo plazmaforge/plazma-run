@@ -82,40 +82,6 @@ typedef struct lib_font_t {
     const char* background;
 } lib_font_t;
 
-// #define LIB_DOC_CONFIG_0      \
-//     const char* charset;      \
-//     const char* title;        \
-//     const char* margin;       \
-//     const char* margin_unit;  \
-//     const char* font_name;    \
-//     const char* font_style;   \
-//     const char* font_weight;  \
-//     const char* font_size;    \
-//     const char* font_unit;    \
-
-// #define LIB_DOC_CONTEXT_0     \
-//     const char* charset;      \
-//     const char* title;        \
-//     const char* margin;       \
-//     const char* margin_unit;  \
-//     const char* font_name;    \
-//     const char* font_style;   \
-//     const char* font_weight;  \
-//     const char* font_size;    \
-//     const char* font_unit;    \
-//     bool use_charset;         \
-//     bool use_title;           \
-//     bool use_head;            \
-//     bool use_margin;          \
-//     bool use_font_name;       \
-//     bool use_font_style;      \
-//     bool use_font_weight;     \
-//     bool use_font_size;       \
-//     bool use_font;            \
-//     bool use_style;           \
-//     char* data;               \
-//     size_t size;              \
-
 #define LIB_DOC_CONFIG        \
     int mode;                 \
     const char* charset;      \
@@ -123,6 +89,10 @@ typedef struct lib_font_t {
     const char* margin;       \
     const char* margin_unit;  \
     lib_font_t* font;         \
+                              \
+    const char* out_file_name;\
+    FILE* out;                \
+    
 
 #define LIB_DOC_CONTEXT       \
     int mode;                 \
@@ -141,8 +111,12 @@ typedef struct lib_font_t {
     bool use_font_size;       \
     bool use_font;            \
     bool use_style;           \
+                              \
     char* data;               \
     size_t size;              \
+                              \
+    const char* out_file_name;\
+    FILE* out;                \
 
 /**
  * DOC Config
@@ -560,7 +534,11 @@ static int lib_doc_config_init(lib_doc_config_t* cnf) {
     cnf->margin      = NULL;
     cnf->margin_unit = NULL;
 
-    cnf->font = NULL;
+    cnf->font        = NULL;
+
+    cnf->out_file_name = NULL;
+    cnf->out = NULL;
+     
     return 0;
 }
 

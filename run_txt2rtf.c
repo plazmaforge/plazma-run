@@ -36,7 +36,7 @@ int run_txt2rtf_file(lib_rtf_config_t* config, const char* file_name) {
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-txt2rtf -s <string> | <file>\n");
+    fprintf(stderr, "Usage: run-txt2rtf -s <string> | <file> [-o <output file>]\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -52,7 +52,8 @@ int main(int argc, char* argv[]) {
     int opt;
     int long_ind;
 
-    bool flag_string            = false;
+    //bool flag_string            = false;
+    int mode                    = RUN_BY_FILE;
     char* data                  = NULL;
     size_t size                 = 0;
     const char* file_name       = NULL;
@@ -90,11 +91,12 @@ int main(int argc, char* argv[]) {
         {NULL,                0,                 0, 0 }
     };
 
-    while ((opt = lib_getopt_long(argc, argv, "s:", long_options, &long_ind)) != -1) {
+    while ((opt = lib_getopt_long(argc, argv, "s:o:", long_options, &long_ind)) != -1) {
 
         switch (opt) {
         case 's':
-            flag_string = true;
+            //flag_string = true;
+            mode = RUN_BY_STRING;
             data = optarg;
             break;
         case 'o':
@@ -148,7 +150,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (flag_string) {
+    if (mode == RUN_BY_STRING) {
         optind--;
     }
 
@@ -159,7 +161,7 @@ int main(int argc, char* argv[]) {
     }
 
     error = 0;
-    if (flag_string) {
+    if (mode == RUN_BY_STRING) {
         //BY_STRING
         if (!data) {
             fprintf(stderr, "%s: Input string is required\n", prog_name);
@@ -207,7 +209,24 @@ int main(int argc, char* argv[]) {
     }
 
     error = 0;
-    if (flag_string) {
+
+    if (out_file_name) {
+        config.out_file_name = out_file_name;
+        config.out = lib_io_fopen(out_file_name, "wb+");
+        if (!config.out) {
+            fprintf(stderr, "%s: Cannot open file: %s\n", prog_name, out_file_name);
+            error = 1;
+        }
+    } else {
+        config.out_file_name = NULL;
+        config.out = stdout;
+    }
+
+    if (error) {
+        return 1;
+    }
+ 
+    if (mode == RUN_BY_STRING) {
         error = run_txt2rtf_data(&config, data, size);
     } else {
         error = run_txt2rtf_file(&config, file_name);

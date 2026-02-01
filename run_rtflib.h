@@ -80,13 +80,16 @@ static int lib_rtf_ctx_init(lib_rtf_config_t* cnf, lib_rtf_context_t* ctx) {
     ctx->data    = NULL;
     ctx->size    = 0;
 
+    ctx->out_file_name = cnf->out_file_name;
+    ctx->out = cnf->out;
+
     return lib_rtf_prepare(ctx);
 }
 
 static int lib_rtf_document(lib_rtf_context_t* ctx) {
     
     // DOCUMENT
-    fprintf(stdout, "{\\rtf1\\ansi\\deff0\n");
+    fprintf(ctx->out, "{\\rtf1\\ansi\\deff0\n");
 
     // HEAD
     if (ctx->use_head) {
@@ -96,7 +99,7 @@ static int lib_rtf_document(lib_rtf_context_t* ctx) {
     // BODY
     lib_rtf_body(ctx);
     
-    fprintf(stdout, "}\n");
+    fprintf(ctx->out, "}\n");
 
     return 0;
 }
@@ -121,7 +124,7 @@ static int lib_rtf_head(lib_rtf_context_t* ctx) {
 
 static int lib_rtf_charset(lib_rtf_context_t* ctx) {
     // TODO
-    //fprintf(stdout, "\\fni1\\fcharset204\n");
+    //fprintf(ctx->out, "\\fni1\\fcharset204\n");
     return 0;
 }
 
@@ -136,55 +139,58 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
         return 0;
     }
 
-    bool use_font_name = false;
+    bool use_font_name      = false;
+    bool use_fix_background = true; /* Special fix for Windows: add 'highlight' */
+
     int cf = 0;
     int cb = 0;
 
     // FONT TABLE
     if (ctx->use_font_name) {
         use_font_name = true;
-        fprintf(stdout, "{\\fonttbl {\\f0 %s;}}\n", ctx->font->name);
-        //fprintf(stdout, "\\f0\n");
+        fprintf(ctx->out, "{\\fonttbl {\\f0 %s;}}\n", ctx->font->name);
     }
 
     // COLOR TABLE
     if (ctx->font->color || ctx->font->background) {
-        fprintf(stdout, "{\\colortbl;");
+        fprintf(ctx->out, "{\\colortbl;");
 
         int rgb[3];
 
         // FONT COLOR DEFINE
         if (ctx->font->color) {
             lib_doc_rgb_parse(ctx->font->color, rgb);
-            fprintf(stdout, "\\red%d\\green%d\\blue%d;", rgb[0], rgb[1], rgb[2]);
+            fprintf(ctx->out, "\\red%d\\green%d\\blue%d;", rgb[0], rgb[1], rgb[2]);
             cf = 1;
         }
 
         // FONT BACKGROUND DEFINE
         if (ctx->font->background) {
             lib_doc_rgb_parse(ctx->font->background, rgb);
-            fprintf(stdout, "\\red%d\\green%d\\blue%d;", rgb[0], rgb[1], rgb[2]);
+            fprintf(ctx->out, "\\red%d\\green%d\\blue%d;", rgb[0], rgb[1], rgb[2]);
             cb = cf + 1;
         }
 
-        fprintf(stdout, "}\n");
+        fprintf(ctx->out, "}\n");
 
     }
 
     // FONT NAME
     if (use_font_name) {
-        fprintf(stdout, "\\f0\n");
+        fprintf(ctx->out, "\\f0\n");
     }
 
     // FONT COLOR
     if (cf > 0) {
-        fprintf(stdout, "\\cf%d\n", cf);
+        fprintf(ctx->out, "\\cf%d\n", cf);
     }
 
     // FONT BACKGROUND
-    if (cb > 0) {
-        //fprintf(stdout, "\\highlight%d\n", fb);
-        fprintf(stdout, "\\cb%d\n", cb);
+    if (cb > 0) {        
+        if (use_fix_background) {
+            fprintf(ctx->out, "\\highlight%d\n", cb);
+        }
+        fprintf(ctx->out, "\\cb%d\n", cb);
     }
 
     bool use_bold      = false;
@@ -194,13 +200,13 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
 
         // ITALIC
         if (lib_doc_has_italic(ctx->font->style)) {
-            fprintf(stdout, "\\i\n");
+            fprintf(ctx->out, "\\i\n");
         }
 
         // BOLD: has bold (!)
         if (lib_doc_has_bold(ctx->font->style)) {
             use_bold = true;
-            fprintf(stdout, "\\b\n");
+            fprintf(ctx->out, "\\b\n");
         }
 
         // UNDERLINE
@@ -208,40 +214,40 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
 
             // double | word | wave: Only one style (?)
             if (lib_doc_has_double(ctx->font->style)) {
-                fprintf(stdout, "\\uldb\n");
+                fprintf(ctx->out, "\\uldb\n");
             } else if (lib_doc_has_word(ctx->font->style)) {
-                fprintf(stdout, "\\ulw\n");
+                fprintf(ctx->out, "\\ulw\n");
             } else if (lib_doc_has_wave(ctx->font->style)) {
-                fprintf(stdout, "\\ulwave\n");
+                fprintf(ctx->out, "\\ulwave\n");
 
             } else if (lib_doc_has_thdashdd(ctx->font->style)) {
-                fprintf(stdout, "\\ulthdashdd\n");
+                fprintf(ctx->out, "\\ulthdashdd\n");
             } else if (lib_doc_has_thdashd(ctx->font->style)) {
-                fprintf(stdout, "\\ulthdashd\n");
+                fprintf(ctx->out, "\\ulthdashd\n");
             } else if (lib_doc_has_thdash(ctx->font->style)) {
-                fprintf(stdout, "\\ulthdash\n");
+                fprintf(ctx->out, "\\ulthdash\n");
             } else if (lib_doc_has_thdot(ctx->font->style)) {    
-                fprintf(stdout, "\\ulthd\n");
+                fprintf(ctx->out, "\\ulthd\n");
             } else if (lib_doc_has_thick(ctx->font->style)) {
-                fprintf(stdout, "\\ulth\n");
+                fprintf(ctx->out, "\\ulth\n");
 
             } else if (lib_doc_has_dashdd(ctx->font->style)) {
-                fprintf(stdout, "\\uldashdd\n");
+                fprintf(ctx->out, "\\uldashdd\n");
             } else if (lib_doc_has_dashd(ctx->font->style)) {
-                fprintf(stdout, "\\uldashd\n");
+                fprintf(ctx->out, "\\uldashd\n");
             } else if (lib_doc_has_dash(ctx->font->style)) {
-                fprintf(stdout, "\\uldash\n");
+                fprintf(ctx->out, "\\uldash\n");
             } else if (lib_doc_has_dot(ctx->font->style)) {    
-                fprintf(stdout, "\\uld\n");
+                fprintf(ctx->out, "\\uld\n");
             } else {
-                fprintf(stdout, "\\ul\n");
+                fprintf(ctx->out, "\\ul\n");
             }
 
         }
 
         // STRIKE
         if (lib_doc_has_strike(ctx->font->style)) {
-            fprintf(stdout, "\\strike\n");
+            fprintf(ctx->out, "\\strike\n");
         }
     }
 
@@ -250,7 +256,7 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
         // TODO: bold = nnn
         if (lib_doc_has_bold(ctx->font->style)) {
             if (!use_bold) {
-                fprintf(stdout, "\\b\n");
+                fprintf(ctx->out, "\\b\n");
             }
         }
     }
@@ -262,7 +268,7 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
             int size = atoi(ctx->font->size);
             int size_pt = size;
             int fs = size_pt * 2;
-            fprintf(stdout, "\\fs%d\n", fs);
+            fprintf(ctx->out, "\\fs%d\n", fs);
         }
     }
 
@@ -310,7 +316,7 @@ static int lib_rtf_content(lib_rtf_context_t* ctx) {
     bool use_raw = false;
 
     if (use_raw) {
-        fprintf(stdout, "%s", ctx->data);
+        fprintf(ctx->out, "%s", ctx->data);
         return 0;
     }
 
@@ -324,13 +330,13 @@ static int lib_rtf_content(lib_rtf_context_t* ctx) {
         
         switch (c) {
         case '\\':
-            fprintf(stdout, "\\\\");
+            fprintf(ctx->out, "\\\\");
             break;
         case '{':
-            fprintf(stdout, "\\{");
+            fprintf(ctx->out, "\\{");
             break;
         case '}':
-            fprintf(stdout, "\\}");
+            fprintf(ctx->out, "\\}");
             break;
         case '\n':
             break_line = true;
@@ -341,13 +347,13 @@ static int lib_rtf_content(lib_rtf_context_t* ctx) {
             }
             break_line = true;
         default:
-            fprintf(stdout, "%c", c);
+            fprintf(ctx->out, "%c", c);
             break;
         }
 
         new_line = break_line;
         if (break_line) {
-            fprintf(stdout, "\n\\line\n");
+            fprintf(ctx->out, "\n\\line\n");
         }
 
     }
@@ -355,9 +361,9 @@ static int lib_rtf_content(lib_rtf_context_t* ctx) {
     return 0;
 }
 
-static int lib_rtf_body(lib_rtf_context_t* ctx) {    
+static int lib_rtf_body(lib_rtf_context_t* ctx) {
     lib_rtf_content(ctx);
-    fprintf(stdout, "\\par\n");
+    fprintf(ctx->out, "\\par\n");
     return 0;
 }
 

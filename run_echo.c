@@ -36,7 +36,7 @@ int run_echo(run_echo_context_t* ctx) {
 }
 
 void usage() {
-    fprintf(stderr, "Usage: run-echo [-n] [-o output-file] string ...\n");
+    fprintf(stderr, "Usage: run-echo [-n] [-o <output file>] <string> ...\n");
 }
 
 int main(int argc, char* argv[]) {
