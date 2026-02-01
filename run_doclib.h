@@ -6,6 +6,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "iolib.h"
+
 #define LIB_DOC_ENCODING           "utf-8"
 #define LIB_DOC_CHARSET            LIB_DOC_ENCODING
 #define LIB_DOC_TITLE              NULL
@@ -635,6 +637,44 @@ static int lib_doc_rgb_parse(const char* str, int val[3]) {
         return 1;
     }
 
+    return 0;
+}
+
+// LIB_RUN //////////////////////////////////////////////////////////////////////////////////
+
+static FILE* lib_run_open(const char* file_name, const char* mode) {
+    FILE* file = lib_io_fopen(file_name, mode);
+    if (!file) {
+        fprintf(stderr, "%s: Cannot open file: %s\n", prog_name, file_name);
+    }
+    return file;
+}
+
+static int lib_run_close(const char* file_name, FILE* file) {
+    int error = lib_io_fclose(file);
+    if (error) {
+        fprintf(stderr, "%s: Cannot close file: %s\n", prog_name, file_name);
+    }
+    return error;
+}
+
+static int lib_run_out_open(lib_doc_config_t* cnf) {
+    if (!cnf) {
+        return 1;
+    }
+    // Open the file if we use file output
+    cnf->out = !(cnf->out_file_name) ? stdout : lib_run_open(cnf->out_file_name, "wb+");
+    return cnf->out ? 0 : 1;
+}
+
+static int lib_run_out_close(lib_doc_config_t* cnf) {
+    if (!cnf) {
+        return 1;
+    }
+    // Close the file if we use file output
+    if (cnf->out_file_name) {
+        return lib_io_fclose(cnf->out);
+    }
     return 0;
 }
 

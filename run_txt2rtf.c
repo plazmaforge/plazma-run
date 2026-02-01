@@ -191,6 +191,8 @@ int main(int argc, char* argv[]) {
     lib_rtf_config_t config;
     lib_rtf_init(&config);
 
+    config.mode        = mode;
+
     config.charset     = lib_ifs(flag_charset, charset, LIB_RTF_CHARSET);
     config.title       = lib_ifs(flag_title, title, LIB_RTF_TITLE);
     config.margin      = lib_ifs(flag_margin, margin, LIB_RTF_MARGIN);
@@ -208,19 +210,8 @@ int main(int argc, char* argv[]) {
         config.font->background = font_background;
     }
 
-    error = 0;
-
-    if (out_file_name) {
-        config.out_file_name = out_file_name;
-        config.out = lib_io_fopen(out_file_name, "wb+");
-        if (!config.out) {
-            fprintf(stderr, "%s: Cannot open file: %s\n", prog_name, out_file_name);
-            error = 1;
-        }
-    } else {
-        config.out_file_name = NULL;
-        config.out = stdout;
-    }
+    config.out_file_name = out_file_name;
+    error = lib_run_out_open((lib_doc_config_t*) &config);
 
     if (error) {
         return 1;
@@ -232,6 +223,8 @@ int main(int argc, char* argv[]) {
         error = run_txt2rtf_file(&config, file_name);
     }
 
+    lib_run_out_close((lib_doc_config_t*) &config);
+   
     if (error) {
         return 1;
     }
