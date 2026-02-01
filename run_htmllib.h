@@ -63,7 +63,7 @@ static int lib_html_init(lib_html_config_t* cnf) {
     }
     cnf->content_type = LIB_HTML_CONTENT_TYPE_DOCUMENT;
     cnf->container_type = LIB_HTML_CONTAINER_TYPE_NO;
-    return lib_doc_config_init((lib_doc_config_t*) cnf);
+    return lib_doc_config_init((run_doc_config_t*) cnf);
 }
 
 static int lib_html_prepare(lib_html_context_t* ctx) {
@@ -71,7 +71,7 @@ static int lib_html_prepare(lib_html_context_t* ctx) {
         return 1;
     }
     
-    int error = lib_doc_context_prepare((lib_doc_context_t*) ctx);
+    int error = lib_doc_context_prepare((run_doc_context_t*) ctx);
     if (error != 0) {
         return error;
     }

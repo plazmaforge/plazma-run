@@ -121,18 +121,18 @@ typedef struct lib_font_t {
     FILE* out;                \
 
 /**
- * DOC Config
+ * Run DOC Config
  */
-typedef struct lib_doc_config_t {
+typedef struct run_doc_config_t {
     RUN_DOC_CONFIG
-} lib_doc_config_t;
+} run_doc_config_t;
 
 /**
- * DOC Context
+ * Run DOC Context
  */
-typedef struct lib_doc_context_t {
+typedef struct run_doc_context_t {
     RUN_DOC_CONTEXT
-} lib_doc_context_t;
+} run_doc_context_t;
 
 
 static bool _isdigit(char c) {
@@ -526,7 +526,7 @@ static int lib_doc_font_init(lib_font_t* font,
     return 0;
 }
 
-static int lib_doc_config_init(lib_doc_config_t* cnf) {
+static int lib_doc_config_init(run_doc_config_t* cnf) {
     if (!cnf) {
         return 1;
     }
@@ -544,7 +544,7 @@ static int lib_doc_config_init(lib_doc_config_t* cnf) {
     return 0;
 }
 
-static int lib_doc_context_prepare(lib_doc_context_t* ctx) {
+static int lib_doc_context_prepare(run_doc_context_t* ctx) {
     if (!ctx) {
         return 1;
     }
@@ -658,7 +658,7 @@ static int lib_run_close(const char* file_name, FILE* file) {
     return error;
 }
 
-static int lib_run_out_open(lib_doc_config_t* cnf) {
+static int lib_run_out_open(run_doc_config_t* cnf) {
     if (!cnf) {
         return 1;
     }
@@ -667,7 +667,7 @@ static int lib_run_out_open(lib_doc_config_t* cnf) {
     return cnf->out ? 0 : 1;
 }
 
-static int lib_run_out_close(lib_doc_config_t* cnf) {
+static int lib_run_out_close(run_doc_config_t* cnf) {
     if (!cnf) {
         return 1;
     }

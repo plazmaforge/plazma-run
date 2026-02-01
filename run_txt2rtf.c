@@ -211,7 +211,7 @@ int main(int argc, char* argv[]) {
     }
 
     config.out_file_name = out_file_name;
-    error = lib_run_out_open((lib_doc_config_t*) &config);
+    error = lib_run_out_open((run_doc_config_t*) &config);
 
     if (error) {
         return 1;
@@ -223,7 +223,7 @@ int main(int argc, char* argv[]) {
         error = run_txt2rtf_file(&config, file_name);
     }
 
-    lib_run_out_close((lib_doc_config_t*) &config);
+    lib_run_out_close((run_doc_config_t*) &config);
    
     if (error) {
         return 1;

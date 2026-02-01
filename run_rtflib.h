@@ -46,7 +46,7 @@ static int lib_rtf_init(lib_rtf_config_t* cnf) {
         return 1;
     }
 
-    return lib_doc_config_init((lib_doc_config_t*) cnf);    
+    return lib_doc_config_init((run_doc_config_t*) cnf);    
 }
 
 static int lib_rtf_prepare(lib_rtf_context_t* ctx) {
@@ -54,7 +54,7 @@ static int lib_rtf_prepare(lib_rtf_context_t* ctx) {
         return 1;
     }
 
-    int error = lib_doc_context_prepare((lib_doc_context_t*) ctx);
+    int error = lib_doc_context_prepare((run_doc_context_t*) ctx);
     if (error != 0) {
         return error;
     }

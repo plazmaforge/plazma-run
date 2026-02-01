@@ -49,7 +49,7 @@ static int lib_svg_init(lib_svg_config_t* cnf) {
     cnf->width       = NULL;
     cnf->height      = NULL;
 
-    return lib_doc_config_init((lib_doc_config_t*) cnf);
+    return lib_doc_config_init((run_doc_config_t*) cnf);
 }
 
 static int lib_svg_prepare(lib_svg_context_t* ctx) {
@@ -69,7 +69,7 @@ static int lib_svg_prepare(lib_svg_context_t* ctx) {
     ctx->use_height         = ctx->height;
     ctx->use_size           = ctx->use_width | ctx->use_height;
 
-    return lib_doc_context_prepare((lib_doc_context_t*) ctx);
+    return lib_doc_context_prepare((run_doc_context_t*) ctx);
 }
 
 static int lib_svg_ctx_init(lib_svg_config_t* cnf, lib_svg_context_t* ctx) {

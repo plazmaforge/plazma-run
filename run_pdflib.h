@@ -45,7 +45,7 @@ static int lib_pdf_init(lib_pdf_config_t* cnf) {
         return 1;
     }
 
-    return lib_doc_config_init((lib_doc_config_t*) cnf);
+    return lib_doc_config_init((run_doc_config_t*) cnf);
 }
 
 static int lib_pdf_prepare(lib_pdf_context_t* ctx) {
@@ -58,7 +58,7 @@ static int lib_pdf_prepare(lib_pdf_context_t* ctx) {
         ctx->font->unit = lib_pdf_unitdef(ctx->font->size);
     }
 
-    return lib_doc_context_prepare((lib_doc_context_t*) ctx);
+    return lib_doc_context_prepare((run_doc_context_t*) ctx);
 }
 
 static int lib_pdf_ctx_init(lib_pdf_config_t* cnf, lib_pdf_context_t* ctx) {
