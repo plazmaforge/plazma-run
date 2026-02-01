@@ -63,6 +63,10 @@
 #define LIB_OPT_CONTENT_TYPE_ID    7001
 #define LIB_OPT_CONTAINER_TYPE_ID  7002
 
+/* Run mode: by string/file */
+#define RUN_BY_STRING 1
+#define RUN_BY_FILE   2
+
 typedef struct lib_margin_t {
     const char* value;
     const char* unit;
@@ -78,42 +82,42 @@ typedef struct lib_font_t {
     const char* background;
 } lib_font_t;
 
-#define LIB_DOC_CONFIG_0      \
-    const char* charset;      \
-    const char* title;        \
-    const char* margin;       \
-    const char* margin_unit;  \
-    const char* font_name;    \
-    const char* font_style;   \
-    const char* font_weight;  \
-    const char* font_size;    \
-    const char* font_unit;    \
+// #define LIB_DOC_CONFIG_0      \
+//     const char* charset;      \
+//     const char* title;        \
+//     const char* margin;       \
+//     const char* margin_unit;  \
+//     const char* font_name;    \
+//     const char* font_style;   \
+//     const char* font_weight;  \
+//     const char* font_size;    \
+//     const char* font_unit;    \
 
-#define LIB_DOC_CONTEXT_0     \
-    const char* charset;      \
-    const char* title;        \
-    const char* margin;       \
-    const char* margin_unit;  \
-    const char* font_name;    \
-    const char* font_style;   \
-    const char* font_weight;  \
-    const char* font_size;    \
-    const char* font_unit;    \
-    bool use_charset;         \
-    bool use_title;           \
-    bool use_head;            \
-    bool use_margin;          \
-    bool use_font_name;       \
-    bool use_font_style;      \
-    bool use_font_weight;     \
-    bool use_font_size;       \
-    bool use_font;            \
-    bool use_style;           \
-    char* data;               \
-    size_t size;              \
-
+// #define LIB_DOC_CONTEXT_0     \
+//     const char* charset;      \
+//     const char* title;        \
+//     const char* margin;       \
+//     const char* margin_unit;  \
+//     const char* font_name;    \
+//     const char* font_style;   \
+//     const char* font_weight;  \
+//     const char* font_size;    \
+//     const char* font_unit;    \
+//     bool use_charset;         \
+//     bool use_title;           \
+//     bool use_head;            \
+//     bool use_margin;          \
+//     bool use_font_name;       \
+//     bool use_font_style;      \
+//     bool use_font_weight;     \
+//     bool use_font_size;       \
+//     bool use_font;            \
+//     bool use_style;           \
+//     char* data;               \
+//     size_t size;              \
 
 #define LIB_DOC_CONFIG        \
+    int mode;                 \
     const char* charset;      \
     const char* title;        \
     const char* margin;       \
@@ -121,6 +125,7 @@ typedef struct lib_font_t {
     lib_font_t* font;         \
 
 #define LIB_DOC_CONTEXT       \
+    int mode;                 \
     const char* charset;      \
     const char* title;        \
     const char* margin;       \
