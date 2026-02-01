@@ -14,14 +14,14 @@
  * RTF Config
  */
 typedef struct lib_rtf_config_t {
-    LIB_DOC_CONFIG
+    RUN_DOC_CONFIG
 } lib_rtf_config_t;
 
 /**
  * RTF Context
  */
 typedef struct lib_rtf_context_t {
-    LIB_DOC_CONTEXT
+    RUN_DOC_CONTEXT
 } lib_rtf_context_t;
 
 static int lib_rtf_document(lib_rtf_context_t* ctx);

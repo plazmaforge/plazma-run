@@ -84,7 +84,7 @@ typedef struct lib_font_t {
     const char* background;
 } lib_font_t;
 
-#define LIB_DOC_CONFIG        \
+#define RUN_DOC_CONFIG        \
     int mode;                 \
     const char* charset;      \
     const char* title;        \
@@ -96,7 +96,7 @@ typedef struct lib_font_t {
     FILE* out;                \
     
 
-#define LIB_DOC_CONTEXT       \
+#define RUN_DOC_CONTEXT       \
     int mode;                 \
     const char* charset;      \
     const char* title;        \
@@ -124,14 +124,14 @@ typedef struct lib_font_t {
  * DOC Config
  */
 typedef struct lib_doc_config_t {
-    LIB_DOC_CONFIG
+    RUN_DOC_CONFIG
 } lib_doc_config_t;
 
 /**
  * DOC Context
  */
 typedef struct lib_doc_context_t {
-    LIB_DOC_CONTEXT
+    RUN_DOC_CONTEXT
 } lib_doc_context_t;
 
 

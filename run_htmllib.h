@@ -28,7 +28,7 @@
  * HTML Config (temp solution: config -> context)
  */
 typedef struct lib_html_config_t {
-    LIB_DOC_CONFIG
+    RUN_DOC_CONFIG
     int content_type;
     int container_type;
 } lib_html_config_t;
@@ -37,7 +37,7 @@ typedef struct lib_html_config_t {
  * HTML Context
  */
 typedef struct lib_html_context_t {
-    LIB_DOC_CONTEXT
+    RUN_DOC_CONTEXT
     int content_type;
     int container_type;
 } lib_html_context_t;

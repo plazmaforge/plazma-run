@@ -14,14 +14,14 @@
  * PDF Config
  */
 typedef struct lib_pdf_config_t {
-    LIB_DOC_CONFIG
+    RUN_DOC_CONFIG
 } lib_pdf_config_t;
 
 /**
  * PDF Context
  */
 typedef struct lib_pdf_context_t {
-    LIB_DOC_CONTEXT
+    RUN_DOC_CONTEXT
 
 } lib_pdf_context_t;
 

@@ -14,7 +14,7 @@
  * SVG Config
  */
 typedef struct lib_svg_config_t {
-    LIB_DOC_CONFIG
+    RUN_DOC_CONFIG
 
     const char* width;
     const char* height;
@@ -24,7 +24,7 @@ typedef struct lib_svg_config_t {
  * SVG Context
  */
 typedef struct lib_svg_context_t {
-    LIB_DOC_CONTEXT
+    RUN_DOC_CONTEXT
 
     const char* width;
     const char* width_unit;
