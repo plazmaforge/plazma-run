@@ -197,11 +197,10 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
     char c;
     bool break_line;
     bool new_line;
-    int count;
 
     break_line = false;
     new_line = true;
-    count = 0;
+    len = 0;
 
     for (size_t i = 0; i < ctx->size; i++) {
 
@@ -218,17 +217,18 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
             }
             break_line = true;
         default:
-            count++;
+            len++;
             break;
         }
 
         new_line = break_line;
         if (break_line) {
-            count += BUF_LN_LEN;
+            len += BUF_LN_LEN;
         }
     }
 
-    stream_len  += ctx->size;
+    //stream_len  += ctx->size;
+    stream_len  += len;
 
     len = fprintf(stdout, "4 0 obj << /Length %d >> stream\n", stream_len);
     offset  += len;
@@ -250,8 +250,7 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
 
     break_line = false;
     new_line = true;
-    count = 0;
-    bool break_line2 = false;
+    len = 0;
 
     for (size_t i = 0; i < ctx->size; i++) {
 
@@ -268,25 +267,19 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
             }
             break_line = true;
         default:
-            count++;
+            len++;
             fprintf(stdout, "%c", c);
             break;
         }
 
-        //new_line = break_line;
+        new_line = break_line;
         if (break_line) {
-            //if (&& i > 0) {
-                count += fprintf(stdout, ") Tj\n");
-            //}
-            count += fprintf(stdout, "0 -18 Td\n(");
-            //count += BUF_LN_LEN
-            break_line2 = break_line;
+            len += fprintf(stdout, ") Tj\n");
+            len += fprintf(stdout, "0 -18 Td\n(");
         }
-        
-        //new_line = break_line;
     }
 
-    offset  += count;
+    offset  += len;
     len = fprintf(stdout, ") Tj\n");
     offset  += len;
 

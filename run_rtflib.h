@@ -13,35 +13,35 @@
 /**
  * RTF Config
  */
-typedef struct lib_rtf_config_t {
+typedef struct run_rtf_config_t {
     RUN_DOC_CONFIG
-} lib_rtf_config_t;
+} run_rtf_config_t;
 
 /**
  * RTF Context
  */
-typedef struct lib_rtf_context_t {
+typedef struct run_rtf_context_t {
     RUN_DOC_CONTEXT
-} lib_rtf_context_t;
+} run_rtf_context_t;
 
-static int lib_rtf_document(lib_rtf_context_t* ctx);
+static int lib_rtf_document(run_rtf_context_t* ctx);
 
-static int lib_rtf_head(lib_rtf_context_t* ctx);
+static int lib_rtf_head(run_rtf_context_t* ctx);
 
-static int lib_rtf_charset(lib_rtf_context_t* ctx);
+static int lib_rtf_charset(run_rtf_context_t* ctx);
 
-static int lib_rtf_margin(lib_rtf_context_t* ctx);
+static int lib_rtf_margin(run_rtf_context_t* ctx);
 
-static int lib_rtf_font(lib_rtf_context_t* ctx);
+static int lib_rtf_font(run_rtf_context_t* ctx);
 
-static int lib_rtf_body(lib_rtf_context_t* ctx);
+static int lib_rtf_body(run_rtf_context_t* ctx);
 
 
 static const char* lib_rtf_unitdef(const char* value) {
     return lib_is_digit(value) ? LIB_RTF_UNIT : "";
 }
 
-static int lib_rtf_init(lib_rtf_config_t* cnf) {
+static int lib_rtf_init(run_rtf_config_t* cnf) {
     if (!cnf) {
         return 1;
     }
@@ -49,7 +49,7 @@ static int lib_rtf_init(lib_rtf_config_t* cnf) {
     return lib_doc_config_init((run_doc_config_t*) cnf);    
 }
 
-static int lib_rtf_prepare(lib_rtf_context_t* ctx) {
+static int lib_rtf_prepare(run_rtf_context_t* ctx) {
     if (!ctx) {
         return 1;
     }
@@ -67,7 +67,7 @@ static int lib_rtf_prepare(lib_rtf_context_t* ctx) {
     return 0;
 }
 
-static int lib_rtf_ctx_init(lib_rtf_config_t* cnf, lib_rtf_context_t* ctx) {
+static int lib_rtf_ctx_init(run_rtf_config_t* cnf, run_rtf_context_t* ctx) {
     if (!cnf || !ctx) {
         return 1;
     }
@@ -86,7 +86,7 @@ static int lib_rtf_ctx_init(lib_rtf_config_t* cnf, lib_rtf_context_t* ctx) {
     return lib_rtf_prepare(ctx);
 }
 
-static int lib_rtf_document(lib_rtf_context_t* ctx) {
+static int lib_rtf_document(run_rtf_context_t* ctx) {
     
     // DOCUMENT
     fprintf(ctx->out, "{\\rtf1\\ansi\\deff0\n");
@@ -104,7 +104,7 @@ static int lib_rtf_document(lib_rtf_context_t* ctx) {
     return 0;
 }
 
-static int lib_rtf_head(lib_rtf_context_t* ctx) {
+static int lib_rtf_head(run_rtf_context_t* ctx) {
 
     // CHARSET    
     if (ctx->use_charset) {
@@ -122,18 +122,18 @@ static int lib_rtf_head(lib_rtf_context_t* ctx) {
     return 0;
 }
 
-static int lib_rtf_charset(lib_rtf_context_t* ctx) {
+static int lib_rtf_charset(run_rtf_context_t* ctx) {
     // TODO
     //fprintf(ctx->out, "\\fni1\\fcharset204\n");
     return 0;
 }
 
-static int lib_rtf_margin(lib_rtf_context_t* ctx) {
+static int lib_rtf_margin(run_rtf_context_t* ctx) {
     // TODO
     return 0;
 }
 
-static int lib_rtf_font(lib_rtf_context_t* ctx) {
+static int lib_rtf_font(run_rtf_context_t* ctx) {
     
     if (!ctx->font) {
         return 0;
@@ -308,7 +308,7 @@ static int lib_rtf_font(lib_rtf_context_t* ctx) {
     return 0;
 }
 
-static int lib_rtf_content(lib_rtf_context_t* ctx) {
+static int lib_rtf_content(run_rtf_context_t* ctx) {
     if (!(ctx->data)) {
         return 0;
     }
@@ -361,20 +361,20 @@ static int lib_rtf_content(lib_rtf_context_t* ctx) {
     return 0;
 }
 
-static int lib_rtf_body(lib_rtf_context_t* ctx) {
+static int lib_rtf_body(run_rtf_context_t* ctx) {
     lib_rtf_content(ctx);
     fprintf(ctx->out, "\\par\n");
     return 0;
 }
 
-static int run_rtf(lib_rtf_config_t* config, char* data, size_t size) {
+static int run_rtf(run_rtf_config_t* config, char* data, size_t size) {
     
     if (size == 0 || !data) {
         fprintf(stderr, "%s: No input data\n", prog_name);
         return 1;
     }
 
-    lib_rtf_context_t ctx;
+    run_rtf_context_t ctx;
     int error = lib_rtf_ctx_init(config, &ctx);
     if (error != 0) {
         fprintf(stderr, "%s: Initialization error\n", prog_name);
