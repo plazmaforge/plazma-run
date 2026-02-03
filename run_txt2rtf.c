@@ -7,11 +7,11 @@
 #include "iolib.h"
 #include "run_rtflib.h"
 
-int run_txt2rtf_data(lib_rtf_config_t* config, char* data, size_t size) {
+int run_txt2rtf_data(run_rtf_config_t* config, char* data, size_t size) {
     return run_rtf(config, data, size);    
 }
 
-int run_txt2rtf_file(lib_rtf_config_t* config, const char* file_name) {
+int run_txt2rtf_file(run_rtf_config_t* config, const char* file_name) {
     
     if (!file_name) {
         fprintf(stderr, "%s: File name is empty\n", prog_name);
@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    lib_rtf_config_t config;
+    run_rtf_config_t config;
     lib_rtf_init(&config);
 
     config.mode        = mode;
