@@ -74,6 +74,9 @@ static int lib_pdf_ctx_init(lib_pdf_config_t* cnf, lib_pdf_context_t* ctx) {
     ctx->data    = NULL;
     ctx->size    = 0;
 
+    ctx->out_file_name = cnf->out_file_name;
+    ctx->out = cnf->out;
+
     return lib_pdf_prepare(ctx);
 }
 
@@ -103,23 +106,23 @@ static int lib_pdf_head(lib_pdf_context_t* ctx) {
 }
 
 static int lib_pdf_margin(lib_pdf_context_t* ctx) {
-    // fprintf(stdout, "margin: %s%s;", ctx->margin, ctx->margin_unit);
+    // fprintf(ctx->out, "margin: %s%s;", ctx->margin, ctx->margin_unit);
     return 0;
 }
 
 static int lib_pdf_font(lib_pdf_context_t* ctx) {
 
     // if (ctx->use_font_name) {
-    //     fprintf(stdout, "font-family: %s;", ctx->font->name);
+    //     fprintf(ctx->out, "font-family: %s;", ctx->font->name);
     // }
     // if (ctx->use_font_style) {
-    //     fprintf(stdout, "font-style: %s;", ctx->font->style);
+    //     fprintf(ctx->out, "font-style: %s;", ctx->font->style);
     // }
     // if (ctx->use_font_weight) {
-    //     fprintf(stdout, "font-weight: %s;", ctx->font->weight);
+    //     fprintf(ctx->out, "font-weight: %s;", ctx->font->weight);
     // }
     // if (ctx->use_font_size) {
-    //     fprintf(stdout, "font-size: %s%s;", ctx->font->size, ctx->font->unit);
+    //     fprintf(ctx->out, "font-size: %s%s;", ctx->font->size, ctx->font->unit);
     // }
     
     return 0;
@@ -134,7 +137,7 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
     //     if (ctx->use_font) {
     //        lib_pdf_font(ctx);
     //     }
-    //     fprintf(stdout, "\">\n");
+    //     fprintf(ctx->out, "\">\n");
     // }
 
     int len      = 0;
@@ -147,19 +150,19 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
     int offset_x = 0; // xref
 
     // HEADER
-    len = fprintf(stdout, "%%PDF-1.5\n"); // '%PDF-1.5': first '%' for fprint only (!)
+    len = fprintf(ctx->out, "%%PDF-1.5\n"); // '%PDF-1.5': first '%' for fprint only (!)
     offset  += len;
     offset_1 = offset;
 
-    len = fprintf(stdout, "1 0 obj << /Pages 2 0 R /Type /Catalog >> endobj\n");
+    len = fprintf(ctx->out, "1 0 obj << /Pages 2 0 R /Type /Catalog >> endobj\n");
     offset  += len;
     offset_2 = offset;
 
-    len = fprintf(stdout, "2 0 obj << /Count 1 /Kids [3 0 R] /Type /Pages >> endobj\n");
+    len = fprintf(ctx->out, "2 0 obj << /Count 1 /Kids [3 0 R] /Type /Pages >> endobj\n");
     offset  += len;
     offset_3 = offset;
 
-    len = fprintf(stdout, "3 0 obj << /Contents 4 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 5 0 R >> >> /Type /Page >> endobj\n");
+    len = fprintf(ctx->out, "3 0 obj << /Contents 4 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 5 0 R >> >> /Type /Page >> endobj\n");
     offset  += len;
     offset_4 = offset;
 
@@ -182,9 +185,9 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
     //int data_len       = ctx->size;
     //int stream_len     = data_begin_len + data_len + data_end_len;
 
-    // fprintf(stdout, "4 0 obj << /Length 44 >> stream\n");
-    // fprintf(stdout, "BT /F1 24 Tf 72 720 Td (%s) Tj ET\n", ctx->data);
-    // fprintf(stdout, "endstream endobj\n");
+    // fprintf(ctx->out, "4 0 obj << /Length 44 >> stream\n");
+    // fprintf(ctx->out, "BT /F1 24 Tf 72 720 Td (%s) Tj ET\n", ctx->data);
+    // fprintf(ctx->out, "endstream endobj\n");
 
     int stream_len = 0;
     stream_len  += strlen(BUF_BT);
@@ -230,22 +233,22 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
     //stream_len  += ctx->size;
     stream_len  += len;
 
-    len = fprintf(stdout, "4 0 obj << /Length %d >> stream\n", stream_len);
+    len = fprintf(ctx->out, "4 0 obj << /Length %d >> stream\n", stream_len);
     offset  += len;
 
-    //len = fprintf(stdout, "%s", data_begin);
+    //len = fprintf(ctx->out, "%s", data_begin);
     //offset  += len;
 
-    len = fprintf(stdout, "%s", BUF_BT);
+    len = fprintf(ctx->out, "%s", BUF_BT);
     offset  += len;
-    len = fprintf(stdout, "%s", BUF_HD);
+    len = fprintf(ctx->out, "%s", BUF_HD);
     offset  += len;
 
-    len = fprintf(stdout, "(");
+    len = fprintf(ctx->out, "(");
     offset  += len;
 
     // "() Tj\n"
-    //len = fprintf(stdout, "(%s) Tj\n", ctx->data);
+    //len = fprintf(ctx->out, "(%s) Tj\n", ctx->data);
     //offset  += len;
 
     break_line = false;
@@ -268,56 +271,56 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
             break_line = true;
         default:
             len++;
-            fprintf(stdout, "%c", c);
+            fprintf(ctx->out, "%c", c);
             break;
         }
 
         new_line = break_line;
         if (break_line) {
-            len += fprintf(stdout, ") Tj\n");
-            len += fprintf(stdout, "0 -18 Td\n(");
+            len += fprintf(ctx->out, ") Tj\n");
+            len += fprintf(ctx->out, "0 -18 Td\n(");
         }
     }
 
     offset  += len;
-    len = fprintf(stdout, ") Tj\n");
+    len = fprintf(ctx->out, ") Tj\n");
     offset  += len;
 
     // // >>> CONTENT: BEGIN
-    // len = fprintf(stdout, "%s", ctx->data);
+    // len = fprintf(ctx->out, "%s", ctx->data);
     // offset  += len;
     // // >>> CONTENT: END
 
-    len = fprintf(stdout, "%s", BUF_ET);
+    len = fprintf(ctx->out, "%s", BUF_ET);
     offset  += len;
 
-    //len = fprintf(stdout, "%s", data_end);
+    //len = fprintf(ctx->out, "%s", data_end);
     //offset  += len;
 
-    len = fprintf(stdout, "endstream endobj\n");
+    len = fprintf(ctx->out, "endstream endobj\n");
     offset  += len;
     offset_5 = offset;
 
-    len = fprintf(stdout, "5 0 obj << /BaseFont /Helvetica /Encoding /WinAnsiEncoding /Subtype /Type1 /Type /Font >> endobj\n");
+    len = fprintf(ctx->out, "5 0 obj << /BaseFont /Helvetica /Encoding /WinAnsiEncoding /Subtype /Type1 /Type /Font >> endobj\n");
     offset  += len;
     offset_x = offset;
 
     // XREF
-    fprintf(stdout, "%s\n", "xref");
-    fprintf(stdout, "%s\n", "0 6");
-    fprintf(stdout, "%s\n", "0000000000 65535 f ");
+    fprintf(ctx->out, "%s\n", "xref");
+    fprintf(ctx->out, "%s\n", "0 6");
+    fprintf(ctx->out, "%s\n", "0000000000 65535 f ");
 
-    fprintf(stdout, "%010d 00000 n \n", offset_1);
-    fprintf(stdout, "%010d 00000 n \n", offset_2);
-    fprintf(stdout, "%010d 00000 n \n", offset_3);
-    fprintf(stdout, "%010d 00000 n \n", offset_4);
-    fprintf(stdout, "%010d 00000 n \n", offset_5);
+    fprintf(ctx->out, "%010d 00000 n \n", offset_1);
+    fprintf(ctx->out, "%010d 00000 n \n", offset_2);
+    fprintf(ctx->out, "%010d 00000 n \n", offset_3);
+    fprintf(ctx->out, "%010d 00000 n \n", offset_4);
+    fprintf(ctx->out, "%010d 00000 n \n", offset_5);
 
     // TRAILER
-    fprintf(stdout, "trailer << /Root 1 0 R /Size 6 >>\n");
-    fprintf(stdout, "startxref\n");
-    fprintf(stdout, "%d\n", offset_x);  // offset xref
-    fprintf(stdout, "%%%%EOF\n");       // '%%EOF': first '%' for fprint only (!)
+    fprintf(ctx->out, "trailer << /Root 1 0 R /Size 6 >>\n");
+    fprintf(ctx->out, "startxref\n");
+    fprintf(ctx->out, "%d\n", offset_x);  // offset xref
+    fprintf(ctx->out, "%%%%EOF\n");       // '%%EOF': first '%' for fprint only (!)
 
     // fprintf(stderr, "data_begin_len = %d\n", data_begin_len);
     // fprintf(stderr, "data_end_len   = %d\n", data_end_len);
