@@ -52,27 +52,28 @@ int main(int argc, char* argv[]) {
     int opt;
     int long_ind;
 
-    bool flag_string        = false;
-    char* data              = NULL;
-    size_t size             = 0;
-    const char* file_name   = NULL;
+    bool flag_string            = false;
+    char* data                  = NULL;
+    size_t size                 = 0;
+    const char* file_name       = NULL;
+    const char* out_file_name   = NULL;
 
     // config
-    const char* charset     = NULL;
-    const char* title       = NULL;
-    const char* margin      = NULL;
-    const char* font_name   = NULL;
-    const char* font_style  = NULL;
-    const char* font_weight = NULL;
-    const char* font_size   = NULL;
+    const char* charset         = NULL;
+    const char* title           = NULL;
+    const char* margin          = NULL;
+    const char* font_name       = NULL;
+    const char* font_style      = NULL;
+    const char* font_weight     = NULL;
+    const char* font_size       = NULL;
 
-    bool flag_charset       = false;
-    bool flag_title         = false;
-    bool flag_margin        = false;
-    bool flag_font_name     = false;
-    bool flag_font_style    = false;
-    bool flag_font_weight   = false;
-    bool flag_font_size     = false;
+    bool flag_charset           = false;
+    bool flag_title             = false;
+    bool flag_margin            = false;
+    bool flag_font_name         = false;
+    bool flag_font_style        = false;
+    bool flag_font_weight       = false;
+    bool flag_font_size         = false;
 
     static lib_option long_options[] = {
         {LIB_OPT_CHARSET,     optional_argument, 0, LIB_OPT_CHARSET_ID},
@@ -85,12 +86,15 @@ int main(int argc, char* argv[]) {
         {NULL,                0,                 0, 0 }
     };
 
-    while ((opt = lib_getopt_long(argc, argv, "s:", long_options, &long_ind)) != -1) {
+    while ((opt = lib_getopt_long(argc, argv, "s:o:", long_options, &long_ind)) != -1) {
 
         switch (opt) {
         case 's':
             flag_string = true;
             data = optarg;
+            break;
+        case 'o':
+            out_file_name = optarg;
             break;
         case LIB_OPT_CHARSET_ID:     // charset
             flag_charset = true;
@@ -192,12 +196,20 @@ int main(int argc, char* argv[]) {
         lib_doc_font_init(&font, font_name, font_style, font_weight, font_size);
     }
 
-    error = 0;
-    if (flag_string) {
+    config.out_file_name = out_file_name;
+    error = lib_run_out_open((run_doc_config_t*) &config);
+
+    if (error) {
+        return 1;
+    }
+
+     if (flag_string) {
         error = run_txt2pdf_data(&config, data, size);
     } else {
         error = run_txt2pdf_file(&config, file_name);
     }
+
+    lib_run_out_close((run_doc_config_t*) &config);
 
     if (error) {
         return 1;
