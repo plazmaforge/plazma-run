@@ -7,11 +7,11 @@
 #include "iolib.h"
 #include "run_pdflib.h"
 
-int run_txt2pdf_data(lib_pdf_config_t* config, char* data, size_t size) {
+int run_txt2pdf_data(run_pdf_config_t* config, char* data, size_t size) {
     return run_pdf(config, data, size);    
 }
 
-int run_txt2pdf_file(lib_pdf_config_t* config, const char* file_name) {
+int run_txt2pdf_file(run_pdf_config_t* config, const char* file_name) {
     
     if (!file_name) {
         fprintf(stderr, "%s: File name is empty\n", prog_name);
@@ -178,7 +178,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    lib_pdf_config_t config;
+    run_pdf_config_t config;
     lib_pdf_init(&config);
 
     config.charset     = lib_ifs(flag_charset, charset, LIB_PDF_CHARSET);

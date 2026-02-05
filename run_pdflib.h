@@ -13,34 +13,34 @@
 /**
  * PDF Config
  */
-typedef struct lib_pdf_config_t {
+typedef struct run_pdf_config_t {
     RUN_DOC_CONFIG
-} lib_pdf_config_t;
+} run_pdf_config_t;
 
 /**
  * PDF Context
  */
-typedef struct lib_pdf_context_t {
+typedef struct run_pdf_context_t {
     RUN_DOC_CONTEXT
 
-} lib_pdf_context_t;
+} run_pdf_context_t;
 
-static int lib_pdf_document(lib_pdf_context_t* ctx);
+static int lib_pdf_document(run_pdf_context_t* ctx);
 
-static int lib_pdf_head(lib_pdf_context_t* ctx);
+static int lib_pdf_head(run_pdf_context_t* ctx);
 
-static int lib_pdf_margin(lib_pdf_context_t* ctx);
+static int lib_pdf_margin(run_pdf_context_t* ctx);
 
-static int lib_pdf_font(lib_pdf_context_t* ctx);
+static int lib_pdf_font(run_pdf_context_t* ctx);
 
-static int lib_pdf_body(lib_pdf_context_t* ctx);
+static int lib_pdf_body(run_pdf_context_t* ctx);
 
 
 static const char* lib_pdf_unitdef(const char* value) {
     return lib_is_digit(value) ? LIB_PDF_UNIT : "";
 }
 
-static int lib_pdf_init(lib_pdf_config_t* cnf) {
+static int lib_pdf_init(run_pdf_config_t* cnf) {
     if (!cnf) {
         return 1;
     }
@@ -48,7 +48,7 @@ static int lib_pdf_init(lib_pdf_config_t* cnf) {
     return lib_doc_config_init((run_doc_config_t*) cnf);
 }
 
-static int lib_pdf_prepare(lib_pdf_context_t* ctx) {
+static int lib_pdf_prepare(run_pdf_context_t* ctx) {
     if (!ctx) {
         return 1;
     }
@@ -61,7 +61,7 @@ static int lib_pdf_prepare(lib_pdf_context_t* ctx) {
     return lib_doc_context_prepare((run_doc_context_t*) ctx);
 }
 
-static int lib_pdf_ctx_init(lib_pdf_config_t* cnf, lib_pdf_context_t* ctx) {
+static int lib_pdf_ctx_init(run_pdf_config_t* cnf, run_pdf_context_t* ctx) {
     if (!cnf || !ctx) {
         return 1;
     }
@@ -80,7 +80,7 @@ static int lib_pdf_ctx_init(lib_pdf_config_t* cnf, lib_pdf_context_t* ctx) {
     return lib_pdf_prepare(ctx);
 }
 
-static int lib_pdf_document(lib_pdf_context_t* ctx) {
+static int lib_pdf_document(run_pdf_context_t* ctx) {
     
     // DOCUMENT
 
@@ -95,7 +95,7 @@ static int lib_pdf_document(lib_pdf_context_t* ctx) {
     return 0;
 }
 
-static int lib_pdf_head(lib_pdf_context_t* ctx) {
+static int lib_pdf_head(run_pdf_context_t* ctx) {
 
     // if (ctx->use_charset) {
     // }
@@ -105,12 +105,12 @@ static int lib_pdf_head(lib_pdf_context_t* ctx) {
     return 0;
 }
 
-static int lib_pdf_margin(lib_pdf_context_t* ctx) {
+static int lib_pdf_margin(run_pdf_context_t* ctx) {
     // fprintf(ctx->out, "margin: %s%s;", ctx->margin, ctx->margin_unit);
     return 0;
 }
 
-static int lib_pdf_font(lib_pdf_context_t* ctx) {
+static int lib_pdf_font(run_pdf_context_t* ctx) {
 
     // if (ctx->use_font_name) {
     //     fprintf(ctx->out, "font-family: %s;", ctx->font->name);
@@ -128,7 +128,7 @@ static int lib_pdf_font(lib_pdf_context_t* ctx) {
     return 0;
 }
 
-static int lib_pdf_body(lib_pdf_context_t* ctx) {
+static int lib_pdf_body(run_pdf_context_t* ctx) {
     
     // if (ctx->use_style) {
     //     if (ctx->use_margin) {
@@ -306,14 +306,14 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
     return 0;
 }
 
-static int run_pdf(lib_pdf_config_t* config, char* data, size_t size) {
+static int run_pdf(run_pdf_config_t* config, char* data, size_t size) {
     
     if (size == 0 || !data) {
         fprintf(stderr, "%s: No input data\n", prog_name);
         return 1;
     }
 
-    lib_pdf_context_t ctx;
+    run_pdf_context_t ctx;
     int error = lib_pdf_ctx_init(config, &ctx);
     if (error != 0) {
         fprintf(stderr, "%s: Initialization error\n", prog_name);
