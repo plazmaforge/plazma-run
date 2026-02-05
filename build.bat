@@ -1,3 +1,4 @@
+@echo off
 set "CC=gcc"
 set "CFLAGS=-c -Ilib"
 set "LDFLAGS="
