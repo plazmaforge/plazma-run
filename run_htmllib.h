@@ -315,6 +315,7 @@ static int lib_html_content(lib_html_context_t* ctx) {
                 i++;
             }
             break_line = true;
+            break;
         default:
             fprintf(stdout, "%c", c);
             break;

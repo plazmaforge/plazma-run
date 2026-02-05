@@ -346,6 +346,7 @@ static int lib_rtf_content(run_rtf_context_t* ctx) {
                 i++;
             }
             break_line = true;
+            break;
         default:
             fprintf(ctx->out, "%c", c);
             break;

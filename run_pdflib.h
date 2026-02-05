@@ -219,6 +219,7 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
                 i++;
             }
             break_line = true;
+            break;
         default:
             len++;
             break;
@@ -269,6 +270,7 @@ static int lib_pdf_body(lib_pdf_context_t* ctx) {
                 i++;
             }
             break_line = true;
+            break;
         default:
             len++;
             fprintf(ctx->out, "%c", c);
