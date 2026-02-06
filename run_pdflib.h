@@ -148,6 +148,20 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int offset_4 = 0;
     int offset_5 = 0;
     int offset_x = 0; // xref
+    int page     = 0;
+    int line     = 0;
+
+    int page_width     = 612;
+    int page_height    = 792;
+    int margin_left    = 72;
+    int margin_right   = 72;
+    int margin_top     = 72;
+    int margin_bottom  = 72;
+    int line_offset    = 18;
+
+    int content_width  = page_width - margin_left - margin_right;
+    int content_height = page_height - margin_top - margin_bottom;
+    int line_page      = content_width / line_offset + 1;
 
     const char* BUF_BT = "BT\n";                    // BEGIN
     const char* BUF_HD = "/F1 12 Tf 72 720 Td\n";   // HEADER
@@ -193,6 +207,9 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     // Calculate
     stream_len = 0;
+    page       = 1;
+    line       = 1;
+
     break_line = false;
     new_line   = true;
     len        = 0;
@@ -220,8 +237,16 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         new_line = break_line;
         if (break_line) {
             len += BUF_LN_LEN;
+            if (line > line_page) {
+                page++;
+                line = 1;
+            } else {
+                line++;
+            }            
         }
     }
+
+    fprintf(stderr, ">> page_count: %d\n", page);
 
     stream_len  += len;
 
