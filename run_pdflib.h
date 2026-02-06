@@ -149,45 +149,53 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int offset_5 = 0;
     int offset_x = 0; // xref
 
-    // HEADER
-    len = fprintf(ctx->out, "%%PDF-1.5\n"); // '%PDF-1.5': first '%' for fprint only (!)
-    offset  += len;
-    offset_1 = offset;
-
-    len = fprintf(ctx->out, "1 0 obj << /Pages 2 0 R /Type /Catalog >> endobj\n");
-    offset  += len;
-    offset_2 = offset;
-
-    len = fprintf(ctx->out, "2 0 obj << /Count 1 /Kids [3 0 R] /Type /Pages >> endobj\n");
-    offset  += len;
-    offset_3 = offset;
-
-    len = fprintf(ctx->out, "3 0 obj << /Contents 4 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 5 0 R >> >> /Type /Page >> endobj\n");
-    offset  += len;
-    offset_4 = offset;
-
-    // STREAM
     const char* BUF_BT = "BT\n";                    // BEGIN
     const char* BUF_HD = "/F1 12 Tf 72 720 Td\n";   // HEADER
     const char* BUF_LF = "() Tj\n";                 // LINE FIRST
     const char* BUF_LN = "0 -18 Td\n() Tj\n";       // LINE NEXT
     const char* BUF_ET = "ET\n";                    // END
 
-    int stream_len = 0;
-    stream_len += strlen(BUF_BT);
-    stream_len += strlen(BUF_HD);
-    stream_len += strlen(BUF_LF);
-    stream_len += strlen(BUF_ET);
+    int BUF_LEN    = 0;
+    int BUF_LN_LEN = 0;
 
-    int BUF_LN_LEN = strlen(BUF_LN);
+    BUF_LEN += strlen(BUF_BT);
+    BUF_LEN += strlen(BUF_HD);
+    BUF_LEN += strlen(BUF_LF);
+    BUF_LEN += strlen(BUF_ET);
 
+    BUF_LN_LEN = strlen(BUF_LN);
+
+    // HEADER
+    len = fprintf(ctx->out, "%%PDF-1.5\n"); // '%PDF-1.5': first '%' for fprint only (!)
+    offset  += len;
+    offset_1 = offset;
+
+    // Catalog
+    len = fprintf(ctx->out, "1 0 obj << /Pages 2 0 R /Type /Catalog >> endobj\n");
+    offset  += len;
+    offset_2 = offset;
+
+    // Pages
+    len = fprintf(ctx->out, "2 0 obj << /Count 1 /Kids [3 0 R] /Type /Pages >> endobj\n");
+    offset  += len;
+    offset_3 = offset;
+
+    // Contents
+    len = fprintf(ctx->out, "3 0 obj << /Contents 4 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 5 0 R >> >> /Type /Page >> endobj\n");
+    offset  += len;
+    offset_4 = offset;
+
+    // Streams
+    int stream_len;
     char c;
     bool break_line;
     bool new_line;
 
+    // Calculate
+    stream_len = 0;
     break_line = false;
-    new_line = true;
-    len = 0;
+    new_line   = true;
+    len        = 0;
 
     for (size_t i = 0; i < ctx->size; i++) {
 
@@ -217,6 +225,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     stream_len  += len;
 
+    // >>> Stream: start
     len = fprintf(ctx->out, "4 0 obj << /Length %d >> stream\n", stream_len);
     offset  += len;
 
@@ -227,10 +236,12 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     len = fprintf(ctx->out, "(");
     offset  += len;
+    // >>>
 
+    // Output
     break_line = false;
-    new_line = true;
-    len = 0;
+    new_line   = true;
+    len        = 0;
 
     for (size_t i = 0; i < ctx->size; i++) {
 
@@ -260,6 +271,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         }
     }
 
+
+    // >>> Stream: end
     offset  += len;
     len = fprintf(ctx->out, ") Tj\n");
     offset  += len;
@@ -270,6 +283,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     len = fprintf(ctx->out, "endstream endobj\n");
     offset  += len;
     offset_5 = offset;
+    // >>>
 
     len = fprintf(ctx->out, "5 0 obj << /BaseFont /Helvetica /Encoding /WinAnsiEncoding /Subtype /Type1 /Type /Font >> endobj\n");
     offset  += len;
