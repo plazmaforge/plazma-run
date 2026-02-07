@@ -140,16 +140,19 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     //     fprintf(ctx->out, "\">\n");
     // }
 
-    int len      = 0;
-    int offset   = 0;
-    int offset_1 = 0;
-    int offset_2 = 0;
-    int offset_3 = 0;
-    int offset_4 = 0;
-    int offset_5 = 0;
-    int offset_x = 0; // xref
-    int page     = 0;
-    int line     = 0;
+    int len            = 0;
+    int offset         = 0;
+    int offset_1       = 0;
+    int offset_2       = 0;
+    int offset_3       = 0;
+    int offset_4       = 0;
+    int offset_5       = 0;
+    int offset_x       = 0; // xref
+    int xref_size      = 0;
+    int xref_offset    = 0;
+    int ref            = 0;
+    int page           = 0;
+    int line           = 0;
 
     int page_width     = 612;
     int page_height    = 792;
@@ -161,12 +164,13 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     int content_width  = page_width - margin_left - margin_right;
     int content_height = page_height - margin_top - margin_bottom;
-    int line_page      = content_width / line_offset + 1;
+    int line_page      = content_height / line_offset + 1;
 
     const char* BUF_BT = "BT\n";                    // BEGIN
     const char* BUF_HD = "/F1 12 Tf 72 720 Td\n";   // HEADER
     const char* BUF_LF = "() Tj\n";                 // LINE FIRST
     const char* BUF_LN = "0 -18 Td\n() Tj\n";       // LINE NEXT
+    //const char* BUF_LN = "() Tj\n";       // LINE NEXT
     const char* BUF_ET = "ET\n";                    // END
 
     int BUF_LEN    = 0;
@@ -179,31 +183,45 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     BUF_LN_LEN = strlen(BUF_LN);
 
+    int MAX_PAGE = 8192;
+    int MAX_XREF = 8192;
+
+    int pages[MAX_PAGE];
+    int xrefs[MAX_XREF];
+
     // HEADER
     len = fprintf(ctx->out, "%%PDF-1.5\n"); // '%PDF-1.5': first '%' for fprint only (!)
     offset  += len;
+    xrefs[ref] = offset;
     offset_1 = offset;
 
     // Catalog
-    len = fprintf(ctx->out, "1 0 obj << /Pages 2 0 R /Type /Catalog >> endobj\n");
+    ref++; // 1
+    len = fprintf(ctx->out, "%d 0 obj << /Pages 2 0 R /Type /Catalog >> endobj\n", ref);
     offset  += len;
+    xrefs[ref] = offset;
     offset_2 = offset;
 
     // Pages
-    len = fprintf(ctx->out, "2 0 obj << /Count 1 /Kids [3 0 R] /Type /Pages >> endobj\n");
+    ref++; // 2
+    len = fprintf(ctx->out, "%d 0 obj << /Count 1 /Kids [3 0 R] /Type /Pages >> endobj\n", ref);
     offset  += len;
+    xrefs[ref] = offset;
     offset_3 = offset;
 
     // Contents
-    len = fprintf(ctx->out, "3 0 obj << /Contents 4 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 5 0 R >> >> /Type /Page >> endobj\n");
+    ref++; // 3
+    len = fprintf(ctx->out, "%d 0 obj << /Contents 4 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 5 0 R >> >> /Type /Page >> endobj\n", ref);
     offset  += len;
+    xrefs[ref] = offset;
     offset_4 = offset;
 
     // Streams
     int stream_len;
-    char c;
     bool break_line;
     bool new_line;
+    bool new_page;
+    char c;
 
     // Calculate
     stream_len = 0;
@@ -212,7 +230,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     break_line = false;
     new_line   = true;
+    new_page   = true;
     len        = 0;
+
+    int max_page = 1;
+    stream_len = BUF_LEN;
 
     for (size_t i = 0; i < ctx->size; i++) {
 
@@ -235,23 +257,35 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         }
 
         new_line = break_line;
+        new_page = false;
         if (break_line) {
             len += BUF_LN_LEN;
             if (line > line_page) {
+                //if (page + 1 > max_page) {
+                //    break;
+                //}
+                stream_len += len;
+                pages[page - 1] = stream_len;
+                new_page = true;
                 page++;
                 line = 1;
+                stream_len = BUF_LEN;
             } else {
                 line++;
-            }            
+            }
         }
     }
 
     fprintf(stderr, ">> page_count: %d\n", page);
 
-    stream_len  += len;
+    stream_len += len;
+    pages[page - 1] += stream_len;
+
+    stream_len = pages[0];
 
     // >>> Stream: start
-    len = fprintf(ctx->out, "4 0 obj << /Length %d >> stream\n", stream_len);
+    ref++; // 4
+    len = fprintf(ctx->out, "%d 0 obj << /Length %d >> stream\n", ref, stream_len);
     offset  += len;
 
     len = fprintf(ctx->out, "%s", BUF_BT);
@@ -264,8 +298,12 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     // >>>
 
     // Output
+    page       = 1;
+    line       = 1;
+    
     break_line = false;
     new_line   = true;
+    new_page   = true;
     len        = 0;
 
     for (size_t i = 0; i < ctx->size; i++) {
@@ -290,9 +328,22 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         }
 
         new_line = break_line;
+        new_page = false;
         if (break_line) {
+            if (line > line_page) {
+                if (page + 1 > max_page) {
+                    break;
+                }
+                new_page = true;
+                page++;
+                line = 1;
+            } else {
+                line++;
+            }
+            
             len += fprintf(ctx->out, ") Tj\n");
             len += fprintf(ctx->out, "0 -18 Td\n(");
+            //len += fprintf(ctx->out, "(");
         }
     }
 
@@ -307,28 +358,38 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     len = fprintf(ctx->out, "endstream endobj\n");
     offset  += len;
+    xrefs[ref] = offset;
     offset_5 = offset;
     // >>>
 
-    len = fprintf(ctx->out, "5 0 obj << /BaseFont /Helvetica /Encoding /WinAnsiEncoding /Subtype /Type1 /Type /Font >> endobj\n");
+    ref++; // 5
+    len = fprintf(ctx->out, "%d 0 obj << /BaseFont /Helvetica /Encoding /WinAnsiEncoding /Subtype /Type1 /Type /Font >> endobj\n", ref);
     offset  += len;
+    xrefs[ref] = offset;
     offset_x = offset;
+
+    xref_size   = ref + 1;
+    xref_offset = offset;
 
     // XREF
     fprintf(ctx->out, "%s\n", "xref");
-    fprintf(ctx->out, "%s\n", "0 6");
+    fprintf(ctx->out, "0 %d\n", xref_size);
     fprintf(ctx->out, "%s\n", "0000000000 65535 f ");
 
-    fprintf(ctx->out, "%010d 00000 n \n", offset_1);
-    fprintf(ctx->out, "%010d 00000 n \n", offset_2);
-    fprintf(ctx->out, "%010d 00000 n \n", offset_3);
-    fprintf(ctx->out, "%010d 00000 n \n", offset_4);
-    fprintf(ctx->out, "%010d 00000 n \n", offset_5);
+    //fprintf(ctx->out, "%010d 00000 n \n", offset_1);
+    //fprintf(ctx->out, "%010d 00000 n \n", offset_2);
+    //fprintf(ctx->out, "%010d 00000 n \n", offset_3);
+    //fprintf(ctx->out, "%010d 00000 n \n", offset_4);
+    //fprintf(ctx->out, "%010d 00000 n \n", offset_5);
+
+    for (size_t i = 0; i < ref; i++) {
+        fprintf(ctx->out, "%010d 00000 n \n", xrefs[i]);
+    }
 
     // TRAILER
-    fprintf(ctx->out, "trailer << /Root 1 0 R /Size 6 >>\n");
+    fprintf(ctx->out, "trailer << /Root 1 0 R /Size %d >>\n", xref_size);
     fprintf(ctx->out, "startxref\n");
-    fprintf(ctx->out, "%d\n", offset_x);  // offset xref
+    fprintf(ctx->out, "%d\n", xref_offset);
     fprintf(ctx->out, "%%%%EOF\n");       // '%%EOF': first '%' for fprint only (!)
 
     // fprintf(stderr, "data_begin_len = %d\n", data_begin_len);
