@@ -142,12 +142,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     int len            = 0;
     int offset         = 0;
-    int offset_1       = 0;
-    int offset_2       = 0;
-    int offset_3       = 0;
-    int offset_4       = 0;
-    int offset_5       = 0;
-    int offset_x       = 0; // xref
     int xref_size      = 0;
     int xref_offset    = 0;
     int ref            = 0;
@@ -188,33 +182,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     int pages[MAX_PAGE];
     int xrefs[MAX_XREF];
-
-    // HEADER
-    len = fprintf(ctx->out, "%%PDF-1.5\n"); // '%PDF-1.5': first '%' for fprint only (!)
-    offset  += len;
-    xrefs[ref] = offset;
-    offset_1 = offset;
-
-    // Catalog
-    ref++; // 1
-    len = fprintf(ctx->out, "%d 0 obj << /Pages 2 0 R /Type /Catalog >> endobj\n", ref);
-    offset  += len;
-    xrefs[ref] = offset;
-    offset_2 = offset;
-
-    // Pages
-    ref++; // 2
-    len = fprintf(ctx->out, "%d 0 obj << /Count 1 /Kids [3 0 R] /Type /Pages >> endobj\n", ref);
-    offset  += len;
-    xrefs[ref] = offset;
-    offset_3 = offset;
-
-    // Contents
-    ref++; // 3
-    len = fprintf(ctx->out, "%d 0 obj << /Contents 4 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 5 0 R >> >> /Type /Page >> endobj\n", ref);
-    offset  += len;
-    xrefs[ref] = offset;
-    offset_4 = offset;
 
     // Streams
     int stream_len;
@@ -276,23 +243,76 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         }
     }
 
-    fprintf(stderr, ">> page_count: %d\n", page);
+    //fprintf(stderr, ">> page_count: %d\n", page);
 
     stream_len += len;
     pages[page - 1] += stream_len;
-
     stream_len = pages[0];
+
+    // Output
+
+    // HEADER
+    len = fprintf(ctx->out, "%%PDF-1.5\n"); // '%PDF-1.5': first '%' for fprint only (!)
+    offset  += len;
+    xrefs[ref] = offset;
+
+    // Catalog
+    ref++; // 1
+    len = fprintf(ctx->out, "%d 0 obj << /Pages %d 0 R /Type /Catalog >> endobj\n", ref, ref + 1);
+    offset  += len;
+    xrefs[ref] = offset;
+
+    //len = fprintf(ctx->out, "%d 0 obj << /Count %d /Kids [3 0 R] /Type /Pages >> endobj\n", ref, page);
+    page = 1;
+
+    // Pages
+    ref++; // 2
+    len = fprintf(ctx->out, "%d 0 obj << /Count %d /Kids [", ref, page);
+    offset  += len;
+
+    // Pages: foreach
+    int pref = ref;
+    for (size_t i = 0; i < page; i++) {
+        pref++;
+        if (page > 1) {
+           len = fprintf(ctx->out, "\n");
+           offset += len;
+        }
+        if (i > 0) {
+            len = fprintf(ctx->out, " ");
+            offset += len;
+        }
+        len = fprintf(ctx->out, "%d 0 R", pref);
+        offset += len;
+    }
+
+    if (page > 1) {
+        len = fprintf(ctx->out, "\n");
+        offset += len;
+    }
+    len = fprintf(ctx->out, "] /Type /Pages >> endobj\n");
+    offset  += len;
+    xrefs[ref] = offset;
+
+    // Contents
+    int cref = pref;
+    // Contents: foreach
+    for (size_t i = 0; i < page; i++) {
+        ref++; // 3
+        cref++;
+        len = fprintf(ctx->out, "%d 0 obj << /Contents %d 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 5 0 R >> >> /Type /Page >> endobj\n", ref, cref);
+        offset += len;
+        xrefs[ref] = offset;
+    }
 
     // >>> Stream: start
     ref++; // 4
     len = fprintf(ctx->out, "%d 0 obj << /Length %d >> stream\n", ref, stream_len);
     offset  += len;
-
     len = fprintf(ctx->out, "%s", BUF_BT);
     offset  += len;
     len = fprintf(ctx->out, "%s", BUF_HD);
     offset  += len;
-
     len = fprintf(ctx->out, "(");
     offset  += len;
     // >>>
@@ -347,26 +367,21 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         }
     }
 
-
     // >>> Stream: end
     offset  += len;
     len = fprintf(ctx->out, ") Tj\n");
     offset  += len;
-
     len = fprintf(ctx->out, "%s", BUF_ET);
     offset  += len;
-
     len = fprintf(ctx->out, "endstream endobj\n");
     offset  += len;
     xrefs[ref] = offset;
-    offset_5 = offset;
     // >>>
 
     ref++; // 5
     len = fprintf(ctx->out, "%d 0 obj << /BaseFont /Helvetica /Encoding /WinAnsiEncoding /Subtype /Type1 /Type /Font >> endobj\n", ref);
     offset  += len;
     xrefs[ref] = offset;
-    offset_x = offset;
 
     xref_size   = ref + 1;
     xref_offset = offset;
@@ -375,12 +390,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     fprintf(ctx->out, "%s\n", "xref");
     fprintf(ctx->out, "0 %d\n", xref_size);
     fprintf(ctx->out, "%s\n", "0000000000 65535 f ");
-
-    //fprintf(ctx->out, "%010d 00000 n \n", offset_1);
-    //fprintf(ctx->out, "%010d 00000 n \n", offset_2);
-    //fprintf(ctx->out, "%010d 00000 n \n", offset_3);
-    //fprintf(ctx->out, "%010d 00000 n \n", offset_4);
-    //fprintf(ctx->out, "%010d 00000 n \n", offset_5);
 
     for (size_t i = 0; i < ref; i++) {
         fprintf(ctx->out, "%010d 00000 n \n", xrefs[i]);
@@ -391,17 +400,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     fprintf(ctx->out, "startxref\n");
     fprintf(ctx->out, "%d\n", xref_offset);
     fprintf(ctx->out, "%%%%EOF\n");       // '%%EOF': first '%' for fprint only (!)
-
-    // fprintf(stderr, "data_begin_len = %d\n", data_begin_len);
-    // fprintf(stderr, "data_end_len   = %d\n", data_end_len);
-    // fprintf(stderr, "data_len       = %d\n", data_len);
-    // fprintf(stderr, "stream_len     = %d\n", stream_len);
-    // fprintf(stderr, "offset_1       = %010d\n", offset_1);
-    // fprintf(stderr, "offset_2       = %010d\n", offset_2);
-    // fprintf(stderr, "offset_3       = %010d\n", offset_3);
-    // fprintf(stderr, "offset_4       = %010d\n", offset_4);
-    // fprintf(stderr, "offset_5       = %010d\n", offset_5);
-    // fprintf(stderr, "offset_x       = %010d\n", offset_x);
 
     return 0;
 }
