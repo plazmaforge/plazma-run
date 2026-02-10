@@ -147,6 +147,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int ref            = 0;
     int page           = 0;
     int line           = 0;
+    int page_count     = 0;
 
     int page_width     = 612;
     int page_height    = 792;
@@ -233,6 +234,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 //}
                 stream_len += len;
                 pages[page - 1] = stream_len;
+
                 new_page = true;
                 page++;
                 line = 1;
@@ -247,9 +249,17 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     stream_len += len;
     pages[page - 1] += stream_len;
+
+    // TODO: TEST
     stream_len = pages[0];
 
     // Output
+
+    int catalog_ref  = 0;
+    int pages_ref    = 0;
+    int page_ref     = 0; // foreach
+    int contents_ref = 0; // foreach 
+    int font_ref     = 0;
 
     // HEADER
     len = fprintf(ctx->out, "%%PDF-1.5\n"); // '%PDF-1.5': first '%' for fprint only (!)
@@ -258,23 +268,27 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     // Catalog
     ref++; // 1
+    catalog_ref = ref;
     len = fprintf(ctx->out, "%d 0 obj << /Pages %d 0 R /Type /Catalog >> endobj\n", ref, ref + 1);
     offset  += len;
     xrefs[ref] = offset;
 
     //len = fprintf(ctx->out, "%d 0 obj << /Count %d /Kids [3 0 R] /Type /Pages >> endobj\n", ref, page);
-    page = 1;
+
+    page_count = page;
+    //page_count = 1;
 
     // Pages
     ref++; // 2
+    pages_ref = ref;
     len = fprintf(ctx->out, "%d 0 obj << /Count %d /Kids [", ref, page);
     offset  += len;
 
     // Pages: foreach
-    int pref = ref;
-    for (size_t i = 0; i < page; i++) {
-        pref++;
-        if (page > 1) {
+    page_ref  = ref;
+    for (size_t i = 0; i < page_count; i++) {
+        page_ref++;
+        if (page_count > 1) {
            len = fprintf(ctx->out, "\n");
            offset += len;
         }
@@ -282,11 +296,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             len = fprintf(ctx->out, " ");
             offset += len;
         }
-        len = fprintf(ctx->out, "%d 0 R", pref);
+        len = fprintf(ctx->out, "%d 0 R", page_ref);
         offset += len;
     }
 
-    if (page > 1) {
+    if (page_count > 1) {
         len = fprintf(ctx->out, "\n");
         offset += len;
     }
@@ -294,16 +308,22 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     offset  += len;
     xrefs[ref] = offset;
 
-    // Contents
-    int cref = pref;
-    // Contents: foreach
-    for (size_t i = 0; i < page; i++) {
+    font_ref = pages_ref + (page * 2) + 1;
+
+    // Pages
+    contents_ref = page_ref;
+
+    // Pages: foreach
+    for (size_t i = 0; i < page_count; i++) {
         ref++; // 3
-        cref++;
-        len = fprintf(ctx->out, "%d 0 obj << /Contents %d 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 5 0 R >> >> /Type /Page >> endobj\n", ref, cref);
+        contents_ref++;
+        len = fprintf(ctx->out, "%d 0 obj << /Contents %d 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 %d 0 R >> >> /Type /Page >> endobj\n", ref, contents_ref, font_ref);
         offset += len;
         xrefs[ref] = offset;
     }
+
+
+    // Contents
 
     // >>> Stream: start
     ref++; // 4
