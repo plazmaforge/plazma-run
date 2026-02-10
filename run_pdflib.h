@@ -201,7 +201,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     new_page   = true;
     len        = 0;
 
-    int max_page = 1;
+    //int max_page = 1;
     stream_len = BUF_LEN;
 
     for (size_t i = 0; i < ctx->size; i++) {
@@ -325,18 +325,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     // Contents
 
-    // >>> Stream: start
-    ref++; // 4
-    len = fprintf(ctx->out, "%d 0 obj << /Length %d >> stream\n", ref, stream_len);
-    offset  += len;
-    len = fprintf(ctx->out, "%s", BUF_BT);
-    offset  += len;
-    len = fprintf(ctx->out, "%s", BUF_HD);
-    offset  += len;
-    len = fprintf(ctx->out, "(");
-    offset  += len;
-    // >>>
-
     // Output
     page       = 1;
     line       = 1;
@@ -345,6 +333,18 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     new_line   = true;
     new_page   = true;
     len        = 0;
+
+    // >>> Stream: start
+    ref++; // 4
+    len = fprintf(ctx->out, "%d 0 obj << /Length %d >> stream\n", ref, pages[page - 1]);
+    offset  += len;
+    len = fprintf(ctx->out, "%s", BUF_BT);
+    offset  += len;
+    len = fprintf(ctx->out, "%s", BUF_HD);
+    offset  += len;
+    len = fprintf(ctx->out, "(");
+    offset  += len;
+    // >>>
 
     for (size_t i = 0; i < ctx->size; i++) {
 
@@ -371,12 +371,38 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         new_page = false;
         if (break_line) {
             if (line > line_page) {
-                if (page + 1 > max_page) {
-                    break;
-                }
+                //if (page + 1 > max_page) {
+                //    break;
+                //}
+
+    // >>> Stream: end
+    offset  += len;
+    len = fprintf(ctx->out, ") Tj\n");
+    offset  += len;
+    len = fprintf(ctx->out, "%s", BUF_ET);
+    offset  += len;
+    len = fprintf(ctx->out, "endstream endobj\n");
+    offset  += len;
+    xrefs[ref] = offset;
+    // >>>
+
                 new_page = true;
                 page++;
                 line = 1;
+                len  = 0;
+
+    // >>> Stream: start
+    ref++; // 4
+    len = fprintf(ctx->out, "%d 0 obj << /Length %d >> stream\n", ref, pages[page - 1]);
+    offset  += len;
+    len = fprintf(ctx->out, "%s", BUF_BT);
+    offset  += len;
+    len = fprintf(ctx->out, "%s", BUF_HD);
+    offset  += len;
+    len = fprintf(ctx->out, "(");
+    offset  += len;
+    // >>>
+
             } else {
                 line++;
             }
