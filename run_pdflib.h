@@ -266,10 +266,10 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     offset  += len;
     xrefs[ref] = offset;
 
-    // Catalog
+    // Type: Catalog
     ref++; // 1
     catalog_ref = ref;
-    len = fprintf(ctx->out, "%d 0 obj << /Pages %d 0 R /Type /Catalog >> endobj\n", ref, ref + 1);
+    len = fprintf(ctx->out, "%d 0 obj << /Type /Catalog /Pages %d 0 R >> endobj\n", ref, ref + 1);
     offset  += len;
     xrefs[ref] = offset;
 
@@ -278,10 +278,10 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     page_count = page;
     //page_count = 1;
 
-    // Pages
+    // Type: Pages
     ref++; // 2
     pages_ref = ref;
-    len = fprintf(ctx->out, "%d 0 obj << /Count %d /Kids [", ref, page);
+    len = fprintf(ctx->out, "%d 0 obj << /Type /Pages /Count %d /Kids [", ref, page);
     offset  += len;
 
     // Pages: foreach
@@ -289,12 +289,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     for (size_t i = 0; i < page_count; i++) {
         page_ref++;
         if (page_count > 1) {
-           len = fprintf(ctx->out, "\n");
+           len = fprintf(ctx->out, "\n ");
            offset += len;
-        }
-        if (i > 0) {
-            len = fprintf(ctx->out, " ");
-            offset += len;
         }
         len = fprintf(ctx->out, "%d 0 R", page_ref);
         offset += len;
@@ -304,7 +300,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         len = fprintf(ctx->out, "\n");
         offset += len;
     }
-    len = fprintf(ctx->out, "] /Type /Pages >> endobj\n");
+    len = fprintf(ctx->out, "] >> endobj\n");
     offset  += len;
     xrefs[ref] = offset;
 
@@ -315,9 +311,10 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     // Pages: foreach
     for (size_t i = 0; i < page_count; i++) {
+        // Type: Page
         ref++; // 3
         contents_ref++;
-        len = fprintf(ctx->out, "%d 0 obj << /Contents %d 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 %d 0 R >> >> /Type /Page >> endobj\n", ref, contents_ref, font_ref);
+        len = fprintf(ctx->out, "%d 0 obj << /Type /Page /Contents %d 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 %d 0 R >> >> >> endobj\n", ref, contents_ref, font_ref);
         offset += len;
         xrefs[ref] = offset;
     }
@@ -424,8 +421,9 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     xrefs[ref] = offset;
     // >>>
 
+    // Type: Font
     ref++; // 5
-    len = fprintf(ctx->out, "%d 0 obj << /BaseFont /Helvetica /Encoding /WinAnsiEncoding /Subtype /Type1 /Type /Font >> endobj\n", ref);
+    len = fprintf(ctx->out, "%d 0 obj << /Type /Font /BaseFont /Helvetica /Encoding /WinAnsiEncoding /Subtype /Type1 >> endobj\n", ref);
     offset  += len;
     xrefs[ref] = offset;
 
@@ -470,5 +468,14 @@ static int run_pdf(run_pdf_config_t* config, char* data, size_t size) {
     return lib_pdf_document(&ctx);
 }
 
+
+// PDF Format structure
 // https://medium.com/@jberkenbilt/the-structure-of-a-pdf-file-6f08114a58f6
 
+// Multi line
+//
+// 4 0 obj<</Length 84>>stream
+// BT 150 700 Td /F0 32 Tf 30 TL(FIRST LINE)' T*(Second line)' (Third line)' ET
+// endstream endobj
+//
+// https://stackoverflow.com/questions/17279712/what-is-the-smallest-possible-valid-pdf
