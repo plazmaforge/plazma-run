@@ -140,6 +140,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     //     fprintf(ctx->out, "\">\n");
     // }
 
+    const char* pdf_version  = "1.5";
+    const char* font_name    = "Helvetica";
+    const char* font_subtype = "Type1";
+    const char* encoding     = "WinAnsiEncoding";
+
     int len            = 0;
     int offset         = 0;
     int xref_size      = 0;
@@ -251,10 +256,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     pages[page - 1] += stream_len;
 
     // TODO: TEST
-    stream_len = pages[0];
+    //stream_len = pages[0];
 
     // Output
 
+    int root_ref     = 0;
     int catalog_ref  = 0;
     int pages_ref    = 0;
     int page_ref     = 0; // foreach
@@ -262,26 +268,24 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int font_ref     = 0;
 
     // HEADER
-    len = fprintf(ctx->out, "%%PDF-1.5\n"); // '%PDF-1.5': first '%' for fprint only (!)
+    len = fprintf(ctx->out, "%%PDF-%s\n", pdf_version); // '%PDF-': first '%' for fprint only (!)
     offset  += len;
     xrefs[ref] = offset;
 
     // Type: Catalog
-    ref++; // 1
+    ref++; // 1-Catalog/Root
     catalog_ref = ref;
+    root_ref = catalog_ref;
     len = fprintf(ctx->out, "%d 0 obj << /Type /Catalog /Pages %d 0 R >> endobj\n", ref, ref + 1);
     offset  += len;
     xrefs[ref] = offset;
 
-    //len = fprintf(ctx->out, "%d 0 obj << /Count %d /Kids [3 0 R] /Type /Pages >> endobj\n", ref, page);
-
     page_count = page;
-    //page_count = 1;
 
     // Type: Pages
-    ref++; // 2
+    ref++; // 2-Pages
     pages_ref = ref;
-    len = fprintf(ctx->out, "%d 0 obj << /Type /Pages /Count %d /Kids [", ref, page);
+    len = fprintf(ctx->out, "%d 0 obj << /Type /Pages /Count %d /Kids [", ref, page_count);
     offset  += len;
 
     // Pages: foreach
@@ -312,13 +316,12 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     // Pages: foreach
     for (size_t i = 0; i < page_count; i++) {
         // Type: Page
-        ref++; // 3
+        ref++; // 3-Page<N>
         contents_ref++;
-        len = fprintf(ctx->out, "%d 0 obj << /Type /Page /Contents %d 0 R /MediaBox [0 0 612 792] /Parent 2 0 R /Resources << /Font << /F1 %d 0 R >> >> >> endobj\n", ref, contents_ref, font_ref);
+        len = fprintf(ctx->out, "%d 0 obj << /Type /Page /Contents %d 0 R /MediaBox [0 0 %d %d] /Parent %d 0 R /Resources << /Font << /F1 %d 0 R >> >> >> endobj\n", ref, contents_ref, page_width, page_height, pages_ref, font_ref);
         offset += len;
         xrefs[ref] = offset;
     }
-
 
     // Contents
 
@@ -332,7 +335,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     len        = 0;
 
     // >>> Stream: start
-    ref++; // 4
+    ref++; // 4-Stream<N>
     len = fprintf(ctx->out, "%d 0 obj << /Length %d >> stream\n", ref, pages[page - 1]);
     offset  += len;
     len = fprintf(ctx->out, "%s", BUF_BT);
@@ -389,7 +392,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 len  = 0;
 
     // >>> Stream: start
-    ref++; // 4
+    ref++; // 4-Stream<N>
     len = fprintf(ctx->out, "%d 0 obj << /Length %d >> stream\n", ref, pages[page - 1]);
     offset  += len;
     len = fprintf(ctx->out, "%s", BUF_BT);
@@ -422,8 +425,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     // >>>
 
     // Type: Font
-    ref++; // 5
-    len = fprintf(ctx->out, "%d 0 obj << /Type /Font /BaseFont /Helvetica /Encoding /WinAnsiEncoding /Subtype /Type1 >> endobj\n", ref);
+    ref++; // 5-Font
+    len = fprintf(ctx->out, "%d 0 obj << /Type /Font /Subtype /%s /BaseFont /%s /Encoding /%s >> endobj\n", ref, font_subtype, font_name, encoding);
     offset  += len;
     xrefs[ref] = offset;
 
@@ -440,9 +443,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     }
 
     // TRAILER
-    fprintf(ctx->out, "trailer << /Root 1 0 R /Size %d >>\n", xref_size);
+    fprintf(ctx->out, "trailer << /Root %d 0 R /Size %d >>\n", root_ref, xref_size);
     fprintf(ctx->out, "startxref\n");
     fprintf(ctx->out, "%d\n", xref_offset);
+
+    // EOF
     fprintf(ctx->out, "%%%%EOF\n");       // '%%EOF': first '%' for fprint only (!)
 
     return 0;
@@ -468,6 +473,13 @@ static int run_pdf(run_pdf_config_t* config, char* data, size_t size) {
     return lib_pdf_document(&ctx);
 }
 
+// The 14 Standard PDF Fonts:
+//
+// - Courier (Standard, Bold, Oblique, BoldOblique)
+// - Helvetica (Standard, Bold, Oblique, BoldOblique)
+// - Times (Roman, Bold, Italic, BoldItalic)
+// - Symbol
+// - ZapfDingbats 
 
 // PDF Format structure
 // https://medium.com/@jberkenbilt/the-structure-of-a-pdf-file-6f08114a58f6
