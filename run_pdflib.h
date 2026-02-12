@@ -182,10 +182,30 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     //     fprintf(ctx->out, "\">\n");
     // }
 
+    // if (ctx->font) {
+    //     fprintf(stderr, ">> font->name  : %s\n", ctx->font->name);
+    //     fprintf(stderr, ">> font->style : %s\n", ctx->font->style);
+    //     fprintf(stderr, ">> font->bold  : %s\n", ctx->font->style ? (lib_doc_has_bold(ctx->font->style)   ? "true" : "false") : "false");
+    //     fprintf(stderr, ">> font->italic: %s\n", ctx->font->style ? (lib_doc_has_italic(ctx->font->style) ? "true" : "false") : "false");
+    // } else {
+    //     fprintf(stderr, ">> font        : null\n");
+    // }
+
     const char* pdf_version  = "1.5";
     const char* font_name    = "Helvetica";
     const char* font_subtype = "Type1";
     const char* encoding     = "WinAnsiEncoding";
+
+    lib_font_info_t font     = lib_get_font_info(ctx->font);
+
+    // fprintf(stderr, "\n");
+    // fprintf(stderr, ">>>font->name  : %s\n", font.name);
+    // fprintf(stderr, ">>>font->bold  : %s\n", font.bold   ? "true" : "false");
+    // fprintf(stderr, ">>>font->italic: %s\n", font.italic ? "true" : "false");
+
+    if (font.name) {
+        font_name = font.name;
+    }
 
     int len            = 0;
     int offset         = 0;
@@ -532,21 +552,37 @@ static lib_font_info_t lib_get_font_info(lib_font_t* font) {
     }
 
     lib_font_info_t cur;
-    const char* name = font->name;
+    const char* family = font->name;
     bool bold   = lib_doc_has_bold(font->style);
     bool italic = lib_doc_has_italic(font->style);
-
     size_t size = lib_fonts_get_size();
+
+    // fprintf(stderr, "\n");
+    // fprintf(stderr, ">>>      family: %s\n", family);
+    // fprintf(stderr, ">>>      bold  : %s\n", bold   ? "true" : "false");
+    // fprintf(stderr, ">>>      italic: %s\n", italic ? "true" : "false");
+    // fprintf(stderr, ">>>        size: %d\n", size);
+
     for (size_t i = 0; i < size; i++) {
         cur = lib_fonts[i];
-        if (lib_stricmp(cur.name, name) == 0) {
+
+        // fprintf(stderr, "\n");
+        // fprintf(stderr, ">>>cur.family  : %s\n", cur.family);
+        // fprintf(stderr, ">>>cur.name    : %s\n", cur.name);
+        // fprintf(stderr, ">>>cur.bold    : %s\n", cur.bold   ? "true" : "false");
+        // fprintf(stderr, ">>>cur.italic  : %s\n", cur.italic ? "true" : "false");
+
+        if (lib_stricmp(cur.family, family) == 0) {
+            // fprintf(stderr, ">>>        find: %s\n", family);
             if (cur.bold == bold && cur.italic == italic) {
+                // fprintf(stderr, ">>>        fcur: %s\n", family);
                 return cur;
             } else if (!cur.bold && !cur.italic) {
                 res = cur; 
             }
         }
     }
+    // fprintf(stderr, ">>>        fres: %s\n", family);
     return res;
 }
 
