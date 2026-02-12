@@ -25,6 +25,48 @@ typedef struct run_pdf_context_t {
 
 } run_pdf_context_t;
 
+typedef struct lib_font_info_t {
+    const char* family;
+    const char* name;
+    bool bold;
+    bool italic;
+} lib_font_info_t;
+
+// The 14 Standard PDF Fonts:
+//
+// - Courier (Standard, Bold, Oblique, BoldOblique)
+// - Helvetica (Standard, Bold, Oblique, BoldOblique)
+// - Times (Roman, Bold, Italic, BoldItalic)
+// - Symbol
+// - ZapfDingbats 
+
+static const lib_font_info_t lib_fonts[] = {
+    {"Courier", "Courier", false, false},
+    {"Courier", "Courier-Bold", true, false},
+    {"Courier", "Courier-Oblique", false, true},
+    {"Courier", "Courier-BoldOblique", true, true},
+
+    {"Helvetica", "Helvetica", false, false},
+    {"Helvetica", "Helvetica-Bold", true, false},
+    {"Helvetica", "Helvetica-Oblique", false, true},
+    {"Helvetica", "Helvetica-BoldOblique", true, true},
+
+    {"Times", "Times", false, false},
+    {"Times", "Times-Bold", true, false},
+    {"Times", "Times-Italic", false, true},
+    {"Times", "Times-BoldItalic", true, true},
+
+    {"Symbol", "Symbol", false, false},
+    {"ZapfDingbats", "ZapfDingbats", false, false}
+
+};
+
+static size_t lib_fonts_get_size();
+
+static lib_font_info_t lib_get_font_info(lib_font_t* font);
+
+////
+
 static int lib_pdf_document(run_pdf_context_t* ctx);
 
 static int lib_pdf_head(run_pdf_context_t* ctx);
@@ -473,13 +515,40 @@ static int run_pdf(run_pdf_config_t* config, char* data, size_t size) {
     return lib_pdf_document(&ctx);
 }
 
-// The 14 Standard PDF Fonts:
-//
-// - Courier (Standard, Bold, Oblique, BoldOblique)
-// - Helvetica (Standard, Bold, Oblique, BoldOblique)
-// - Times (Roman, Bold, Italic, BoldItalic)
-// - Symbol
-// - ZapfDingbats 
+static size_t lib_fonts_get_size() {
+  return sizeof(lib_fonts) / sizeof(lib_font_info_t);
+}
+
+static lib_font_info_t lib_get_font_info(lib_font_t* font) {
+    
+    lib_font_info_t res;
+    res.family = NULL;
+    res.name   = NULL;
+    res.bold   = false;
+    res.italic = false;
+
+    if (!font || !(font->name)) {
+        return res;
+    }
+
+    lib_font_info_t cur;
+    const char* name = font->name;
+    bool bold   = lib_doc_has_bold(font->style);
+    bool italic = lib_doc_has_italic(font->style);
+
+    size_t size = lib_fonts_get_size();
+    for (size_t i = 0; i < size; i++) {
+        cur = lib_fonts[i];
+        if (lib_stricmp(cur.name, name) == 0) {
+            if (cur.bold == bold && cur.italic == italic) {
+                return cur;
+            } else if (!cur.bold && !cur.italic) {
+                res = cur; 
+            }
+        }
+    }
+    return res;
+}
 
 // PDF Format structure
 // https://medium.com/@jberkenbilt/the-structure-of-a-pdf-file-6f08114a58f6
