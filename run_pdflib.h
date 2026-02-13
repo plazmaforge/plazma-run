@@ -61,7 +61,9 @@ static const lib_font_info_t lib_fonts[] = {
 
 };
 
-static size_t lib_fonts_get_size();
+static const char* lib_get_font_family(const char* name);
+
+static size_t lib_get_fonts_size();
 
 static lib_font_info_t lib_get_font_info(lib_font_t* font);
 
@@ -535,7 +537,17 @@ static int run_pdf(run_pdf_config_t* config, char* data, size_t size) {
     return lib_pdf_document(&ctx);
 }
 
-static size_t lib_fonts_get_size() {
+static const char* lib_get_font_family(const char* name) {
+    if (!name) {
+        return NULL;
+    }
+    if (lib_stricmp(name, "Times New Roman") == 0) {
+        return "Times";
+    }
+    return name;
+}
+
+static size_t lib_get_fonts_size() {
   return sizeof(lib_fonts) / sizeof(lib_font_info_t);
 }
 
@@ -552,10 +564,10 @@ static lib_font_info_t lib_get_font_info(lib_font_t* font) {
     }
 
     lib_font_info_t cur;
-    const char* family = font->name;
+    const char* family = lib_get_font_family(font->name);
     bool bold   = lib_doc_has_bold(font->style);
     bool italic = lib_doc_has_italic(font->style);
-    size_t size = lib_fonts_get_size();
+    size_t size = lib_get_fonts_size();
 
     // fprintf(stderr, "\n");
     // fprintf(stderr, ">>>      family: %s\n", family);
