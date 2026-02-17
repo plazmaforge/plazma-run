@@ -3,12 +3,12 @@
 
 #define LIB_PDF_CHARSET     LIB_DOC_CHARSET
 #define LIB_PDF_TITLE       NULL
-#define LIB_PDF_UNIT        "px"
-#define LIB_PDF_MARGIN      "5px"
-#define LIB_PDF_FONT_NAME   LIB_DOC_FONT_NAME
+#define LIB_PDF_UNIT        "pt"
+#define LIB_PDF_MARGIN      "72"
+#define LIB_PDF_FONT_NAME   "Helvetica"
 #define LIB_PDF_FONT_STYLE  LIB_DOC_FONT_STYLE
 #define LIB_PDF_FONT_WEIGHT LIB_DOC_FONT_WEIGHT
-#define LIB_PDF_FONT_SIZE   "12px"
+#define LIB_PDF_FONT_SIZE   "12"
 
 /**
  * PDF Config
@@ -172,6 +172,11 @@ static int lib_pdf_font(run_pdf_context_t* ctx) {
     return 0;
 }
 
+static int lib_to_pt(const char* value) {
+    // TODO: px/mm/cm -> pt
+    return atoi(value);
+}
+
 static int lib_pdf_body(run_pdf_context_t* ctx) {
     
     // if (ctx->use_style) {
@@ -197,17 +202,18 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     const char* font_name    = "Helvetica";
     const char* font_subtype = "Type1";
     const char* encoding     = "WinAnsiEncoding";
+    int font_size            = lib_to_pt(LIB_PDF_FONT_SIZE);
 
-    lib_font_info_t font     = lib_get_font_info(ctx->font);
+    // lib_font_info_t font     = lib_get_font_info(ctx->font);
 
-    // fprintf(stderr, "\n");
-    // fprintf(stderr, ">>>font->name  : %s\n", font.name);
-    // fprintf(stderr, ">>>font->bold  : %s\n", font.bold   ? "true" : "false");
-    // fprintf(stderr, ">>>font->italic: %s\n", font.italic ? "true" : "false");
+    // // fprintf(stderr, "\n");
+    // // fprintf(stderr, ">>>font->name  : %s\n", font.name);
+    // // fprintf(stderr, ">>>font->bold  : %s\n", font.bold   ? "true" : "false");
+    // // fprintf(stderr, ">>>font->italic: %s\n", font.italic ? "true" : "false");
 
-    if (font.name) {
-        font_name = font.name;
-    }
+    // if (font.name) {
+    //     font_name = font.name;
+    // }
 
     int len            = 0;
     int offset         = 0;
@@ -220,11 +226,40 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     int page_width     = 612;
     int page_height    = 792;
-    int margin_left    = 72;
-    int margin_right   = 72;
-    int margin_top     = 72;
-    int margin_bottom  = 72;
+
+    int margin = lib_to_pt(LIB_PDF_MARGIN);
+    int margin_left    = margin; // 72
+    int margin_right   = margin; // 72
+    int margin_top     = margin; // 72
+    int margin_bottom  = margin; // 72
     int line_offset    = 18;
+
+    if (ctx->use_style) {
+        if (ctx->use_margin) {
+            margin = lib_to_pt(ctx->margin);
+            margin_left    = margin; // 72
+            margin_right   = margin; // 72
+            margin_top     = margin; // 72
+            margin_bottom  = margin; // 72
+        }
+        if (ctx->use_font) {
+            lib_font_info_t font     = lib_get_font_info(ctx->font);
+
+            // fprintf(stderr, "\n");
+            // fprintf(stderr, ">>>font->name  : %s\n", font.name);
+            // fprintf(stderr, ">>>font->bold  : %s\n", font.bold   ? "true" : "false");
+            // fprintf(stderr, ">>>font->italic: %s\n", font.italic ? "true" : "false");
+
+            if (font.name) {
+                font_name = font.name;
+            }
+
+            if (ctx->font->size > 0) {
+                font_size = lib_to_pt(ctx->font->size);
+                line_offset = font_size * 1.5;
+            }
+        }
+    }
 
     int content_width  = page_width - margin_left - margin_right;
     int content_height = page_height - margin_top - margin_bottom;
