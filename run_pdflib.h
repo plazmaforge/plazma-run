@@ -265,22 +265,25 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int content_height = page_height - margin_top - margin_bottom;
     int line_page      = content_height / line_offset + 1;
 
-    const char* BUF_BT = "BT\n";                    // BEGIN
-    const char* BUF_HD = "/F1 12 Tf 72 720 Td\n";   // HEADER
-    const char* BUF_LF = "() Tj\n";                 // LINE FIRST
-    const char* BUF_LN = "0 -18 Td\n() Tj\n";       // LINE NEXT
-    //const char* BUF_LN = "() Tj\n";       // LINE NEXT
-    const char* BUF_ET = "ET\n";                    // END
+    char* BUF_BT = "BT\n";                    // BEGIN
+    char  BUF_HD[256];                        // HEADER
+    char* BUF_LF = "() Tj\n";                 // LINE FIRST
+    char  BUF_LN[256];                        // LINE NEXT
+    char* BUF_ET = "ET\n";                    // END
+
+    //const char* BUF_HD = "/F1 12 Tf 72 720 Td\n"; // HEADER
+    //const char* BUF_LN = "0 -18 Td\n() Tj\n";      // LINE NEXT
+    //const char* BUF_LN = "() Tj\n";                // LINE NEXT
 
     int BUF_LEN    = 0;
     int BUF_LN_LEN = 0;
 
     BUF_LEN += strlen(BUF_BT);
-    BUF_LEN += strlen(BUF_HD);
+    BUF_LEN += sprintf(BUF_HD, "/F1 %d Tf 72 720 Td\n", font_size); // strlen(BUF_HD);
     BUF_LEN += strlen(BUF_LF);
     BUF_LEN += strlen(BUF_ET);
 
-    BUF_LN_LEN = strlen(BUF_LN);
+    BUF_LN_LEN = sprintf(BUF_LN, "0 -%d Td\n() Tj\n", line_offset); // strlen(BUF_LN);
 
     int MAX_PAGE = 8192;
     int MAX_XREF = 8192;
@@ -506,8 +509,9 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 line++;
             }
             
-            len += fprintf(ctx->out, ") Tj\n");
-            len += fprintf(ctx->out, "0 -18 Td\n(");
+            len += fprintf(ctx->out, ") Tj\n");                   // BUF_LN_END
+            len += fprintf(ctx->out, "0 -%d Td\n(", line_offset); // BUF_LN_BEGIN
+            //len += fprintf(ctx->out, "0 -18 Td\n(");
             //len += fprintf(ctx->out, "(");
         }
     }
