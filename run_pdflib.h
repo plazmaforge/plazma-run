@@ -279,7 +279,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int BUF_LN_LEN = 0;
 
     BUF_LEN += strlen(BUF_BT);
-    BUF_LEN += sprintf(BUF_HD, "/F1 %d Tf 72 720 Td\n", font_size); // strlen(BUF_HD);
+    BUF_LEN += sprintf(BUF_HD, "/F1 %d Tf %d %d Td\n", font_size, margin_left, page_height - margin_top); // strlen(BUF_HD);
     BUF_LEN += strlen(BUF_LF);
     BUF_LEN += strlen(BUF_ET);
 
