@@ -501,6 +501,75 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     xrefs[ref] = offset;
     // >>>
 
+    /*
+      q 0 0 0 rg
+      BT
+      56 724 Td /F1 12 Tf[<01020304>]TJ
+      ET
+    */
+
+    /*
+      /Type
+      /Font
+      ...
+      /FirstChar 0
+      /LastChar 61
+      /ToUnicode 20 0 R
+      /Widths [
+        0
+        610
+        443
+        277
+        333
+        389
+        250
+        277
+        500
+        ...
+      ]
+      ...
+      /FontDescriptor 19 0 R
+
+    */
+
+    /*
+      20 0 obj
+      <<
+        /Length 21 0 R
+      >>
+      stream
+      /CIDInit/ProcSet findresource begin
+      12 dict begin
+      begincmap
+      /CIDSystemInfo<<
+      /Registry (Adobe)
+      /Ordering (UCS)
+      /Supplement 0
+      >> def
+      /CMapName/Adobe-Identity-UCS def
+      /CMapType 2 def
+      1 begincodespacerange
+      <00> <FF>
+      endcodespacerange
+      61 beginbfchar
+      <01> <004C>
+      <02> <0065>
+      <03> <0074>
+      <04> <2019>
+      <05> <0073>
+      <06> <0020>
+      <07> <006A>
+      <08> <0075>
+      ...
+      endbfchar
+      endcmap
+      CMapName currentdict /CMap defineresource pop
+      end
+      end
+      endstream
+      endobj
+    */
+
     // Type: Font
     ref++; // 5-Font
     len = fprintf(ctx->out, "%d 0 obj << /Type /Font /Subtype /%s /BaseFont /%s /Encoding /%s >> endobj\n", ref, font_subtype, font_name, encoding);
@@ -613,6 +682,9 @@ static lib_font_info_t lib_get_font_info(lib_font_t* font) {
 
 // PDF Format structure
 // https://medium.com/@jberkenbilt/the-structure-of-a-pdf-file-6f08114a58f6
+
+// PDF Blog
+// https://github.com/jberkenbilt/pdf-text-blog/tree/a6342d96a953d222a6bcd0bd0408615d66e6646b
 
 // Multi line
 //
