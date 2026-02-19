@@ -179,41 +179,11 @@ static int lib_to_pt(const char* value) {
 
 static int lib_pdf_body(run_pdf_context_t* ctx) {
     
-    // if (ctx->use_style) {
-    //     if (ctx->use_margin) {
-    //        lib_pdf_margin(ctx);
-    //     }
-    //     if (ctx->use_font) {
-    //        lib_pdf_font(ctx);
-    //     }
-    //     fprintf(ctx->out, "\">\n");
-    // }
-
-    // if (ctx->font) {
-    //     fprintf(stderr, ">> font->name  : %s\n", ctx->font->name);
-    //     fprintf(stderr, ">> font->style : %s\n", ctx->font->style);
-    //     fprintf(stderr, ">> font->bold  : %s\n", ctx->font->style ? (lib_doc_has_bold(ctx->font->style)   ? "true" : "false") : "false");
-    //     fprintf(stderr, ">> font->italic: %s\n", ctx->font->style ? (lib_doc_has_italic(ctx->font->style) ? "true" : "false") : "false");
-    // } else {
-    //     fprintf(stderr, ">> font        : null\n");
-    // }
-
     const char* pdf_version  = "1.5";
     const char* font_name    = "Helvetica";
     const char* font_subtype = "Type1";
     const char* encoding     = "WinAnsiEncoding";
     int font_size            = lib_to_pt(LIB_PDF_FONT_SIZE);
-
-    // lib_font_info_t font     = lib_get_font_info(ctx->font);
-
-    // // fprintf(stderr, "\n");
-    // // fprintf(stderr, ">>>font->name  : %s\n", font.name);
-    // // fprintf(stderr, ">>>font->bold  : %s\n", font.bold   ? "true" : "false");
-    // // fprintf(stderr, ">>>font->italic: %s\n", font.italic ? "true" : "false");
-
-    // if (font.name) {
-    //     font_name = font.name;
-    // }
 
     int len            = 0;
     int offset         = 0;
@@ -271,12 +241,12 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     char  BUF_LN[256];                        // LINE NEXT
     char* BUF_ET = "ET\n";                    // END
 
-    //const char* BUF_HD = "/F1 12 Tf 72 720 Td\n"; // HEADER
+    //const char* BUF_HD = "/F1 12 Tf 72 720 Td\n";  // HEADER
     //const char* BUF_LN = "0 -18 Td\n() Tj\n";      // LINE NEXT
     //const char* BUF_LN = "() Tj\n";                // LINE NEXT
 
-    int BUF_LEN    = 0;
-    int BUF_LN_LEN = 0;
+    int BUF_LEN    = 0; // template len
+    int BUF_LN_LEN = 0; // tempate line next len
 
     BUF_LEN += strlen(BUF_BT);
     BUF_LEN += sprintf(BUF_HD, "/F1 %d Tf %d %d Td\n", font_size, margin_left, page_height - margin_top); // strlen(BUF_HD);
@@ -292,14 +262,14 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int xrefs[MAX_XREF];
 
     // Streams
-    int stream_len;
+    int page_len;
     bool break_line;
     bool new_line;
     bool new_page;
     char c;
 
     // Calculate
-    stream_len = 0;
+    page_len   = 0;
     page       = 1;
     line       = 1;
 
@@ -309,7 +279,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     len        = 0;
 
     //int max_page = 1;
-    stream_len = BUF_LEN;
+    page_len = BUF_LEN; // template len
 
     for (size_t i = 0; i < ctx->size; i++) {
 
@@ -339,13 +309,16 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 //if (page + 1 > max_page) {
                 //    break;
                 //}
-                stream_len += len;
-                pages[page - 1] = stream_len;
 
+                // CLOSE CUR PAGE
+                page_len += len;
+                pages[page - 1] = page_len;
+
+                // OPEN NEW PAGE
                 new_page = true;
                 page++;
                 line = 1;
-                stream_len = BUF_LEN;
+                page_len = BUF_LEN; // template len
             } else {
                 line++;
             }
@@ -354,11 +327,9 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     //fprintf(stderr, ">> page_count: %d\n", page);
 
-    stream_len += len;
-    pages[page - 1] += stream_len;
-
-    // TODO: TEST
-    //stream_len = pages[0];
+    // last page
+    page_len += len;
+    pages[page - 1] += page_len;
 
     // Output
 
@@ -477,33 +448,36 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 //    break;
                 //}
 
-    // >>> Stream: end
-    offset  += len;
-    len = fprintf(ctx->out, ") Tj\n");
-    offset  += len;
-    len = fprintf(ctx->out, "%s", BUF_ET);
-    offset  += len;
-    len = fprintf(ctx->out, "endstream endobj\n");
-    offset  += len;
-    xrefs[ref] = offset;
-    // >>>
+                // CLOSE CUR PAGE
 
+                // >>> Stream: end
+                offset  += len;
+                len = fprintf(ctx->out, ") Tj\n");
+                offset  += len;
+                len = fprintf(ctx->out, "%s", BUF_ET);
+                offset  += len;
+                len = fprintf(ctx->out, "endstream endobj\n");
+                offset  += len;
+                xrefs[ref] = offset;
+                // >>>
+
+                // OPEN NEW PAGE
                 new_page = true;
                 page++;
                 line = 1;
                 len  = 0;
 
-    // >>> Stream: start
-    ref++; // 4-Stream<N>
-    len = fprintf(ctx->out, "%d 0 obj << /Length %d >> stream\n", ref, pages[page - 1]);
-    offset  += len;
-    len = fprintf(ctx->out, "%s", BUF_BT);
-    offset  += len;
-    len = fprintf(ctx->out, "%s", BUF_HD);
-    offset  += len;
-    len = fprintf(ctx->out, "(");
-    offset  += len;
-    // >>>
+                // >>> Stream: start
+                ref++; // 4-Stream<N>
+                len = fprintf(ctx->out, "%d 0 obj << /Length %d >> stream\n", ref, pages[page - 1]);
+                offset  += len;
+                len = fprintf(ctx->out, "%s", BUF_BT);
+                offset  += len;
+                len = fprintf(ctx->out, "%s", BUF_HD);
+                offset  += len;
+                len = fprintf(ctx->out, "(");
+                offset  += len;
+                // >>>
 
             } else {
                 line++;
