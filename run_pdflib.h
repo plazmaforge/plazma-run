@@ -180,9 +180,9 @@ static int lib_to_pt(const char* value) {
 static int lib_pdf_body(run_pdf_context_t* ctx) {
     
     const char* pdf_version  = "1.5";
+    const char* pdf_encoding = "WinAnsiEncoding";
     const char* font_name    = "Helvetica";
     const char* font_subtype = "Type1";
-    const char* encoding     = "WinAnsiEncoding";
     int font_size            = lib_to_pt(LIB_PDF_FONT_SIZE);
 
     int len            = 0;
@@ -203,6 +203,9 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int margin_top     = margin; // 72
     int margin_bottom  = margin; // 72
     int line_offset    = 18;
+
+    const char* encoding = NULL;
+    bool use_unicode = false;
 
     if (ctx->use_style) {
         if (ctx->use_margin) {
@@ -235,11 +238,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int content_height = page_height - margin_top - margin_bottom;
     int line_page      = content_height / line_offset + 1;
 
-    char* BUF_BT = "BT\n";                    // BEGIN
-    char  BUF_HD[256];                        // HEADER
-    char* BUF_LF = "() Tj\n";                 // LINE FIRST
-    char  BUF_LN[256];                        // LINE NEXT
-    char* BUF_ET = "ET\n";                    // END
+    char* BUF_BT = "BT\n";                              // BEGIN
+    char  BUF_HD[128];                                  // HEADER
+    char* BUF_LF = use_unicode ? "<> Tj\n" : "() Tj\n"; // LINE FIRST
+    char  BUF_LN[128];                                  // LINE NEXT
+    char* BUF_ET = "ET\n";                              // END
 
     //const char* BUF_HD = "/F1 12 Tf 72 720 Td\n";  // HEADER
     //const char* BUF_LN = "0 -18 Td\n() Tj\n";      // LINE NEXT
@@ -249,11 +252,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int BUF_LN_LEN = 0; // tempate line next len
 
     BUF_LEN += strlen(BUF_BT);
-    BUF_LEN += sprintf(BUF_HD, "/F1 %d Tf %d %d Td\n", font_size, margin_left, page_height - margin_top); // strlen(BUF_HD);
+    BUF_LEN += sprintf(BUF_HD, "/F1 %d Tf %d %d Td\n", font_size, margin_left, page_height - margin_top);
     BUF_LEN += strlen(BUF_LF);
     BUF_LEN += strlen(BUF_ET);
 
-    BUF_LN_LEN = sprintf(BUF_LN, "0 -%d Td\n() Tj\n", line_offset); // strlen(BUF_LN);
+    BUF_LN_LEN = sprintf(BUF_LN, use_unicode ? "0 -%d Td\n<> Tj\n" : "0 -%d Td\n() Tj\n", line_offset);
 
     int MAX_PAGE = 8192;
     int MAX_XREF = 8192;
@@ -415,7 +418,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     offset  += len;
     len = fprintf(ctx->out, "%s", BUF_HD);
     offset  += len;
-    len = fprintf(ctx->out, "(");
+    len = fprintf(ctx->out, use_unicode ? "<" : "(");
     offset  += len;
     // >>>
 
@@ -452,7 +455,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                 // >>> Stream: end
                 offset  += len;
-                len = fprintf(ctx->out, ") Tj\n");
+                len = fprintf(ctx->out, use_unicode ? "> Tj\n" : ") Tj\n");
                 offset  += len;
                 len = fprintf(ctx->out, "%s", BUF_ET);
                 offset  += len;
@@ -475,7 +478,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 offset  += len;
                 len = fprintf(ctx->out, "%s", BUF_HD);
                 offset  += len;
-                len = fprintf(ctx->out, "(");
+                len = fprintf(ctx->out, use_unicode ? "<" : "(");
                 offset  += len;
                 // >>>
 
@@ -483,8 +486,9 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 line++;
             }
             
-            len += fprintf(ctx->out, ") Tj\n");                   // BUF_LN_END
-            len += fprintf(ctx->out, "0 -%d Td\n(", line_offset); // BUF_LN_BEGIN
+            len += fprintf(ctx->out, use_unicode ? "> Tj\n" : ") Tj\n");                        // BUF_LN_END
+            len += fprintf(ctx->out, use_unicode ? "0 -%d Td\n<" : "0 -%d Td\n(", line_offset); // BUF_LN_BEGIN
+
             //len += fprintf(ctx->out, "0 -18 Td\n(");
             //len += fprintf(ctx->out, "(");
         }
@@ -492,7 +496,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     // >>> Stream: end
     offset  += len;
-    len = fprintf(ctx->out, ") Tj\n");
+    len = fprintf(ctx->out, use_unicode ? "> Tj\n" : ") Tj\n");
     offset  += len;
     len = fprintf(ctx->out, "%s", BUF_ET);
     offset  += len;
@@ -572,9 +576,22 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     // Type: Font
     ref++; // 5-Font
-    len = fprintf(ctx->out, "%d 0 obj << /Type /Font /Subtype /%s /BaseFont /%s /Encoding /%s >> endobj\n", ref, font_subtype, font_name, encoding);
+    len = fprintf(ctx->out, "%d 0 obj << /Type /Font /Subtype /%s /BaseFont /%s /Encoding /%s", ref, font_subtype, font_name, pdf_encoding);
     offset  += len;
+
+    if (use_unicode) {
+        // TODO
+    }
+
+    len = fprintf(ctx->out, " >> endobj\n");
+    offset  += len;
+
     xrefs[ref] = offset;
+
+    // Type: ToUnicode
+    if (use_unicode) {
+        // TODO
+    }
 
     xref_size   = ref + 1;
     xref_offset = offset;
