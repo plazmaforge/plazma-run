@@ -414,11 +414,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     // >>> Stream: start
     ref++; // 4-Stream<N>
     len += fprintf(ctx->out, "%d 0 obj << /Length %d >> stream\n", ref, pages[page - 1]);
-    //offset  += len;
     len += fprintf(ctx->out, "%s", BUF_BT);
-    //offset  += len;
     len += fprintf(ctx->out, "%s", BUF_HD);
-    //offset  += len;
     len += fprintf(ctx->out, use_unicode ? "<" : "(");
     offset  += len;
     // >>>
@@ -455,11 +452,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 // CLOSE CUR PAGE
 
                 // >>> Stream: end
-                //offset  += len;
                 len += fprintf(ctx->out, use_unicode ? "> Tj\n" : ") Tj\n");
-                //offset  += len;
                 len += fprintf(ctx->out, "%s", BUF_ET);
-                //offset  += len;
                 len += fprintf(ctx->out, "endstream endobj\n");
                 offset  += len;
                 xrefs[ref] = offset;
@@ -474,11 +468,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 // >>> Stream: start
                 ref++; // 4-Stream<N>
                 len += fprintf(ctx->out, "%d 0 obj << /Length %d >> stream\n", ref, pages[page - 1]);
-                //offset  += len;
                 len += fprintf(ctx->out, "%s", BUF_BT);
-                //offset  += len;
                 len += fprintf(ctx->out, "%s", BUF_HD);
-                //offset  += len;
                 len += fprintf(ctx->out, use_unicode ? "<" : "(");
                 offset  += len;
                 // >>>
@@ -496,11 +487,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     }
 
     // >>> Stream: end
-    //offset  += len;
     len += fprintf(ctx->out, use_unicode ? "> Tj\n" : ") Tj\n");
-    //offset  += len;
     len += fprintf(ctx->out, "%s", BUF_ET);
-    //offset  += len;
     len += fprintf(ctx->out, "endstream endobj\n");
     offset  += len;
     xrefs[ref] = offset;
