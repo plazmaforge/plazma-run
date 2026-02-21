@@ -321,6 +321,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 new_page = true;
                 page++;
                 line = 1;
+                len  = 0;
                 page_len = BUF_LEN; // template len
             } else {
                 line++;
@@ -703,6 +704,10 @@ static lib_font_info_t lib_get_font_info(lib_font_t* font) {
 // PDF Blog
 // https://github.com/jberkenbilt/pdf-text-blog/tree/a6342d96a953d222a6bcd0bd0408615d66e6646b
 
+// PDF Succinctly
+// https://www.syncfusion.com/succinctly-free-ebooks/pdf/conceptual-overview
+// https://www.syncfusion.com/succinctly-free-ebooks/pdf/text-operators
+
 // Multi line
 //
 // 4 0 obj<</Length 84>>stream
@@ -710,3 +715,15 @@ static lib_font_info_t lib_get_font_info(lib_font_t* font) {
 // endstream endobj
 //
 // https://stackoverflow.com/questions/17279712/what-is-the-smallest-possible-valid-pdf
+
+// PDF
+// https://habr.com/ru/articles/69568/
+
+// RTF
+// https://habr.com/ru/articles/70119/
+
+// DOC, WCBFF
+// https://habr.com/ru/articles/72745/
+
+// DOCX, ODT
+// https://habr.com/ru/articles/69417/
