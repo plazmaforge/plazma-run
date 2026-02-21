@@ -618,21 +618,65 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     // Type: Font
     ref++; // 5-Font
-    len = fprintf(ctx->out, "%d 0 obj << /Type /Font /Subtype /%s /BaseFont /%s /Encoding /%s", ref, font_subtype, font_name, pdf_encoding);
-    offset  += len;
+    len = 0;
+    len += fprintf(ctx->out, "%d 0 obj << /Type /Font /Subtype /%s /BaseFont /%s /Encoding /%s", ref, font_subtype, font_name, pdf_encoding);
 
+    // ToUnicode
     if (use_unicode) {
-        // TODO
+        len += fprintf(ctx->out, "/ToUnicode %d 0 R", (ref + 1));
     }
 
-    len = fprintf(ctx->out, " >> endobj\n");
+    len += fprintf(ctx->out, " >> endobj\n");
     offset  += len;
-
     xrefs[ref] = offset;
 
-    // Type: ToUnicode
+    // Type: CMap
     if (use_unicode) {
+        ref++; // 6-CMap
+        len = 0;
+        int cmap_len = 0;
+        len += fprintf(ctx->out, "%d 0 obj << /Length /%d 0 R >> stream\n", ref, (ref + 1));
+
+        len += fprintf(ctx->out, "/CIDInit/ProcSet findresource begin");
+        len += fprintf(ctx->out, "12 dict begin");
+        len += fprintf(ctx->out, "begincmap");
+        len += fprintf(ctx->out, "/CIDSystemInfo<<");
+        len += fprintf(ctx->out, "/Registry (Adobe)");
+        len += fprintf(ctx->out, "/Ordering (UCS)");
+        len += fprintf(ctx->out, "/Supplement 0");
+        len += fprintf(ctx->out, ">> def");
+        len += fprintf(ctx->out, "/CMapName/Adobe-Identity-UCS def");
+        len += fprintf(ctx->out, "/CMapType 2 def");
+        len += fprintf(ctx->out, "1 begincodespacerange");
+        len += fprintf(ctx->out, "<00> <FF>");
+        len += fprintf(ctx->out, "endcodespacerange");
+
+        //>>>
+        len += fprintf(ctx->out, "61 beginbfchar");
+
         // TODO
+        len += fprintf(ctx->out, "<01> <004C>");
+        len += fprintf(ctx->out, "<02> <0065>");
+        len += fprintf(ctx->out, "<03> <0074>");
+        //>>>
+
+        len += fprintf(ctx->out, "endbfchar");
+        len += fprintf(ctx->out, "endcmap");
+        len += fprintf(ctx->out, "CMapName currentdict /CMap defineresource pop");
+        len += fprintf(ctx->out, "end");
+        len += fprintf(ctx->out, "end");
+        cmap_len = len;
+
+        len += fprintf(ctx->out, "endstream\n");
+        len += fprintf(ctx->out, "endobj\n");
+        offset  += len;
+        xrefs[ref] = offset;
+
+        ref++; // 7-CMap: Length
+        len = 0;
+        len += fprintf(ctx->out, "%d 0 obj %d\n", ref, cmap_len);
+        offset  += len;
+        xrefs[ref] = offset;
     }
 
     xref_size   = ref + 1;
