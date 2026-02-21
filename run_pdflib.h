@@ -32,6 +32,12 @@ typedef struct lib_font_info_t {
     bool italic;
 } lib_font_info_t;
 
+typedef struct lib_pdf_cmap_t {
+    int icode; // inp code
+    int ucode; // uni code
+    int idx;   // index
+} lib_pdf_cmap_t;
+
 // The 14 Standard PDF Fonts:
 //
 // - Courier (Standard, Bold, Oblique, BoldOblique)
@@ -284,6 +290,9 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     //int max_page = 1;
     page_len = BUF_LEN; // template len
 
+    lib_pdf_cmap_t cmap[65536];
+    int cmap_size = 0;
+
     for (size_t i = 0; i < ctx->size; i++) {
 
         break_line = false;
@@ -301,6 +310,28 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             break;
         default:
             len++;
+
+            //>>
+            if (use_unicode) {
+                bool found = false;
+                lib_pdf_cmap_t e;
+                for (int i = 0; i < cmap_size; i++) {
+                    e = cmap[i];
+                    if (c == e.icode) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    cmap_size++;
+                    e.icode = (int) c;
+                    e.ucode = (int) c; // TODO: Use codepoint form Unicode Map
+                    e.idx   = cmap_size;
+                    cmap[cmap_size - 1] = e;
+                }
+            }
+            //>>
+
             break;
         }
 
@@ -437,7 +468,29 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             break;
         default:
             len++;
-            fprintf(ctx->out, "%c", c);
+
+            //>>
+            if (use_unicode) {
+                bool found = false;
+                lib_pdf_cmap_t e;
+                for (int i = 0; i < cmap_size; i++) {
+                    e = cmap[i];
+                    if (c == e.icode) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    // TODO: ERROR
+                } else {
+                    int idx = e.idx;
+                    fprintf(ctx->out, "%02d", idx);
+                }
+            } else {
+               fprintf(ctx->out, "%c", c);
+            }
+            //>>
+            
             break;
         }
 
