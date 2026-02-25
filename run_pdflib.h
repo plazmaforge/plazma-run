@@ -15,6 +15,7 @@
  */
 typedef struct run_pdf_config_t {
     RUN_DOC_CONFIG
+    bool use_unicode;
 } run_pdf_config_t;
 
 /**
@@ -22,7 +23,7 @@ typedef struct run_pdf_config_t {
  */
 typedef struct run_pdf_context_t {
     RUN_DOC_CONTEXT
-
+    bool use_unicode;
 } run_pdf_context_t;
 
 typedef struct lib_font_info_t {
@@ -95,7 +96,7 @@ static int lib_pdf_init(run_pdf_config_t* cnf) {
     if (!cnf) {
         return 1;
     }
-
+    cnf->use_unicode = false;
     return lib_doc_config_init((run_doc_config_t*) cnf);
 }
 
@@ -125,6 +126,7 @@ static int lib_pdf_ctx_init(run_pdf_config_t* cnf, run_pdf_context_t* ctx) {
     ctx->data    = NULL;
     ctx->size    = 0;
 
+    ctx->use_unicode   = cnf->use_unicode;
     ctx->out_file_name = cnf->out_file_name;
     ctx->out = cnf->out;
 
@@ -212,7 +214,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int line_offset    = 18;
 
     const char* encoding = NULL;
-    bool use_unicode     = false;
+    bool use_unicode     = ctx->use_unicode;
 
     if (ctx->use_style) {
         if (ctx->use_margin) {
