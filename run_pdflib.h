@@ -36,6 +36,7 @@ typedef struct lib_pdf_cmap_t {
     int icode; // inp code
     int ucode; // uni code
     int idx;   // index
+    int width; // char width
 } lib_pdf_cmap_t;
 
 // The 14 Standard PDF Fonts:
@@ -211,7 +212,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int line_offset    = 18;
 
     const char* encoding = NULL;
-    bool use_unicode = false;
+    bool use_unicode     = false;
 
     if (ctx->use_style) {
         if (ctx->use_margin) {
@@ -326,6 +327,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     cmap_size++;
                     e.icode = (int) c;
                     e.ucode = (int) c; // TODO: Use codepoint form Unicode Map
+                    e.width = 700;     // TODO: Use font info to get width of char
                     e.idx   = cmap_size;
                     cmap[cmap_size - 1] = e;
                 }
@@ -359,6 +361,14 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             }
         }
     }
+
+    // if (use_unicode) {
+    //     lib_pdf_cmap_t e;
+    //     for (int i = 0; i < cmap_size; i++) {
+    //         e = cmap[i];
+    //         fprintf(stderr, "<%02X> <%04X>\n", e.idx, e.ucode);
+    //     }
+    // }
 
     //fprintf(stderr, ">> page_count: %d\n", page);
 
@@ -484,7 +494,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     // TODO: ERROR
                 } else {
                     int idx = e.idx;
-                    fprintf(ctx->out, "%02d", idx);
+                    fprintf(ctx->out, "%02X", idx);
                 }
             } else {
                fprintf(ctx->out, "%c", c);
@@ -619,11 +629,30 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     // Type: Font
     ref++; // 5-Font
     len = 0;
-    len += fprintf(ctx->out, "%d 0 obj << /Type /Font /Subtype /%s /BaseFont /%s /Encoding /%s", ref, font_subtype, font_name, pdf_encoding);
+    //len += fprintf(ctx->out, "%d 0 obj << /Type /Font /Subtype /%s /BaseFont /%s /Encoding /%s", ref, font_subtype, font_name, pdf_encoding);
+    //len += fprintf(ctx->out, "%d 0 obj << /Type /Font /Subtype /%s /BaseFont /%s ", ref, font_subtype, font_name);
+    len += fprintf(ctx->out, "%d 0 obj << /Type /Font /BaseFont /%s", ref, font_name);
 
     // ToUnicode
     if (use_unicode) {
-        len += fprintf(ctx->out, "/ToUnicode %d 0 R", (ref + 1));
+        len += fprintf(ctx->out, " /FirstChar 0");
+        len += fprintf(ctx->out, " /LastChar %d", cmap_size);
+        len += fprintf(ctx->out, " /ToUnicode %d 0 R", (ref + 1));
+        //len += fprintf(ctx->out, " /Widths [0 700 700 700 700]");
+
+        //>>>
+        len += fprintf(ctx->out, " /Widths [0");
+        lib_pdf_cmap_t e;
+        for (int i = 0; i < cmap_size; i++) {
+            e = cmap[i];
+            len += fprintf(ctx->out, " %d", e.width);
+        }
+        len += fprintf(ctx->out, "]");
+        //>>>
+
+    } else {
+        len += fprintf(ctx->out, " /Subtype /%s", font_subtype);
+        len += fprintf(ctx->out, " /Encoding /%s", pdf_encoding);
     }
 
     len += fprintf(ctx->out, " >> endobj\n");
@@ -635,36 +664,43 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         ref++; // 6-CMap
         len = 0;
         int cmap_len = 0;
-        len += fprintf(ctx->out, "%d 0 obj << /Length /%d 0 R >> stream\n", ref, (ref + 1));
+        len += fprintf(ctx->out, "%d 0 obj << /Length %d 0 R >> stream\n", ref, (ref + 1));
 
-        len += fprintf(ctx->out, "/CIDInit/ProcSet findresource begin");
-        len += fprintf(ctx->out, "12 dict begin");
-        len += fprintf(ctx->out, "begincmap");
-        len += fprintf(ctx->out, "/CIDSystemInfo<<");
-        len += fprintf(ctx->out, "/Registry (Adobe)");
-        len += fprintf(ctx->out, "/Ordering (UCS)");
-        len += fprintf(ctx->out, "/Supplement 0");
-        len += fprintf(ctx->out, ">> def");
-        len += fprintf(ctx->out, "/CMapName/Adobe-Identity-UCS def");
-        len += fprintf(ctx->out, "/CMapType 2 def");
-        len += fprintf(ctx->out, "1 begincodespacerange");
-        len += fprintf(ctx->out, "<00> <FF>");
-        len += fprintf(ctx->out, "endcodespacerange");
+        len += fprintf(ctx->out, "/CIDInit/ProcSet findresource begin\n");
+        len += fprintf(ctx->out, "12 dict begin\n");
+        len += fprintf(ctx->out, "begincmap\n");
+        len += fprintf(ctx->out, "/CIDSystemInfo<<\n");
+        len += fprintf(ctx->out, "/Registry (Adobe)\n");
+        len += fprintf(ctx->out, "/Ordering (UCS)\n");
+        len += fprintf(ctx->out, "/Supplement 0\n");
+        len += fprintf(ctx->out, ">> def\n");
+        len += fprintf(ctx->out, "/CMapName /Adobe-Identity-UCS def\n");
+        len += fprintf(ctx->out, "/CMapType 2 def\n");
+        len += fprintf(ctx->out, "1 begincodespacerange\n");
+        len += fprintf(ctx->out, "<00> <FF>\n");
+        len += fprintf(ctx->out, "endcodespacerange\n");
 
         //>>>
-        len += fprintf(ctx->out, "61 beginbfchar");
+        len += fprintf(ctx->out, "%d beginbfchar\n", cmap_size);
 
         // TODO
-        len += fprintf(ctx->out, "<01> <004C>");
-        len += fprintf(ctx->out, "<02> <0065>");
-        len += fprintf(ctx->out, "<03> <0074>");
+        //len += fprintf(ctx->out, "<01> <004C>");
+        //len += fprintf(ctx->out, "<02> <0065>");
+        //len += fprintf(ctx->out, "<03> <0074>");
         //>>>
 
-        len += fprintf(ctx->out, "endbfchar");
-        len += fprintf(ctx->out, "endcmap");
-        len += fprintf(ctx->out, "CMapName currentdict /CMap defineresource pop");
-        len += fprintf(ctx->out, "end");
-        len += fprintf(ctx->out, "end");
+        lib_pdf_cmap_t e;
+        for (int i = 0; i < cmap_size; i++) {
+            e = cmap[i];
+            fprintf(ctx->out, "<%02X> <%04X>\n", e.idx, e.ucode);
+        }
+        //>>>
+
+        len += fprintf(ctx->out, "endbfchar\n");
+        len += fprintf(ctx->out, "endcmap\n");
+        len += fprintf(ctx->out, "CMapName currentdict /CMap defineresource pop\n");
+        len += fprintf(ctx->out, "end\n");
+        len += fprintf(ctx->out, "end\n");
         cmap_len = len;
 
         len += fprintf(ctx->out, "endstream\n");
@@ -674,7 +710,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
         ref++; // 7-CMap: Length
         len = 0;
-        len += fprintf(ctx->out, "%d 0 obj %d\n", ref, cmap_len);
+        len += fprintf(ctx->out, "%d 0 obj %d endobj\n", ref, cmap_len);
         offset  += len;
         xrefs[ref] = offset;
     }
