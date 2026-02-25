@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
     bool flag_font_style        = false;
     bool flag_font_weight       = false;
     bool flag_font_size         = false;
+    bool flag_unicode           = false;
 
     static lib_option long_options[] = {
         {LIB_OPT_CHARSET,     optional_argument, 0, LIB_OPT_CHARSET_ID},
@@ -83,6 +84,7 @@ int main(int argc, char* argv[]) {
         {LIB_OPT_FONT_STYLE,  optional_argument, 0, LIB_OPT_FONT_STYLE_ID},
         {LIB_OPT_FONT_WEIGHT, optional_argument, 0, LIB_OPT_FONT_WEIGHT_ID},
         {LIB_OPT_FONT_SIZE,   optional_argument, 0, LIB_OPT_FONT_SIZE_ID},
+        {"unicode",   no_argument, 0, 11111111},
         {NULL,                0,                 0, 0 }
     };
 
@@ -125,6 +127,9 @@ int main(int argc, char* argv[]) {
         case LIB_OPT_FONT_SIZE_ID:   // font-size
             flag_font_size = true;
             font_size = optarg;
+            break;
+        case 11111111:   // font-size
+            flag_unicode = true;
             break;
         case '?':
             error = 1;
@@ -195,6 +200,7 @@ int main(int argc, char* argv[]) {
         config.font = &font;
         lib_doc_font_init(&font, font_name, font_style, font_weight, font_size);
     }
+    config.use_unicode = flag_unicode;
 
     config.out_file_name = out_file_name;
     error = lib_run_out_open((run_doc_config_t*) &config);
