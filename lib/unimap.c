@@ -5,6 +5,7 @@
 #include "unimap.h"
 #include "unimapx.h"
 #include "encpre.h"
+#include "intlib.h"
 
 // #define DEBUG    1
 // #define DEBUG_LL 1
@@ -996,9 +997,9 @@ static int _find_idx(int* map, size_t len, int ucode) {
     return -1;
 }
 
-static uint8_t _u8(char value) {
-    return (uint8_t) value;
-}
+// static uint8_t _u8(char value) {
+//     return (uint8_t) value;
+// }
 
 static int _init_map(lib_unimap_t* unimap) {
     if (!unimap) {

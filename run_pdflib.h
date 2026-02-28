@@ -1,14 +1,17 @@
 #include "iolib.h"
 #include "run_doclib.h"
 
+#include "unimap.h"
+#include "intlib.h"
+
 #define LIB_PDF_CHARSET     LIB_DOC_CHARSET
 #define LIB_PDF_TITLE       NULL
 #define LIB_PDF_UNIT        "pt"
-#define LIB_PDF_MARGIN      "72"
+#define LIB_PDF_MARGIN      "72"                 // 72 pt = 1 inch
 #define LIB_PDF_FONT_NAME   "Helvetica"
 #define LIB_PDF_FONT_STYLE  LIB_DOC_FONT_STYLE
 #define LIB_PDF_FONT_WEIGHT LIB_DOC_FONT_WEIGHT
-#define LIB_PDF_FONT_SIZE   "12"
+#define LIB_PDF_FONT_SIZE   "12"                 // 12 pt
 
 /**
  * PDF Config
@@ -203,26 +206,39 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int line           = 0;
     int page_count     = 0;
 
+    // A4       : 595 x 842 pt, 210.0 x 297.0 mm
+    // US Latter: 612 x 792 pt, 215.9 x 279.4 mm
     int page_width     = 612;
     int page_height    = 792;
 
-    int margin = lib_to_pt(LIB_PDF_MARGIN);
-    int margin_left    = margin; // 72
-    int margin_right   = margin; // 72
-    int margin_top     = margin; // 72
-    int margin_bottom  = margin; // 72
-    int line_offset    = 18;
+    int margin = lib_to_pt(LIB_PDF_MARGIN); // by default: 72 pt = 1 inch 
+    int margin_left    = margin;
+    int margin_right   = margin;
+    int margin_top     = margin;
+    int margin_bottom  = margin;
+    int line_offset    = 18; // by default: font size = 12 pt, line offset = font size x 1.5
 
     const char* encoding = NULL;
+    int encoding_id      = 0;
     bool use_unicode     = ctx->use_unicode;
+
+    lib_unimap_t unimap;
+    if (use_unicode) {
+        encoding_id = 1251; // TODO
+        lib_unimap_get_unimap_by_id(&unimap, encoding_id);
+    }
+    
+    // fprintf(stderr, ">>>unimap.id    : %d\n", unimap.id);
+    // fprintf(stderr, ">>>unimap.start : %d\n", unimap.start);
+    // fprintf(stderr, ">>>unimap.len   : %d\n", unimap.len);
 
     if (ctx->use_style) {
         if (ctx->use_margin) {
             margin = lib_to_pt(ctx->margin);
-            margin_left    = margin; // 72
-            margin_right   = margin; // 72
-            margin_top     = margin; // 72
-            margin_bottom  = margin; // 72
+            margin_left    = margin;
+            margin_right   = margin;
+            margin_top     = margin;
+            margin_bottom  = margin;
         }
         if (ctx->use_font) {
             lib_font_info_t font     = lib_get_font_info(ctx->font);
@@ -296,6 +312,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     lib_pdf_cmap_t cmap[65536];
     int cmap_size = 0;
 
+    // Preprocessing
     for (size_t i = 0; i < ctx->size; i++) {
 
         break_line = false;
@@ -312,27 +329,39 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             break_line = true;
             break;
         default:
-            len++;
 
             //>>
             if (use_unicode) {
                 bool found = false;
                 lib_pdf_cmap_t e;
+                int icode = _u8(c);
+                int ucode = 0;
                 for (int i = 0; i < cmap_size; i++) {
                     e = cmap[i];
-                    if (c == e.icode) {
+                    if (icode == e.icode) {
                         found = true;
                         break;
                     }
                 }
-                if (!found) {
-                    cmap_size++;
-                    e.icode = (int) c;
-                    e.ucode = (int) c; // TODO: Use codepoint form Unicode Map
-                    e.width = 700;     // TODO: Use font info to get width of char
-                    e.idx   = cmap_size;
-                    cmap[cmap_size - 1] = e;
+                if (found) {
+                    len++;
+                } else {
+                    // Convert char to  Unicode codepoint
+                    ucode = lib_unimap_conv_icode(&unimap, icode);
+                    if (ucode == NO_CHR) {
+                        // Not found char in UniMap
+                    } else {
+                        len++;
+                        cmap_size++;
+                        e.icode = icode;
+                        e.ucode = ucode;
+                        e.width = 700;     // TODO: Use font info to get width of char
+                        e.idx   = cmap_size;
+                        cmap[cmap_size - 1] = e;
+                    }
                 }
+            } else {
+                len++;
             }
             //>>
 
@@ -363,14 +392,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             }
         }
     }
-
-    // if (use_unicode) {
-    //     lib_pdf_cmap_t e;
-    //     for (int i = 0; i < cmap_size; i++) {
-    //         e = cmap[i];
-    //         fprintf(stderr, "<%02X> <%04X>\n", e.idx, e.ucode);
-    //     }
-    // }
 
     //fprintf(stderr, ">> page_count: %d\n", page);
 
@@ -485,15 +506,18 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             if (use_unicode) {
                 bool found = false;
                 lib_pdf_cmap_t e;
+                int icode = _u8(c);
                 for (int i = 0; i < cmap_size; i++) {
                     e = cmap[i];
-                    if (c == e.icode) {
+                    //icode = _u8(c);
+                    if (icode == e.icode) {
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
                     // TODO: ERROR
+                    fprintf(stderr, "Char %d not found in CMap\n", icode);
                 } else {
                     int idx = e.idx;
                     fprintf(ctx->out, "%02X", idx);
