@@ -1,10 +1,11 @@
 #include "iolib.h"
 #include "run_doclib.h"
 
-#include "unimap.h"
 #include "intlib.h"
+#include "unimap.h"
+#include "enclib.h"
 
-#define LIB_PDF_CHARSET     LIB_DOC_CHARSET
+#define LIB_PDF_ENCODING    LIB_DOC_ENCODING
 #define LIB_PDF_TITLE       NULL
 #define LIB_PDF_UNIT        "pt"
 #define LIB_PDF_MARGIN      "72"                 // 72 pt = 1 inch
@@ -218,7 +219,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int margin_bottom  = margin;
     int line_offset    = 18; // by default: font size = 12 pt, line offset = font size x 1.5
 
-    const char* encoding = NULL;
+    const char* encoding = ctx->encoding;
     int encoding_id      = 0;
     bool use_unicode     = ctx->use_unicode;
 

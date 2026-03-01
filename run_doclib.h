@@ -91,6 +91,8 @@ typedef struct lib_font_t {
 #define RUN_DOC_CONFIG        \
     int mode;                 \
     const char* charset;      \
+    const char* encoding;     \
+    int encoding_id;          \
     const char* title;        \
     const char* margin;       \
     const char* margin_unit;  \
@@ -103,6 +105,7 @@ typedef struct lib_font_t {
 #define RUN_DOC_CONTEXT       \
     int mode;                 \
     const char* charset;      \
+    const char* encoding;     \
     const char* title;        \
     const char* margin;       \
     const char* margin_unit;  \

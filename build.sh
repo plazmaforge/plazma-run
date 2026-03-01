@@ -229,7 +229,7 @@ $CC $LDFLAGS getopt.o run_dconv.o -o run-dconv
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_txt2html.o -o run-txt2html
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_txt2svg.o -o run-txt2svg
 $CC $LDFLAGS getopt.o iodef.o iolib.o run_txt2rtf.o -o run-txt2rtf
-$CC $LDFLAGS getopt.o iodef.o iolib.o unimap.o run_txt2pdf.o -o run-txt2pdf
+$CC $LDFLAGS getopt.o iodef.o iolib.o unimap.o utf8lib.o encdef.o enclib.o run_txt2pdf.o -o run-txt2pdf
 
 $CC $LDFLAGS getopt.o test_getopt.o -o test-getopt
 $CC $LDFLAGS iolib.o strlib.o wstrlib.o syslocale.o syslocale_os.o syslib.o test_echo.o -o test-echo

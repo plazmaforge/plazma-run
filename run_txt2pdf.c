@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
     const char* out_file_name   = NULL;
 
     // config
-    const char* charset         = NULL;
+    const char* encoding        = NULL;
     const char* title           = NULL;
     const char* margin          = NULL;
     const char* font_name       = NULL;
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
     const char* font_weight     = NULL;
     const char* font_size       = NULL;
 
-    bool flag_charset           = false;
+    bool flag_encoding          = false;
     bool flag_title             = false;
     bool flag_margin            = false;
     bool flag_font_name         = false;
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
     bool flag_unicode           = false;
 
     static lib_option long_options[] = {
-        {LIB_OPT_CHARSET,     optional_argument, 0, LIB_OPT_CHARSET_ID},
+        {LIB_OPT_ENCODING,    optional_argument, 0, LIB_OPT_ENCODING_ID},
         {LIB_OPT_TITLE,       optional_argument, 0, LIB_OPT_TITLE_ID},
         {LIB_OPT_MARGIN,      optional_argument, 0, LIB_OPT_MARGIN_ID},
         {LIB_OPT_FONT_NAME,   optional_argument, 0, LIB_OPT_FONT_NAME_ID},
@@ -98,9 +98,9 @@ int main(int argc, char* argv[]) {
         case 'o':
             out_file_name = optarg;
             break;
-        case LIB_OPT_CHARSET_ID:     // charset
-            flag_charset = true;
-            charset = optarg;
+        case LIB_OPT_CHARSET_ID:     // encoding
+            flag_encoding = true;
+            encoding = optarg;
             break;
         case LIB_OPT_TITLE_ID:       // title
             flag_title = true;
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
             flag_font_size = true;
             font_size = optarg;
             break;
-        case LIB_OPT_UNICODE_ID:     // unicodes
+        case LIB_OPT_UNICODE_ID:     // unicode
             flag_unicode = true;
             break;
         case '?':
@@ -184,7 +184,8 @@ int main(int argc, char* argv[]) {
     run_pdf_config_t config;
     lib_pdf_init(&config);
 
-    config.charset     = lib_ifs(flag_charset, charset, LIB_PDF_CHARSET);
+    config.encoding    = lib_ifs(flag_encoding, encoding, LIB_PDF_ENCODING);
+    config.encoding_id = lib_enc_get_conv_encoding_id(encoding);
     config.title       = lib_ifs(flag_title, title, LIB_PDF_TITLE);
     config.margin      = lib_ifs(flag_margin, margin, LIB_PDF_MARGIN);
 
