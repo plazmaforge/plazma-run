@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
 
     // config
     const char* encoding        = NULL;
+    int encoding_id             = 0;
     const char* title           = NULL;
     const char* margin          = NULL;
     const char* font_name       = NULL;
@@ -181,11 +182,20 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    encoding    = lib_ifs(flag_encoding, encoding, LIB_PDF_ENCODING);
+    encoding_id = lib_enc_get_conv_encoding_id(encoding);
+    if (encoding && encoding_id == 0) {
+        fprintf(stderr, "%s: Encoding %s is not supported\n", prog_name, encoding);
+        return 1;
+    }
+    
     run_pdf_config_t config;
     lib_pdf_init(&config);
 
-    config.encoding    = lib_ifs(flag_encoding, encoding, LIB_PDF_ENCODING);
-    config.encoding_id = lib_enc_get_conv_encoding_id(encoding);
+    //config.encoding    = lib_ifs(flag_encoding, encoding, LIB_PDF_ENCODING);
+    //config.encoding_id = lib_enc_get_conv_encoding_id(encoding);
+    config.encoding    = encoding;
+    config.encoding_id = encoding_id;
     config.title       = lib_ifs(flag_title, title, LIB_PDF_TITLE);
     config.margin      = lib_ifs(flag_margin, margin, LIB_PDF_MARGIN);
 
