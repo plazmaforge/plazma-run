@@ -39,6 +39,8 @@
 #define LIB_OPT_CONTENT_TYPE       "content-type"
 #define LIB_OPT_CONTAINER_TYPE     "container-type"
 
+#define LIB_OPT_UNICODE            "unicode"
+
 #define LIB_OPT_INPUT_FILE_ID      101
 #define LIB_OPT_OUTPUT_FILE_ID     102
 #define LIB_OPT_ERROR_FILE_ID      103
@@ -64,6 +66,8 @@
 
 #define LIB_OPT_CONTENT_TYPE_ID    7001
 #define LIB_OPT_CONTAINER_TYPE_ID  7002
+
+#define LIB_OPT_UNICODE_ID         8001
 
 /* Run mode: by string/file */
 #define RUN_BY_STRING 1

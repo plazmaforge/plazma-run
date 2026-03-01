@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
         {LIB_OPT_FONT_STYLE,  optional_argument, 0, LIB_OPT_FONT_STYLE_ID},
         {LIB_OPT_FONT_WEIGHT, optional_argument, 0, LIB_OPT_FONT_WEIGHT_ID},
         {LIB_OPT_FONT_SIZE,   optional_argument, 0, LIB_OPT_FONT_SIZE_ID},
-        {"unicode",   no_argument, 0, 11111111},
+        {LIB_OPT_UNICODE,     no_argument, 0, LIB_OPT_UNICODE_ID},
         {NULL,                0,                 0, 0 }
     };
 
@@ -109,8 +109,6 @@ int main(int argc, char* argv[]) {
         case LIB_OPT_MARGIN_ID:      // margin
             flag_margin = true;
             margin = optarg;
-            //fprintf(stderr, "margin-str: %s\n", optarg);
-            //fprintf(stderr, "margin-int: %d\n", optarg ? atoi(optarg) : 0);
             break;
         case LIB_OPT_FONT_NAME_ID:   // font-name
             flag_font_name = true;
@@ -128,7 +126,7 @@ int main(int argc, char* argv[]) {
             flag_font_size = true;
             font_size = optarg;
             break;
-        case 11111111:   // font-size
+        case LIB_OPT_UNICODE_ID:     // unicodes
             flag_unicode = true;
             break;
         case '?':
