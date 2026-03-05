@@ -5,7 +5,7 @@
 #include "unimap.h"
 #include "enclib.h"
 
-#define LIB_PDF_ENCODING    LIB_DOC_ENCODING
+#define LIB_PDF_ENCODING    NULL
 #define LIB_PDF_TITLE       NULL
 #define LIB_PDF_UNIT        "pt"
 #define LIB_PDF_MARGIN      "72"                 // 72 pt = 1 inch
@@ -123,12 +123,14 @@ static int lib_pdf_ctx_init(run_pdf_config_t* cnf, run_pdf_context_t* ctx) {
     }
 
     // config -> context
-    ctx->charset = cnf->charset;
-    ctx->title   = cnf->title;
-    ctx->margin  = cnf->margin;
-    ctx->font    = cnf->font;
-    ctx->data    = NULL;
-    ctx->size    = 0;
+    ctx->charset     = cnf->charset;
+    ctx->encoding    = cnf->encoding;
+    ctx->encoding_id = cnf->encoding_id;
+    ctx->title       = cnf->title;
+    ctx->margin      = cnf->margin;
+    ctx->font        = cnf->font;
+    ctx->data        = NULL;
+    ctx->size        = 0;
 
     ctx->use_unicode   = cnf->use_unicode;
     ctx->out_file_name = cnf->out_file_name;
@@ -191,7 +193,7 @@ static int lib_to_pt(const char* value) {
 }
 
 static int lib_pdf_body(run_pdf_context_t* ctx) {
-    
+
     const char* pdf_version  = "1.5";
     const char* pdf_encoding = "WinAnsiEncoding";
     const char* font_name    = "Helvetica";
@@ -220,12 +222,15 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int line_offset    = 18; // by default: font size = 12 pt, line offset = font size x 1.5
 
     const char* encoding = ctx->encoding;
-    int encoding_id      = 0;
+    int encoding_id      = ctx->encoding_id;
     bool use_unicode     = ctx->use_unicode;
 
     lib_unimap_t unimap;
     if (use_unicode) {
-        encoding_id = 1251; // TODO
+        if (encoding_id <= 0) {
+            fprintf(stderr, "%s: Encoding %s is not supported\n", prog_name, encoding);
+            return 1;
+        }
         lib_unimap_get_unimap_by_id(&unimap, encoding_id);
     }
     
@@ -313,13 +318,32 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     lib_pdf_cmap_t cmap[65536];
     int cmap_size = 0;
 
+    //for (size_t i = 0; i < ctx->size; i++) {
+
     // Preprocessing
-    for (size_t i = 0; i < ctx->size; i++) {
+    
+    //int icode = 0;
+    //int ucode = 0;
+
+    size_t i   = 0;
+    int code   = 0; // code point (unicode)
+    int seq    = 0; // sequence of char
+    char* data = ctx->data;
+
+    while (i < ctx->size) {
+
+        if (use_unicode) {
+            seq = lib_enc_to_code(&unimap, encoding_id, data, &code);
+            //code = ucode;
+        } else {
+            seq = 1;
+            code = _u8(*data);
+        }
 
         break_line = false;
-        c = ctx->data[i];
+        //c = ctx->data[i];
 
-        switch (c) {
+        switch (code) {
         case '\n':
             break_line = true;
             break;
@@ -335,11 +359,13 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             if (use_unicode) {
                 bool found = false;
                 lib_pdf_cmap_t e;
-                int icode = _u8(c);
-                int ucode = 0;
+                //int icode = _u8(c);
+                //int icode = _u8(*data);
+                //int ucode = 0;
                 for (int i = 0; i < cmap_size; i++) {
                     e = cmap[i];
-                    if (icode == e.icode) {
+                    //if (icode == e.icode) {
+                    if (code == e.ucode) {
                         found = true;
                         break;
                     }
@@ -348,14 +374,15 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     len++;
                 } else {
                     // Convert char to  Unicode codepoint
-                    ucode = lib_unimap_conv_icode(&unimap, icode);
-                    if (ucode == NO_CHR) {
+                    //ucode = lib_unimap_conv_icode(&unimap, icode);
+                    //int seq = lib_enc_to_code(&unimap, encoding_id, const char* str, &ucode);
+                    if (code == NO_CHR) {
                         // Not found char in UniMap
                     } else {
                         len++;
                         cmap_size++;
-                        e.icode = icode;
-                        e.ucode = ucode;
+                        //e.icode = icode;
+                        e.ucode = code;
                         e.width = 700;     // TODO: Use font info to get width of char
                         e.idx   = cmap_size;
                         cmap[cmap_size - 1] = e;
@@ -392,6 +419,9 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 line++;
             }
         }
+
+        data += seq;
+        i += seq;
     }
 
     //fprintf(stderr, ">> page_count: %d\n", page);
@@ -485,12 +515,27 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     offset  += len;
     // >>>
 
-    for (size_t i = 0; i < ctx->size; i++) {
+    // for (size_t i = 0; i < ctx->size; i++) {
+
+    i     = 0;
+    code  = 0; // code point (unicode)
+    seq   = 0; // sequence of char
+    data  = ctx->data;
+
+    while (i < ctx->size) {
+
+        if (use_unicode) {
+            seq = lib_enc_to_code(&unimap, encoding_id, data, &code);
+            //code = ucode;
+        } else {
+            seq = 1;
+            code = _u8(*data);
+        }
 
         break_line = false;
-        c = ctx->data[i];
+        //c = ctx->data[i];
 
-        switch (c) {
+        switch (code) {
         case '\n':
             break_line = true;
             break;
@@ -507,24 +552,25 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             if (use_unicode) {
                 bool found = false;
                 lib_pdf_cmap_t e;
-                int icode = _u8(c);
+                //int icode = _u8(c);
                 for (int i = 0; i < cmap_size; i++) {
                     e = cmap[i];
                     //icode = _u8(c);
-                    if (icode == e.icode) {
+                    //if (icode == e.icode) {
+                    if (code == e.ucode) {
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
                     // TODO: ERROR
-                    fprintf(stderr, "Char %d not found in CMap\n", icode);
+                    fprintf(stderr, "Char %d not found in CMap\n", code);
                 } else {
                     int idx = e.idx;
                     fprintf(ctx->out, "%02X", idx);
                 }
             } else {
-               fprintf(ctx->out, "%c", c);
+               fprintf(ctx->out, "%c", (char) code);
             }
             //>>
             
@@ -574,6 +620,10 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             //len += fprintf(ctx->out, "0 -18 Td\n(");
             //len += fprintf(ctx->out, "(");
         }
+
+        data += seq;
+        i += seq;
+
     }
 
     // >>> Stream: end

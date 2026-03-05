@@ -182,13 +182,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    encoding    = lib_ifs(flag_encoding, encoding, LIB_PDF_ENCODING);
+    //encoding    = lib_ifs(flag_encoding, encoding, LIB_PDF_ENCODING);
+    if (flag_unicode && !encoding) {
+        encoding = "CP1251"; // TODO: by default
+    }
     encoding_id = lib_enc_get_conv_encoding_id(encoding);
     if (encoding && encoding_id == 0) {
         fprintf(stderr, "%s: Encoding %s is not supported\n", prog_name, encoding);
         return 1;
     }
-    
+
     run_pdf_config_t config;
     lib_pdf_init(&config);
 

@@ -43,6 +43,10 @@ int lib_enc_get_conv_encoding_id(const char* name);
  */
 int lib_enc_conv_by_id(int from_id, int to_id, char* from_data, size_t from_len, char** to_data, size_t* to_len);
 
+int lib_enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp);
+
+int lib_enc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp);
+
 int lib_enc_test();
 
 #endif // PLAZMA_LIB_ENCLIB_H

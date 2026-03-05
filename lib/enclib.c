@@ -1827,6 +1827,14 @@ static int _enc_conv_ctx(lib_enc_context_t* ctx) {
     return 0;
 }
 
+int lib_enc_to_code(lib_unimap_t* unimap, int enc_id, const char* str, int* cp) {
+    return _enc_to_code(unimap, enc_id, str, cp);
+}
+
+int lib_enc_to_char(lib_unimap_t* unimap, int enc_id, char* buf, int cp) {
+    return _enc_to_char(unimap, enc_id, buf, cp);
+}
+
 void _print_char(char* buf) {
     printf("%02X ",  (unsigned char) buf[0]);
     printf("%02X ",  (unsigned char) buf[1]);

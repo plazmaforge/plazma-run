@@ -106,6 +106,7 @@ typedef struct lib_font_t {
     int mode;                 \
     const char* charset;      \
     const char* encoding;     \
+    int encoding_id;          \
     const char* title;        \
     const char* margin;       \
     const char* margin_unit;  \
@@ -539,6 +540,8 @@ static int lib_doc_config_init(run_doc_config_t* cnf) {
     }
 
     cnf->charset     = NULL;
+    cnf->encoding    = NULL;
+    cnf->encoding_id = 0;
     cnf->title       = NULL;
     cnf->margin      = NULL;
     cnf->margin_unit = NULL;
