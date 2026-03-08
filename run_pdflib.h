@@ -326,7 +326,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     //int ucode = 0;
 
     size_t i   = 0;
-    int code   = 0; // code point (unicode)
+    int code   = 0; // code point      (unicode)
+    int next   = 0; // next code point (unicode)
     int seq    = 0; // sequence of char
     char* data = ctx->data;
 
@@ -348,8 +349,14 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             break_line = true;
             break;
         case '\r':
-            if (i + 1 < ctx->size && ctx->data[i + 1] == '\n') {
-                i++;
+            //if (i + 1 < ctx->size && ctx->data[i + 1] == '\n') {
+            if (i + 1 < ctx->size) {
+                // TODO: One byte only?
+                next = _u8(*(data + 1)); // get next code
+                if (next == '\n') {
+                    data++;
+                    i++;
+                }
             }
             break_line = true;
             break;
@@ -360,7 +367,14 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 bool found = false;
                 lib_pdf_cmap_t e;
                 //int icode = _u8(c);
-                //int icode = _u8(*data);
+
+                // >> REMOVE IT
+                int icode = _u8(*data);
+                if (icode != code) {
+                    fprintf(stderr, ">> NOTEQ-1: icode=%d, code=%d\n", icode, code);
+                }
+                // >>
+
                 //int ucode = 0;
                 for (int i = 0; i < cmap_size; i++) {
                     e = cmap[i];
@@ -371,7 +385,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     }
                 }
                 if (found) {
-                    len++;
+                    len += 2;
                 } else {
                     // Convert char to  Unicode codepoint
                     //ucode = lib_unimap_conv_icode(&unimap, icode);
@@ -379,7 +393,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     if (code == NO_CHR) {
                         // Not found char in UniMap
                     } else {
-                        len++;
+                        len += 2;
                         cmap_size++;
                         //e.icode = icode;
                         e.ucode = code;
@@ -537,16 +551,25 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
         switch (code) {
         case '\n':
+            //fprintf(stderr, "[N]: %d\n", i);
             break_line = true;
             break;
         case '\r':
-            if (i + 1 < ctx->size && ctx->data[i + 1] == '\n') {
-                i++;
+            //fprintf(stderr, "[R]: %d\n", i);
+            //if (i + 1 < ctx->size && ctx->data[i + 1] == '\n') {
+            if (i + 1 < ctx->size) {
+                // TODO: One byte only?
+                next = _u8(*(data + 1)); // get next code
+                if (next == '\n') {
+                    data++;
+                    i++;
+                }
             }
             break_line = true;
             break;
         default:
-            len++;
+
+            //len++;
 
             //>>
             if (use_unicode) {
@@ -567,10 +590,20 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     fprintf(stderr, "Char %d not found in CMap\n", code);
                 } else {
                     int idx = e.idx;
+                    len += 2;
+
+                // >> REMOVE IT
+                int icode = _u8(*data);
+                if (icode != code) {
+                    fprintf(stderr, ">> NOTEQ-2: icode=%d, code=%d\n", icode, code);
+                }
+                // >>
+
                     fprintf(ctx->out, "%02X", idx);
                 }
             } else {
-               fprintf(ctx->out, "%c", (char) code);
+                len++;
+                fprintf(ctx->out, "%c", (char) code);
             }
             //>>
             
@@ -580,6 +613,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         new_line = break_line;
         new_page = false;
         if (break_line) {
+            //fprintf(stderr, "[BR]: %d\n", i);
             if (line > line_page) {
                 //if (page + 1 > max_page) {
                 //    break;
