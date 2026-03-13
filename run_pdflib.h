@@ -42,6 +42,7 @@ typedef struct lib_pdf_cmap_t {
     int ucode; // uni code
     int idx;   // index
     int width; // char width
+    bool predefined;
 } lib_pdf_cmap_t;
 
 // The 14 Standard PDF Fonts:
@@ -192,6 +193,24 @@ static int lib_to_pt(const char* value) {
     return atoi(value);
 }
 
+static int lib_pdf_cmap_init(lib_pdf_cmap_t* cmap) {
+    int size = 256;
+    lib_pdf_cmap_t e;
+    int cmap_idx  = 0;
+    for (int i = 0; i < size; i++) {
+        cmap_idx = i + 1;
+
+        e.idx   = cmap_idx;
+        e.icode = cmap_idx;
+        e.ucode = cmap_idx;
+        e.width = 700;     // TODO: Use font info to get width of char
+
+        e.predefined = (cmap_idx > 31 && cmap_idx <= 128);
+        cmap[i] = e;
+    }
+    return size;
+}
+
 static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     const char* pdf_version  = "1.5";
@@ -317,6 +336,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     lib_pdf_cmap_t cmap[65536];
     int cmap_size = 0;
+    int cmap_idx  = 0;
+    bool use_cmap_block = true;
 
     //for (size_t i = 0; i < ctx->size; i++) {
 
@@ -330,6 +351,12 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int next   = 0; // next code point (unicode)
     int seq    = 0; // sequence of char
     char* data = ctx->data;
+
+    bool use_predefined = true;
+
+    if (use_predefined) {
+        cmap_size =  lib_pdf_cmap_init(cmap);
+    }
 
     while (i < ctx->size) {
 
@@ -384,21 +411,39 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                         break;
                     }
                 }
+
                 if (found) {
-                    len += 2;
+                    len += 2; // <xx>
                 } else {
+
                     // Convert char to  Unicode codepoint
                     //ucode = lib_unimap_conv_icode(&unimap, icode);
                     //int seq = lib_enc_to_code(&unimap, encoding_id, const char* str, &ucode);
+                    
                     if (code == NO_CHR) {
                         // Not found char in UniMap
                     } else {
-                        len += 2;
+                        len += 2; // <xx>
                         cmap_size++;
+
                         //e.icode = icode;
                         e.ucode = code;
                         e.width = 700;     // TODO: Use font info to get width of char
-                        e.idx   = cmap_size;
+                        //e.idx   = cmap_size;
+
+                        if (use_cmap_block) {
+                            // check end of first block [0-31]
+                            if (cmap_idx == 31) { 
+                                // go to next block [128..]
+                                cmap_idx = 128;
+                            } else {
+                                cmap_idx++;
+                            }
+                        } else {
+                            cmap_idx++;
+                        }
+
+                        e.idx   = cmap_idx;
                         cmap[cmap_size - 1] = e;
                     }
                 }
