@@ -42,7 +42,7 @@ typedef struct lib_pdf_cmap_t {
     int ucode; // uni code
     int idx;   // index
     int width; // char width
-    bool predefined;
+    bool is_predef;
 } lib_pdf_cmap_t;
 
 // The 14 Standard PDF Fonts:
@@ -198,6 +198,8 @@ static int _cmap_init(lib_pdf_cmap_t* cmap) {
     lib_pdf_cmap_t e;
     int cmap_idx  = 0;
     for (int i = 0; i < size; i++) {
+
+        // start from 1
         cmap_idx = i + 1;
 
         e.idx   = cmap_idx;
@@ -205,7 +207,8 @@ static int _cmap_init(lib_pdf_cmap_t* cmap) {
         e.ucode = cmap_idx;
         e.width = 700;     // TODO: Use font info to get width of char
 
-        e.predefined = (cmap_idx > 31 && cmap_idx <= 128);
+        // ASCII [32..128]
+        e.is_predef = (cmap_idx >= 32 && cmap_idx <= 128);
         cmap[i] = e;
     }
     return size;
@@ -365,14 +368,14 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     page_len = BUF_LEN; // template len
 
     lib_pdf_cmap_t cmap[65536];
-    int cmap_size = 0;
-    int cmap_idx  = 0;
+    int cmap_size       = 0;
+    int cmap_idx        = 0;
+    bool cmap_found     = false;
     bool use_cmap_block = true;
 
     //for (size_t i = 0; i < ctx->size; i++) {
 
     // Preprocessing
-    
     //int icode = 0;
     //int ucode = 0;
 
@@ -382,9 +385,10 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int seq    = 0; // sequence of char
     char* data = ctx->data;
 
-    bool use_predefined = true;
+    bool use_predef = true;
 
-    if (use_predefined) {
+    if (use_unicode && use_predef) {
+        // Initialize predefined map (ASCII)
         cmap_size =  _cmap_init(cmap);
     }
 
@@ -421,10 +425,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
             //>>
             if (use_unicode) {
-                bool found = false;
+                cmap_found = false;
                 lib_pdf_cmap_t* p;
                 lib_pdf_cmap_t  e;
                 //int icode = _u8(c);
+                //int ucode = 0;
 
                 // >> REMOVE IT
                 int icode = _u8(*data);
@@ -433,29 +438,13 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 }
                 // >>
 
-                //int ucode = 0;
-                //found = _cmap_has_ucode(cmap, cmap_size, code);
-
                 p = _cmap_find_by_ucode(cmap, cmap_size, code);
-                found = p != NULL;
+                cmap_found = p != NULL;
 
-                // for (int i = 0; i < cmap_size; i++) {
-                //     e = cmap[i];
-                //     //if (icode == e.icode) {
-                //     if (code == e.ucode) {
-                //         found = true;
-                //         break;
-                //     }
-                // }
-
-                if (found) {
+                if (cmap_found) {
                     len += 2; // <xx>
                 } else {
 
-                    // Convert char to  Unicode codepoint
-                    //ucode = lib_unimap_conv_icode(&unimap, icode);
-                    //int seq = lib_enc_to_code(&unimap, encoding_id, const char* str, &ucode);
-                    
                     if (code == NO_CHR) {
                         // Not found char in UniMap
                     } else {
@@ -656,36 +645,23 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             if (use_unicode) {
                 lib_pdf_cmap_t* p;
                 //lib_pdf_cmap_t  e;
-                bool found = false;
-                //found = _cmap_has_ucode(cmap, cmap_size, code);
+                cmap_found = false;
                 p = _cmap_find_by_ucode(cmap, cmap_size, code);
-                found = p != NULL;
+                cmap_found = p != NULL;
 
-                // lib_pdf_cmap_t e;
-                // //int icode = _u8(c);
-                // for (int i = 0; i < cmap_size; i++) {
-                //     e = cmap[i];
-                //     //icode = _u8(c);
-                //     //if (icode == e.icode) {
-                //     if (code == e.ucode) {
-                //         found = true;
-                //         break;
-                //     }
-                // }
-
-                if (!found) {
+                if (!cmap_found) {
                     // TODO: ERROR
                     fprintf(stderr, "Char %d not found in CMap\n", code);
                 } else {
                     int idx = p->idx;
                     len += 2;
 
-                // >> REMOVE IT
-                int icode = _u8(*data);
-                if (icode != code) {
-                    fprintf(stderr, ">> NOTEQ-2: icode=%d, code=%d\n", icode, code);
-                }
-                // >>
+                    // >> REMOVE IT
+                    int icode = _u8(*data);
+                    if (icode != code) {
+                        fprintf(stderr, ">> NOTEQ-2: icode=%d, code=%d\n", icode, code);
+                    }
+                    // >>
 
                     fprintf(ctx->out, "%02X", idx);
                 }
