@@ -244,6 +244,21 @@ static bool _cmap_has_ucode(lib_pdf_cmap_t* cmap, int size, int ucode) {
     return _cmap_find_by_ucode(cmap, size, ucode) != NULL;
 }
 
+/**
+ * Find and return CMap index of first not predefined element
+ */
+static int _cmap_find_gap(lib_pdf_cmap_t* cmap, int size, int cur) {
+    lib_pdf_cmap_t* e = cmap;
+    int start = cur + 1;
+    for (int i = start; i < size; i++) {
+        if (!(*e).is_predef) {
+            return i;
+        }
+        e++;
+    }
+    return -1;
+}
+
 static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     const char* pdf_version  = "1.5";
@@ -368,8 +383,10 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     page_len = BUF_LEN; // template len
 
     lib_pdf_cmap_t cmap[65536];
-    int cmap_size       = 0;
-    int cmap_idx        = 0;
+    int cmap_size       = 0;  // CMap size
+    int cmap_idx        = 0;  // CMap index
+    int carr_idx        = 0;  // CMap array index
+    int cmap_gap        = -1; // CMap gap index
     bool cmap_found     = false;
     bool use_cmap_block = true;
 
@@ -448,28 +465,58 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     if (code == NO_CHR) {
                         // Not found char in UniMap
                     } else {
-                        len += 2; // <xx>
-                        cmap_size++;
+                        bool success = false;
 
-                        //e.icode = icode;
-                        e.ucode = code;
-                        e.width = 700;     // TODO: Use font info to get width of char
-                        //e.idx   = cmap_size;
+                        //len += 2; // <xx>
+                        //cmap_size++;
 
-                        if (use_cmap_block) {
-                            // check end of first block [0-31]
-                            if (cmap_idx == 31) { 
-                                // go to next block [128..]
-                                cmap_idx = 128;
+                        if (use_predef) {
+                            cmap_idx = _cmap_find_gap(cmap, cmap_size, cmap_gap);
+                            if (cmap_idx < 0) {
+                                fprintf(stderr, ">> Not found gap in CMap: %d, %d\n", cmap_size, cmap_gap);
                             } else {
-                                cmap_idx++;
+                                success = true;
+                                cmap_gap = cmap_idx; 
+                                carr_idx = cmap_idx;
                             }
                         } else {
+                            success = true;
+                            carr_idx = cmap_size;
+                            cmap_size++;
                             cmap_idx++;
                         }
 
-                        e.idx   = cmap_idx;
-                        cmap[cmap_size - 1] = e;
+                        if (success) {
+                            len += 2; // <xx>
+                            //e.icode = icode;
+                            e.ucode = code;
+                            e.width = 700;     // TODO: Use font info to get width of char
+                            //e.idx   = cmap_size;
+                            e.idx   = cmap_idx;
+                            e.is_predef = false;
+                            cmap[carr_idx] = e;
+                        }
+
+                        // //e.icode = icode;
+                        // e.ucode = code;
+                        // e.width = 700;     // TODO: Use font info to get width of char
+                        // //e.idx   = cmap_size;
+
+                        // if (use_cmap_block) {
+                        //     // check end of first block [0-31]
+                        //     if (cmap_idx == 31) { 
+                        //         // go to next block [128..]
+                        //         cmap_idx = 128;
+                        //     } else {
+                        //         cmap_idx++;
+                        //     }
+                        // } else {
+                        //     cmap_idx++;
+                        // }
+
+                        // e.idx   = cmap_idx;
+                        // cmap[cmap_size - 1] = e;
+
                     }
                 }
             } else {
