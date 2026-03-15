@@ -387,6 +387,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int cmap_idx        = 0;  // CMap index
     int carr_idx        = 0;  // CMap array index
     int cmap_gap        = -1; // CMap gap index
+    int cmap_start      = 0;  // CMap start index
     bool cmap_found     = false;
     bool use_cmap_block = true;
 
@@ -404,9 +405,22 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     bool use_predef = true;
 
-    if (use_unicode && use_predef) {
-        // Initialize predefined map (ASCII)
-        cmap_size =  _cmap_init(cmap);
+    if (use_unicode) {
+        if (use_predef) {
+            // Initialize predefined map (ASCII)
+            cmap_start  = 0;
+            cmap_size   = _cmap_init(cmap);
+        } else {
+            lib_pdf_cmap_t e;
+            cmap_start  = 1;
+            cmap_size   = 1;
+            e.icode     = 0;
+            e.ucode     = 0;
+            e.width     = 0;
+            e.idx       = 0;
+            e.is_predef = false;
+            cmap[0] = e;
+        }
     }
 
     while (i < ctx->size) {
@@ -496,26 +510,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                             e.is_predef = false;
                             cmap[carr_idx] = e;
                         }
-
-                        // //e.icode = icode;
-                        // e.ucode = code;
-                        // e.width = 700;     // TODO: Use font info to get width of char
-                        // //e.idx   = cmap_size;
-
-                        // if (use_cmap_block) {
-                        //     // check end of first block [0-31]
-                        //     if (cmap_idx == 31) { 
-                        //         // go to next block [128..]
-                        //         cmap_idx = 128;
-                        //     } else {
-                        //         cmap_idx++;
-                        //     }
-                        // } else {
-                        //     cmap_idx++;
-                        // }
-
-                        // e.idx   = cmap_idx;
-                        // cmap[cmap_size - 1] = e;
 
                     }
                 }
@@ -701,7 +695,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     fprintf(stderr, "Char %d not found in CMap\n", code);
                 } else {
                     int idx = p->idx;
-                    len += 2;
+                    len += 2; // <xx>
 
                     // >> REMOVE IT
                     int icode = _u8(*data);
@@ -905,14 +899,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         //>>>
         len += fprintf(ctx->out, "%d beginbfchar\n", cmap_size);
 
-        // TODO
-        //len += fprintf(ctx->out, "<01> <004C>");
-        //len += fprintf(ctx->out, "<02> <0065>");
-        //len += fprintf(ctx->out, "<03> <0074>");
-        //>>>
-
         lib_pdf_cmap_t e;
-        for (int i = 0; i < cmap_size; i++) {
+        for (int i = cmap_start; i < cmap_size; i++) {
             e = cmap[i];
             fprintf(ctx->out, "<%02X> <%04X>\n", e.idx, e.ucode);
         }
