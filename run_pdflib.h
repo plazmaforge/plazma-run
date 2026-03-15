@@ -193,7 +193,7 @@ static int lib_to_pt(const char* value) {
     return atoi(value);
 }
 
-static int lib_pdf_cmap_init(lib_pdf_cmap_t* cmap) {
+static int _cmap_init(lib_pdf_cmap_t* cmap) {
     int size = 256;
     lib_pdf_cmap_t e;
     int cmap_idx  = 0;
@@ -209,6 +209,36 @@ static int lib_pdf_cmap_init(lib_pdf_cmap_t* cmap) {
         cmap[i] = e;
     }
     return size;
+}
+
+static lib_pdf_cmap_t* _cmap_find_by_icode(lib_pdf_cmap_t* cmap, int size, int icode) {
+    lib_pdf_cmap_t* e = cmap;
+    for (int i = 0; i < size; i++) {
+        if (icode == (*e).icode) {
+            return e;
+        }
+        e++;
+    }
+    return NULL;
+}
+
+static lib_pdf_cmap_t* _cmap_find_by_ucode(lib_pdf_cmap_t* cmap, int size, int ucode) {
+    lib_pdf_cmap_t* e = cmap;
+    for (int i = 0; i < size; i++) {
+        if (ucode == (*e).ucode) {
+            return e;
+        }
+        e++;
+    }
+    return NULL;
+}
+
+static bool _cmap_has_icode(lib_pdf_cmap_t* cmap, int size, int icode) {
+    return _cmap_find_by_icode(cmap, size, icode) != NULL;
+}
+
+static bool _cmap_has_ucode(lib_pdf_cmap_t* cmap, int size, int ucode) {
+    return _cmap_find_by_ucode(cmap, size, ucode) != NULL;
 }
 
 static int lib_pdf_body(run_pdf_context_t* ctx) {
@@ -355,7 +385,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     bool use_predefined = true;
 
     if (use_predefined) {
-        cmap_size =  lib_pdf_cmap_init(cmap);
+        cmap_size =  _cmap_init(cmap);
     }
 
     while (i < ctx->size) {
@@ -392,7 +422,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             //>>
             if (use_unicode) {
                 bool found = false;
-                lib_pdf_cmap_t e;
+                lib_pdf_cmap_t* p;
+                lib_pdf_cmap_t  e;
                 //int icode = _u8(c);
 
                 // >> REMOVE IT
@@ -403,14 +434,19 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 // >>
 
                 //int ucode = 0;
-                for (int i = 0; i < cmap_size; i++) {
-                    e = cmap[i];
-                    //if (icode == e.icode) {
-                    if (code == e.ucode) {
-                        found = true;
-                        break;
-                    }
-                }
+                //found = _cmap_has_ucode(cmap, cmap_size, code);
+
+                p = _cmap_find_by_ucode(cmap, cmap_size, code);
+                found = p != NULL;
+
+                // for (int i = 0; i < cmap_size; i++) {
+                //     e = cmap[i];
+                //     //if (icode == e.icode) {
+                //     if (code == e.ucode) {
+                //         found = true;
+                //         break;
+                //     }
+                // }
 
                 if (found) {
                     len += 2; // <xx>
@@ -618,23 +654,30 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
             //>>
             if (use_unicode) {
+                lib_pdf_cmap_t* p;
+                //lib_pdf_cmap_t  e;
                 bool found = false;
-                lib_pdf_cmap_t e;
-                //int icode = _u8(c);
-                for (int i = 0; i < cmap_size; i++) {
-                    e = cmap[i];
-                    //icode = _u8(c);
-                    //if (icode == e.icode) {
-                    if (code == e.ucode) {
-                        found = true;
-                        break;
-                    }
-                }
+                //found = _cmap_has_ucode(cmap, cmap_size, code);
+                p = _cmap_find_by_ucode(cmap, cmap_size, code);
+                found = p != NULL;
+
+                // lib_pdf_cmap_t e;
+                // //int icode = _u8(c);
+                // for (int i = 0; i < cmap_size; i++) {
+                //     e = cmap[i];
+                //     //icode = _u8(c);
+                //     //if (icode == e.icode) {
+                //     if (code == e.ucode) {
+                //         found = true;
+                //         break;
+                //     }
+                // }
+
                 if (!found) {
                     // TODO: ERROR
                     fprintf(stderr, "Char %d not found in CMap\n", code);
                 } else {
-                    int idx = e.idx;
+                    int idx = p->idx;
                     len += 2;
 
                 // >> REMOVE IT
