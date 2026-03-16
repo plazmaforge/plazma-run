@@ -193,14 +193,20 @@ static int lib_to_pt(const char* value) {
     return atoi(value);
 }
 
+/**
+ * Create predefined CMap [0..255]
+ * By default use ASCII code page.
+ * Bu we can use other code pages.
+ * For example: CP1251.
+ */
 static int _cmap_init(lib_pdf_cmap_t* cmap) {
     int size = 256;
     lib_pdf_cmap_t e;
     int cmap_idx  = 0;
     for (int i = 0; i < size; i++) {
 
-        // start from 1
-        cmap_idx = i + 1;
+        // start from 0
+        cmap_idx = i; // i + 1;
 
         e.idx   = cmap_idx;
         e.icode = cmap_idx;
@@ -852,12 +858,12 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     // ToUnicode
     if (use_unicode) {
         len += fprintf(ctx->out, " /FirstChar 0");
-        len += fprintf(ctx->out, " /LastChar %d", cmap_size);
+        len += fprintf(ctx->out, " /LastChar %d", (cmap_size - 1));
         len += fprintf(ctx->out, " /ToUnicode %d 0 R", (ref + 1));
         //len += fprintf(ctx->out, " /Widths [0 700 700 700 700]");
 
         //>>>
-        len += fprintf(ctx->out, " /Widths [0");
+        len += fprintf(ctx->out, " /Widths [");
         lib_pdf_cmap_t e;
         for (int i = 0; i < cmap_size; i++) {
             e = cmap[i];
