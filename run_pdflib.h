@@ -200,9 +200,11 @@ static int lib_to_pt(const char* value) {
  * For example: CP1251.
  */
 static int _cmap_init(lib_pdf_cmap_t* cmap) {
+    
     int size = 256;
     lib_pdf_cmap_t e;
     int cmap_idx  = 0;
+
     for (int i = 0; i < size; i++) {
 
         // start from 0
@@ -213,8 +215,11 @@ static int _cmap_init(lib_pdf_cmap_t* cmap) {
         e.ucode = cmap_idx;
         e.width = 700;     // TODO: Use font info to get width of char
 
-        // ASCII [32..128]
-        e.is_predef = (cmap_idx >= 32 && cmap_idx <= 128);
+        bool block_a =  (cmap_idx >= 32 && cmap_idx <= 127);  // [032..127] ASCII
+        bool block_b =  (cmap_idx >= 160 && cmap_idx <= 255); // [160..255] NLS
+
+        e.is_predef = block_a || block_b;
+
         cmap[i] = e;
     }
     return size;
@@ -394,6 +399,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int carr_idx        = 0;  // CMap array index
     int cmap_gap        = -1; // CMap gap index
     int cmap_start      = 0;  // CMap start index
+    int cmap_digits     = 2;  // CMap output digits in index: <XX> or <XXXX>
     bool cmap_found     = false;
     bool use_cmap_block = true;
 
