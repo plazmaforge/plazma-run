@@ -435,6 +435,10 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         }
     }
 
+    bool use_breakline = false;
+    int body_width = 30000;
+    int line_width = 0;
+
     while (i < ctx->size) {
 
         if (use_unicode) {
@@ -475,24 +479,28 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 //int ucode = 0;
 
                 // >> REMOVE IT
-                int icode = _u8(*data);
-                if (icode != code) {
-                    fprintf(stderr, ">> NOTEQ-1: icode=%d, code=%d\n", icode, code);
-                }
+                //int icode = _u8(*data);
+                //if (icode != code) {
+                //    fprintf(stderr, ">> NOTEQ-1: icode=%d, code=%d\n", icode, code);
+                //}
                 // >>
 
                 p = _cmap_find_by_ucode(cmap, cmap_size, code);
                 cmap_found = p != NULL;
+                bool success = false;
 
                 if (cmap_found) {
-                    len += 2; // <xx>
-                } else {
+                    success = true;
+                    //len += 2; // <xx>
+                }
+                
+                if (!success) {
 
                     if (code == NO_CHR) {
                         // Not found char in UniMap
                     } else {
-                        bool success = false;
 
+                        //bool success = false;
                         //len += 2; // <xx>
                         //cmap_size++;
 
@@ -512,7 +520,33 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                             cmap_idx++;
                         }
 
-                        if (success) {
+                        // if (success) {
+                        //     len += 2; // <xx>
+                        //     //e.icode = icode;
+                        //     e.ucode = code;
+                        //     e.width = 700;     // TODO: Use font info to get width of char
+                        //     //e.idx   = cmap_size;
+                        //     e.idx   = cmap_idx;
+                        //     e.is_predef = false;
+                        //     cmap[carr_idx] = e;
+
+                        //     //>>
+                        //     if (use_breakline) {
+                        //         if (line_width + e.width >= body_width) {
+                        //             line_width = e.width;
+                        //             break_line = true;
+                        //         } else {
+                        //             line_width += e.width;
+                        //         }
+                        //     }
+                        //     //>>
+
+                        // }
+
+                    }
+                }
+
+                if (success) {
                             len += 2; // <xx>
                             //e.icode = icode;
                             e.ucode = code;
@@ -521,10 +555,21 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                             e.idx   = cmap_idx;
                             e.is_predef = false;
                             cmap[carr_idx] = e;
-                        }
 
-                    }
+                            //>>
+                            if (use_breakline) {
+                                if (line_width + e.width >= body_width) {
+                                    //line_width = e.width;
+                                    line_width = 0;
+                                    break_line = true;
+                                } else {
+                                    line_width += e.width;
+                                }
+                            }
+                            //>>
+
                 }
+
             } else {
                 len++;
             }
@@ -536,6 +581,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         new_line = break_line;
         new_page = false;
         if (break_line) {
+            line_width = 0;
             len += BUF_LN_LEN;
             if (line > line_page) {
                 //if (page + 1 > max_page) {
@@ -659,6 +705,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     seq   = 0; // sequence of char
     data  = ctx->data;
 
+    line_width = 0;
+
     while (i < ctx->size) {
 
         if (use_unicode) {
@@ -710,11 +758,25 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     len += 2; // <xx>
 
                     // >> REMOVE IT
-                    int icode = _u8(*data);
-                    if (icode != code) {
-                        fprintf(stderr, ">> NOTEQ-2: icode=%d, code=%d\n", icode, code);
-                    }
+                    //int icode = _u8(*data);
+                    //if (icode != code) {
+                    //    fprintf(stderr, ">> NOTEQ-2: icode=%d, code=%d\n", icode, code);
+                    //}
                     // >>
+
+
+                            //>>
+                            if (use_breakline) {
+                                if (line_width + p->width >= body_width) {
+                                    //line_width = p->width;
+                                    line_width = 0;
+                                    break_line = true;
+                                } else {
+                                    line_width += p->width;
+                                }
+                            }
+                            //>>
+
 
                     fprintf(ctx->out, "%02X", idx);
                 }
@@ -730,6 +792,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         new_line = break_line;
         new_page = false;
         if (break_line) {
+            line_width = 0;
             //fprintf(stderr, "[BR]: %d\n", i);
             if (line > line_page) {
                 //if (page + 1 > max_page) {
