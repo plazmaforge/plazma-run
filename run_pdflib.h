@@ -259,15 +259,24 @@ static bool _cmap_has_ucode(lib_pdf_cmap_t* cmap, int size, int ucode) {
  * Find and return CMap index of first not predefined element
  */
 static int _cmap_find_gap(lib_pdf_cmap_t* cmap, int size, int cur) {
-    lib_pdf_cmap_t* e = cmap;
+    lib_pdf_cmap_t* p = cmap;
     int start = cur + 1;
+    p += start;
     for (int i = start; i < size; i++) {
-        if (!(*e).is_predef) {
+        if (!(p->is_predef)) {
             return i;
         }
-        e++;
+        p++;
     }
     return -1;
+}
+
+static void _cmap_dump(lib_pdf_cmap_t* cmap, int size) {
+    lib_pdf_cmap_t* e = cmap;
+    for (int i = 0; i < size; i++) {
+        fprintf(stderr, "idx: %d, icode: %d, ucode: %d, width: %d, [%s]\n", e->idx, e->icode, e->ucode, e->width, (e->is_predef ? "+" : " "));
+        e++;
+    }
 }
 
 static int lib_pdf_body(run_pdf_context_t* ctx) {
@@ -405,11 +414,12 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     //for (size_t i = 0; i < ctx->size; i++) {
 
-    // Preprocessing
     //int icode = 0;
     //int ucode = 0;
 
     size_t i   = 0;
+    int icode  = 0; // ony byte code
+    int ucode  = 0; // code point      (unicode)
     int code   = 0; // code point      (unicode)
     int next   = 0; // next code point (unicode)
     int seq    = 0; // sequence of char
@@ -435,18 +445,28 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         }
     }
 
-    bool use_breakline = false;
-    int body_width = 30000;
+    bool debug = false;
+    if (debug) {
+        fprintf(stderr, "CMap dump-1\n");
+        _cmap_dump(cmap, cmap_size);
+    }
+
+    bool use_breakline = true;
+    int body_width = 38000;
     int line_width = 0;
 
+    // Preprocessing
     while (i < ctx->size) {
 
         if (use_unicode) {
-            seq = lib_enc_to_code(&unimap, encoding_id, data, &code);
-            //code = ucode;
+            seq = lib_enc_to_code(&unimap, encoding_id, data, &ucode);
+            icode = _u8(*data); // TODO: For one byte only 
+            code = ucode;
         } else {
             seq = 1;
-            code = _u8(*data);
+            icode = _u8(*data);
+            ucode = icode;
+            code  = icode;
         }
 
         break_line = false;
@@ -485,6 +505,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 //}
                 // >>
 
+
                 p = _cmap_find_by_ucode(cmap, cmap_size, code);
                 cmap_found = p != NULL;
                 bool success = false;
@@ -493,11 +514,16 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     success = true;
                     //len += 2; // <xx>
                 }
-                
+
+                if (debug) {
+                    fprintf(stderr, ">> _cmap_find_by_ucode: ucode=%d [%s]\n", code, (cmap_found ? "+" : " "));
+                }
+
                 if (!success) {
 
                     if (code == NO_CHR) {
                         // Not found char in UniMap
+                        fprintf(stderr, ">> Not found code in UniMap [NO_CHR]: %d\n", icode);
                     } else {
 
                         //bool success = false;
@@ -506,6 +532,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                         if (use_predef) {
                             cmap_idx = _cmap_find_gap(cmap, cmap_size, cmap_gap);
+
+                            if (debug) {
+                                fprintf(stderr, ">> _cmap_find_gap: cmap_size=%d, cmap_gap=%d, cmap_idx=%d\n", cmap_size, cmap_gap, cmap_idx);
+                            }
+
                             if (cmap_idx < 0) {
                                 fprintf(stderr, ">> Not found gap in CMap: %d, %d\n", cmap_size, cmap_gap);
                             } else {
@@ -547,26 +578,31 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 }
 
                 if (success) {
-                            len += 2; // <xx>
-                            //e.icode = icode;
-                            e.ucode = code;
-                            e.width = 700;     // TODO: Use font info to get width of char
-                            //e.idx   = cmap_size;
-                            e.idx   = cmap_idx;
-                            e.is_predef = false;
-                            cmap[carr_idx] = e;
+                    len += 2; // <xx>
 
-                            //>>
-                            if (use_breakline) {
-                                if (line_width + e.width >= body_width) {
-                                    //line_width = e.width;
-                                    line_width = 0;
-                                    break_line = true;
-                                } else {
-                                    line_width += e.width;
-                                }
-                            }
-                            //>>
+                    //>>
+                    if (!cmap_found) {
+                        //e.icode = icode;
+                        e.ucode = code;
+                        e.width = 700;     // TODO: Use font info to get width of char
+                        //e.idx   = cmap_size;
+                        e.idx   = cmap_idx;
+                        e.is_predef = false;
+                        cmap[carr_idx] = e;
+                    }
+                    //>>
+
+                    //>>
+                    if (use_breakline) {
+                        if (line_width + e.width >= body_width) {
+                            //line_width = e.width;
+                            line_width = 0;
+                            break_line = true;
+                        } else {
+                            line_width += e.width;
+                        }
+                    }
+                    //>>
 
                 }
 
@@ -605,6 +641,12 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
         data += seq;
         i += seq;
+    }
+
+    if (debug) {
+        fprintf(stderr, "\n");
+        fprintf(stderr, "CMap dump-2\n");
+        _cmap_dump(cmap, cmap_size);
     }
 
     //fprintf(stderr, ">> page_count: %d\n", page);
@@ -710,11 +752,14 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     while (i < ctx->size) {
 
         if (use_unicode) {
-            seq = lib_enc_to_code(&unimap, encoding_id, data, &code);
-            //code = ucode;
+            seq = lib_enc_to_code(&unimap, encoding_id, data, &ucode);
+            icode = _u8(*data);
+            code = ucode;
         } else {
             seq = 1;
-            code = _u8(*data);
+            icode = _u8(*data);
+            ucode = icode;
+            code  = icode;
         }
 
         break_line = false;
@@ -752,7 +797,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                 if (!cmap_found) {
                     // TODO: ERROR
-                    fprintf(stderr, "Char %d not found in CMap\n", code);
+                    fprintf(stderr, "Char %d not found in CMap: %d, %d\n", icode, ucode, code);
                 } else {
                     int idx = p->idx;
                     len += 2; // <xx>
