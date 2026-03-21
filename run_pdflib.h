@@ -454,8 +454,12 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     bool use_breakline = true;
     int body_width = use_unicode ? 38000 : 50000; // TODO: STUB
-    int line_width = 0;
 
+    uint32_t line_buf[65536];
+    int line_width = 0;
+    int line_idx   = -1;
+    int line_len   = 0;
+    
     // Preprocessing
     while (i < ctx->size) {
 
@@ -569,6 +573,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                     //>>
                     if (use_breakline) {
+
+                        line_idx++;
+                        line_len++;
+                        line_buf[line_idx] = ucode;
+
                         if (line_width + e.width >= body_width) {
                             //line_width = e.width;
                             line_width = 0;
@@ -576,6 +585,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                         } else {
                             line_width += e.width;
                         }
+
+                        
                     }
                     //>>
 
@@ -586,6 +597,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                 //>>
                 if (use_breakline) {
+
+                    line_idx++;
+                    line_len++;
+                    line_buf[line_idx] = ucode;
+
                     if (line_width + 700 >= body_width) {
                         //line_width = e.width;
                         line_width = 0;
@@ -605,7 +621,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         new_line = break_line;
         new_page = false;
         if (break_line) {
+
             line_width = 0;
+            line_idx   = -1;
+            line_len   = 0;
+
             len += BUF_LN_LEN;
             if (line > line_page) {
                 //if (page + 1 > max_page) {
@@ -731,8 +751,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     ucode      = 0; // uni code (code point)
     seq        = 0; // sequence of char
     data       = ctx->data;
-    line_width = 0;
 
+    line_width = 0;
+    line_idx   = -1;
+    line_len   = 0;
+    
     // Output
     while (i < ctx->size) {
 
@@ -797,6 +820,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                     //>>
                     if (use_breakline) {
+
+                        line_idx++;
+                        line_len++;
+                        line_buf[line_idx] = ucode;
+
                         if (line_width + p->width >= body_width) {
                             //line_width = p->width;
                             line_width = 0;
@@ -815,6 +843,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                 //>>
                 if (use_breakline) {
+
+                    line_idx++;
+                    line_len++;
+                    line_buf[line_idx] = ucode;
+
                     if (line_width + 700 >= body_width) {
                         //line_width = e.width;
                         line_width = 0;
@@ -842,7 +875,11 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         new_line = break_line;
         new_page = false;
         if (break_line) {
+
             line_width = 0;
+            line_idx   = -1;
+            line_len   = 0;
+
             //fprintf(stderr, "[BR]: %d\n", i);
             if (line > line_page) {
                 //if (page + 1 > max_page) {
