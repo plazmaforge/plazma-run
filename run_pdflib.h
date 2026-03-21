@@ -453,7 +453,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     }
 
     bool use_breakline = true;
-    int body_width = 38000;
+    int body_width = use_unicode ? 38000 : 50000; // TODO: STUB
     int line_width = 0;
 
     // Preprocessing
@@ -470,6 +470,16 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         break_line = false;
 
         switch (ucode) {
+        case '(':
+            if (!use_unicode) {
+                len++;
+            }
+            break;
+        case ')':
+            if (!use_unicode) {
+                len++;
+            }
+            break;
         case '\n':
             break_line = true;
             break;
@@ -573,6 +583,19 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
             } else {
                 len++;
+
+                //>>
+                if (use_breakline) {
+                    if (line_width + 700 >= body_width) {
+                        //line_width = e.width;
+                        line_width = 0;
+                        break_line = true;
+                    } else {
+                        line_width += 700;
+                    }
+                }
+                //>>
+                
             }
             //>>
 
@@ -724,6 +747,16 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         break_line = false;
 
         switch (ucode) {
+        case '(':
+            if (!use_unicode) {
+                len++;
+            }
+            break;
+        case ')':
+            if (!use_unicode) {
+                len++;
+            }
+            break;
         case '\n':
             //fprintf(stderr, "[N]: %d\n", i);
             break_line = true;
@@ -774,11 +807,32 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     }
                     //>>
 
+
                     fprintf(ctx->out, "%02X", idx);
                 }
             } else {
                 len++;
-                fprintf(ctx->out, "%c", (char) ucode);
+
+                //>>
+                if (use_breakline) {
+                    if (line_width + 700 >= body_width) {
+                        //line_width = e.width;
+                        line_width = 0;
+                        break_line = true;
+                    } else {
+                        line_width += 700;
+                    }
+                }
+                //>>
+
+                if (ucode == '(') {
+                    fprintf(ctx->out, "\\(");
+                } else if (ucode == ')') {
+                    fprintf(ctx->out, "\\)");
+                } else {
+                    fprintf(ctx->out, "%c", (char) ucode);
+                }
+                
             }
             //>>
             
