@@ -452,13 +452,14 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         _cmap_dump(cmap, cmap_size);
     }
 
-    bool use_breakline = true;
+    bool use_break_line = true;
     int body_width = use_unicode ? 38000 : 50000; // TODO: STUB
 
     uint32_t line_buf[65536];
-    int line_width = 0;
-    int line_idx   = -1;
-    int line_len   = 0;
+    int line_width  = 0;
+    int line_idx    = -1;
+    int line_len    = 0;
+    bool line_flush = false;
     
     // Preprocessing
     while (i < ctx->size) {
@@ -474,16 +475,16 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         break_line = false;
 
         switch (ucode) {
-        case '(':
-            if (!use_unicode) {
-                len++;
-            }
-            break;
-        case ')':
-            if (!use_unicode) {
-                len++;
-            }
-            break;
+        // case '(':
+        //     if (!use_unicode) {
+        //         len++;
+        //     }
+        //     break;
+        // case ')':
+        //     if (!use_unicode) {
+        //         len++;
+        //     }
+        //     break;
         case '\n':
             break_line = true;
             break;
@@ -499,6 +500,12 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             break_line = true;
             break;
         default:
+
+            if (ucode == '(' || ucode == ')') {
+                if (!use_unicode) {
+                    len++;
+                }
+            }
 
             //>>
             if (use_unicode) {
@@ -557,7 +564,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 }
 
                 if (success) {
-                    len += 2; // <xx>
 
                     //>>
                     if (!cmap_found) {
@@ -572,43 +578,60 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     //>>
 
                     //>>
-                    if (use_breakline) {
+                    if (use_break_line) {
 
                         line_idx++;
                         line_len++;
                         line_buf[line_idx] = ucode;
 
+                        // Break Line Algo
                         if (line_width + e.width >= body_width) {
                             //line_width = e.width;
                             line_width = 0;
+                            line_flush = true;
                             break_line = true;
                         } else {
                             line_width += e.width;
                         }
 
+                       len += 2; // <xx>
+                        if (line_flush) {
+                            // TODO: FLUSH
+                        }
                         
+                    } else {
+                        len += 2; // <xx>
                     }
                     //>>
 
                 }
 
             } else {
-                len++;
 
                 //>>
-                if (use_breakline) {
+                if (use_break_line) {
 
                     line_idx++;
                     line_len++;
                     line_buf[line_idx] = ucode;
 
+                    // Break Line Algo
                     if (line_width + 700 >= body_width) {
                         //line_width = e.width;
                         line_width = 0;
+                        line_flush = true;
                         break_line = true;
                     } else {
                         line_width += 700;
                     }
+
+                    len++;
+                    if (line_flush) {
+                        // TODO: FLUSH
+                    }
+
+                } else {
+                    len++;
                 }
                 //>>
                 
@@ -770,16 +793,16 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         break_line = false;
 
         switch (ucode) {
-        case '(':
-            if (!use_unicode) {
-                len++;
-            }
-            break;
-        case ')':
-            if (!use_unicode) {
-                len++;
-            }
-            break;
+        // case '(':
+        //     if (!use_unicode) {
+        //         len++;
+        //     }
+        //     break;
+        // case ')':
+        //     if (!use_unicode) {
+        //         len++;
+        //     }
+        //     break;
         case '\n':
             //fprintf(stderr, "[N]: %d\n", i);
             break_line = true;
@@ -797,6 +820,12 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             break;
         default:
 
+            if (ucode == '(' || ucode == ')') {
+                if (!use_unicode) {
+                    len++;
+                }
+            }
+
             //>>
             if (use_unicode) {
                 lib_pdf_cmap_t* p;
@@ -809,7 +838,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     fprintf(stderr, "Char not found in CMap: icode=%d, ucode=%d\n", icode, ucode);
                 } else {
                     int idx = p->idx;
-                    len += 2; // <xx>
 
                     // >> REMOVE IT
                     //int icode = _u8(*data);
@@ -819,19 +847,29 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     // >>
 
                     //>>
-                    if (use_breakline) {
+                    if (use_break_line) {
 
                         line_idx++;
                         line_len++;
                         line_buf[line_idx] = ucode;
+                        line_flush = false;
 
+                        // Break Line Algo
                         if (line_width + p->width >= body_width) {
                             //line_width = p->width;
                             line_width = 0;
+                            line_flush = true;
                             break_line = true;
                         } else {
                             line_width += p->width;
                         }
+
+                        len += 2; // <xx>
+                        if (line_flush) {
+                            // TODO: FLUSH
+                        }
+                    } else {
+                        len += 2; // <xx>
                     }
                     //>>
 
@@ -839,29 +877,40 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     fprintf(ctx->out, "%02X", idx);
                 }
             } else {
-                len++;
 
                 //>>
-                if (use_breakline) {
+                if (use_break_line) {
 
                     line_idx++;
                     line_len++;
                     line_buf[line_idx] = ucode;
 
+                    // Break Line Algo
                     if (line_width + 700 >= body_width) {
                         //line_width = e.width;
                         line_width = 0;
+                        line_flush = true;
                         break_line = true;
                     } else {
                         line_width += 700;
                     }
+
+                    len++;
+                    if (line_flush) {
+                        // TODO: FLUSH
+                    }
+
+                } else {
+                    len++;
                 }
                 //>>
 
                 if (ucode == '(') {
                     fprintf(ctx->out, "\\(");
+                    //fprintf(ctx->out, "[");
                 } else if (ucode == ')') {
                     fprintf(ctx->out, "\\)");
+                    //fprintf(ctx->out, "]");
                 } else {
                     fprintf(ctx->out, "%c", (char) ucode);
                 }
