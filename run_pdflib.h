@@ -868,13 +868,13 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                         if (line_flush) {
                             // TODO: FLUSH
                         }
+                        fprintf(ctx->out, "%02X", idx);
                     } else {
                         len += 2; // <xx>
+                        fprintf(ctx->out, "%02X", idx);
                     }
                     //>>
 
-
-                    fprintf(ctx->out, "%02X", idx);
                 }
             } else {
 
@@ -884,6 +884,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     line_idx++;
                     line_len++;
                     line_buf[line_idx] = ucode;
+                    line_flush = false;
 
                     // Break Line Algo
                     if (line_width + 700 >= body_width) {
@@ -899,22 +900,25 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     if (line_flush) {
                         // TODO: FLUSH
                     }
-
+                    if (ucode == '(') {
+                        fprintf(ctx->out, "\\(");
+                    } else if (ucode == ')') {
+                        fprintf(ctx->out, "\\)");
+                    } else {
+                        fprintf(ctx->out, "%c", (char) ucode);
+                    }
                 } else {
                     len++;
+                    if (ucode == '(') {
+                        fprintf(ctx->out, "\\(");
+                    } else if (ucode == ')') {
+                        fprintf(ctx->out, "\\)");
+                    } else {
+                        fprintf(ctx->out, "%c", (char) ucode);
+                    }
                 }
                 //>>
-
-                if (ucode == '(') {
-                    fprintf(ctx->out, "\\(");
-                    //fprintf(ctx->out, "[");
-                } else if (ucode == ')') {
-                    fprintf(ctx->out, "\\)");
-                    //fprintf(ctx->out, "]");
-                } else {
-                    fprintf(ctx->out, "%c", (char) ucode);
-                }
-                
+               
             }
             //>>
             
