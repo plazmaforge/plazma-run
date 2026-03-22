@@ -475,16 +475,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         break_line = false;
 
         switch (ucode) {
-        // case '(':
-        //     if (!use_unicode) {
-        //         len++;
-        //     }
-        //     break;
-        // case ')':
-        //     if (!use_unicode) {
-        //         len++;
-        //     }
-        //     break;
         case '\n':
             break_line = true;
             break;
@@ -582,7 +572,9 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                         line_idx++;
                         line_len++;
-                        line_buf[line_idx] = ucode;
+                        //line_buf[line_idx] = ucode;
+                        //line_buf[line_idx] = idx;
+                        line_flush = false;
 
                         // Break Line Algo
                         if (line_width + e.width >= body_width) {
@@ -594,9 +586,16 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                             line_width += e.width;
                         }
 
-                       len += 2; // <xx>
+                       //len += 2; // <xx>
                         if (line_flush) {
                             // TODO: FLUSH
+                            for (int k = 0; k < line_len; k++) {
+                                len += 2; // <xx>
+                                //fprintf(ctx->out, "%02X", idx);
+                            }
+                            line_idx = -1;
+                            line_len = 0;
+                            line_flush = false;
                         }
                         
                     } else {
@@ -614,6 +613,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                     line_idx++;
                     line_len++;
                     line_buf[line_idx] = ucode;
+                    line_flush = false;
 
                     // Break Line Algo
                     if (line_width + 700 >= body_width) {
@@ -625,9 +625,19 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                         line_width += 700;
                     }
 
-                    len++;
+                    //len++;
                     if (line_flush) {
                         // TODO: FLUSH
+                        if (line_flush) {
+                            // TODO: FLUSH
+                            for (int k = 0; k < line_len; k++) {
+                                len++;
+                                //fprintf(ctx->out, "%02X", idx);
+                            }
+                            line_idx = -1;
+                            line_len = 0;
+                            line_flush = false;
+                        }
                     }
 
                 } else {
@@ -673,6 +683,34 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         data += seq;
         i += seq;
     }
+
+        //>>
+                if (use_unicode) {
+                for (int k = 0; k < line_len; k++) {
+                                len += 2; // <xx>
+                                // int idx = line_buf[k];
+                                // fprintf(ctx->out, "%02X", idx);
+                }
+
+            } else {
+                        // TODO: FLUSH
+                for (int k = 0; k < line_len; k++) {
+                            len++;
+                            // ucode = line_buf[k];
+                            // if (ucode == '(') {
+                            //     fprintf(ctx->out, "\\(");
+                            // } else if (ucode == ')') {
+                            //     fprintf(ctx->out, "\\)");
+                            // } else {
+                            //     fprintf(ctx->out, "%c", (char) ucode);
+                            // }
+                }
+            }
+
+            line_width = 0;
+            line_idx   = -1;
+            line_len   = 0;
+    //>>
 
     if (debug) {
         fprintf(stderr, "\n");
@@ -793,16 +831,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         break_line = false;
 
         switch (ucode) {
-        // case '(':
-        //     if (!use_unicode) {
-        //         len++;
-        //     }
-        //     break;
-        // case ')':
-        //     if (!use_unicode) {
-        //         len++;
-        //     }
-        //     break;
         case '\n':
             //fprintf(stderr, "[N]: %d\n", i);
             break_line = true;
@@ -851,7 +879,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                         line_idx++;
                         line_len++;
-                        line_buf[line_idx] = ucode;
+                        //line_buf[line_idx] = ucode;
+                        line_buf[line_idx] = idx;
                         line_flush = false;
 
                         // Break Line Algo
@@ -864,11 +893,19 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                             line_width += p->width;
                         }
 
-                        len += 2; // <xx>
                         if (line_flush) {
                             // TODO: FLUSH
+                            for (int k = 0; k < line_len; k++) {
+                                len += 2; // <xx>
+                                idx = line_buf[k];
+                                fprintf(ctx->out, "%02X", idx);
+                            }
+                            line_idx = -1;
+                            line_len = 0;
+                            line_flush = false;
                         }
-                        fprintf(ctx->out, "%02X", idx);
+                        //len += 2; // <xx>
+                        //fprintf(ctx->out, "%02X", idx);
                     } else {
                         len += 2; // <xx>
                         fprintf(ctx->out, "%02X", idx);
@@ -896,17 +933,33 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                         line_width += 700;
                     }
 
-                    len++;
                     if (line_flush) {
                         // TODO: FLUSH
+                        for (int k = 0; k < line_len; k++) {
+                            len++;
+                            ucode = line_buf[k];
+                            if (ucode == '(') {
+                                fprintf(ctx->out, "\\(");
+                            } else if (ucode == ')') {
+                                fprintf(ctx->out, "\\)");
+                            } else {
+                                fprintf(ctx->out, "%c", (char) ucode);
+                            }
+                        }
+                        line_idx = -1;
+                        line_len = 0;
+                        line_flush = false;
                     }
-                    if (ucode == '(') {
-                        fprintf(ctx->out, "\\(");
-                    } else if (ucode == ')') {
-                        fprintf(ctx->out, "\\)");
-                    } else {
-                        fprintf(ctx->out, "%c", (char) ucode);
-                    }
+
+                    // len++;
+                    // if (ucode == '(') {
+                    //     fprintf(ctx->out, "\\(");
+                    // } else if (ucode == ')') {
+                    //     fprintf(ctx->out, "\\)");
+                    // } else {
+                    //     fprintf(ctx->out, "%c", (char) ucode);
+                    // }
+
                 } else {
                     len++;
                     if (ucode == '(') {
@@ -928,6 +981,28 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         new_line = break_line;
         new_page = false;
         if (break_line) {
+
+            if (use_unicode) {
+                for (int k = 0; k < line_len; k++) {
+                                len += 2; // <xx>
+                                int idx = line_buf[k];
+                                fprintf(ctx->out, "%02X", idx);
+                }
+
+            } else {
+                        // TODO: FLUSH
+                for (int k = 0; k < line_len; k++) {
+                            len++;
+                            ucode = line_buf[k];
+                            if (ucode == '(') {
+                                fprintf(ctx->out, "\\(");
+                            } else if (ucode == ')') {
+                                fprintf(ctx->out, "\\)");
+                            } else {
+                                fprintf(ctx->out, "%c", (char) ucode);
+                            }
+                }
+            }
 
             line_width = 0;
             line_idx   = -1;
@@ -979,6 +1054,35 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         i += seq;
 
     }
+
+    //>>
+                if (use_unicode) {
+                for (int k = 0; k < line_len; k++) {
+                                len += 2; // <xx>
+                                int idx = line_buf[k];
+                                fprintf(ctx->out, "%02X", idx);
+                }
+
+            } else {
+                        // TODO: FLUSH
+                for (int k = 0; k < line_len; k++) {
+                            len++;
+                            ucode = line_buf[k];
+                            if (ucode == '(') {
+                                fprintf(ctx->out, "\\(");
+                            } else if (ucode == ')') {
+                                fprintf(ctx->out, "\\)");
+                            } else {
+                                fprintf(ctx->out, "%c", (char) ucode);
+                            }
+                }
+            }
+
+            line_width = 0;
+            line_idx   = -1;
+            line_len   = 0;
+    //>>
+
 
     // >>> Stream: end
     len += fprintf(ctx->out, use_unicode ? "> Tj\n" : ") Tj\n");
