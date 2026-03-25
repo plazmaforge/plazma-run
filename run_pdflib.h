@@ -287,6 +287,23 @@ static void _cmap_dump(lib_pdf_cmap_t* cmap, int size) {
     }
 }
 
+static bool _is_br_sep(uint32_t ucode) {
+    return ucode == ' ';
+}
+
+static bool _is_nonbr_sep(uint32_t ucode) {
+    return ucode == ',' || ucode == ';';
+}
+
+static int _find_br_sep(uint32_t* buf, int len) {
+    for (int k = len - 1; k--; k <= 0) {
+        if (_is_br_sep(buf[k])) {
+            return k;
+        }
+    }
+    return -1;
+}
+
 static int lib_pdf_body(run_pdf_context_t* ctx) {
 
     const char* pdf_version  = "1.5";
@@ -459,6 +476,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     int line_width  = 0;
     int line_idx    = -1;
     int line_len    = 0;
+    int line_pos2   = -1;
+    int line_len2   = 0;
     bool line_flush = false;
     
     // Preprocessing
@@ -578,6 +597,28 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                         // Break Line Algo
                         if (line_width + e.width >= body_width) {
+
+                        //>>
+                        line_pos2 = _find_br_sep(line_buf, line_len);
+                        line_len2 = 0;
+                        if (line_pos2 >= 0) {
+                            int shift = line_pos2 == 0 ? 1 : line_pos2;
+                            line_len2 = line_len - shift;
+                            line_len = shift; 
+                        }
+
+                        // if (line_buf[line_len - 1] != ' ') {
+                        //     for (int k = line_len - 1; k--; k <= 0) {
+                        //         if (line_buf[k] == ' ') {
+                        //             line_pos2 = k;
+                        //             line_len2 = line_len - line_pos2;
+                        //             line_len  = line_pos2 + 1;
+                        //             break;
+                        //         }
+                        //     }
+                        // }
+                        //>>
+
                             //line_width = e.width;
                             line_width = 0;
                             line_flush = true;
@@ -591,7 +632,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                             // TODO: FLUSH
                             for (int k = 0; k < line_len; k++) {
                                 len += 2; // <xx>
-                                //fprintf(ctx->out, "%02X", idx);
                             }
                             line_idx = -1;
                             line_len = 0;
@@ -617,6 +657,31 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                     // Break Line Algo
                     if (line_width + 700 >= body_width) {
+
+
+                        //>>
+
+                        line_pos2 = _find_br_sep(line_buf, line_len);
+                        line_len2 = 0;
+                        if (line_pos2 >= 0) {
+                            int shift = line_pos2 == 0 ? 1 : line_pos2;
+                            line_len2 = line_len - shift;
+                            line_len = shift; 
+                        }
+
+                        // line_pos2 = -1;
+                        // if (line_buf[line_len - 1] != ' ') {
+                        //     for (int k = line_len - 1; k--; k <= 0) {
+                        //         if (line_buf[k] == ' ') {
+                        //             line_pos2 = k;
+                        //             line_len2 = line_len - line_pos2;
+                        //             line_len  = line_pos2 + 1;
+                        //             break;
+                        //         }
+                        //     }
+                        // }
+                        //>>
+
                         //line_width = e.width;
                         line_width = 0;
                         line_flush = true;
@@ -655,6 +720,32 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         new_page = false;
         if (break_line) {
 
+            // FLUSH-1
+            if (use_unicode) {
+                for (int k = 0; k < line_len; k++) {
+                                len += 2; // <xx>
+                                // int idx = line_buf[k];
+                                // fprintf(ctx->out, "%02X", idx);
+                }
+
+            } else {
+                for (int k = 0; k < line_len; k++) {
+                            len++;
+                            // ucode = line_buf[k];
+                            // if (ucode == '(') {
+                            //     fprintf(ctx->out, "\\(");
+                            // } else if (ucode == ')') {
+                            //     fprintf(ctx->out, "\\)");
+                            // } else {
+                            //     fprintf(ctx->out, "%c", (char) ucode);
+                            // }
+                }
+            }
+
+            // line_width = 0;
+            // line_idx   = -1;
+            // line_len   = 0;
+
             line_width = 0;
             line_idx   = -1;
             line_len   = 0;
@@ -678,6 +769,18 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
             } else {
                 line++;
             }
+
+            // FLUSH-2
+            if (line_len2 > 0) {
+                int shift = line_pos2 == 0 ? 1 : line_pos2; 
+                for (int k = line_len2; k < line_len2; k++) {
+                    line_buf[k] = line_buf[k + shift];
+                }
+                line_len  = line_len2;
+                line_pos2 = -1;
+                line_len2 = 0;
+            }
+
         }
 
         data += seq;
@@ -685,6 +788,8 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     }
 
         //>>
+        // FLUSH-1
+
                 if (use_unicode) {
                 for (int k = 0; k < line_len; k++) {
                                 len += 2; // <xx>
@@ -693,7 +798,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 }
 
             } else {
-                        // TODO: FLUSH
                 for (int k = 0; k < line_len; k++) {
                             len++;
                             // ucode = line_buf[k];
@@ -883,8 +987,34 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                         line_buf[line_idx] = idx;
                         line_flush = false;
 
+                        //bool over_width = line_width + p->width >= body_width;
+
                         // Break Line Algo
                         if (line_width + p->width >= body_width) {
+
+                        //>>
+                        line_pos2 = _find_br_sep(line_buf, line_len);
+                        line_len2 = 0;
+                        if (line_pos2 >= 0) {
+                            int shift = line_pos2 == 0 ? 1 : line_pos2;
+                            line_len2 = line_len - shift;
+                            line_len = shift; 
+                        }
+
+                        // line_pos2 = -1;
+                        // if (line_buf[line_len - 1] != ' ') {
+                        //     for (int k = line_len - 1; k--; k <= 0) {
+                        //         if (line_buf[k] == ' ') {
+                        //             line_pos2 = k;
+                        //             line_len2 = line_len - line_pos2;
+                        //             line_len  = line_pos2 + 1;
+                        //             break;
+                        //         }
+                        //     }
+                        // }
+
+                        //>>
+
                             //line_width = p->width;
                             line_width = 0;
                             line_flush = true;
@@ -925,6 +1055,29 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
                     // Break Line Algo
                     if (line_width + 700 >= body_width) {
+
+                        //>>
+                        line_pos2 = _find_br_sep(line_buf, line_len);
+                        line_len2 = 0;
+                        if (line_pos2 >= 0) {
+                            int shift = line_pos2 == 0 ? 1 : line_pos2;
+                            line_len2 = line_len - shift;
+                            line_len = shift; 
+                        }
+
+                        // line_pos2 = -1;
+                        // if (line_buf[line_len - 1] != ' ') {
+                        //     for (int k = line_len - 1; k--; k <= 0) {
+                        //         if (line_buf[k] == ' ') {
+                        //             line_pos2 = k;
+                        //             line_len2 = line_len - line_pos2;
+                        //             line_len  = line_pos2 + 1;
+                        //             break;
+                        //         }
+                        //     }
+                        // }
+                        //>>
+
                         //line_width = e.width;
                         line_width = 0;
                         line_flush = true;
@@ -982,6 +1135,7 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
         new_page = false;
         if (break_line) {
 
+            // FLUSH-1
             if (use_unicode) {
                 for (int k = 0; k < line_len; k++) {
                                 len += 2; // <xx>
@@ -990,7 +1144,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 }
 
             } else {
-                        // TODO: FLUSH
                 for (int k = 0; k < line_len; k++) {
                             len++;
                             ucode = line_buf[k];
@@ -1048,6 +1201,45 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
 
             //len += fprintf(ctx->out, "0 -18 Td\n(");
             //len += fprintf(ctx->out, "(");
+
+
+            //>>
+            // FLUSH-2
+            if (line_len2 > 0) {
+                int shift = line_pos2 == 0 ? 1 : line_pos2; 
+                for (int k = line_len2; k < line_len2; k++) {
+                    line_buf[k] = line_buf[k + shift];
+                }
+                line_len  = line_len2;
+                line_pos2 = -1;
+                line_len2 = 0;
+
+
+            // if (use_unicode) {
+            //     for (int k = line_pos2; k < line_len2; k++) {
+            //                     len += 2; // <xx>
+            //                     int idx = line_buf[k];
+            //                     fprintf(ctx->out, "%02X", idx);
+            //     }
+
+            // } else {
+            //             // TODO: FLUSH
+            //     for (int k = line_pos2; k < line_len2; k++) {
+            //                 len++;
+            //                 ucode = line_buf[k];
+            //                 if (ucode == '(') {
+            //                     fprintf(ctx->out, "\\(");
+            //                 } else if (ucode == ')') {
+            //                     fprintf(ctx->out, "\\)");
+            //                 } else {
+            //                     fprintf(ctx->out, "%c", (char) ucode);
+            //                 }
+            //     }
+            // }
+
+            }
+            //>>
+
         }
 
         data += seq;
@@ -1056,7 +1248,9 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
     }
 
     //>>
-                if (use_unicode) {
+    // FLUSH-1
+
+            if (use_unicode) {
                 for (int k = 0; k < line_len; k++) {
                                 len += 2; // <xx>
                                 int idx = line_buf[k];
@@ -1064,7 +1258,6 @@ static int lib_pdf_body(run_pdf_context_t* ctx) {
                 }
 
             } else {
-                        // TODO: FLUSH
                 for (int k = 0; k < line_len; k++) {
                             len++;
                             ucode = line_buf[k];
