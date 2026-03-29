@@ -117,7 +117,7 @@ static int lib_pdf_margin(run_pdf_context_t* ctx);
 
 static int lib_pdf_font(run_pdf_context_t* ctx);
 
-int lib_pdf_body2(run_pdf_context_t* ctx);
+int lib_pdf_body(run_pdf_context_t* ctx);
 
 
 static const char* lib_pdf_unitdef(const char* value) {
@@ -167,218 +167,14 @@ static int lib_pdf_ctx_init(run_pdf_config_t* cnf, run_pdf_context_t* ctx) {
     return lib_pdf_prepare(ctx);
 }
 
-// static int lib_pdf_body3(run_pdf_context_t* ctx) {
-//    fprintf(stderr, ">> lib_pdf_body3\n");
-
-//     fprintf(stderr, ">> lib_pdf_body-888-0\n");
-
-//     bool debug = true;
-
-//     if (debug) {
-//         fprintf(stderr, ">> lib_pdf_body-888\n");
-//     }
-    
-//     const char* pdf_version  = "1.5";
-//     const char* pdf_encoding = "WinAnsiEncoding";
-//     const char* font_name    = "Helvetica";
-//     const char* font_subtype = "Type1";
-//     int font_size            = lib_to_pt(LIB_PDF_FONT_SIZE);
-
-//     int len            = 0;
-//     int offset         = 0;
-//     int xref_size      = 0;
-//     int xref_offset    = 0;
-//     int ref            = 0;
-//     int page           = 0;
-//     int line           = 0;
-//     int page_count     = 0;
-
-//     // A4       : 595 x 842 pt, 210.0 x 297.0 mm
-//     // US Latter: 612 x 792 pt, 215.9 x 279.4 mm
-//     int page_width     = 612;
-//     int page_height    = 792;
-
-//     int margin = lib_to_pt(LIB_PDF_MARGIN); // by default: 72 pt = 1 inch 
-//     int margin_left    = margin;
-//     int margin_right   = margin;
-//     int margin_top     = margin;
-//     int margin_bottom  = margin;
-//     int line_offset    = 18; // by default: font size = 12 pt, line offset = font size x 1.5
-
-//     const char* encoding = ctx->encoding;
-//     int encoding_id      = ctx->encoding_id;
-//     bool use_unicode     = ctx->use_unicode;
-
-//     lib_unimap_t unimap;
-//     if (use_unicode) {
-//         if (encoding_id <= 0) {
-//             fprintf(stderr, "%s: Encoding %s is not supported\n", prog_name, encoding);
-//             return 1;
-//         }
-//         lib_unimap_get_unimap_by_id(&unimap, encoding_id);
-//     }
-    
-//     // fprintf(stderr, ">>>unimap.id    : %d\n", unimap.id);
-//     // fprintf(stderr, ">>>unimap.start : %d\n", unimap.start);
-//     // fprintf(stderr, ">>>unimap.len   : %d\n", unimap.len);
-
-//     if (ctx->use_style) {
-//         if (ctx->use_margin) {
-//             margin = lib_to_pt(ctx->margin);
-//             margin_left    = margin;
-//             margin_right   = margin;
-//             margin_top     = margin;
-//             margin_bottom  = margin;
-//         }
-//         if (ctx->use_font) {
-//             lib_font_info_t font     = lib_get_font_info(ctx->font);
-
-//             // fprintf(stderr, "\n");
-//             // fprintf(stderr, ">>>font->name  : %s\n", font.name);
-//             // fprintf(stderr, ">>>font->bold  : %s\n", font.bold   ? "true" : "false");
-//             // fprintf(stderr, ">>>font->italic: %s\n", font.italic ? "true" : "false");
-
-//             if (font.name) {
-//                 font_name = font.name;
-//             }
-
-//             if (ctx->font->size > 0) {
-//                 font_size = lib_to_pt(ctx->font->size);
-//                 line_offset = font_size * 1.5;
-//             }
-//         }
-//     }
-
-//     int content_width  = page_width - margin_left - margin_right;
-//     int content_height = page_height - margin_top - margin_bottom;
-//     int line_page      = content_height / line_offset + 1;
-
-//     char* BUF_BT = "BT\n";                              // BEGIN
-//     char  BUF_HD[128];                                  // HEADER
-//     char* BUF_LF = use_unicode ? "<> Tj\n" : "() Tj\n"; // LINE FIRST
-//     char  BUF_LN[128];                                  // LINE NEXT
-//     char* BUF_ET = "ET\n";                              // END
-
-//     //const char* BUF_HD = "/F1 12 Tf 72 720 Td\n";  // HEADER
-//     //const char* BUF_LN = "0 -18 Td\n() Tj\n";      // LINE NEXT
-//     //const char* BUF_LN = "() Tj\n";                // LINE NEXT
-
-//     int BUF_LEN    = 0; // template len
-//     int BUF_LN_LEN = 0; // tempate line next len
-
-//     BUF_LEN += strlen(BUF_BT);
-//     BUF_LEN += sprintf(BUF_HD, "/F1 %d Tf %d %d Td\n", font_size, margin_left, page_height - margin_top);
-//     BUF_LEN += strlen(BUF_LF);
-//     BUF_LEN += strlen(BUF_ET);
-
-//     BUF_LN_LEN = sprintf(BUF_LN, use_unicode ? "0 -%d Td\n<> Tj\n" : "0 -%d Td\n() Tj\n", line_offset);
-
-//     int MAX_PAGE = 8192;
-//     int MAX_XREF = 8192;
-
-//     int pages[MAX_PAGE];
-//     int xrefs[MAX_XREF];
-
-//     // Streams
-//     int page_len;
-//     bool break_line;
-//     bool new_line;
-//     bool new_page;
-//     //char c;
-
-//     // Calculate
-//     page_len   = 0;
-//     page       = 1;
-//     line       = 1;
-
-//     break_line = false;
-//     new_line   = true;
-//     new_page   = true;
-//     len        = 0;
-
-//     //int max_page = 1;
-//     page_len = BUF_LEN; // template len
-
-//     lib_pdf_cmap_t cmap[65536];
-//     int cmap_size       = 0; // CMap size
-//     int cmap_idx        = 0; // CMap index
-//     int carr_idx        = 0; // CMap array index
-//     int cmap_gap        = -1;// CMap gap index
-//     int cmap_start      = 0; // CMap start index
-//     int cmap_digits     = 2; // CMap output digits in index: <XX> or <XXXX>
-//     bool cmap_found     = false; // CMap found flag
-
-//     size_t i            = 0;
-//     int icode           = 0; // inp code
-//     int ucode           = 0; // uni code (code point)
-//     int next            = 0; // next uni code (code point)
-//     int seq             = 0; // sequence of char
-//     char* data = ctx->data;
-
-//     bool use_predef = true;
-
-
-//     if (use_unicode) {
-//         if (use_predef) {
-//             // Initialize predefined map (ASCII)
-//             cmap_start  = 0;
-//             cmap_size   = _cmap_init(cmap);
-//         } else {
-//             lib_pdf_cmap_t e;
-//             cmap_start  = 1;
-//             cmap_size   = 1;
-//             e.icode     = 0;
-//             e.ucode     = 0;
-//             e.width     = 0;
-//             e.idx       = 0;
-//             e.is_predef = false;
-//             cmap[0] = e;
-//         }
-//     }
-
-//     if (debug) {
-//         fprintf(stderr, "CMap dump-1\n");
-//         _cmap_dump(cmap, cmap_size);
-//     }
-
-//     bool use_break_line = true;
-//     int body_width = use_unicode ? 38000 : 50000; // TODO: STUB
-
-//     lib_pdf_line_t line_buf_v;
-//     lib_pdf_char_t char_buf[100];
-//     line_buf_v.buf = char_buf;
-
-//     lib_pdf_line_t* line_buf = &line_buf_v;
-
-//     _line_init(line_buf);
-
-//     return 0;
-
-// }
-
 static int lib_pdf_document(run_pdf_context_t* ctx) {
-    
-    //fprintf(stderr, ">> lib_pdf_document: %s\n", (ctx ? "true" : "false"));
-
     // DOCUMENT
-
     // HEAD
     if (ctx->use_head) {
         lib_pdf_head(ctx);
     }
 
-    //fprintf(stderr, ">> lib_pdf_document-2.1\n");
-
-    // BODY
-    //int ret = 444; //lib_pdf_body(ctx);
-
-    //lib_pdf_body3(ctx);
-    //fprintf(stderr, ">> lib_pdf__document-2.-\n");
-
-    lib_pdf_body2(ctx);
-
-    //fprintf(stderr, ">> lib_pdf_document-2.2 %d\n", ret);
-
+    lib_pdf_body(ctx);
     return 0;
 }
 
@@ -608,20 +404,8 @@ static int _line_proc(lib_pdf_line_t* line) {
     //line->flush = true;
 }
 
-int lib_pdf_body2(run_pdf_context_t* ctx) {
-
-    //if (1 == 1) {
-    //    return 777;
-    //}
-
-    fprintf(stderr, ">> lib_pdf_body-777-0\n");
-
+int lib_pdf_body(run_pdf_context_t* ctx) {
     bool debug = true;
-
-    if (debug) {
-        fprintf(stderr, ">> lib_pdf_body-777\n");
-    }
-    
     const char* pdf_version  = "1.5";
     const char* pdf_encoding = "WinAnsiEncoding";
     const char* font_name    = "Helvetica";
@@ -914,7 +698,7 @@ int lib_pdf_body2(run_pdf_context_t* ctx) {
 
                         line_buf->buf[line_buf->len].ucode = ucode;
                         line_buf->buf[line_buf->len].idx   = cmap_idx;
-                        line_buf->buf[line_buf->len].idx   = e.width;
+                        line_buf->buf[line_buf->len].width = e.width;
                         line_buf->len++;
                         line_buf->width += e.width;
                         line_buf->flush = false;
@@ -945,8 +729,8 @@ int lib_pdf_body2(run_pdf_context_t* ctx) {
                 if (use_break_line) {
 
                     line_buf->buf[line_buf->len].ucode = ucode;
-                    line_buf->buf[line_buf->len].idx   = cmap_idx;
-                    line_buf->buf[line_buf->len].idx   = 700;
+                    line_buf->buf[line_buf->len].idx   = 0; //cmap_idx;
+                    line_buf->buf[line_buf->len].width = 700;
                     line_buf->len++;
                     line_buf->width += 700;
                     line_buf->flush = false;
@@ -1180,8 +964,8 @@ int lib_pdf_body2(run_pdf_context_t* ctx) {
                     if (use_break_line) {
 
                         line_buf->buf[line_buf->len].ucode = ucode;
-                        line_buf->buf[line_buf->len].idx   = cmap_idx;
-                        line_buf->buf[line_buf->len].idx   = p->width;
+                        line_buf->buf[line_buf->len].idx   = p->idx; //cmap_idx;
+                        line_buf->buf[line_buf->len].width = p->width;
                         line_buf->len++;
                         line_buf->width += p->width;
                         line_buf->flush = false;
@@ -1219,8 +1003,8 @@ int lib_pdf_body2(run_pdf_context_t* ctx) {
                 if (use_break_line) {
 
                         line_buf->buf[line_buf->len].ucode = ucode;
-                        line_buf->buf[line_buf->len].idx   = cmap_idx;
-                        line_buf->buf[line_buf->len].idx   = 700;
+                        line_buf->buf[line_buf->len].idx   = 0; //cmap_idx;
+                        line_buf->buf[line_buf->len].width = 700;
                         line_buf->len++;
                         line_buf->width += 700; //p->width;
                         line_buf->flush = false;
