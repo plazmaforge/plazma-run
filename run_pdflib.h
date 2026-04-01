@@ -571,14 +571,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     bool use_break_line = true;
     int body_width = use_unicode ? 38000 : 50000; // TODO: STUB
 
-    //uint32_t line_buf[65536];
-    //int line_width  = 0;
-    //int line_idx    = -1;
-    //int line_len    = 0;
-    //int line_pos2   = -1;
-    //int line_len2   = 0;
-    //bool line_flush = false;
-    
     lib_pdf_line_t line_buf_v;
     lib_pdf_char_t char_buf[100];
     line_buf_v.buf = char_buf;
@@ -628,13 +620,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                 cmap_found = false;
                 lib_pdf_cmap_t* p;
                 lib_pdf_cmap_t  e;
-
-                // >> REMOVE IT
-                //int icode = _u8(*data);
-                //if (icode != code) {
-                //    fprintf(stderr, ">> NOTEQ-1: icode=%d, code=%d\n", icode, code);
-                //}
-                // >>
 
                 p = _cmap_find_by_ucode(cmap, cmap_size, ucode);
                 cmap_found = p != NULL;
@@ -712,8 +697,11 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                         // FLUSH-1
                         if (line_buf->flush) {
-                            _line_flush_1(line_buf, use_unicode);
+                            len += _line_flush_1(line_buf, use_unicode);
                             line_buf->flush = false;
+
+                            // SHIFT-???
+                            _line_flush_2(line_buf);
                         }
                         
                     } else {
@@ -736,7 +724,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     line_buf->flush = false;
 
                     // Break Line Algo
-                    if (line_buf->width>= body_width) {
+                    if (line_buf->width >= body_width) {
                         _line_proc(line_buf);
                         line_buf->flush = true;
                         break_line = true;
@@ -744,8 +732,11 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                     // FLUSH-1
                     if (line_buf->flush) {
-                        _line_flush_1(line_buf, use_unicode);
+                        len += _line_flush_1(line_buf, use_unicode);
                         line_buf->flush = false;
+
+                        // SHIFT-???
+                        _line_flush_2(line_buf);
                     }
 
                 } else {
@@ -764,8 +755,11 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         if (break_line) {
 
             // FLUSH-1
-            _line_flush_1(line_buf, use_unicode);
+            len += _line_flush_1(line_buf, use_unicode);
             line_buf->flush = false;
+
+            // SHIFT-???
+            _line_flush_2(line_buf);
 
             len += BUF_LN_LEN;
             if (line > line_page) {
@@ -790,7 +784,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             // FLUSH-2
             if (line_buf->len2 > 0) {
                 _line_flush_2(line_buf);
-
             }
 
         }
@@ -801,8 +794,10 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     //>>
     // FLUSH-1
-    _line_flush_1(line_buf, use_unicode);
-     line_buf->flush = false;
+    len += _line_flush_1(line_buf, use_unicode);
+    line_buf->flush = false;
+    // SHIFT-???
+    _line_flush_2(line_buf);
     //>>
 
     if (debug) {
@@ -988,6 +983,9 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                             //line_idx = -1;
                             line_buf->len = 0;
                             line_buf->flush = false;
+
+                            // SHIFT-???
+                            _line_flush_2(line_buf);
                         }
 
                      } else {
@@ -1034,6 +1032,9 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         //line_idx = -1;
                         line_buf->len = 0;
                         line_buf->flush = false;
+
+                        // SHIFT-???
+                        _line_flush_2(line_buf);
                     }
 
                 } else {
@@ -1083,6 +1084,9 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             line_buf->width = 0;
             //line_idx   = -1;
             line_buf->len   = 0;
+
+            // SHIFT-???
+            _line_flush_2(line_buf);
 
             //fprintf(stderr, "[BR]: %d\n", i);
             if (line > line_page) {
@@ -1167,6 +1171,9 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             line_buf->width = 0;
             //line_idx   = -1;
             line_buf->len   = 0;
+
+            // SHIFT-???
+            _line_flush_2(line_buf);
     //>>
 
 
