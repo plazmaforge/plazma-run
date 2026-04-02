@@ -355,7 +355,6 @@ static int _line_flush_1(lib_pdf_line_t* line, bool use_unicode) {
         return 0;
     }
     int len = 0;
-    // FLUSH-1
     if (use_unicode) {
         for (int k = 0; k < line->len; k++) {
             len += 2; // <xx>
@@ -367,7 +366,6 @@ static int _line_flush_1(lib_pdf_line_t* line, bool use_unicode) {
     }
 
     line->width = 0;
-    //line->idx   = -1;
     line->len   = 0;
 }
 
@@ -377,7 +375,7 @@ static int _line_flush_2(lib_pdf_line_t* line) {
     }
 
     int shift = line->pos2 == 0 ? 1 : line->pos2; 
-    for (int k = line->len2; k < line->len2; k++) {
+    for (int k = 0; k < line->len2; k++) {
         line->buf[k] = line->buf[k + shift];
     }
     line->len  = line->len2;
@@ -390,7 +388,7 @@ static int _line_proc(lib_pdf_line_t* line) {
         return 1;
     }
 
-                        //>>
+    //>>
     line->pos2 = _line_find_br_sep(line->buf, line->len);
     line->len2 = 0;
     if (line->pos2 >= 0) {
