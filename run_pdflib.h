@@ -367,11 +367,15 @@ static int _line_flush_1(lib_pdf_line_t* line, bool use_unicode) {
 
     line->width = 0;
     line->len   = 0;
+    //line->flush = false;
 
     return len;
 }
 
-static int _line_flush(run_pdf_context_t* ctx, lib_pdf_line_t* line, bool use_out) {
+/**
+ * Flush line to output
+ */
+static int _line_flush(run_pdf_context_t* ctx, lib_pdf_line_t* line, bool out_mode) {
     if (!line) {
         return 0;
     }
@@ -379,7 +383,7 @@ static int _line_flush(run_pdf_context_t* ctx, lib_pdf_line_t* line, bool use_ou
     if (ctx->use_unicode) {
         for (int k = 0; k < line->len; k++) {
             len += 2; // <xx>
-            if (use_out) {
+            if (out_mode) {
                 int idx = line->buf[k].idx;
                 fprintf(ctx->out, "%02X", idx);
             }
@@ -387,7 +391,7 @@ static int _line_flush(run_pdf_context_t* ctx, lib_pdf_line_t* line, bool use_ou
     } else {
         for (int k = 0; k < line->len; k++) {
             len++;
-            if (use_out) {
+            if (out_mode) {
                 uint32_t ucode = line->buf[k].ucode;
                 if (ucode == '(') {
                     fprintf(ctx->out, "\\(");
@@ -399,13 +403,15 @@ static int _line_flush(run_pdf_context_t* ctx, lib_pdf_line_t* line, bool use_ou
             }
         }
     }
+    // TODO: RESET buf[k].width ?
     line->width = 0;
     line->len = 0;
 
     return len;
 }
 
-static int _line_flush_2(lib_pdf_line_t* line) {
+// SHIFT
+static int _line_shift(lib_pdf_line_t* line) {
     if (!line) {
         return 1;
     }
@@ -439,7 +445,7 @@ static int _line_proc(lib_pdf_line_t* line) {
 }
 
 int lib_pdf_body(run_pdf_context_t* ctx) {
-    bool debug = true;
+    bool debug = false;
     const char* pdf_version  = "1.5";
     const char* pdf_encoding = "WinAnsiEncoding";
     const char* font_name    = "Helvetica";
@@ -734,8 +740,8 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                             len += _line_flush_1(line_buf, use_unicode);
                             line_buf->flush = false;
 
-                            // SHIFT-???
-                            _line_flush_2(line_buf);
+                            // SHIFT
+                            _line_shift(line_buf);
                         }
                         
                     } else {
@@ -769,8 +775,8 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         len += _line_flush_1(line_buf, use_unicode);
                         line_buf->flush = false;
 
-                        // SHIFT-???
-                        _line_flush_2(line_buf);
+                        // SHIFT
+                        _line_shift(line_buf);
                     }
 
                 } else {
@@ -792,8 +798,8 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             len += _line_flush_1(line_buf, use_unicode);
             line_buf->flush = false;
 
-            // SHIFT-???
-            _line_flush_2(line_buf);
+            // SHIFT
+            _line_shift(line_buf);
 
             len += BUF_LN_LEN;
             if (line > line_page) {
@@ -817,7 +823,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
             // FLUSH-2
             if (line_buf->len2 > 0) {
-                _line_flush_2(line_buf);
+                _line_shift(line_buf);
             }
 
         }
@@ -830,8 +836,9 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     // FLUSH-1
     len += _line_flush_1(line_buf, use_unicode);
     line_buf->flush = false;
-    // SHIFT-???
-    _line_flush_2(line_buf);
+
+    // SHIFT
+    _line_shift(line_buf);
     //>>
 
     if (debug) {
@@ -1007,22 +1014,13 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                             break_line = true;
                         }
 
-                        // FLUSH-1
                         if (line_buf->flush) {
-
+                            // FLUSH
                             _line_flush(ctx, line_buf, true);
-
-                            //for (int k = 0; k < line_buf->len; k++) {
-                            //    len += 2; // <xx>
-                            //    int idx = line_buf->buf[k].idx;
-                            //    fprintf(ctx->out, "%02X", idx);
-                            //}
-                            //line_buf->len = 0;
-
                             line_buf->flush = false;
 
-                            // SHIFT-???
-                            _line_flush_2(line_buf);
+                            // SHIFT
+                            _line_shift(line_buf);
                         }
 
                      } else {
@@ -1053,27 +1051,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         break_line = true;
                     }
 
-                    // FLUSH-1
+                    
                     if (line_buf->flush) {
+                        // FLUSH
                         _line_flush(ctx, line_buf, true);
-
-                        // for (int k = 0; k < line_buf->len; k++) {
-                        //     len++;
-                        //     ucode = line_buf->buf[k].ucode;
-                        //     if (ucode == '(') {
-                        //         fprintf(ctx->out, "\\(");
-                        //     } else if (ucode == ')') {
-                        //         fprintf(ctx->out, "\\)");
-                        //     } else {
-                        //         fprintf(ctx->out, "%c", (char) ucode);
-                        //     }
-                        // }
-                        // line_buf->len = 0;
-
                         line_buf->flush = false;
 
-                        // SHIFT-???
-                        _line_flush_2(line_buf);
+                        // SHIFT
+                        _line_shift(line_buf);
                     }
 
                 } else {
@@ -1098,34 +1083,11 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         new_page = false;
         if (break_line) {
 
-            // FLUSH-1
+            // FLUSH
             _line_flush(ctx, line_buf, true);
 
-            // if (use_unicode) {
-            //     for (int k = 0; k < line_buf->len; k++) {
-            //                     len += 2; // <xx>
-            //                     int idx = line_buf->buf[k].idx;
-            //                     fprintf(ctx->out, "%02X", idx);
-            //     }
-
-            // } else {
-            //     for (int k = 0; k < line_buf->len; k++) {
-            //                 len++;
-            //                 ucode = line_buf->buf[k].ucode;
-            //                 if (ucode == '(') {
-            //                     fprintf(ctx->out, "\\(");
-            //                 } else if (ucode == ')') {
-            //                     fprintf(ctx->out, "\\)");
-            //                 } else {
-            //                     fprintf(ctx->out, "%c", (char) ucode);
-            //                 }
-            //     }
-            // }
-            // line_buf->width = 0;
-            // line_buf->len   = 0;
-
-            // SHIFT-???
-            _line_flush_2(line_buf);
+             // SHIFT
+            _line_shift(line_buf);
 
             //fprintf(stderr, "[BR]: %d\n", i);
             if (line > line_page) {
@@ -1170,9 +1132,9 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
 
             //>>
-            // FLUSH-2
+            // SHIFT
             if (line_buf->len2 > 0) {
-                _line_flush_2(line_buf);
+                _line_shift(line_buf);
             }
             //>>
 
@@ -1184,34 +1146,11 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     }
 
     //>>
-    // FLUSH-1
+    // FLUSH
     _line_flush(ctx, line_buf, true);
 
-            // if (use_unicode) {
-            //     for (int k = 0; k < line_buf->len; k++) {
-            //                     len += 2; // <xx>
-            //                     int idx = line_buf->buf[k].idx;
-            //                     fprintf(ctx->out, "%02X", idx);
-            //     }
-
-            // } else {
-            //     for (int k = 0; k < line_buf->len; k++) {
-            //                 len++;
-            //                 ucode = line_buf->buf[k].ucode;
-            //                 if (ucode == '(') {
-            //                     fprintf(ctx->out, "\\(");
-            //                 } else if (ucode == ')') {
-            //                     fprintf(ctx->out, "\\)");
-            //                 } else {
-            //                     fprintf(ctx->out, "%c", (char) ucode);
-            //                 }
-            //     }
-            // }
-            // line_buf->width = 0;
-            // line_buf->len   = 0;
-
-            // SHIFT-???
-            _line_flush_2(line_buf);
+    // SHIFT
+    _line_shift(line_buf);
     //>>
 
 
