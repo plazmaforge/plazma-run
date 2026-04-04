@@ -332,11 +332,10 @@ static int _line_init(lib_pdf_line_t* line) {
     if (!line) {
         return 1;
     }
-    line->width  = 0;
-    //int idx    = -1;
-    line->len    = 0;
-    line->pos2   = -1;
-    line->len2   = 0;
+    line->width = 0;
+    line->len   = 0;
+    line->pos2  = -1;
+    line->len2  = 0;
     line->flush = false;
     return 0;
 }
@@ -348,28 +347,6 @@ static int _line_find_br_sep(lib_pdf_char_t* buf, int len) {
         }
     }
     return -1;
-}
-
-static int _line_flush_1(lib_pdf_line_t* line, bool use_unicode) {
-    if (!line) {
-        return 0;
-    }
-    int len = 0;
-    if (use_unicode) {
-        for (int k = 0; k < line->len; k++) {
-            len += 2; // <xx>
-        }
-    } else {
-        for (int k = 0; k < line->len; k++) {
-            len++;
-        }
-    }
-
-    line->width = 0;
-    line->len   = 0;
-    //line->flush = false;
-
-    return len;
 }
 
 /**
@@ -425,7 +402,7 @@ static int _line_shift(lib_pdf_line_t* line) {
     line->len2 = 0;
 }
 
-static int _line_proc(lib_pdf_line_t* line) {
+static int _line_break(lib_pdf_line_t* line) {
     if (!line) {
         return 1;
     }
@@ -730,14 +707,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                         // Break Line Algo
                         if (line_buf->width >= body_width) {
-                            _line_proc(line_buf);
+                            _line_break(line_buf);
                             line_buf->flush = true;
                             break_line = true;
                         }
 
-                        // FLUSH-1
                         if (line_buf->flush) {
-                            len += _line_flush_1(line_buf, use_unicode);
+                            // FLUSH
+                            len += _line_flush(ctx, line_buf, false);
                             line_buf->flush = false;
 
                             // SHIFT
@@ -765,14 +742,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                     // Break Line Algo
                     if (line_buf->width >= body_width) {
-                        _line_proc(line_buf);
+                        _line_break(line_buf);
                         line_buf->flush = true;
                         break_line = true;
                     }
 
-                    // FLUSH-1
                     if (line_buf->flush) {
-                        len += _line_flush_1(line_buf, use_unicode);
+                        // FLUSH
+                        len += _line_flush(ctx, line_buf, false);
                         line_buf->flush = false;
 
                         // SHIFT
@@ -794,8 +771,8 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         new_page = false;
         if (break_line) {
 
-            // FLUSH-1
-            len += _line_flush_1(line_buf, use_unicode);
+            // FLUSH
+            len += _line_flush(ctx, line_buf, false);
             line_buf->flush = false;
 
             // SHIFT
@@ -821,7 +798,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                 line++;
             }
 
-            // FLUSH-2
+            // FLUSH
             if (line_buf->len2 > 0) {
                 _line_shift(line_buf);
             }
@@ -833,8 +810,8 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     }
 
     //>>
-    // FLUSH-1
-    len += _line_flush_1(line_buf, use_unicode);
+    // FLUSH
+    len += _line_flush(ctx, line_buf, false);
     line_buf->flush = false;
 
     // SHIFT
@@ -1009,7 +986,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         // Break Line Algo
                         if (line_buf->width  >= body_width) {
                             //>>
-                            _line_proc(line_buf);
+                            _line_break(line_buf);
                             line_buf->flush = true;
                             break_line = true;
                         }
@@ -1046,7 +1023,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     if (line_buf->width >= body_width) {
 
                         //>>
-                        _line_proc(line_buf);
+                        _line_break(line_buf);
                         line_buf->flush = true;
                         break_line = true;
                     }
