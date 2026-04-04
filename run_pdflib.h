@@ -52,7 +52,6 @@ typedef struct lib_pdf_char_t {
 } lib_pdf_char_t;
 
 typedef struct lib_pdf_line_t {
-    //lib_pdf_char_t buf[65536];
     lib_pdf_char_t* buf;
     int width;
     int len;
@@ -349,6 +348,35 @@ static int _line_find_br_sep(lib_pdf_char_t* buf, int len) {
     return -1;
 }
 
+
+static int _print_idx(run_pdf_context_t* ctx, int idx, bool out_mode) {
+    if (out_mode) {
+        return fprintf(ctx->out, "%02X", idx);
+    } else {
+        return 2; // <xx>
+    }
+}
+
+static int _print_ucode(run_pdf_context_t* ctx, uint32_t ucode, bool out_mode) {
+    if (out_mode) {
+        if (ucode == '(') {
+            return fprintf(ctx->out, "\\(");
+        } else if (ucode == ')') {
+            return fprintf(ctx->out, "\\)");
+        } else {
+            return fprintf(ctx->out, "%c", (char) ucode);
+        }
+    } else {
+        if (ucode == '(') {
+            return 2;
+        } else if (ucode == ')') {
+            return 2;
+        } else {
+            return 1;
+        }
+    }
+}
+
 /**
  * Flush line to output
  */
@@ -359,25 +387,13 @@ static int _line_flush(run_pdf_context_t* ctx, lib_pdf_line_t* line, bool out_mo
     int len = 0;
     if (ctx->use_unicode) {
         for (int k = 0; k < line->len; k++) {
-            len += 2; // <xx>
-            if (out_mode) {
-                int idx = line->buf[k].idx;
-                fprintf(ctx->out, "%02X", idx);
-            }
+            int idx = line->buf[k].idx;
+            len += _print_idx(ctx, idx, out_mode);
         }
     } else {
         for (int k = 0; k < line->len; k++) {
-            len++;
-            if (out_mode) {
-                uint32_t ucode = line->buf[k].ucode;
-                if (ucode == '(') {
-                    fprintf(ctx->out, "\\(");
-                } else if (ucode == ')') {
-                    fprintf(ctx->out, "\\)");
-                } else {
-                    fprintf(ctx->out, "%c", (char) ucode);
-                }
-            }
+            uint32_t ucode = line->buf[k].ucode;
+            len += _print_ucode(ctx, ucode, out_mode);
         }
     }
     // TODO: RESET buf[k].width ?
@@ -633,11 +649,11 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             break;
         default:
 
-            if (ucode == '(' || ucode == ')') {
-                if (!use_unicode) {
-                    len++;
-                }
-            }
+            // if (ucode == '(' || ucode == ')') {
+            //     if (!use_unicode) {
+            //         len++;
+            //     }
+            // }
 
             //>>
             if (use_unicode) {
@@ -695,7 +711,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         //e.icode = icode;
                         e.ucode = ucode;
                         e.width = 700;     // TODO: Use font info to get width of char
-                        //e.idx   = cmap_size;
                         e.idx   = cmap_idx;
                         e.is_predef = false;
                         cmap[carr_idx] = e;
@@ -729,7 +744,8 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         }
                         
                     } else {
-                        len += 2; // <xx>
+                        len += _print_idx(ctx, e.idx, false);
+                        // len += 2; // <xx>
                     }
                     //>>
 
@@ -764,7 +780,8 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     }
 
                 } else {
-                    len++;
+                    len += _print_ucode(ctx, ucode, false);
+                    // len++;
                 }
                 //>>
                 
@@ -925,10 +942,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     seq        = 0; // sequence of char
     data       = ctx->data;
 
-    // line_width = 0;
-    // line_idx   = -1;
-    // line_len   = 0;
-    
     // Output
     while (i < ctx->size) {
 
@@ -960,11 +973,11 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             break;
         default:
 
-            if (ucode == '(' || ucode == ')') {
-                if (!use_unicode) {
-                    len++;
-                }
-            }
+            // if (ucode == '(' || ucode == ')') {
+            //     if (!use_unicode) {
+            //         len++;
+            //     }
+            // }
 
             //>>
             if (use_unicode) {
@@ -1007,8 +1020,9 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         }
 
                      } else {
-                        len += 2; // <xx>
-                        fprintf(ctx->out, "%02X", idx);
+                        len += _print_idx(ctx, idx, true);
+                        // len += 2; // <xx>
+                        // fprintf(ctx->out, "%02X", idx);
                     }
                     //>>
 
@@ -1045,14 +1059,15 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     }
 
                 } else {
-                    len++;
-                    if (ucode == '(') {
-                        fprintf(ctx->out, "\\(");
-                    } else if (ucode == ')') {
-                        fprintf(ctx->out, "\\)");
-                    } else {
-                        fprintf(ctx->out, "%c", (char) ucode);
-                    }
+                    len += _print_ucode(ctx, ucode, true);
+                    // len++;
+                    // if (ucode == '(') {
+                    //     fprintf(ctx->out, "\\(");
+                    // } else if (ucode == ')') {
+                    //     fprintf(ctx->out, "\\)");
+                    // } else {
+                    //     fprintf(ctx->out, "%c", (char) ucode);
+                    // }
                 }
                 //>>
                
