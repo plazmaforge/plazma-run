@@ -392,6 +392,9 @@ static int _line_shift(lib_pdf_line_t* line) {
     if (!line) {
         return 1;
     }
+    if (line->len2 <= 0 || line->pos2 < 0) {
+        return 0;
+    }
 
     int shift = line->pos2 == 0 ? 1 : line->pos2; 
     for (int k = 0; k < line->len2; k++) {
@@ -400,6 +403,8 @@ static int _line_shift(lib_pdf_line_t* line) {
     line->len  = line->len2;
     line->pos2 = -1;
     line->len2 = 0;
+
+    return 0;
 }
 
 static int _line_break(lib_pdf_line_t* line) {
@@ -419,6 +424,8 @@ static int _line_break(lib_pdf_line_t* line) {
     //line_width = e.width;
     line->width = 0;
     //line->flush = true;
+
+    return 0;
 }
 
 int lib_pdf_body(run_pdf_context_t* ctx) {
@@ -771,12 +778,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         new_page = false;
         if (break_line) {
 
-            // FLUSH
-            len += _line_flush(ctx, line_buf, false);
-            line_buf->flush = false;
+            if (use_break_line) {
+                // FORCE FLUSH
+                len += _line_flush(ctx, line_buf, false);
+                line_buf->flush = false;
 
-            // SHIFT
-            _line_shift(line_buf);
+                // SHIFT
+                _line_shift(line_buf);
+            }
 
             len += BUF_LN_LEN;
             if (line > line_page) {
@@ -798,11 +807,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                 line++;
             }
 
-            // FLUSH
-            if (line_buf->len2 > 0) {
-                _line_shift(line_buf);
-            }
-
         }
 
         data += seq;
@@ -810,12 +814,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     }
 
     //>>
-    // FLUSH
-    len += _line_flush(ctx, line_buf, false);
-    line_buf->flush = false;
+    if (use_break_line) {
+        // FORCE FLUSH
+        len += _line_flush(ctx, line_buf, false);
+        line_buf->flush = false;
 
-    // SHIFT
-    _line_shift(line_buf);
+        // SHIFT
+        _line_shift(line_buf);
+    }
     //>>
 
     if (debug) {
@@ -993,7 +999,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                         if (line_buf->flush) {
                             // FLUSH
-                            _line_flush(ctx, line_buf, true);
+                            len += _line_flush(ctx, line_buf, true);
                             line_buf->flush = false;
 
                             // SHIFT
@@ -1031,7 +1037,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     
                     if (line_buf->flush) {
                         // FLUSH
-                        _line_flush(ctx, line_buf, true);
+                        len += _line_flush(ctx, line_buf, true);
                         line_buf->flush = false;
 
                         // SHIFT
@@ -1059,12 +1065,15 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         new_line = break_line;
         new_page = false;
         if (break_line) {
+            
+            if (use_break_line) {
+                // FORCE FLUSH
+                len += _line_flush(ctx, line_buf, true);
+                line_buf->flush = false;
 
-            // FLUSH
-            _line_flush(ctx, line_buf, true);
-
-             // SHIFT
-            _line_shift(line_buf);
+                // SHIFT
+                _line_shift(line_buf);
+            }
 
             //fprintf(stderr, "[BR]: %d\n", i);
             if (line > line_page) {
@@ -1107,14 +1116,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             //len += fprintf(ctx->out, "0 -18 Td\n(");
             //len += fprintf(ctx->out, "(");
 
-
-            //>>
-            // SHIFT
-            if (line_buf->len2 > 0) {
-                _line_shift(line_buf);
-            }
-            //>>
-
         }
 
         data += seq;
@@ -1123,13 +1124,15 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     }
 
     //>>
-    // FLUSH
-    _line_flush(ctx, line_buf, true);
+    if (use_break_line) {
+        // FORCE FLUSH
+        len += _line_flush(ctx, line_buf, true);
+        line_buf->flush = false;
 
-    // SHIFT
-    _line_shift(line_buf);
+        // SHIFT
+        _line_shift(line_buf);
+    }
     //>>
-
 
     // >>> Stream: end
     len += fprintf(ctx->out, use_unicode ? "> Tj\n" : ") Tj\n");
