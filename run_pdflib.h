@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "iolib.h"
 #include "run_doclib.h"
 
@@ -37,19 +39,22 @@ typedef struct lib_font_info_t {
     bool italic;
 } lib_font_info_t;
 
+typedef struct lib_pdf_char_t {
+    uint8_t  icode; // inp code
+    uint32_t ucode; // uni code
+    uint16_t idx;   // index
+    int width;      // char width
+    bool is_predef;
+} lib_pdf_char_t;
+
 typedef struct lib_pdf_cmap_t {
+    lib_pdf_char_t* buf;
     int icode; // inp code
     int ucode; // uni code
     int idx;   // index
     int width; // char width
     bool is_predef;
 } lib_pdf_cmap_t;
-
-typedef struct lib_pdf_char_t {
-    uint32_t ucode;
-    int idx;
-    int width;
-} lib_pdf_char_t;
 
 typedef struct lib_pdf_line_t {
     lib_pdf_char_t* buf;
@@ -567,8 +572,10 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     //int max_page = 1;
     page_len = BUF_LEN; // template len
 
-    lib_pdf_cmap_t cmap[65536];
+    lib_pdf_cmap_t* cmap = NULL;
+
     int cmap_size       = 0; // CMap size
+    int cmap_capacity   = 0; // CMap capacity
     int cmap_idx        = 0; // CMap index
     int carr_idx        = 0; // CMap array index
     int cmap_gap        = -1;// CMap gap index
@@ -586,6 +593,10 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     bool use_predef = true;
 
     if (use_unicode) {
+
+        cmap_capacity = 256;
+        cmap = (lib_pdf_cmap_t*) malloc(cmap_capacity * sizeof(lib_pdf_cmap_t));
+        
         if (use_predef) {
             // Initialize predefined map (ASCII)
             cmap_start  = 0;
@@ -609,7 +620,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     }
 
     bool use_break_line = true;
-    int body_width = use_unicode ? 38000 : 50000; // TODO: STUB
+    int body_width = 40000; //use_unicode ? 38000 : 50000; // TODO: STUB
 
     lib_pdf_line_t line_buf_v;
     lib_pdf_char_t char_buf[100];
@@ -695,6 +706,10 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                                 carr_idx = cmap_idx;
                             }
                         } else {
+                            if (cmap_size + 1 > cmap_capacity) {
+                                cmap_capacity = cmap_capacity * 2;
+                                cmap = (lib_pdf_cmap_t*) realloc(cmap, cmap_capacity);
+                            }
                             success = true;
                             carr_idx = cmap_size;
                             cmap_size++;
