@@ -705,6 +705,9 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     _line_init(line_buf);
 
+    lib_pdf_char_t* p = NULL;
+    bool success = false;
+                
     // Preprocessing
     while (i < ctx->size) {
 
@@ -735,14 +738,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             break;
         default:
 
+            success = false;
+
             //>>
             if (use_unicode) {
 
                 cmap_found = false;
-                lib_pdf_char_t* p;
                 p = _cmap_find_by_ucode(cmap, ucode);
                 cmap_found = p != NULL;
-                bool success = false;
 
                 if (cmap_found) {
                     success = true;
@@ -1019,9 +1022,11 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             break;
         default:
 
+            success = false;
+
             //>>
             if (use_unicode) {
-                lib_pdf_char_t* p;
+                //lib_pdf_char_t* p;
                 cmap_found = false;
                 p = _cmap_find_by_ucode(cmap, ucode);
                 cmap_found = p != NULL;
