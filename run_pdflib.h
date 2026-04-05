@@ -669,20 +669,12 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             break;
         default:
 
-            // if (ucode == '(' || ucode == ')') {
-            //     if (!use_unicode) {
-            //         len++;
-            //     }
-            // }
-
             //>>
             if (use_unicode) {
 
-                //fprintf(stderr, "U: %d\n", i);
-
                 cmap_found = false;
                 lib_pdf_char_t* p;
-                lib_pdf_char_t  e;
+                //lib_pdf_char_t  e;
 
                 p = _cmap_find_by_ucode(cmap, cmap_size, ucode);
                 cmap_found = p != NULL;
@@ -736,13 +728,21 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     //>>
                     if (!cmap_found) {
                         //e.icode = icode;
-                        e.ucode = ucode;
-                        e.width = 700;     // TODO: Use font info to get width of char
-                        e.idx   = cmap_idx;
-                        e.is_predef = false;
-                        cmap->buf[carr_idx] = e;
+                        
+                        // e.ucode = ucode;
+                        // e.width = 700;     // TODO: Use font info to get width of char
+                        // e.idx   = cmap_idx;
+                        // e.is_predef = false;
+                        // cmap->buf[carr_idx] = e;
+
+                        p = &(cmap->buf[carr_idx]);
+                        p->ucode = ucode;
+                        p->width = 700;     // TODO: Use font info to get width of char
+                        p->idx   = cmap_idx;
+                        p->is_predef = false;
+
                     } else {
-                        e = *p;
+                        //e = *p;
                     }
                     //>>
 
@@ -751,9 +751,9 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                         line_buf->buf[line_buf->len].ucode = ucode;
                         line_buf->buf[line_buf->len].idx   = cmap_idx;
-                        line_buf->buf[line_buf->len].width = e.width;
+                        line_buf->buf[line_buf->len].width = p->width;
                         line_buf->len++;
-                        line_buf->width += e.width;
+                        line_buf->width += p->width;
                         line_buf->flush = false;
 
                         // Break Line Algo
@@ -774,7 +774,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         }
                         
                     } else {
-                        len += _print_idx(ctx, e.idx, false);
+                        len += _print_idx(ctx, p->idx, false);
                         // len += 2; // <xx>
                     }
                     //>>
@@ -1008,12 +1008,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             break_line = true;
             break;
         default:
-
-            // if (ucode == '(' || ucode == ')') {
-            //     if (!use_unicode) {
-            //         len++;
-            //     }
-            // }
 
             //>>
             if (use_unicode) {
