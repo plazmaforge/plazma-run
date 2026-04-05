@@ -493,19 +493,20 @@ static int _line_flush(run_pdf_context_t* ctx, lib_pdf_line_t* line, bool out_mo
     if (!line) {
         return 0;
     }
+    int size = line->len;
     int len = 0;
     if (ctx->use_unicode) {
-        for (int k = 0; k < line->len; k++) {
+        for (int k = 0; k < size; k++) {
             int idx = line->buf[k].idx;
             len += _print_idx(ctx, idx, out_mode);
         }
     } else {
-        for (int k = 0; k < line->len; k++) {
+        for (int k = 0; k < size; k++) {
             uint32_t ucode = line->buf[k].ucode;
             len += _print_ucode(ctx, ucode, out_mode);
         }
     }
-    // TODO: RESET buf[k].width ?
+
     line->width = 0;
     line->len = 0;
 
@@ -663,6 +664,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     // Streams
     int page_len;
     bool break_line;
+    bool break_line_force;
     bool new_line;
     bool new_page;
     //char c;
@@ -748,6 +750,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         }
 
         break_line = false;
+        break_line_force = false;
 
         switch (ucode) {
         case '\n':
@@ -807,6 +810,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     _line_break(line_buf);
                     line_buf->flush = true;
                     break_line = true;
+                    break_line_force = true;
                 }
 
                 if (line_buf->flush) {
@@ -830,7 +834,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         new_page = false;
         if (break_line) {
 
-            if (use_break_line) {
+            if (use_break_line && !break_line_force) {
                 // FORCE FLUSH
                 len += _line_flush(ctx, line_buf, false);
                 line_buf->flush = false;
@@ -990,6 +994,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         }
 
         break_line = false;
+        break_line_force = false;
 
         switch (ucode) {
         case '\n':
@@ -1046,6 +1051,8 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     _line_break(line_buf);
                     line_buf->flush = true;
                     break_line = true;
+                    break_line_force = true;
+
                 }
 
                 if (line_buf->flush) {
@@ -1069,7 +1076,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         new_page = false;
         if (break_line) {
             
-            if (use_break_line) {
+            if (use_break_line && !break_line_force) {
                 // FORCE FLUSH
                 len += _line_flush(ctx, line_buf, true);
                 line_buf->flush = false;
