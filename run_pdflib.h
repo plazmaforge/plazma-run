@@ -769,36 +769,89 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         success = p != NULL;
                     }
                 }
+            } else {
+                success = true;
             }
 
             //>>
-            if (use_unicode) {
+            // if (use_unicode) {
 
-                // cmap_found = false;
-                // p = _cmap_find_by_ucode(cmap, ucode);
-                // cmap_found = p != NULL;
+            //     if (success) {
 
-                // if (cmap_found) {
-                //     success = true;
-                // }
+            //         //>>
+            //         if (use_break_line) {
 
-                // if (debug) {
-                //     fprintf(stderr, ">> _cmap_find_by_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
-                // }
+            //             line_buf->buf[line_buf->len].ucode = ucode;
+            //             line_buf->buf[line_buf->len].idx   = p->idx;
+            //             line_buf->buf[line_buf->len].width = p->width;
+            //             line_buf->len++;
+            //             line_buf->width += p->width;
+            //             line_buf->flush = false;
 
-                // if (!cmap_found) {
-                //     if (ucode == NO_CHR) {
-                //         // Not found char in UniMap
-                //         fprintf(stderr, ">> Not found code in UniMap [NO_CHR]: %d\n", icode);
-                //     } else {
-                //         p = _cmap_add_char(cmap, ucode);
-                //         success = p != NULL;
-                //     }
-                // }
+            //             // Break Line Algo
+            //             if (line_buf->width >= body_width) {
+            //                 _line_break(line_buf);
+            //                 line_buf->flush = true;
+            //                 break_line = true;
+            //             }
 
-                if (success) {
+            //             if (line_buf->flush) {
+            //                 // FLUSH
+            //                 len += _line_flush(ctx, line_buf, false);
+            //                 line_buf->flush = false;
 
-                    //>>
+            //                 // SHIFT
+            //                 _line_shift(line_buf);
+            //             }
+                        
+            //         } else {
+            //             len += _print_idx(ctx, p->idx, false);
+            //         }
+            //         //>>
+
+            //     }
+
+            // } else {
+
+            //     //>>
+            //     if (use_break_line) {
+
+            //         line_buf->buf[line_buf->len].ucode = ucode;
+            //         line_buf->buf[line_buf->len].idx   = 0; //cmap_idx;
+            //         line_buf->buf[line_buf->len].width = 700;
+            //         line_buf->len++;
+            //         line_buf->width += 700;
+            //         line_buf->flush = false;
+
+            //         // Break Line Algo
+            //         if (line_buf->width >= body_width) {
+            //             _line_break(line_buf);
+            //             line_buf->flush = true;
+            //             break_line = true;
+            //         }
+
+            //         if (line_buf->flush) {
+            //             // FLUSH
+            //             len += _line_flush(ctx, line_buf, false);
+            //             line_buf->flush = false;
+
+            //             // SHIFT
+            //             _line_shift(line_buf);
+            //         }
+
+            //     } else {
+            //         len += _print_ucode(ctx, ucode, false);
+            //     }
+            //     //>>
+                
+            // }
+            // //>>
+
+            if (success) {
+                break;
+            }
+
+            //>>
                     if (use_break_line) {
 
                         line_buf->buf[line_buf->len].ucode = ucode;
@@ -825,47 +878,12 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         }
                         
                     } else {
-                        len += _print_idx(ctx, p->idx, false);
+                        len += (use_unicode ?  _print_idx(ctx, p->idx, false) : _print_ucode(ctx, ucode, false));
+                        //len += _print_ucode(ctx, ucode, false);
                     }
-                    //>>
-
-                }
-
-            } else {
-
-                //>>
-                if (use_break_line) {
-
-                    line_buf->buf[line_buf->len].ucode = ucode;
-                    line_buf->buf[line_buf->len].idx   = 0; //cmap_idx;
-                    line_buf->buf[line_buf->len].width = 700;
-                    line_buf->len++;
-                    line_buf->width += 700;
-                    line_buf->flush = false;
-
-                    // Break Line Algo
-                    if (line_buf->width >= body_width) {
-                        _line_break(line_buf);
-                        line_buf->flush = true;
-                        break_line = true;
-                    }
-
-                    if (line_buf->flush) {
-                        // FLUSH
-                        len += _line_flush(ctx, line_buf, false);
-                        line_buf->flush = false;
-
-                        // SHIFT
-                        _line_shift(line_buf);
-                    }
-
-                } else {
-                    len += _print_ucode(ctx, ucode, false);
-                }
-                //>>
-                
-            }
             //>>
+
+            
 
             break;
         }
@@ -1069,23 +1087,96 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     fprintf(stderr, "Char not found in CMap: icode=%d, ucode=%d\n", icode, ucode);
                 }
 
+            } else {
+                success = true;
             }
 
+
+            // //>>
+            // if (use_unicode) {
+
+            //     if (success) {
+            //         int idx = p->idx;
+
+            //         //>>
+            //         if (use_break_line) {
+
+            //             line_buf->buf[line_buf->len].ucode = ucode;
+            //             line_buf->buf[line_buf->len].idx   = p->idx;
+            //             line_buf->buf[line_buf->len].width = p->width;
+            //             line_buf->len++;
+            //             line_buf->width += p->width;
+            //             line_buf->flush = false;
+
+            //             // Break Line Algo
+            //             if (line_buf->width  >= body_width) {
+            //                 //>>
+            //                 _line_break(line_buf);
+            //                 line_buf->flush = true;
+            //                 break_line = true;
+            //             }
+
+            //             if (line_buf->flush) {
+            //                 // FLUSH
+            //                 len += _line_flush(ctx, line_buf, true);
+            //                 line_buf->flush = false;
+
+            //                 // SHIFT
+            //                 _line_shift(line_buf);
+            //             }
+
+            //          } else {
+            //             len += _print_idx(ctx, idx, true);
+            //         }
+            //         //>>
+
+            //     }
+            // } else {
+
+            //     //>>
+            //     if (use_break_line) {
+
+            //             line_buf->buf[line_buf->len].ucode = ucode;
+            //             line_buf->buf[line_buf->len].idx   = 0; //cmap_idx;
+            //             line_buf->buf[line_buf->len].width = 700;
+            //             line_buf->len++;
+            //             line_buf->width += 700; //p->width;
+            //             line_buf->flush = false;
+
+            //         // Break Line Algo
+            //         if (line_buf->width >= body_width) {
+
+            //             //>>
+            //             _line_break(line_buf);
+            //             line_buf->flush = true;
+            //             break_line = true;
+            //         }
+
+                    
+            //         if (line_buf->flush) {
+            //             // FLUSH
+            //             len += _line_flush(ctx, line_buf, true);
+            //             line_buf->flush = false;
+
+            //             // SHIFT
+            //             _line_shift(line_buf);
+            //         }
+
+            //     } else {
+            //         len += _print_ucode(ctx, ucode, true);
+            //     }
+            //     //>>
+               
+            // }
+            // //>>
+
+            
+            if (!success) {
+                break;
+            }
+
+            //int idx = p->idx;
             //>>
-            if (use_unicode) {
-
-                // cmap_found = false;
-                // p = _cmap_find_by_ucode(cmap, ucode);
-                // cmap_found = p != NULL;
-
-                // if (!cmap_found) {
-                //     fprintf(stderr, "Char not found in CMap: icode=%d, ucode=%d\n", icode, ucode);
-                // } else {
-
-                if (success) {
-                    int idx = p->idx;
-
-                    //>>
                     if (use_break_line) {
 
                         line_buf->buf[line_buf->len].ucode = ucode;
@@ -1113,50 +1204,10 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         }
 
                      } else {
-                        len += _print_idx(ctx, idx, true);
+                        len += (use_unicode ? _print_idx(ctx, p->idx, true) : _print_ucode(ctx, ucode, true));
                     }
-                    //>>
-
-                }
-            } else {
-
-                //>>
-                if (use_break_line) {
-
-                        line_buf->buf[line_buf->len].ucode = ucode;
-                        line_buf->buf[line_buf->len].idx   = 0; //cmap_idx;
-                        line_buf->buf[line_buf->len].width = 700;
-                        line_buf->len++;
-                        line_buf->width += 700; //p->width;
-                        line_buf->flush = false;
-
-                    // Break Line Algo
-                    if (line_buf->width >= body_width) {
-
-                        //>>
-                        _line_break(line_buf);
-                        line_buf->flush = true;
-                        break_line = true;
-                    }
-
-                    
-                    if (line_buf->flush) {
-                        // FLUSH
-                        len += _line_flush(ctx, line_buf, true);
-                        line_buf->flush = false;
-
-                        // SHIFT
-                        _line_shift(line_buf);
-                    }
-
-                } else {
-                    len += _print_ucode(ctx, ucode, true);
-                }
-                //>>
-               
-            }
             //>>
-            
+
             break;
         }
 
