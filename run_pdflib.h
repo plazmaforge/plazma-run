@@ -521,9 +521,13 @@ static int _line_shift(lib_pdf_line_t* line) {
         return 0;
     }
 
+    // reset line width because new chars after shift
+    line->width = 0;
+
     int shift = line->pos2 == 0 ? 1 : line->pos2; 
     for (int k = 0; k < line->len2; k++) {
         line->buf[k] = line->buf[k + shift];
+        line->width += line->buf[k].width; 
     }
     line->len  = line->len2;
     line->pos2 = -1;
