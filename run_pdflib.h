@@ -49,11 +49,12 @@ typedef struct lib_pdf_char_t {
 
 typedef struct lib_pdf_cmap_t {
     lib_pdf_char_t* buf;
-    //int icode; // inp code
-    //int ucode; // uni code
-    //int idx;   // index
-    //int width; // char width
-    //bool is_predef;
+    int size;       // CMap size
+    int capacity;   // CMap capacity
+    int idx;        // CMap index
+    int carr_idx;   // CMap array index
+    int gap;        // CMap gap index
+    int start;      // CMap start index
 } lib_pdf_cmap_t;
 
 typedef struct lib_pdf_line_t {
@@ -109,7 +110,9 @@ static int _line_init(lib_pdf_line_t* line);
 
 static int _cmap_init(lib_pdf_cmap_t* cmap);
 
-static void _cmap_dump(lib_pdf_cmap_t* cmap, int size);
+static int _cmap_predef(lib_pdf_cmap_t* cmap);
+
+static void _cmap_dump(lib_pdf_cmap_t* cmap);
 
 ////
 
@@ -221,13 +224,29 @@ static int lib_to_pt(const char* value) {
     return atoi(value);
 }
 
-static lib_pdf_cmap_t* _cmap_new(size_t size) {
-   //return (lib_pdf_cmap_t*) malloc(size * sizeof(lib_pdf_cmap_t));
+
+static int _cmap_init(lib_pdf_cmap_t* cmap) {
+    if (!cmap) {
+        return 1;
+    }
+    cmap->size       = 0;  // CMap size
+    cmap->capacity   = 0;  // CMap capacity
+    cmap->idx        = 0;  // CMap index
+    cmap->idx        = 0;  // CMap array index
+    cmap->gap        = -1; // CMap gap index
+    cmap->start      = 0;  // CMap start index
+    return 0;
+}
+
+static lib_pdf_cmap_t* _cmap_new(size_t capacity) {
    lib_pdf_cmap_t* cmap = (lib_pdf_cmap_t*) malloc(sizeof(lib_pdf_cmap_t));
    if (cmap == NULL) {
       return NULL;
    }
-   cmap->buf = (lib_pdf_char_t*) malloc(size * sizeof(lib_pdf_char_t));
+   _cmap_init(cmap);
+   cmap->buf = (lib_pdf_char_t*) malloc(capacity * sizeof(lib_pdf_char_t));
+   cmap->capacity = capacity;
+   return cmap;
 }
 
 /**
@@ -236,7 +255,7 @@ static lib_pdf_cmap_t* _cmap_new(size_t size) {
  * Bu we can use other code pages.
  * For example: CP1251.
  */
-static int _cmap_init(lib_pdf_cmap_t* cmap) {
+static int _cmap_predef(lib_pdf_cmap_t* cmap) {
     
     int size = 256;
     lib_pdf_char_t e;
@@ -264,9 +283,9 @@ static int _cmap_init(lib_pdf_cmap_t* cmap) {
 /**
  * Find icode in CMap
  */
-static lib_pdf_char_t* _cmap_find_by_icode(lib_pdf_cmap_t* cmap, int size, int icode) {
+static lib_pdf_char_t* _cmap_find_by_icode(lib_pdf_cmap_t* cmap, int icode) {
     lib_pdf_char_t* p = cmap->buf;
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < cmap->size; i++) {
         if (icode == p->icode) {
             return p;
         }
@@ -278,9 +297,9 @@ static lib_pdf_char_t* _cmap_find_by_icode(lib_pdf_cmap_t* cmap, int size, int i
 /**
  * Find ucode in CMap
  */
-static lib_pdf_char_t* _cmap_find_by_ucode(lib_pdf_cmap_t* cmap, int size, int ucode) {
+static lib_pdf_char_t* _cmap_find_by_ucode(lib_pdf_cmap_t* cmap, int ucode) {
     lib_pdf_char_t* p = cmap->buf;
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < cmap->size; i++) {
         if (ucode == p->ucode) {
             return p;
         }
@@ -289,22 +308,22 @@ static lib_pdf_char_t* _cmap_find_by_ucode(lib_pdf_cmap_t* cmap, int size, int u
     return NULL;
 }
 
-static bool _cmap_has_icode(lib_pdf_cmap_t* cmap, int size, int icode) {
-    return _cmap_find_by_icode(cmap, size, icode) != NULL;
+static bool _cmap_has_icode(lib_pdf_cmap_t* cmap, int icode) {
+    return _cmap_find_by_icode(cmap, icode) != NULL;
 }
 
-static bool _cmap_has_ucode(lib_pdf_cmap_t* cmap, int size, int ucode) {
-    return _cmap_find_by_ucode(cmap, size, ucode) != NULL;
+static bool _cmap_has_ucode(lib_pdf_cmap_t* cmap, int ucode) {
+    return _cmap_find_by_ucode(cmap, ucode) != NULL;
 }
 
 /**
  * Find and return CMap index of first not predefined element
  */
-static int _cmap_find_gap(lib_pdf_cmap_t* cmap, int size, int cur) {
+static int _cmap_find_gap(lib_pdf_cmap_t* cmap) {
     lib_pdf_char_t* p = cmap->buf;
-    int start = cur + 1;
+    int start = cmap->gap + 1;
     p += start;
-    for (int i = start; i < size; i++) {
+    for (int i = start; i < cmap->size; i++) {
         if (!(p->is_predef)) {
             return i;
         }
@@ -316,9 +335,9 @@ static int _cmap_find_gap(lib_pdf_cmap_t* cmap, int size, int cur) {
 /**
  * Dump CMap in DEBUG mode
  */
-static void _cmap_dump(lib_pdf_cmap_t* cmap, int size) {
+static void _cmap_dump(lib_pdf_cmap_t* cmap) {
     lib_pdf_char_t* p = cmap->buf;
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < cmap->size; i++) {
         fprintf(stderr, "idx: %d, icode: %d, ucode: %d, width: %d, [%s]\n", p->idx, p->icode, p->ucode, p->width, (p->is_predef ? "+" : " "));
         p++;
     }
@@ -582,13 +601,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     page_len = BUF_LEN; // template len
 
     lib_pdf_cmap_t* cmap = NULL;
-
-    int cmap_size       = 0; // CMap size
-    int cmap_capacity   = 0; // CMap capacity
-    int cmap_idx        = 0; // CMap index
-    int carr_idx        = 0; // CMap array index
-    int cmap_gap        = -1;// CMap gap index
-    int cmap_start      = 0; // CMap start index
     int cmap_digits     = 2; // CMap output digits in index: <XX> or <XXXX>
     bool cmap_found     = false; // CMap found flag
 
@@ -603,17 +615,18 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     if (use_unicode) {
 
-        cmap_capacity = 256;
-        cmap = _cmap_new(cmap_capacity);
+        //cmap_capacity = 256;
+        cmap = _cmap_new(256);
+        _cmap_init(cmap);
         
         if (use_predef) {
             // Initialize predefined map (ASCII)
-            cmap_start  = 0;
-            cmap_size   = _cmap_init(cmap);
+            cmap->start  = 0;
+            cmap->size   = _cmap_predef(cmap);
         } else {
             lib_pdf_char_t e;
-            cmap_start  = 1;
-            cmap_size   = 1;
+            cmap->start  = 1;
+            cmap->size   = 1;
             e.icode     = 0;
             e.ucode     = 0;
             e.width     = 0;
@@ -625,7 +638,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     if (debug) {
         fprintf(stderr, "CMap dump-1\n");
-        _cmap_dump(cmap, cmap_size);
+        _cmap_dump(cmap);
     }
 
     bool use_break_line = true;
@@ -676,7 +689,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                 lib_pdf_char_t* p;
                 //lib_pdf_char_t  e;
 
-                p = _cmap_find_by_ucode(cmap, cmap_size, ucode);
+                p = _cmap_find_by_ucode(cmap, ucode);
                 cmap_found = p != NULL;
                 bool success = false;
 
@@ -696,28 +709,28 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     } else {
 
                         if (use_predef) {
-                            cmap_idx = _cmap_find_gap(cmap, cmap_size, cmap_gap);
+                            cmap->idx = _cmap_find_gap(cmap);
 
                             if (debug) {
-                                fprintf(stderr, ">> _cmap_find_gap: cmap_size=%d, cmap_gap=%d, cmap_idx=%d\n", cmap_size, cmap_gap, cmap_idx);
+                                fprintf(stderr, ">> _cmap_find_gap: cmap_size=%d, cmap_gap=%d, cmap_idx=%d\n", cmap->size, cmap->gap, cmap->idx);
                             }
 
-                            if (cmap_idx < 0) {
-                                fprintf(stderr, ">> Not found gap in CMap: %d, %d\n", cmap_size, cmap_gap);
+                            if (cmap->idx < 0) {
+                                fprintf(stderr, ">> Not found gap in CMap: %d, %d\n", cmap->size, cmap->gap);
                             } else {
                                 success = true;
-                                cmap_gap = cmap_idx; 
-                                carr_idx = cmap_idx;
+                                cmap->gap = cmap->idx; 
+                                cmap->carr_idx = cmap->idx;
                             }
                         } else {
-                            if (cmap_size + 1 > cmap_capacity) {
-                                cmap_capacity = cmap_capacity * 2;
-                                cmap = (lib_pdf_cmap_t*) realloc(cmap, cmap_capacity);
+                            if (cmap->size + 1 > cmap->capacity) {
+                                cmap->capacity = cmap->capacity * 2;
+                                cmap = (lib_pdf_cmap_t*) realloc(cmap, cmap->capacity);
                             }
                             success = true;
-                            carr_idx = cmap_size;
-                            cmap_size++;
-                            cmap_idx++;
+                            cmap->carr_idx = cmap->size;
+                            cmap->size++;
+                            cmap->idx++;
                         }
 
                     }
@@ -727,22 +740,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                     //>>
                     if (!cmap_found) {
-                        //e.icode = icode;
-                        
-                        // e.ucode = ucode;
-                        // e.width = 700;     // TODO: Use font info to get width of char
-                        // e.idx   = cmap_idx;
-                        // e.is_predef = false;
-                        // cmap->buf[carr_idx] = e;
 
-                        p = &(cmap->buf[carr_idx]);
+                        p = &(cmap->buf[cmap->carr_idx]);
+                        //p->icode = icode;
                         p->ucode = ucode;
                         p->width = 700;     // TODO: Use font info to get width of char
-                        p->idx   = cmap_idx;
+                        p->idx   = cmap->idx;
                         p->is_predef = false;
 
-                    } else {
-                        //e = *p;
                     }
                     //>>
 
@@ -750,7 +755,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     if (use_break_line) {
 
                         line_buf->buf[line_buf->len].ucode = ucode;
-                        line_buf->buf[line_buf->len].idx   = cmap_idx;
+                        line_buf->buf[line_buf->len].idx   = cmap->idx;
                         line_buf->buf[line_buf->len].width = p->width;
                         line_buf->len++;
                         line_buf->width += p->width;
@@ -880,7 +885,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     if (debug) {
         fprintf(stderr, "\n");
         fprintf(stderr, "CMap dump-2\n");
-        _cmap_dump(cmap, cmap_size);
+        _cmap_dump(cmap);
     }
 
     //fprintf(stderr, ">> page_count: %d\n", page);
@@ -1013,7 +1018,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             if (use_unicode) {
                 lib_pdf_char_t* p;
                 cmap_found = false;
-                p = _cmap_find_by_ucode(cmap, cmap_size, ucode);
+                p = _cmap_find_by_ucode(cmap, ucode);
                 cmap_found = p != NULL;
 
                 if (!cmap_found) {
@@ -1266,14 +1271,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     // ToUnicode
     if (use_unicode) {
         len += fprintf(ctx->out, " /FirstChar 0");
-        len += fprintf(ctx->out, " /LastChar %d", (cmap_size - 1));
+        len += fprintf(ctx->out, " /LastChar %d", (cmap->size - 1));
         len += fprintf(ctx->out, " /ToUnicode %d 0 R", (ref + 1));
         //len += fprintf(ctx->out, " /Widths [0 700 700 700 700]");
 
         //>>>
         len += fprintf(ctx->out, " /Widths [");
         lib_pdf_char_t e;
-        for (int i = 0; i < cmap_size; i++) {
+        for (int i = 0; i < cmap->size; i++) {
             e = cmap->buf[i];
             len += fprintf(ctx->out, " %d", e.width);
         }
@@ -1311,10 +1316,10 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         len += fprintf(ctx->out, "endcodespacerange\n");
 
         //>>>
-        len += fprintf(ctx->out, "%d beginbfchar\n", cmap_size);
+        len += fprintf(ctx->out, "%d beginbfchar\n", cmap->size);
 
         lib_pdf_char_t e;
-        for (int i = cmap_start; i < cmap_size; i++) {
+        for (int i = cmap->start; i < cmap->size; i++) {
             e = cmap->buf[i];
             fprintf(ctx->out, "<%02X> <%04X>\n", e.idx, e.ucode);
         }
