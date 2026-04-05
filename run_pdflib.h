@@ -334,6 +334,10 @@ static int _cmap_find_gap(lib_pdf_cmap_t* cmap) {
     return -1;
 }
 
+static int _cmap_get_width(lib_pdf_cmap_t* cmap, uint32_t ucode) {
+    return 700; // TODO: Use font info to get width of char
+}
+
 static lib_pdf_char_t* _cmap_add_char(lib_pdf_cmap_t* cmap, uint32_t ucode) {
     //if (ucode == NO_CHR) {
     //    // Not found char in UniMap
@@ -372,7 +376,7 @@ static lib_pdf_char_t* _cmap_add_char(lib_pdf_cmap_t* cmap, uint32_t ucode) {
     lib_pdf_char_t* p = &(cmap->buf[cmap->carr_idx]);
     //p->icode = icode;
     p->ucode = ucode;
-    p->width = 700;     // TODO: Use font info to get width of char
+    p->width = _cmap_get_width(cmap, ucode);
     p->idx   = cmap->idx;
     p->is_predef = false;
 
@@ -658,9 +662,13 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     int seq             = 0; // sequence of char
     char* data = ctx->data;
 
-    bool use_predef = true;
+    bool use_predef     = use_unicode;
+    bool use_break_line = true;
+    bool use_cmap       = use_unicode || use_break_line;
 
-    if (use_unicode) {
+    int body_width = 40000; //use_unicode ? 38000 : 50000; // TODO: STUB
+
+    if (use_cmap) {
 
         cmap = _cmap_new(256);
         _cmap_init(cmap);
@@ -688,8 +696,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         _cmap_dump(cmap);
     }
 
-    bool use_break_line = true;
-    int body_width = 40000; //use_unicode ? 38000 : 50000; // TODO: STUB
 
     lib_pdf_line_t line_buf_v;
     lib_pdf_char_t char_buf[100];
