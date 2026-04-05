@@ -339,10 +339,13 @@ static int _cmap_get_width(lib_pdf_cmap_t* cmap, uint32_t ucode) {
 }
 
 static lib_pdf_char_t* _cmap_add_char(lib_pdf_cmap_t* cmap, uint32_t ucode) {
+    //fprintf(stderr, ">> _cmap_add_char: ucode=%d\n", ucode);
+
     //if (ucode == NO_CHR) {
     //    // Not found char in UniMap
     //    fprintf(stderr, ">> Not found code in UniMap [NO_CHR]: %d\n", icode);
     //}
+
     bool success = false;
     if (cmap->use_predef) {
         cmap->idx = _cmap_find_gap(cmap);
@@ -358,10 +361,18 @@ static lib_pdf_char_t* _cmap_add_char(lib_pdf_cmap_t* cmap, uint32_t ucode) {
             cmap->gap = cmap->idx; 
             cmap->carr_idx = cmap->idx;
         }
+        //fprintf(stderr, ">> _cmap_add_char: Found gap\n");
     } else {
+        
         if (cmap->size + 1 > cmap->capacity) {
+            //fprintf(stderr, ">> _cmap_add_char: grow: size=%d, capacity=%d\n", cmap->size, cmap->capacity);
             cmap->capacity = cmap->capacity * 2;
-            cmap = (lib_pdf_cmap_t*) realloc(cmap, cmap->capacity);
+            //fprintf(stderr, ">> _cmap_add_char: realloc starting...\n");
+
+            // TODO: Check realloc result and trow error if it is NULL
+            cmap->buf = (lib_pdf_char_t*) realloc(cmap->buf, cmap->capacity);
+
+            //fprintf(stderr, ">> _cmap_add_char: realloc success\n");
         }
         success = true;
         cmap->carr_idx = cmap->size;
@@ -671,7 +682,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     if (use_cmap) {
 
         cmap = _cmap_new(256);
-        _cmap_init(cmap);
         cmap->use_predef = use_predef;
         
         if (use_predef) {
@@ -740,19 +750,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
             success = false;
 
-            //>>
-            if (use_unicode) {
-
+            if (use_cmap) {
                 cmap_found = false;
                 p = _cmap_find_by_ucode(cmap, ucode);
                 cmap_found = p != NULL;
-
-                if (cmap_found) {
-                    success = true;
-                }
+                success = cmap_found;
 
                 if (debug) {
-                    fprintf(stderr, ">> _cmap_find_by_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
+                    fprintf(stderr, ">> PRE: _cmap_find_by_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
                 }
 
                 if (!cmap_found) {
@@ -764,6 +769,32 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         success = p != NULL;
                     }
                 }
+            }
+
+            //>>
+            if (use_unicode) {
+
+                // cmap_found = false;
+                // p = _cmap_find_by_ucode(cmap, ucode);
+                // cmap_found = p != NULL;
+
+                // if (cmap_found) {
+                //     success = true;
+                // }
+
+                // if (debug) {
+                //     fprintf(stderr, ">> _cmap_find_by_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
+                // }
+
+                // if (!cmap_found) {
+                //     if (ucode == NO_CHR) {
+                //         // Not found char in UniMap
+                //         fprintf(stderr, ">> Not found code in UniMap [NO_CHR]: %d\n", icode);
+                //     } else {
+                //         p = _cmap_add_char(cmap, ucode);
+                //         success = p != NULL;
+                //     }
+                // }
 
                 if (success) {
 
@@ -1024,16 +1055,34 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
             success = false;
 
-            //>>
-            if (use_unicode) {
-                //lib_pdf_char_t* p;
+            if (use_cmap) {
                 cmap_found = false;
                 p = _cmap_find_by_ucode(cmap, ucode);
                 cmap_found = p != NULL;
+                success = cmap_found;
+
+                if (debug) {
+                    fprintf(stderr, ">> OUT: _cmap_find_by_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
+                }
 
                 if (!cmap_found) {
                     fprintf(stderr, "Char not found in CMap: icode=%d, ucode=%d\n", icode, ucode);
-                } else {
+                }
+
+            }
+
+            //>>
+            if (use_unicode) {
+
+                // cmap_found = false;
+                // p = _cmap_find_by_ucode(cmap, ucode);
+                // cmap_found = p != NULL;
+
+                // if (!cmap_found) {
+                //     fprintf(stderr, "Char not found in CMap: icode=%d, ucode=%d\n", icode, ucode);
+                // } else {
+
+                if (success) {
                     int idx = p->idx;
 
                     //>>
