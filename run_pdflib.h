@@ -472,6 +472,20 @@ static int _print_ucode(run_pdf_context_t* ctx, uint32_t ucode, bool out_mode) {
     }
 }
 
+static int _line_add(lib_pdf_line_t* line, lib_pdf_char_t* p) {
+    if (!line) {
+        return 1;
+    }
+
+    line->buf[line->len].ucode = p->ucode;
+    line->buf[line->len].idx   = p->idx;
+    line->buf[line->len].width = p->width;
+    line->len++;
+    line->width += p->width;
+
+    return 0;
+}
+
 /**
  * Flush line to output
  */
@@ -749,6 +763,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         default:
 
             success = false;
+            p = NULL;
 
             if (use_cmap) {
                 cmap_found = false;
@@ -780,28 +795,24 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             //>>
             if (use_break_line) {
 
-                        line_buf->buf[line_buf->len].ucode = ucode;
-                        line_buf->buf[line_buf->len].idx   = p->idx;
-                        line_buf->buf[line_buf->len].width = p->width;
-                        line_buf->len++;
-                        line_buf->width += p->width;
-                        line_buf->flush = false;
+                _line_add(line_buf, p);
+                line_buf->flush = false;
 
-                        // Break Line Algo
-                        if (line_buf->width >= body_width) {
-                            _line_break(line_buf);
-                            line_buf->flush = true;
-                            break_line = true;
-                        }
+                // Break Line Algo
+                if (line_buf->width >= body_width) {
+                    _line_break(line_buf);
+                    line_buf->flush = true;
+                    break_line = true;
+                }
 
-                        if (line_buf->flush) {
-                            // FLUSH
-                            len += _line_flush(ctx, line_buf, false);
-                            line_buf->flush = false;
+                if (line_buf->flush) {
+                    // FLUSH
+                    len += _line_flush(ctx, line_buf, false);
+                    line_buf->flush = false;
 
-                            // SHIFT
-                            _line_shift(line_buf);
-                        }
+                    // SHIFT
+                    _line_shift(line_buf);
+                }
                         
             } else {
                 len += (use_unicode ?  _print_idx(ctx, p->idx, false) : _print_ucode(ctx, ucode, false));
@@ -995,6 +1006,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         default:
 
             success = false;
+            p = NULL;
 
             if (use_cmap) {
                 cmap_found = false;
@@ -1021,29 +1033,25 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             //>>
             if (use_break_line) {
 
-                        line_buf->buf[line_buf->len].ucode = ucode;
-                        line_buf->buf[line_buf->len].idx   = p->idx;
-                        line_buf->buf[line_buf->len].width = p->width;
-                        line_buf->len++;
-                        line_buf->width += p->width;
-                        line_buf->flush = false;
+                _line_add(line_buf, p);
+                line_buf->flush = false;
 
-                        // Break Line Algo
-                        if (line_buf->width  >= body_width) {
-                            //>>
-                            _line_break(line_buf);
-                            line_buf->flush = true;
-                            break_line = true;
-                        }
+                // Break Line Algo
+                if (line_buf->width  >= body_width) {
+                    //>>
+                    _line_break(line_buf);
+                    line_buf->flush = true;
+                    break_line = true;
+                }
 
-                        if (line_buf->flush) {
-                            // FLUSH
-                            len += _line_flush(ctx, line_buf, true);
-                            line_buf->flush = false;
+                if (line_buf->flush) {
+                    // FLUSH
+                    len += _line_flush(ctx, line_buf, true);
+                    line_buf->flush = false;
 
-                            // SHIFT
-                            _line_shift(line_buf);
-                        }
+                    // SHIFT
+                    _line_shift(line_buf);
+                }
 
             } else {
                 len += (use_unicode ? _print_idx(ctx, p->idx, true) : _print_ucode(ctx, ucode, true));
