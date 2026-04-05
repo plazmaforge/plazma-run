@@ -49,12 +49,13 @@ typedef struct lib_pdf_char_t {
 
 typedef struct lib_pdf_cmap_t {
     lib_pdf_char_t* buf;
-    int size;       // CMap size
-    int capacity;   // CMap capacity
-    int idx;        // CMap index
-    int carr_idx;   // CMap array index
-    int gap;        // CMap gap index
-    int start;      // CMap start index
+    int size;        // CMap size
+    int capacity;    // CMap capacity
+    int idx;         // CMap index
+    int carr_idx;    // CMap array index
+    int gap;         // CMap gap index
+    int start;       // CMap start index
+    bool use_predef; // Use predefined mode
 } lib_pdf_cmap_t;
 
 typedef struct lib_pdf_line_t {
@@ -229,12 +230,13 @@ static int _cmap_init(lib_pdf_cmap_t* cmap) {
     if (!cmap) {
         return 1;
     }
-    cmap->size       = 0;  // CMap size
-    cmap->capacity   = 0;  // CMap capacity
-    cmap->idx        = 0;  // CMap index
-    cmap->idx        = 0;  // CMap array index
-    cmap->gap        = -1; // CMap gap index
-    cmap->start      = 0;  // CMap start index
+    cmap->size       = 0;     // CMap size
+    cmap->capacity   = 0;     // CMap capacity
+    cmap->idx        = 0;     // CMap index
+    cmap->carr_idx   = 0;     // CMap array index
+    cmap->gap        = -1;    // CMap gap index
+    cmap->start      = 0;     // CMap start index
+    cmap->use_predef = false; // Use predefined mode
     return 0;
 }
 
@@ -330,6 +332,51 @@ static int _cmap_find_gap(lib_pdf_cmap_t* cmap) {
         p++;
     }
     return -1;
+}
+
+static lib_pdf_char_t* _cmap_add_char(lib_pdf_cmap_t* cmap, uint32_t ucode) {
+    //if (ucode == NO_CHR) {
+    //    // Not found char in UniMap
+    //    fprintf(stderr, ">> Not found code in UniMap [NO_CHR]: %d\n", icode);
+    //}
+    bool success = false;
+    if (cmap->use_predef) {
+        cmap->idx = _cmap_find_gap(cmap);
+
+        //if (debug) {
+        //    fprintf(stderr, ">> _cmap_find_gap: cmap_size=%d, cmap_gap=%d, cmap_idx=%d\n", cmap->size, cmap->gap, cmap->idx);
+        //}
+
+        if (cmap->idx < 0) {
+            fprintf(stderr, ">> Not found gap in CMap: %d, %d\n", cmap->size, cmap->gap);
+        } else {
+            success = true;
+            cmap->gap = cmap->idx; 
+            cmap->carr_idx = cmap->idx;
+        }
+    } else {
+        if (cmap->size + 1 > cmap->capacity) {
+            cmap->capacity = cmap->capacity * 2;
+            cmap = (lib_pdf_cmap_t*) realloc(cmap, cmap->capacity);
+        }
+        success = true;
+        cmap->carr_idx = cmap->size;
+        cmap->size++;
+        cmap->idx++;
+    }
+
+    if (!success) {
+        return NULL;
+    }
+
+    lib_pdf_char_t* p = &(cmap->buf[cmap->carr_idx]);
+    //p->icode = icode;
+    p->ucode = ucode;
+    p->width = 700;     // TODO: Use font info to get width of char
+    p->idx   = cmap->idx;
+    p->is_predef = false;
+
+    return p;
 }
 
 /**
@@ -615,9 +662,9 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     if (use_unicode) {
 
-        //cmap_capacity = 256;
         cmap = _cmap_new(256);
         _cmap_init(cmap);
+        cmap->use_predef = use_predef;
         
         if (use_predef) {
             // Initialize predefined map (ASCII)
@@ -687,8 +734,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                 cmap_found = false;
                 lib_pdf_char_t* p;
-                //lib_pdf_char_t  e;
-
                 p = _cmap_find_by_ucode(cmap, ucode);
                 cmap_found = p != NULL;
                 bool success = false;
@@ -701,61 +746,23 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     fprintf(stderr, ">> _cmap_find_by_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
                 }
 
-                if (!success) {
-
+                if (!cmap_found) {
                     if (ucode == NO_CHR) {
                         // Not found char in UniMap
                         fprintf(stderr, ">> Not found code in UniMap [NO_CHR]: %d\n", icode);
                     } else {
-
-                        if (use_predef) {
-                            cmap->idx = _cmap_find_gap(cmap);
-
-                            if (debug) {
-                                fprintf(stderr, ">> _cmap_find_gap: cmap_size=%d, cmap_gap=%d, cmap_idx=%d\n", cmap->size, cmap->gap, cmap->idx);
-                            }
-
-                            if (cmap->idx < 0) {
-                                fprintf(stderr, ">> Not found gap in CMap: %d, %d\n", cmap->size, cmap->gap);
-                            } else {
-                                success = true;
-                                cmap->gap = cmap->idx; 
-                                cmap->carr_idx = cmap->idx;
-                            }
-                        } else {
-                            if (cmap->size + 1 > cmap->capacity) {
-                                cmap->capacity = cmap->capacity * 2;
-                                cmap = (lib_pdf_cmap_t*) realloc(cmap, cmap->capacity);
-                            }
-                            success = true;
-                            cmap->carr_idx = cmap->size;
-                            cmap->size++;
-                            cmap->idx++;
-                        }
-
+                        p = _cmap_add_char(cmap, ucode);
+                        success = p != NULL;
                     }
                 }
 
                 if (success) {
 
                     //>>
-                    if (!cmap_found) {
-
-                        p = &(cmap->buf[cmap->carr_idx]);
-                        //p->icode = icode;
-                        p->ucode = ucode;
-                        p->width = 700;     // TODO: Use font info to get width of char
-                        p->idx   = cmap->idx;
-                        p->is_predef = false;
-
-                    }
-                    //>>
-
-                    //>>
                     if (use_break_line) {
 
                         line_buf->buf[line_buf->len].ucode = ucode;
-                        line_buf->buf[line_buf->len].idx   = cmap->idx;
+                        line_buf->buf[line_buf->len].idx   = p->idx;
                         line_buf->buf[line_buf->len].width = p->width;
                         line_buf->len++;
                         line_buf->width += p->width;
@@ -763,7 +770,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                         // Break Line Algo
                         if (line_buf->width >= body_width) {
-                            //fprintf(stderr, "U: BREAK-LINE: %d %d %d\n", body_width, line_buf->width, e.width);
                             _line_break(line_buf);
                             line_buf->flush = true;
                             break_line = true;
@@ -780,15 +786,12 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         
                     } else {
                         len += _print_idx(ctx, p->idx, false);
-                        // len += 2; // <xx>
                     }
                     //>>
 
                 }
 
             } else {
-
-                //fprintf(stderr, "I: %d\n", i);
 
                 //>>
                 if (use_break_line) {
@@ -802,7 +805,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                     // Break Line Algo
                     if (line_buf->width >= body_width) {
-                        //fprintf(stderr, "I: BREAK-LINE: %d %d\n", body_width, line_buf->width);
                         _line_break(line_buf);
                         line_buf->flush = true;
                         break_line = true;
@@ -819,7 +821,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                 } else {
                     len += _print_ucode(ctx, ucode, false);
-                    // len++;
                 }
                 //>>
                 
@@ -844,8 +845,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
             len += BUF_LN_LEN;
             if (line > line_page) {
-
-                //fprintf(stderr, "CLOSE-PAGE: %d %d %d\n", page, line, line_page);
 
                 //if (page + 1 > max_page) {
                 //    break;
@@ -1022,7 +1021,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                 cmap_found = p != NULL;
 
                 if (!cmap_found) {
-                    // TODO: ERROR
                     fprintf(stderr, "Char not found in CMap: icode=%d, ucode=%d\n", icode, ucode);
                 } else {
                     int idx = p->idx;
@@ -1031,7 +1029,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     if (use_break_line) {
 
                         line_buf->buf[line_buf->len].ucode = ucode;
-                        line_buf->buf[line_buf->len].idx   = p->idx; //cmap_idx;
+                        line_buf->buf[line_buf->len].idx   = p->idx;
                         line_buf->buf[line_buf->len].width = p->width;
                         line_buf->len++;
                         line_buf->width += p->width;
@@ -1056,8 +1054,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                      } else {
                         len += _print_idx(ctx, idx, true);
-                        // len += 2; // <xx>
-                        // fprintf(ctx->out, "%02X", idx);
                     }
                     //>>
 
@@ -1095,14 +1091,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
                 } else {
                     len += _print_ucode(ctx, ucode, true);
-                    // len++;
-                    // if (ucode == '(') {
-                    //     fprintf(ctx->out, "\\(");
-                    // } else if (ucode == ')') {
-                    //     fprintf(ctx->out, "\\)");
-                    // } else {
-                    //     fprintf(ctx->out, "%c", (char) ucode);
-                    // }
                 }
                 //>>
                
