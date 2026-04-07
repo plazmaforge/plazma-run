@@ -17,6 +17,7 @@
 #define LIB_PDF_FONT_SIZE   "12"                 // 12 pt
 
 // STUB: CMap Helvetica Widts
+// 10pt
 static const int array[] = {
 0,
 800,
@@ -1001,16 +1002,16 @@ static int _print_ucode(run_pdf_context_t* ctx, uint32_t ucode, bool out_mode) {
     }
 }
 
-static int _line_add(lib_pdf_line_t* line, lib_pdf_char_t* p) {
+static int _line_add(lib_pdf_line_t* line, lib_pdf_char_t* p, int font_size) {
     if (!line) {
         return 1;
     }
 
     line->buf[line->len].ucode = p->ucode;
     line->buf[line->len].idx   = p->idx;
-    line->buf[line->len].width = p->width;
+    line->buf[line->len].width = p->width / 10 * font_size;
     line->len++;
-    line->width += p->width;
+    line->width += (p->width / 10 * font_size);
 
     return 0;
 }
@@ -1226,7 +1227,11 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     bool use_break_line = true;
     bool use_cmap       = use_unicode || use_break_line;
 
-    int body_width = 40000; //use_unicode ? 38000 : 50000; // TODO: STUB
+    //int body_width = 40000; //use_unicode ? 38000 : 50000; // TODO: STUB
+    int body_width = content_width * 100;
+
+    fprintf(stderr, ">> content_width=%d\n", content_width);
+    fprintf(stderr, ">> body_width=%d\n", body_width);
 
     if (use_cmap) {
 
@@ -1331,7 +1336,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             //>>
             if (use_break_line) {
 
-                _line_add(line_buf, p);
+                _line_add(line_buf, p, font_size);
                 line_buf->flush = false;
 
                 // Break Line Algo
@@ -1571,7 +1576,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             //>>
             if (use_break_line) {
 
-                _line_add(line_buf, p);
+                _line_add(line_buf, p, font_size);
                 line_buf->flush = false;
 
                 // Break Line Algo
