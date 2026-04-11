@@ -16,7 +16,7 @@
 #define LIB_PDF_FONT_WEIGHT LIB_DOC_FONT_WEIGHT
 #define LIB_PDF_FONT_SIZE   "12"                 // 12 pt
 
-static const int helvetica_1200[] = {
+static const int helvetica_ascii[] = {
 0, 750, 750, 750, 750, 750, 750, 750, 750, 0, 0, 750, 861, 0, 750, 750,
 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
 277, 278, 355, 555, 555, 889, 666, 190, 333, 333, 389, 584, 277, 333, 277, 277,
@@ -25,6 +25,7 @@ static const int helvetica_1200[] = {
 666, 777, 722, 666, 610, 722, 666, 943, 667, 667, 610, 277, 277, 277, 470, 555,
 333, 555, 555, 500, 555, 555, 277, 555, 555, 222, 222, 500, 222, 834, 555, 555,
 555, 555, 333, 500, 277, 555, 499, 720, 498, 500, 500, 334, 260, 334, 584, 500,
+
 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
 277, 333, 555, 555, 555, 555, 260, 555, 333, 736, 370, 555, 584, 333, 736, 552,
@@ -35,42 +36,24 @@ static const int helvetica_1200[] = {
 555, 555, 555, 555, 555, 555, 555, 549, 610, 555, 555, 555, 555, 500, 555, 500
 };
 
-static const int helvetica_1000[] = {
+static const int helvetica_cp1251[] = {
 0, 750, 750, 750, 750, 750, 750, 750, 750, 0, 0, 750, 861, 0, 750, 750,
 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278,
-556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556,
-1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778,
-667, 778, 722, 667, 611, 722, 667, 944, 666, 667, 611, 278, 278, 278, 469, 556,
-333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 834, 556, 556,
-556, 556, 333, 500, 278, 556, 501, 722, 497, 500, 500, 334, 260, 334, 584, 500,
-750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-278, 333, 556, 556, 556, 556, 260, 556, 333, 737, 370, 556, 584, 333, 737, 552,
-400, 549, 333, 333, 333, 576, 537, 333, 333, 333, 365, 556, 834, 834, 834, 611,
-667, 667, 667, 667, 667, 667, 1000, 722, 667, 667, 667, 667, 278, 278, 278, 278,
-722, 722, 778, 778, 778, 778, 778, 584, 778, 722, 722, 722, 722, 667, 667, 611,
-556, 556, 556, 556, 556, 556, 889, 500, 556, 556, 556, 556, 277, 277, 277, 277,
-556, 556, 556, 556, 556, 556, 556, 549, 611, 556, 556, 556, 556, 500, 556, 500
-};
+277, 278, 355, 555, 555, 889, 666, 190, 333, 333, 389, 584, 277, 333, 277, 277,
+555, 555, 555, 555, 555, 555, 555, 555, 555, 555, 277, 277, 584, 584, 584, 555,
+1015, 666, 666, 722, 722, 666, 610, 777, 722, 277, 500, 666, 555, 833, 722, 777,
+666, 777, 722, 666, 610, 722, 666, 943, 667, 667, 610, 277, 277, 277, 470, 555,
+333, 555, 555, 500, 555, 555, 277, 555, 555, 222, 222, 500, 222, 834, 555, 555,
+555, 555, 333, 500, 277, 555, 499, 720, 498, 500, 500, 334, 260, 334, 584, 500,
 
-static const int helvetica_100[] = {
-0, 750, 750, 750, 750, 750, 750, 750, 750, 0, 0, 750, 860, 0, 750, 750,
-750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-280, 280, 360, 560, 560, 890, 670, 190, 330, 330, 390, 580, 280, 330, 280, 280,
-560, 560, 560, 560, 560, 560, 560, 560, 560, 560, 280, 280, 580, 580, 580, 560,
-1020, 670, 670, 720, 720, 670, 610, 780, 720, 280, 500, 670, 560, 830, 720, 780,
-670, 780, 720, 670, 620, 720, 670, 990, 660, 660, 610, 280, 280, 280, 430, 560,
-330, 560, 560, 500, 560, 560, 290, 550, 560, 220, 220, 500, 220, 840, 560, 560,
-560, 550, 330, 500, 280, 560, 490, 710, 490, 490, 490, 330, 260, 330, 580, 500,
-750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
-280, 310, 560, 560, 560, 560, 260, 560, 330, 740, 370, 560, 580, 330, 740, 550,
-400, 550, 330, 330, 330, 580, 540, 330, 330, 330, 370, 560, 830, 830, 830, 610,
-670, 670, 670, 670, 670, 670, 1000, 720, 670, 670, 670, 670, 280, 280, 280, 280,
-720, 720, 780, 780, 780, 780, 780, 580, 780, 720, 720, 720, 720, 660, 670, 610,
-560, 560, 560, 560, 560, 560, 890, 500, 560, 560, 560, 560, 270, 270, 270, 270,
-560, 560, 560, 560, 560, 560, 560, 550, 610, 560, 560, 560, 560, 490, 560, 490
+865, 541, 222, 365, 333, 1000, 555, 555, 555, 1000, 1057, 333, 1010, 582, 854, 719,
+555, 222, 222, 333, 333, 350, 555, 1000, 750, 1000, 906, 333, 812, 437, 555, 552,
+277, 635, 500, 500, 555, 489, 260, 555, 666, 736, 719, 555, 584, 333, 736, 277,
+400, 549, 277, 222, 410, 575, 537, 333, 555, 1072, 510, 555, 222, 666, 500, 276,
+666, 656, 666, 541, 677, 666, 923, 604, 719, 719, 582, 656, 833, 722, 777, 719,
+666, 722, 610, 635, 760, 667, 740, 666, 916, 937, 791, 885, 656, 719, 1010, 722,
+555, 572, 531, 365, 583, 555, 669, 458, 558, 558, 437, 583, 687, 552, 555, 541,
+555, 500, 458, 500, 822, 498, 572, 520, 802, 822, 625, 719, 520, 510, 750, 541
 };
 
 /**
@@ -168,11 +151,11 @@ static int _line_init(lib_pdf_line_t* line);
 
 static int _cmap_init(lib_pdf_cmap_t* cmap);
 
-static int _cmap_predef(lib_pdf_cmap_t* cmap);
+static int _cmap_predef(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap);
 
 static void _cmap_dump(lib_pdf_cmap_t* cmap);
 
-static int _cmap_get_width(lib_pdf_cmap_t* cmap, uint32_t ucode);
+static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf_char_t* c);
 
 ////
 
@@ -316,7 +299,7 @@ static lib_pdf_cmap_t* _cmap_new(size_t capacity) {
  * Bu we can use other code pages.
  * For example: CP1251.
  */
-static int _cmap_predef(lib_pdf_cmap_t* cmap) {
+static int _cmap_predef(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap) {
     
     int size = 256;
     lib_pdf_char_t e;
@@ -329,8 +312,7 @@ static int _cmap_predef(lib_pdf_cmap_t* cmap) {
         e.idx   = cmap_idx;
         e.icode = cmap_idx;
         e.ucode = cmap_idx;
-        //e.width = 700;     // TODO: Use font info to get width of char
-        e.width = _cmap_get_width(cmap, e.ucode);
+        e.width = _cmap_get_width(ctx, cmap, &e);
 
         bool block_a =  (cmap_idx >= 32 && cmap_idx <= 127);  // [032..127] ASCII
         bool block_b =  (cmap_idx >= 160 && cmap_idx <= 255); // [160..255] NLS
@@ -394,16 +376,37 @@ static int _cmap_find_gap(lib_pdf_cmap_t* cmap) {
     return -1;
 }
 
-static int _cmap_get_width(lib_pdf_cmap_t* cmap, uint32_t ucode) {
-    for (int i = 0; i < 256; i++) {
-        if (i == ucode) {
-            return helvetica_1200[i];
-        }
-    }
-    return 600; //700; // TODO: Use font info to get width of char
+static int _cmap_def_width() {
+    return 600;
 }
 
-static lib_pdf_char_t* _cmap_add_char(lib_pdf_cmap_t* cmap, uint32_t ucode) {
+static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf_char_t* c) {
+
+    const int* font_widths = NULL;
+    int encodint_id = ctx->encoding_id;
+    if (encodint_id == LIB_ENC_CP1251_ID) {
+        font_widths = helvetica_cp1251;
+    } else {
+        font_widths = helvetica_ascii;
+    }
+
+    if (font_widths == NULL) {
+        return _cmap_def_width();
+    }
+
+    for (int i = 0; i < 256; i++) {
+        //if (i == c->ucode) {
+        //    return helvetica_ascii[i];
+        //}
+        if (i == c->icode) {
+            return font_widths[i];
+        }
+    }
+    return _cmap_def_width();
+}
+
+static lib_pdf_char_t* _cmap_add_char(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, uint8_t icode, uint32_t ucode) {
+
     //fprintf(stderr, ">> _cmap_add_char: ucode=%d\n", ucode);
 
     //if (ucode == NO_CHR) {
@@ -450,9 +453,9 @@ static lib_pdf_char_t* _cmap_add_char(lib_pdf_cmap_t* cmap, uint32_t ucode) {
     }
 
     lib_pdf_char_t* p = &(cmap->buf[cmap->carr_idx]);
-    //p->icode = icode;
+    p->icode = icode;
     p->ucode = ucode;
-    p->width = _cmap_get_width(cmap, ucode);
+    p->width = _cmap_get_width(ctx, cmap, p);
     p->idx   = cmap->idx;
     p->is_predef = false;
 
@@ -542,11 +545,14 @@ static int _line_add(lib_pdf_line_t* line, lib_pdf_char_t* p, int font_size) {
         return 1;
     }
 
+    // Calculate real width of char for font size
+    int width = p->width * font_size; // width in 1/1000 pt x font size
+
     line->buf[line->len].ucode = p->ucode;
     line->buf[line->len].idx   = p->idx;
-    line->buf[line->len].width = p->width / 10 * font_size;
+    line->buf[line->len].width = width;
     line->len++;
-    line->width += (p->width / 10 * font_size);
+    line->width += width;
 
     return 0;
 }
@@ -762,11 +768,15 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     bool use_break_line = true;
     bool use_cmap       = use_unicode || use_break_line;
 
-    //int body_width = 40000; //use_unicode ? 38000 : 50000; // TODO: STUB
-    int body_width = content_width * 100;
+    int body_width = content_width * 1000; // width in 1/1000 pt
 
-    fprintf(stderr, ">> content_width=%d\n", content_width);
-    fprintf(stderr, ">> body_width=%d\n", body_width);
+    if (debug) {
+        fprintf(stderr, ">> use_predef     =%s\n", (use_predef ? "true" : "false"));
+        fprintf(stderr, ">> use_break_line =%s\n", (use_break_line ? "true" : "false"));
+        fprintf(stderr, ">> use_cmap       =%s\n", (use_cmap ? "true" : "false"));
+        fprintf(stderr, ">> content_width  =%d\n", content_width);
+        fprintf(stderr, ">> body_width     =%d\n", body_width);
+    }
 
     if (use_cmap) {
 
@@ -774,9 +784,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         cmap->use_predef = use_predef;
         
         if (use_predef) {
+
             // Initialize predefined map (ASCII)
+            if (debug) {
+                fprintf(stderr, ">> Initialize predefined map (ASCII)...\n");
+            }
+            
             cmap->start  = 0;
-            cmap->size   = _cmap_predef(cmap);
+            cmap->size   = _cmap_predef(ctx, cmap);
         } else {
             lib_pdf_char_t e;
             cmap->start  = 1;
@@ -856,7 +871,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                         // Not found char in UniMap
                         fprintf(stderr, ">> Not found code in UniMap [NO_CHR]: %d\n", icode);
                     } else {
-                        p = _cmap_add_char(cmap, ucode);
+                        p = _cmap_add_char(ctx, cmap, icode, ucode);
                         success = p != NULL;
                     }
                 }
