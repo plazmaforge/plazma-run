@@ -70,6 +70,7 @@ typedef struct run_pdf_config_t {
 typedef struct run_pdf_context_t {
     RUN_DOC_CONTEXT
     bool use_unicode;
+    const int* font_widths;
 } run_pdf_context_t;
 
 typedef struct lib_font_info_t {
@@ -382,21 +383,15 @@ static int _cmap_def_width() {
 
 static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf_char_t* c) {
 
-    const int* font_widths = NULL;
-    int encodint_id = ctx->encoding_id;
-    if (encodint_id == LIB_ENC_CP1251_ID) {
-        font_widths = helvetica_cp1251;
-    } else {
-        font_widths = helvetica_ascii;
-    }
-
+    const int* font_widths = ctx->font_widths;
+    
     if (font_widths == NULL) {
         return _cmap_def_width();
     }
 
     for (int i = 0; i < 256; i++) {
         //if (i == c->ucode) {
-        //    return helvetica_ascii[i];
+        //    return font_widths[i];
         //}
         if (i == c->icode) {
             return font_widths[i];
@@ -629,6 +624,25 @@ static int _line_break(lib_pdf_line_t* line) {
     return 0;
 }
 
+static int lib_pdf_init_font_widths(run_pdf_context_t* ctx, const char* font_name) {
+    ctx->font_widths = NULL;
+
+    if (font_name == NULL) {
+        return 1;
+    }
+
+    if (lib_stristr(font_name, "Helvetica") == font_name) {
+        fprintf(stderr, ">> Helvetica\n");
+        if (ctx->encoding_id == LIB_ENC_CP1251_ID) {
+            ctx->font_widths = helvetica_cp1251;
+        } else {
+            ctx->font_widths = helvetica_ascii;
+        }
+    }
+
+    return 0;
+} 
+
 int lib_pdf_body(run_pdf_context_t* ctx) {
     bool debug = false;
     const char* pdf_version  = "1.5";
@@ -701,6 +715,8 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             }
         }
     }
+
+    lib_pdf_init_font_widths(ctx, font_name);
 
     int content_width  = page_width - margin_left - margin_right;
     int content_height = page_height - margin_top - margin_bottom;
