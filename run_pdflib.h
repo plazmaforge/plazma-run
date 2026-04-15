@@ -70,6 +70,7 @@ typedef struct run_pdf_config_t {
 typedef struct run_pdf_context_t {
     RUN_DOC_CONTEXT
     bool use_unicode;
+    bool use_internal;
     const int* font_widths;
 } run_pdf_context_t;
 
@@ -214,6 +215,9 @@ static int lib_pdf_ctx_init(run_pdf_config_t* cnf, run_pdf_context_t* ctx) {
     ctx->use_unicode   = cnf->use_unicode;
     ctx->out_file_name = cnf->out_file_name;
     ctx->out = cnf->out;
+
+    ctx->use_internal  = false;
+    ctx->font_widths   = NULL;
 
     return lib_pdf_prepare(ctx);
 }
@@ -389,14 +393,26 @@ static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf
         return _cmap_def_width();
     }
 
-    for (int i = 0; i < 256; i++) {
-        //if (i == c->ucode) {
-        //    return font_widths[i];
-        //}
-        if (i == c->icode) {
-            return font_widths[i];
+    if (ctx->use_internal) {
+        for (int i = 0; i < 256; i++) {
+            //if (i == c->ucode) {
+            //    return font_widths[i];
+            //}
+            if (i == c->icode) {
+                return font_widths[i];
+            }
+        }
+    } else {
+        for (int i = 0; i < 65536; i++) {
+            if (i == c->ucode) {
+                return font_widths[i];
+            }
+            //if (i == c->icode) {
+            //    return font_widths[i];
+            //}
         }
     }
+
     return _cmap_def_width();
 }
 
@@ -624,13 +640,194 @@ static int _line_break(lib_pdf_line_t* line) {
     return 0;
 }
 
-static int lib_pdf_init_font_widths(run_pdf_context_t* ctx, const char* font_name) {
-    ctx->font_widths = NULL;
+/**
+ * Return file name by font name
+ */
+static char* _font_widths_file_name(const char* font_name) {
 
-    if (font_name == NULL) {
+    fprintf(stderr, ">> _font_widths_file_name\n");
+
+    if (!font_name) {
+        return NULL;
+    }
+
+    char* cwd = ""; //get_user_dir();
+    if (!cwd) {
+        return NULL;
+    }
+
+    char* dir = "/res/fonts/";
+    char* ext = ".width";
+
+    int len = strlen(cwd);
+    len += strlen(dir);
+    len += strlen(font_name);
+    len += strlen(ext);
+
+    char* str = (char*) malloc(len + 1);
+    strcpy(str, cwd);
+    strcat(str, dir);
+    strcat(str, font_name);
+    strcat(str, ext);
+
+    free(cwd);
+
+    str[len] = '\0';
+
+    bool WIN = true;
+
+    if (WIN) {
+       for (int i = 0; i < len; i++) {
+           if (str[i] == '/') {
+               str[i] = '\\';
+           }
+       } 
+    }
+
+    return str;
+}
+
+static bool _is_space(char* str) {
+    return (*str == ' ' || *str == '\t');
+}
+
+static bool _is_skip(char* str) {
+    return (*str == '\0' || *str == '#');
+}
+
+static bool _is_shift(char* str) {
+    return (!_is_space(str) && !_is_skip(str));
+}
+
+/**
+ * Read line from font widths file
+ */
+static int _font_widths_read_line(int* width, int* count, char* line) {
+    *width = 0;
+    *count = 0;
+
+    if (line == NULL) {
         return 1;
     }
 
+    // skip
+    if (_is_skip(line)) {
+        return 0;
+    }
+
+    char* str = line;
+    char* val = str;
+    int len   = 0;
+    char col[100];
+
+    // trim left
+    while (_is_space(str)) {
+        str++;
+    }
+
+    // skip
+    if (_is_skip(str)) {
+        return 0;
+    }
+
+    val = str;
+
+    // shift to separators or end string
+    while (_is_shift(str)) {
+        str++;
+        len++;
+    }
+
+    strncpy(col, val, len);
+    *width = atoi(col);
+    *count = 1;
+
+    // end
+    if (_is_skip(str)) {
+        return 0;
+    }
+
+    // trim left
+    while (_is_space(str)) {
+        str++;
+    }
+
+    // end
+    if (_is_skip(str)) {
+        return 0;
+    }
+
+    val = str;
+    len = 0;
+
+    // shift to separators or end string
+    while (_is_shift(str)) {
+        str++;
+        len++;
+    }
+
+    strncpy(col, val, len);
+    *count = atoi(col);
+
+    return 0;
+}
+
+static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) {
+
+    fprintf(stderr,">> _font_widths_init_ext\n");
+
+    if (!font_name) {
+        fprintf(stderr, "Font name is empty\n");
+        return 1;
+    }
+
+    char* file_name = _font_widths_file_name(font_name);
+    if (!file_name) {
+        fprintf(stderr, "Font file name is empty\n");
+        return 1;
+    }
+
+    FILE* file = fopen(file_name, "rb");
+    if (!file) {
+        fprintf(stderr, "Font file not found: %s\n", file_name);
+        free(file_name);
+        return 1;
+    }
+
+    char line[256];
+    int* font_widths = (int*) malloc(65536 * sizeof(int));
+    if (font_widths == NULL) {
+        free(file_name);
+        return 1;
+    }
+
+    int i = 0;
+    int width = 0;
+    int count = 0;
+    while (fgets(line, sizeof(line), file)) {
+        if (_font_widths_read_line(&width, &count, line) != 0) {
+            fprintf(stderr, "Read font line error\n");
+            fclose(file);
+            free(file_name);
+            return 1;
+        }
+        if (count > 0) {
+            for (int k = 0; k < count; k++) {
+                font_widths[i + k] = width;
+            }
+            i += count;
+        }
+    }
+
+    // use_internal = false
+    ctx->font_widths = font_widths;
+
+    fclose(file);
+    free(file_name);
+    return 0;
+}
+
+static int _font_widths_init_int(run_pdf_context_t* ctx, const char* font_name) {
     if (lib_stristr(font_name, "Helvetica") == font_name) {
         fprintf(stderr, ">> Helvetica\n");
         if (ctx->encoding_id == LIB_ENC_CP1251_ID) {
@@ -638,6 +835,25 @@ static int lib_pdf_init_font_widths(run_pdf_context_t* ctx, const char* font_nam
         } else {
             ctx->font_widths = helvetica_ascii;
         }
+    }
+    return 0;
+}
+
+static int lib_pdf_init_font_widths(run_pdf_context_t* ctx, const char* font_name) {
+    ctx->font_widths = NULL;
+
+    if (font_name == NULL) {
+        return 1;
+    }
+
+    fprintf(stderr,">> lib_pdf_init_font_widths\n");
+
+    int err = _font_widths_init_ext(ctx, font_name);
+    if (err == 0) {
+        ctx->use_internal = false;
+    } else {
+        ctx->use_internal = true;
+        _font_widths_init_int(ctx, font_name);
     }
 
     return 0;
