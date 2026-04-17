@@ -386,10 +386,13 @@ static int _cmap_def_width() {
 }
 
 static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf_char_t* c) {
+    
+    //fprintf(stderr, "_get_width: interanl=%d, icode=%d, ucode=%d \n", ctx->use_internal, c->icode, c->ucode);
 
     const int* font_widths = ctx->font_widths;
     
     if (font_widths == NULL) {
+        fprintf(stderr, "def-width\n");
         return _cmap_def_width();
     }
 
@@ -399,12 +402,14 @@ static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf
             //    return font_widths[i];
             //}
             if (i == c->icode) {
+                //fprintf(stderr, " i-width: %d\n", font_widths[i]);
                 return font_widths[i];
             }
         }
     } else {
         for (int i = 0; i < 65536; i++) {
             if (i == c->ucode) {
+                //fprintf(stderr, " u-width: %d\n", font_widths[i]);
                 return font_widths[i];
             }
             //if (i == c->icode) {
@@ -651,7 +656,7 @@ static char* _font_widths_file_name(const char* font_name) {
         return NULL;
     }
 
-    char* cwd = ""; //get_user_dir();
+    char* cwd = "D:\\Plazma\\plazma-run"; //get_user_dir();
     if (!cwd) {
         return NULL;
     }
@@ -670,7 +675,7 @@ static char* _font_widths_file_name(const char* font_name) {
     strcat(str, font_name);
     strcat(str, ext);
 
-    free(cwd);
+    //free(cwd);
 
     str[len] = '\0';
 
@@ -683,6 +688,8 @@ static char* _font_widths_file_name(const char* font_name) {
            }
        } 
     }
+
+    fprintf(stderr, ">> _font_widths_file_name: %s\n", str);
 
     return str;
 }
@@ -706,12 +713,15 @@ static int _font_widths_read_line(int* width, int* count, char* line) {
     *width = 0;
     *count = 0;
 
+    //fprintf(stderr, ">> read_line: %s\n", line);
+
     if (line == NULL) {
         return 1;
     }
 
     // skip
     if (_is_skip(line)) {
+        //fprintf(stderr, ">> read_line: return-skip-1\n");
         return 0;
     }
 
@@ -727,6 +737,7 @@ static int _font_widths_read_line(int* width, int* count, char* line) {
 
     // skip
     if (_is_skip(str)) {
+        //fprintf(stderr, ">> read_line: return-skip-2\n");
         return 0;
     }
 
@@ -744,6 +755,8 @@ static int _font_widths_read_line(int* width, int* count, char* line) {
 
     // end
     if (_is_skip(str)) {
+        //fprintf(stderr, ">> read_line: return-skip-3\n");
+
         return 0;
     }
 
@@ -754,6 +767,7 @@ static int _font_widths_read_line(int* width, int* count, char* line) {
 
     // end
     if (_is_skip(str)) {
+        //fprintf(stderr, ">> read_line: return-skip-4\n");
         return 0;
     }
 
@@ -772,9 +786,79 @@ static int _font_widths_read_line(int* width, int* count, char* line) {
     return 0;
 }
 
+#ifdef _WIN32
+#define GETLINE_MINSIZE 16
+int _getline_win(char** line, size_t* n, FILE* file) {
+    int ch;
+    int i = 0;
+    char free_on_err = 0;
+    char *p;
+
+    errno = 0;
+    if (line == NULL || n == NULL || file == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (*line == NULL) {
+        *n = GETLINE_MINSIZE;
+        *line = (char*) malloc( sizeof(char) * (*n));
+        if (*line == NULL) {
+            errno = ENOMEM;
+            return -1;
+        }
+        free_on_err = 1;
+    }
+
+    for (i = 0; ; i++) {
+        ch = fgetc(file);
+        while (i >= (*n) - 2) {
+            *n *= 2;
+            p = realloc(*line, sizeof(char) * (*n));
+            if (p == NULL) {
+                if (free_on_err)
+                    free(*line);
+                errno = ENOMEM;
+                return -1;
+            }
+            *line = p;
+        }
+        if (ch == EOF) {
+            if (i == 0) {
+                if (free_on_err)
+                     free(*line);
+                return -1;
+            }
+            (*line)[i] = '\0';
+            *n = i;
+            return i;
+        }
+
+        if (ch == '\n') {
+            (*line)[i] = '\n';
+            (*line)[i+1] = '\0';
+            *n = i+1;
+            return i+1;
+        }
+        (*line)[i] = (char)ch;
+    }
+}
+#else
+ssize_t _getline_nix(char** line, size_t* cap, FILE* file) {
+    return getline(line, cap, file);
+}
+#endif
+
+ssize_t _getline(char** line, size_t* cap, FILE* file) {
+    #ifdef _WIN32
+    return _getline_win(line, cap, file);
+    #else
+    return _getline_nix(line, cap, file);
+    #endif
+}
+
 static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) {
 
-    fprintf(stderr,">> _font_widths_init_ext\n");
+    //fprintf(stderr,">> _font_widths_init_ext\n");
 
     if (!font_name) {
         fprintf(stderr, "Font name is empty\n");
@@ -794,7 +878,7 @@ static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) 
         return 1;
     }
 
-    char line[256];
+    //char line[256];
     int* font_widths = (int*) malloc(65536 * sizeof(int));
     if (font_widths == NULL) {
         free(file_name);
@@ -804,20 +888,43 @@ static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) 
     int i = 0;
     int width = 0;
     int count = 0;
-    while (fgets(line, sizeof(line), file)) {
+
+    char* line   = NULL;
+    size_t cap   = 0;
+    size_t len   = 0;
+
+    int z = 0;
+
+    while ( (len = _getline(&line, &cap, file)) != -1 ) {
+        //if (z > 100) {
+        //    fprintf(stderr, "Read line: %s\n", line);
+        //}
+    //while (fgets(line, sizeof(line), file)) {
+
         if (_font_widths_read_line(&width, &count, line) != 0) {
             fprintf(stderr, "Read font line error\n");
             fclose(file);
             free(file_name);
             return 1;
         }
+
+        //fprintf(stderr, ">> init_ext_read_line: count=%d\n", count);
+
         if (count > 0) {
             for (int k = 0; k < count; k++) {
                 font_widths[i + k] = width;
             }
             i += count;
+            //fprintf(stderr, ">> read_next: i=%d\n", i);
         }
+        z++;
     }
+
+    free(line);
+
+    //for (int i = 0; i < 256; i++) {
+    //    fprintf(stderr, ">> ext-width: %d\n", font_widths[i]);
+    //}
 
     // use_internal = false
     ctx->font_widths = font_widths;
@@ -829,7 +936,7 @@ static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) 
 
 static int _font_widths_init_int(run_pdf_context_t* ctx, const char* font_name) {
     if (lib_stristr(font_name, "Helvetica") == font_name) {
-        fprintf(stderr, ">> Helvetica\n");
+        //fprintf(stderr, ">> Helvetica\n");
         if (ctx->encoding_id == LIB_ENC_CP1251_ID) {
             ctx->font_widths = helvetica_cp1251;
         } else {
@@ -846,7 +953,7 @@ static int lib_pdf_init_font_widths(run_pdf_context_t* ctx, const char* font_nam
         return 1;
     }
 
-    fprintf(stderr,">> lib_pdf_init_font_widths\n");
+    //fprintf(stderr,">> lib_pdf_init_font_widths\n");
 
     int err = _font_widths_init_ext(ctx, font_name);
     if (err == 0) {
