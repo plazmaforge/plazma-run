@@ -1,5 +1,16 @@
 #include <stdlib.h>
 
+#include <string.h>
+
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <unistd.h>       // getuid (user_name, user_home), getcwd (current_dir), macos:confstr (tmp_dir)
+#include <sys/utsname.h>  // os_name, os_version
+#include <pwd.h>          // getpwuid (user_name, user_home)
+#include <limits.h>       // PATH_MAX
+#endif
+
 #include "iolib.h"
 #include "run_doclib.h"
 
@@ -392,7 +403,7 @@ static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf
     const int* font_widths = ctx->font_widths;
     
     if (font_widths == NULL) {
-        fprintf(stderr, "def-width\n");
+        //fprintf(stderr, "def-width\n");
         return _cmap_def_width();
     }
 
@@ -421,6 +432,12 @@ static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf
     return _cmap_def_width();
 }
 
+/**
+ * Add a char to CMap: icode, ucode.
+ * We use 2 Predefined modes:
+ * - Predefined = true : find gap
+ * - Predefined = false: add new index 
+ */
 static lib_pdf_char_t* _cmap_add_char(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, uint8_t icode, uint32_t ucode) {
 
     //fprintf(stderr, ">> _cmap_add_char: ucode=%d\n", ucode);
@@ -645,6 +662,68 @@ static int _line_break(lib_pdf_line_t* line) {
     return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////
+
+#ifdef WIN32
+
+static char* _wcs_to_mbs(UINT cp, const wchar_t* wstr, int wlen) {
+    if (!wstr) {
+        return NULL;
+    }
+    int len = WideCharToMultiByte(cp, 0, wstr, wlen, NULL, 0, NULL, NULL);
+    char* str = malloc(len + 1); //lib_strnew(len);
+    str[0] = '\0';
+    WideCharToMultiByte(cp, 0, wstr, -1, str, len, NULL, NULL);
+    str[len] = '\0';
+    return str;
+}
+
+static char* lib_wcs_to_mbs(const wchar_t* wstr) {
+    if (!wstr) {
+        return NULL;
+    }
+    return _wcs_to_mbs(CP_UTF8, wstr, wcslen(wstr)); 
+}
+
+static wchar_t* getUserDirW() {
+    /* Current directory */
+    WCHAR buf[MAX_PATH];
+    if (GetCurrentDirectoryW(sizeof(buf) / sizeof(WCHAR), buf) == 0) {
+        return NULL;
+    }
+    return _wcsdup(buf);
+}
+
+static char* get_user_dir() {
+    wchar_t* wuserdir = getUserDirW();
+    if (wuserdir == NULL) {
+        return NULL;
+    }
+    char* userdir = lib_wcs_to_mbs(wuserdir);
+    if (userdir == NULL) {
+        return NULL;
+    }
+    free(wuserdir);
+    return userdir;
+}
+
+#else
+
+static char* get_user_dir() {
+  /* Current directory */
+  char buf[PATH_MAX];
+  //errno = 0;
+  if (getcwd(buf, sizeof(buf)) == NULL) {
+      return NULL;
+  }
+  return strdup(buf);
+}
+
+#endif
+
+////////////////////////////////////////////////////////////////////////////
+
+
 /**
  * Return file name by font name
  */
@@ -656,7 +735,8 @@ static char* _font_widths_file_name(const char* font_name) {
         return NULL;
     }
 
-    char* cwd = "D:\\Plazma\\plazma-run"; //get_user_dir();
+    //char* cwd = "D:\\Plazma\\plazma-run"; //get_user_dir();
+    char* cwd = get_user_dir();
     if (!cwd) {
         return NULL;
     }
@@ -679,15 +759,13 @@ static char* _font_widths_file_name(const char* font_name) {
 
     str[len] = '\0';
 
-    bool WIN = true;
-
-    if (WIN) {
-       for (int i = 0; i < len; i++) {
-           if (str[i] == '/') {
-               str[i] = '\\';
-           }
-       } 
-    }
+    #ifdef _WIN32
+    for (int i = 0; i < len; i++) {
+       if (str[i] == '/') {
+            str[i] = '\\';
+        }
+    } 
+    #endif
 
     fprintf(stderr, ">> _font_widths_file_name: %s\n", str);
 
@@ -756,7 +834,6 @@ static int _font_widths_read_line(int* width, int* count, char* line) {
     // end
     if (_is_skip(str)) {
         //fprintf(stderr, ">> read_line: return-skip-3\n");
-
         return 0;
     }
 
@@ -896,9 +973,6 @@ static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) 
     int z = 0;
 
     while ( (len = _getline(&line, &cap, file)) != -1 ) {
-        //if (z > 100) {
-        //    fprintf(stderr, "Read line: %s\n", line);
-        //}
     //while (fgets(line, sizeof(line), file)) {
 
         if (_font_widths_read_line(&width, &count, line) != 0) {
