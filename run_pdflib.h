@@ -664,9 +664,14 @@ static int _line_break(lib_pdf_line_t* line) {
 
 ////////////////////////////////////////////////////////////////////////////
 
+// OS PATH_MAX
+// https://habr.com/ru/companies/pvs-studio/articles/684636/
+
 #ifdef WIN32
 
-static char* _wcs_to_mbs(UINT cp, const wchar_t* wstr, int wlen) {
+// wstrlib
+
+static char* _wcstombs_win(UINT cp, const wchar_t* wstr, int wlen) {
     if (!wstr) {
         return NULL;
     }
@@ -678,14 +683,16 @@ static char* _wcs_to_mbs(UINT cp, const wchar_t* wstr, int wlen) {
     return str;
 }
 
-static char* lib_wcs_to_mbs(const wchar_t* wstr) {
+static char* lib_wcstombs(const wchar_t* wstr) {
     if (!wstr) {
         return NULL;
     }
-    return _wcs_to_mbs(CP_UTF8, wstr, wcslen(wstr)); 
+    return _wcstombs_win(CP_UTF8, wstr, wcslen(wstr)); 
 }
 
-static wchar_t* getUserDirW() {
+// dirlib
+
+static wchar_t* getCurDirW() {
     /* Current directory */
     WCHAR buf[MAX_PATH];
     if (GetCurrentDirectoryW(sizeof(buf) / sizeof(WCHAR), buf) == 0) {
@@ -694,22 +701,23 @@ static wchar_t* getUserDirW() {
     return _wcsdup(buf);
 }
 
-static char* get_user_dir() {
-    wchar_t* wuserdir = getUserDirW();
-    if (wuserdir == NULL) {
+static char* lib_get_cwd() {
+    wchar_t* wdir = getCurDirW();
+    if (wdir == NULL) {
         return NULL;
     }
-    char* userdir = lib_wcs_to_mbs(wuserdir);
-    if (userdir == NULL) {
+    char* dir = lib_wcstombs(wdir);
+    free(wdir);
+    if (dir == NULL) {
         return NULL;
     }
-    free(wuserdir);
-    return userdir;
+    //free(wdir);
+    return dir;
 }
 
 #else
 
-static char* get_user_dir() {
+static char* lib_get_cwd() {
   /* Current directory */
   char buf[PATH_MAX];
   //errno = 0;
@@ -735,8 +743,7 @@ static char* _font_widths_file_name(const char* font_name) {
         return NULL;
     }
 
-    //char* cwd = "D:\\Plazma\\plazma-run"; //get_user_dir();
-    char* cwd = get_user_dir();
+    char* cwd = lib_get_cwd(); // [allocate]
     if (!cwd) {
         return NULL;
     }
@@ -755,7 +762,7 @@ static char* _font_widths_file_name(const char* font_name) {
     strcat(str, font_name);
     strcat(str, ext);
 
-    //free(cwd);
+    free(cwd);
 
     str[len] = '\0';
 
