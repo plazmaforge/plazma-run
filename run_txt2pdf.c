@@ -8,12 +8,12 @@
 #include "run_pdflib.h"
 
 int run_txt2pdf_data(run_pdf_config_t* config, char* data, size_t size) {
-    fprintf(stderr, ">> run_txt2pdf_data\n");
+    //fprintf(stderr, ">> run_txt2pdf_data\n");
     return run_pdf(config, data, size);
 }
 
 int run_txt2pdf_file(run_pdf_config_t* config, const char* file_name) {
-    fprintf(stderr, ">> run_txt2pdf_file\n");
+    //fprintf(stderr, ">> run_txt2pdf_file\n");
     if (!file_name) {
         fprintf(stderr, "%s: File name is empty\n", prog_name);
         return 1;
@@ -42,7 +42,7 @@ void usage() {
 
 int main(int argc, char* argv[]) {
 
-    fprintf(stderr, "run_txt2pdf\n");
+    //fprintf(stderr, "run_txt2pdf\n");
 
     lib_cli_prog_init(argv);
 
@@ -142,14 +142,14 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    fprintf(stderr, "run_txt2pdf-2\n");
+    //fprintf(stderr, "run_txt2pdf-2\n");
 
     if (error) {
         usage();
         return 1;
     }
 
-    fprintf(stderr, "run_txt2pdf-3\n");
+    //fprintf(stderr, "run_txt2pdf-3\n");
 
     if (flag_string) {
         optind--;
@@ -228,13 +228,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    fprintf(stderr, "run_txt2pdf-4\n");
+    //fprintf(stderr, "run_txt2pdf-4\n");
 
     if (flag_string) {
-        fprintf(stderr, "run_txt2pdf-4.1\n");
+        //fprintf(stderr, "run_txt2pdf-4.1\n");
         error = run_txt2pdf_data(&config, data, size);
     } else {
-        fprintf(stderr, "run_txt2pdf-4.2\n");
+        //fprintf(stderr, "run_txt2pdf-4.2\n");
         error = run_txt2pdf_file(&config, file_name);
     }
 
