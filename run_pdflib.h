@@ -2,6 +2,10 @@
 
 #include <string.h>
 
+#define LIB_PDF_DEBUG    1
+//#define LIB_PDF_DEBUG_LL 1
+#define LIB_PDF_ERROR    1
+
 #ifdef WIN32
 #include <windows.h>
 #else
@@ -27,7 +31,7 @@
 #define LIB_PDF_FONT_WEIGHT LIB_DOC_FONT_WEIGHT
 #define LIB_PDF_FONT_SIZE   "12"                 // 12 pt
 
-static const int helvetica_ascii[] = {
+static const int helvetica[] = {
 0, 750, 750, 750, 750, 750, 750, 750, 750, 0, 0, 750, 861, 0, 750, 750,
 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
 277, 278, 355, 555, 555, 889, 666, 190, 333, 333, 389, 584, 277, 333, 277, 277,
@@ -65,6 +69,45 @@ static const int helvetica_cp1251[] = {
 666, 722, 610, 635, 760, 667, 740, 666, 916, 937, 791, 885, 656, 719, 1010, 722,
 555, 572, 531, 365, 583, 555, 669, 458, 558, 558, 437, 583, 687, 552, 555, 541,
 555, 500, 458, 500, 822, 498, 572, 520, 802, 822, 625, 719, 520, 510, 750, 541
+};
+
+static const int times[] = {
+933, 933, 933, 933, 933, 933, 933, 933, 933, 0, 0, 933, 933, 0, 933, 933,
+933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933,
+300, 400, 490, 600, 600, 1000, 935, 216, 400, 400, 600, 677, 300, 400, 300, 333,
+600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 333, 333, 677, 677, 677, 532,
+1105, 867, 800, 800, 867, 733, 667, 867, 867, 400, 467, 867, 733, 1067, 867, 867,
+667, 867, 800, 667, 733, 867, 867, 1133, 867, 867, 733, 399, 333, 401, 563, 600,
+400, 533, 600, 533, 600, 533, 400, 600, 600, 333, 334, 600, 333, 933, 600, 600,
+600, 600, 400, 467, 333, 600, 600, 867, 600, 602, 533, 576, 239, 576, 649, 933,
+
+933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933,
+933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933, 933,
+300, 400, 600, 600, 600, 600, 239, 600, 399, 912, 331, 600, 677, 400, 912, 600,
+480, 659, 360, 360, 400, 691, 544, 400, 400, 360, 373, 600, 900, 900, 900, 533,
+867, 867, 867, 867, 867, 867, 1067, 800, 733, 733, 733, 733, 400, 400, 400, 400,
+867, 867, 867, 867, 867, 867, 867, 677, 867, 867, 867, 867, 867, 867, 667, 600,
+533, 533, 533, 533, 533, 533, 800, 533, 533, 533, 533, 533, 333, 333, 333, 333,
+600, 600, 600, 600, 600, 600, 600, 659, 600, 600, 600, 600, 600, 602, 601, 602
+};
+
+static const int times_cp1251[] = {
+777, 777, 777, 777, 777, 777, 777, 777, 777, 0, 0, 777, 777, 0, 777, 777,
+777, 777, 777, 777, 777, 777, 777, 777, 777, 777, 777, 777, 777, 777, 777, 777,
+250, 333, 408, 500, 500, 833, 779, 180, 333, 333, 500, 564, 250, 333, 250, 277,
+500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 277, 277, 564, 564, 564, 443,
+920, 722, 666, 666, 722, 610, 555, 722, 722, 333, 389, 722, 610, 889, 722, 722,
+555, 722, 666, 555, 610, 722, 722, 944, 722, 722, 610, 332, 277, 334, 469, 500,
+333, 444, 500, 444, 500, 444, 333, 500, 500, 277, 278, 500, 277, 777, 500, 500,
+500, 500, 333, 389, 277, 500, 500, 722, 500, 501, 444, 480, 199, 480, 540, 777,
+751, 578, 333, 410, 445, 1000, 500, 500, 500, 1000, 871, 333, 871, 666, 740, 722,
+483, 333, 333, 445, 444, 350, 500, 1000, 777, 980, 726, 333, 723, 485, 500, 535,
+250, 708, 500, 389, 500, 450, 199, 500, 610, 760, 660, 500, 564, 333, 760, 333,
+400, 549, 333, 277, 350, 575, 453, 333, 444, 954, 429, 500, 278, 555, 389, 277,
+722, 574, 666, 578, 682, 610, 895, 500, 722, 722, 666, 678, 889, 722, 722, 722,
+555, 666, 610, 708, 790, 722, 722, 650, 1009, 1009, 705, 871, 574, 660, 1027, 666,
+444, 509, 472, 410, 509, 444, 690, 395, 535, 535, 485, 499, 632, 535, 500, 535,
+500, 444, 436, 501, 648, 500, 535, 503, 770, 770, 517, 671, 455, 429, 746, 460
 };
 
 /**
@@ -343,7 +386,7 @@ static int _cmap_predef(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap) {
 /**
  * Find icode in CMap
  */
-static lib_pdf_char_t* _cmap_find_by_icode(lib_pdf_cmap_t* cmap, int icode) {
+static lib_pdf_char_t* _cmap_find_icode(lib_pdf_cmap_t* cmap, int icode) {
     lib_pdf_char_t* p = cmap->buf;
     for (int i = 0; i < cmap->size; i++) {
         if (icode == p->icode) {
@@ -357,7 +400,7 @@ static lib_pdf_char_t* _cmap_find_by_icode(lib_pdf_cmap_t* cmap, int icode) {
 /**
  * Find ucode in CMap
  */
-static lib_pdf_char_t* _cmap_find_by_ucode(lib_pdf_cmap_t* cmap, int ucode) {
+static lib_pdf_char_t* _cmap_find_ucode(lib_pdf_cmap_t* cmap, int ucode) {
     lib_pdf_char_t* p = cmap->buf;
     for (int i = 0; i < cmap->size; i++) {
         if (ucode == p->ucode) {
@@ -369,11 +412,11 @@ static lib_pdf_char_t* _cmap_find_by_ucode(lib_pdf_cmap_t* cmap, int ucode) {
 }
 
 static bool _cmap_has_icode(lib_pdf_cmap_t* cmap, int icode) {
-    return _cmap_find_by_icode(cmap, icode) != NULL;
+    return _cmap_find_icode(cmap, icode) != NULL;
 }
 
 static bool _cmap_has_ucode(lib_pdf_cmap_t* cmap, int ucode) {
-    return _cmap_find_by_ucode(cmap, ucode) != NULL;
+    return _cmap_find_ucode(cmap, ucode) != NULL;
 }
 
 /**
@@ -398,34 +441,28 @@ static int _cmap_def_width() {
 
 static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf_char_t* c) {
     
-    //fprintf(stderr, "_get_width: interanl=%d, icode=%d, ucode=%d \n", ctx->use_internal, c->icode, c->ucode);
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, "_get_width: interanl=%d, icode=%d, ucode=%d\n", ctx->use_internal, c->icode, c->ucode);
+    #endif
 
     const int* font_widths = ctx->font_widths;
-    
     if (font_widths == NULL) {
-        //fprintf(stderr, "def-width\n");
         return _cmap_def_width();
     }
 
     if (ctx->use_internal) {
+        // use_internal = true: by icode [0..255]
         for (int i = 0; i < 256; i++) {
-            //if (i == c->ucode) {
-            //    return font_widths[i];
-            //}
             if (i == c->icode) {
-                //fprintf(stderr, " i-width: %d\n", font_widths[i]);
                 return font_widths[i];
             }
         }
     } else {
+        // use_internal = false: by ucode [0..65535]
         for (int i = 0; i < 65536; i++) {
             if (i == c->ucode) {
-                //fprintf(stderr, " u-width: %d\n", font_widths[i]);
                 return font_widths[i];
             }
-            //if (i == c->icode) {
-            //    return font_widths[i];
-            //}
         }
     }
 
@@ -440,7 +477,9 @@ static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf
  */
 static lib_pdf_char_t* _cmap_add_char(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, uint8_t icode, uint32_t ucode) {
 
-    //fprintf(stderr, ">> _cmap_add_char: ucode=%d\n", ucode);
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, ">> _cmap_add_char: icode=%d, ucode=%d\n", icode, ucode);
+    #endif
 
     //if (ucode == NO_CHR) {
     //    // Not found char in UniMap
@@ -451,29 +490,40 @@ static lib_pdf_char_t* _cmap_add_char(run_pdf_context_t* ctx, lib_pdf_cmap_t* cm
     if (cmap->use_predef) {
         cmap->idx = _cmap_find_gap(cmap);
 
-        //if (debug) {
-        //    fprintf(stderr, ">> _cmap_find_gap: cmap_size=%d, cmap_gap=%d, cmap_idx=%d\n", cmap->size, cmap->gap, cmap->idx);
-        //}
+        #ifdef LIB_PDF_DEBUG_LL
+        fprintf(stderr, ">> _cmap_find_gap: cmap_size=%d, cmap_gap=%d, cmap_idx=%d\n", cmap->size, cmap->gap, cmap->idx);
+        #endif
 
         if (cmap->idx < 0) {
-            fprintf(stderr, ">> Not found gap in CMap: %d, %d\n", cmap->size, cmap->gap);
+            #ifdef LIB_PDF_ERROR
+            fprintf(stderr, ">> _cmap_add_char: Not found gap in CMap: %d, %d\n", cmap->size, cmap->gap);
+            #endif
         } else {
+            #ifdef LIB_PDF_DEBUG_LL
+            fprintf(stderr, ">> _cmap_add_char: Found gap\n");
+            #endif
             success = true;
             cmap->gap = cmap->idx; 
             cmap->carr_idx = cmap->idx;
         }
-        //fprintf(stderr, ">> _cmap_add_char: Found gap\n");
+        
     } else {
         
         if (cmap->size + 1 > cmap->capacity) {
-            //fprintf(stderr, ">> _cmap_add_char: grow: size=%d, capacity=%d\n", cmap->size, cmap->capacity);
+            #ifdef LIB_PDF_DEBUG_LL
+            fprintf(stderr, ">> _cmap_add_char: grow: size=%d, capacity=%d\n", cmap->size, cmap->capacity);
+            #endif
             cmap->capacity = cmap->capacity * 2;
-            //fprintf(stderr, ">> _cmap_add_char: realloc starting...\n");
 
-            // TODO: Check realloc result and trow error if it is NULL
+            // TODO: Check realloc result and throw error if it is NULL
             cmap->buf = (lib_pdf_char_t*) realloc(cmap->buf, cmap->capacity);
+            if (cmap->buf == NULL) {
+                return NULL;
+            }
 
-            //fprintf(stderr, ">> _cmap_add_char: realloc success\n");
+            #ifdef LIB_PDF_DEBUG_LL
+            fprintf(stderr, ">> _cmap_add_char: realloc success\n");
+            #endif
         }
         success = true;
         cmap->carr_idx = cmap->size;
@@ -940,25 +990,42 @@ ssize_t _getline(char** line, size_t* cap, FILE* file) {
     #endif
 }
 
+/**
+ * Initialize font widts EXTERNAL (File)
+ */
 static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) {
 
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr,">> font_widths_init_ext\n");
+    #endif
+
     if (!font_name) {
+        #ifdef LIB_PDF_ERROR
         fprintf(stderr, "Font name is empty\n");
+        #endif
         return 1;
     }
 
     char* file_name = _font_widths_file_name(font_name);
     if (!file_name) {
-        fprintf(stderr, "Font file name is empty\n");
+        #ifdef LIB_PDF_ERROR
+        fprintf(stderr,"Font file name is empty");
+        #endif
         return 1;
     }
 
     FILE* file = fopen(file_name, "rb");
     if (!file) {
-        fprintf(stderr, "Font file not found: %s\n", file_name);
+        #ifdef LIB_PDF_ERROR
+        fprintf(stderr,"Font file not found: %s\n", file_name);
+        #endif
         free(file_name);
         return 1;
     }
+
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr,"Found font file: %s\n", file_name);
+    #endif
 
     int* font_widths = (int*) malloc(65536 * sizeof(int));
     if (font_widths == NULL) {
@@ -976,9 +1043,14 @@ static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) 
 
     while ( (len = _getline(&line, &cap, file)) != -1 ) {
         if (_font_widths_read_line(&width, &count, line) != 0) {
+            
+            #ifdef LIB_PDF_ERROR
             fprintf(stderr, "Read font line error\n");
+            #endif
+
             fclose(file);
             free(file_name);
+            free(font_widths);
             return 1;
         }
 
@@ -1000,31 +1072,56 @@ static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) 
     return 0;
 }
 
+/**
+ * Initialize font widths INTERNAL (Array)
+ */
 static int _font_widths_init_int(run_pdf_context_t* ctx, const char* font_name) {
     
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr,">> font_widths_init_int\n");
+    #endif
+
+    ctx->font_widths = NULL;
+
     // Helvetica
     if (lib_stristr(font_name, "Helvetica") == font_name) {
-        //fprintf(stderr, ">> Helvetica\n");
+
         if (ctx->encoding_id == LIB_ENC_CP1251_ID) {
             ctx->font_widths = helvetica_cp1251;
-            return 0;
         } else if (ctx->encoding_id == 0) {
-            ctx->font_widths = helvetica_ascii;
-            return 0;
+            ctx->font_widths = helvetica;
         }
+
+    // Times
+    } else if (lib_stristr(font_name, "Times") == font_name) {
+
+        if (ctx->encoding_id == LIB_ENC_CP1251_ID) {
+            ctx->font_widths = times_cp1251;
+        } else if (ctx->encoding_id == 0) {
+            ctx->font_widths = times;
+        }
+    } 
+
+    if (ctx->font_widths != NULL) {
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, "Found font: %s\n", font_name);
+        #endif
+        return 0;
     }
 
     return 1;
 }
 
-static int lib_pdf_init_font_widths(run_pdf_context_t* ctx, const char* font_name) {
+static int lib_pdf_font_widths_init(run_pdf_context_t* ctx, const char* font_name) {
     ctx->font_widths = NULL;
 
     if (font_name == NULL) {
         return 1;
     }
 
-    //fprintf(stderr,">> lib_pdf_init_font_widths\n");
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr,">> lib_pdf_init_font_widths\n");
+    #endif
 
     int err = _font_widths_init_ext(ctx, font_name);
     if (err == 0) {
@@ -1073,15 +1170,18 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     lib_unimap_t unimap;
     if (use_unicode) {
         if (encoding_id <= 0) {
-            fprintf(stderr, "%s: Encoding %s is not supported\n", prog_name, encoding);
+            fprintf(stderr, "Encoding %s is not supported\n", encoding);
             return 1;
         }
         lib_unimap_get_unimap_by_id(&unimap, encoding_id);
+
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, ">> unimap.id      : %d\n", unimap.id);
+        fprintf(stderr, ">> unimap.start   : %d\n", unimap.start);
+        fprintf(stderr, ">> unimap.len     : %d\n", unimap.len);
+        #endif
     }
     
-    // fprintf(stderr, ">>>unimap.id    : %d\n", unimap.id);
-    // fprintf(stderr, ">>>unimap.start : %d\n", unimap.start);
-    // fprintf(stderr, ">>>unimap.len   : %d\n", unimap.len);
 
     if (ctx->use_style) {
         if (ctx->use_margin) {
@@ -1094,10 +1194,12 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         if (ctx->use_font) {
             lib_font_info_t font     = lib_get_font_info(ctx->font);
 
-            // fprintf(stderr, "\n");
-            // fprintf(stderr, ">>>font->name  : %s\n", font.name);
-            // fprintf(stderr, ">>>font->bold  : %s\n", font.bold   ? "true" : "false");
-            // fprintf(stderr, ">>>font->italic: %s\n", font.italic ? "true" : "false");
+            #ifdef LIB_PDF_DEBUG
+            fprintf(stderr, "\n");
+            fprintf(stderr, ">> font->name     : %s\n", font.name);
+            fprintf(stderr, ">> font->bold     : %s\n", font.bold   ? "true" : "false");
+            fprintf(stderr, ">> font->italic   : %s\n", font.italic ? "true" : "false");
+            #endif
 
             if (font.name) {
                 font_name = font.name;
@@ -1110,7 +1212,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         }
     }
 
-    lib_pdf_init_font_widths(ctx, font_name);
+    lib_pdf_font_widths_init(ctx, ctx->font->name /*font_name*/);
 
     int content_width  = page_width - margin_left - margin_right;
     int content_height = page_height - margin_top - margin_bottom;
@@ -1180,13 +1282,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     int body_width = content_width * 1000; // width in 1/1000 pt
 
-    if (debug) {
-        fprintf(stderr, ">> use_predef     =%s\n", (use_predef ? "true" : "false"));
-        fprintf(stderr, ">> use_break_line =%s\n", (use_break_line ? "true" : "false"));
-        fprintf(stderr, ">> use_cmap       =%s\n", (use_cmap ? "true" : "false"));
-        fprintf(stderr, ">> content_width  =%d\n", content_width);
-        fprintf(stderr, ">> body_width     =%d\n", body_width);
-    }
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr, "\n");
+    fprintf(stderr, ">> use_predef     : %s\n", (use_predef ? "true" : "false"));
+    fprintf(stderr, ">> use_break_line : %s\n", (use_break_line ? "true" : "false"));
+    fprintf(stderr, ">> use_cmap       : %s\n", (use_cmap ? "true" : "false"));
+    fprintf(stderr, ">> content_width  : %d\n", content_width);
+    fprintf(stderr, ">> body_width     : %d\n", body_width);
+    #endif
 
     if (use_cmap) {
 
@@ -1219,7 +1322,6 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         fprintf(stderr, "CMap dump-1\n");
         _cmap_dump(cmap);
     }
-
 
     lib_pdf_line_t line_buf_v;
     lib_pdf_char_t char_buf[100];
@@ -1268,13 +1370,13 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
             if (use_cmap) {
                 cmap_found = false;
-                p = _cmap_find_by_ucode(cmap, ucode);
+                p = _cmap_find_ucode(cmap, ucode);
                 cmap_found = p != NULL;
                 success = cmap_found;
 
-                if (debug) {
-                    fprintf(stderr, ">> PRE: _cmap_find_by_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
-                }
+                #ifdef LIB_PDF_DEBUG_LL
+                    fprintf(stderr, ">> PRE: _cmap_find_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
+                #endif
 
                 if (!cmap_found) {
                     if (ucode == NO_CHR) {
@@ -1513,16 +1615,18 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
             if (use_cmap) {
                 cmap_found = false;
-                p = _cmap_find_by_ucode(cmap, ucode);
+                p = _cmap_find_ucode(cmap, ucode);
                 cmap_found = p != NULL;
                 success = cmap_found;
 
-                if (debug) {
-                    fprintf(stderr, ">> OUT: _cmap_find_by_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
-                }
+                #ifdef LIB_PDF_DEBUG_LL
+                fprintf(stderr, ">> OUT: _cmap_find_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
+                #endif
 
                 if (!cmap_found) {
+                    #ifdef LIB_PDF_ERROR
                     fprintf(stderr, "Char not found in CMap: icode=%d, ucode=%d\n", icode, ucode);
+                    #endif
                 }
 
             } else {
