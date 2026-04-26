@@ -442,7 +442,7 @@ static int _cmap_def_width() {
 static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf_char_t* c) {
     
     #ifdef LIB_PDF_DEBUG_LL
-    fprintf(stderr, "_get_width: interanl=%d, icode=%d, ucode=%d\n", ctx->use_internal, c->icode, c->ucode);
+    fprintf(stderr, "_get_width: internal=%d, icode=%d, ucode=%d\n", ctx->use_internal, c->icode, c->ucode);
     #endif
 
     const int* font_widths = ctx->font_widths;
@@ -1112,6 +1112,10 @@ static int _font_widths_init_int(run_pdf_context_t* ctx, const char* font_name) 
     return 1;
 }
 
+static int _font_widths_init(run_pdf_context_t* ctx, const char* font_name) {
+    return ctx->use_internal ? _font_widths_init_int(ctx, font_name) : _font_widths_init_ext(ctx, font_name);
+}
+
 static int lib_pdf_font_widths_init(run_pdf_context_t* ctx, const char* font_name) {
     ctx->font_widths = NULL;
 
@@ -1120,18 +1124,27 @@ static int lib_pdf_font_widths_init(run_pdf_context_t* ctx, const char* font_nam
     }
 
     #ifdef LIB_PDF_DEBUG
-    fprintf(stderr,">> lib_pdf_init_font_widths\n");
+    fprintf(stderr,">> lib_pdf_font_widths_init\n");
     #endif
+    ctx->use_internal = false;
 
-    int err = _font_widths_init_ext(ctx, font_name);
-    if (err == 0) {
-        ctx->use_internal = false;
-    } else {
-        ctx->use_internal = true;
-        _font_widths_init_int(ctx, font_name);
+    int err = _font_widths_init(ctx, font_name);
+    if (err != 0) {
+        // ext->int/int->ext
+        ctx->use_internal = !ctx->use_internal;
+        err = _font_widths_init(ctx, font_name);
     }
 
-    return 0;
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr,">> Font widths are %sinitialized\n", (ctx->font_widths == NULL ? "not " : ""));
+    #endif
+
+    //else {
+    //    ctx->use_internal = true;
+    //    _font_widths_init_int(ctx, font_name);
+    //}
+
+    return err;
 } 
 
 int lib_pdf_body(run_pdf_context_t* ctx) {
