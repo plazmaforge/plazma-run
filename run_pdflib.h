@@ -116,6 +116,9 @@ static const int times_cp1251[] = {
 typedef struct run_pdf_config_t {
     RUN_DOC_CONFIG
     bool use_unicode;
+    bool use_internal;
+    bool use_embedded;
+    const char* font_file_name;
 } run_pdf_config_t;
 
 /**
@@ -125,6 +128,8 @@ typedef struct run_pdf_context_t {
     RUN_DOC_CONTEXT
     bool use_unicode;
     bool use_internal;
+    bool use_embedded;
+    const char* font_file_name;
     const int* font_widths;
 } run_pdf_context_t;
 
@@ -234,7 +239,10 @@ static int lib_pdf_init(run_pdf_config_t* cnf) {
     if (!cnf) {
         return 1;
     }
-    cnf->use_unicode = false;
+    cnf->use_unicode    = false;
+    cnf->use_internal   = false;
+    cnf->use_embedded   = false;
+    cnf->font_file_name = NULL;
     return lib_doc_config_init((run_doc_config_t*) cnf);
 }
 
@@ -257,21 +265,24 @@ static int lib_pdf_ctx_init(run_pdf_config_t* cnf, run_pdf_context_t* ctx) {
     }
 
     // config -> context
-    ctx->charset     = cnf->charset;
-    ctx->encoding    = cnf->encoding;
-    ctx->encoding_id = cnf->encoding_id;
-    ctx->title       = cnf->title;
-    ctx->margin      = cnf->margin;
-    ctx->font        = cnf->font;
-    ctx->data        = NULL;
-    ctx->size        = 0;
+    ctx->charset        = cnf->charset;
+    ctx->encoding       = cnf->encoding;
+    ctx->encoding_id    = cnf->encoding_id;
+    ctx->title          = cnf->title;
+    ctx->margin         = cnf->margin;
+    ctx->font           = cnf->font;
+    ctx->data           = NULL;
+    ctx->size           = 0;
 
-    ctx->use_unicode   = cnf->use_unicode;
-    ctx->out_file_name = cnf->out_file_name;
-    ctx->out = cnf->out;
+    ctx->use_unicode    = cnf->use_unicode;
+    ctx->use_embedded   = cnf->use_embedded;
+    ctx->font_file_name = cnf->font_file_name;
 
-    ctx->use_internal  = false;
-    ctx->font_widths   = NULL;
+    ctx->out_file_name  = cnf->out_file_name;
+    ctx->out            = cnf->out;
+
+    ctx->use_internal   = false;
+    ctx->font_widths    = NULL;
 
     return lib_pdf_prepare(ctx);
 }
@@ -1180,6 +1191,52 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     int encoding_id      = ctx->encoding_id;
     bool use_unicode     = ctx->use_unicode;
 
+    //>>
+    bool use_resolver          = true;
+    bool use_force_embedded    = true;
+
+    bool use_font_descriptor   = false;
+    bool use_embedded          = ctx->use_embedded;
+    const char* font_file_name = ctx->font_file_name;
+    int next_ref               = 0;
+    //>>
+
+    char* font_data            = NULL;
+    size_t font_data_size      = 0;
+    
+    if (font_file_name == NULL) {
+        if (use_embedded) {
+            fprintf(stderr, "Error loading font file: NULL\n");
+            if (use_resolver) {
+                // Try generate PDF without font file
+                use_embedded = false;
+            } else {
+                return 1;
+            }
+        }
+    } else {
+        if (use_force_embedded) {
+            use_embedded = true;
+        }
+        if (use_embedded) {
+            int errval = lib_io_read_all_bytes(font_file_name, &font_data, &font_data_size);
+            if (errval != 0) {
+                fprintf(stderr, "Error loading font file: %s\n", font_file_name);
+                if (use_resolver) {
+                    // Try generate PDF without font file
+                    use_embedded = false;
+                } else {
+                    return 1;
+                }
+            }
+        }
+    }
+
+    if (use_embedded) {
+        use_font_descriptor = true;
+        use_unicode = true;
+    }
+
     lib_unimap_t unimap;
     if (use_unicode) {
         if (encoding_id <= 0) {
@@ -1841,10 +1898,23 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     // ToUnicode
     if (use_unicode) {
+
+        //len += fprintf(ctx->out, " /Subtype /%s", "Type0");
+        //len += fprintf(ctx->out, " /Subtype /%s", "Type1");
+        //len += fprintf(ctx->out, " /Subtype /%s", "TrueType");
+        //len += fprintf(ctx->out, " /Encoding /%s", "Identity-H");
+
+        next_ref = ref;
+        if (use_font_descriptor) {
+            next_ref++; // move to FontDescriptor
+            len += fprintf(ctx->out, " /FontDescriptor %d 0 R", next_ref);
+        }
+
+        next_ref++; // move to ToUnicode
         len += fprintf(ctx->out, " /FirstChar 0");
         len += fprintf(ctx->out, " /LastChar %d", (cmap->size - 1));
-        len += fprintf(ctx->out, " /ToUnicode %d 0 R", (ref + 1));
-        //len += fprintf(ctx->out, " /Widths [0 700 700 700 700]");
+        //len += fprintf(ctx->out, " /ToUnicode %d 0 R", (ref + 1));
+        len += fprintf(ctx->out, " /ToUnicode %d 0 R", (next_ref));
 
         //>>>
         len += fprintf(ctx->out, " /Widths [");
@@ -1865,12 +1935,47 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     offset  += len;
     xrefs[ref] = offset;
 
+    // Type: FontDescriptor
+    if (use_font_descriptor) {
+        ref++; // 6-FontDescriptor
+        len = 0;
+        len += fprintf(ctx->out, "%d 0 obj\n", ref);
+        len += fprintf(ctx->out, "<<\n");
+        len += fprintf(ctx->out, "/Type /FontDescriptor\n");
+        len += fprintf(ctx->out, "/Ascent 891\n");
+        len += fprintf(ctx->out, "/CapHeight 981\n");
+        len += fprintf(ctx->out, "/Descent -216\n");
+        len += fprintf(ctx->out, "/Flags 4\n");
+        len += fprintf(ctx->out, "/FontBBox [\n");
+        len += fprintf(ctx->out, "  -543\n");
+        len += fprintf(ctx->out, "  -303\n");
+        len += fprintf(ctx->out, "  1278\n");
+        len += fprintf(ctx->out, "  982\n");
+        len += fprintf(ctx->out, "]\n");
+
+        if (use_embedded) {
+            len += fprintf(ctx->out, "/FontFile2 %d 0 R\n", (ref + 1));
+        }
+
+        len += fprintf(ctx->out, "/FontName /%s\n", font_name);
+        len += fprintf(ctx->out, "/ItalicAngle 0\n");
+        len += fprintf(ctx->out, "/StemV 80\n");
+        len += fprintf(ctx->out, ">> endobj\n");
+
+        offset  += len;
+        xrefs[ref] = offset;
+
+    }
+
     // Type: CMap
     if (use_unicode) {
-        ref++; // 6-CMap
+        ref++; // 6|7-CMap
         len = 0;
         int cmap_len = 0;
-        len += fprintf(ctx->out, "%d 0 obj << /Length %d 0 R >> stream\n", ref, (ref + 1));
+        next_ref = ref;
+        next_ref++;
+        //len += fprintf(ctx->out, "%d 0 obj << /Length %d 0 R >> stream\n", ref, (ref + 1));
+        len += fprintf(ctx->out, "%d 0 obj << /Length %d 0 R >> stream\n", ref, next_ref);
 
         len += fprintf(ctx->out, "/CIDInit/ProcSet findresource begin\n");
         len += fprintf(ctx->out, "12 dict begin\n");
@@ -1908,9 +2013,38 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         offset  += len;
         xrefs[ref] = offset;
 
-        ref++; // 7-CMap: Length
+        ref++; // 7|8-CMap: Length
         len = 0;
         len += fprintf(ctx->out, "%d 0 obj %d endobj\n", ref, cmap_len);
+        offset  += len;
+        xrefs[ref] = offset;
+    }
+
+    if (use_embedded) {
+        ref++; // 9-FileData
+        len = 0;
+
+        //const char* font_file_name = ctx->font_file_name; // ..\\plazma-font\\fonts\\arial.ttf";
+        //const char* font_file_name = "..\\plazma-font\\fonts\\Times New Roman.ttf";
+
+        //char* font_data;
+        //size_t font_data_size;
+        //lib_io_read_all_bytes(font_file_name, &font_data, &font_data_size);
+
+        len += fprintf(ctx->out, "%d 0 obj\n", ref);
+        len += fprintf(ctx->out, "<<\n");
+        len += fprintf(ctx->out, "/Length1 %d\n", font_data_size);
+        len += fprintf(ctx->out, "/Length %d\n", font_data_size);
+        len += fprintf(ctx->out, ">>\n");
+        len += fprintf(ctx->out, "stream\n");
+
+        for (int i = 0; i < font_data_size; i++) {
+            len += fprintf(ctx->out, "%c", font_data[i]);
+        }
+
+        len += fprintf(ctx->out, "endstream\n");
+        len += fprintf(ctx->out, "endobj\n");
+
         offset  += len;
         xrefs[ref] = offset;
     }
