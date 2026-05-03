@@ -34,6 +34,9 @@
 #define LIB_OPT_FONT_COLOR         "font-color"
 #define LIB_OPT_FONT_FOREGROUND    "font-foreground"
 #define LIB_OPT_FONT_BACKGROUND    "font-background"
+#define LIB_OPT_FONT_FILE          "font-file"
+#define LIB_OPT_FONT_EMBEDDED      "font-embedded"
+
 #define LIB_OPT_WIDTH              "width"
 #define LIB_OPT_HEIGHT             "height"
 #define LIB_OPT_CONTENT_TYPE       "content-type"
@@ -60,6 +63,8 @@
 #define LIB_OPT_FONT_COLOR_ID      4005
 #define LIB_OPT_FONT_FOREGROUND_ID 4006
 #define LIB_OPT_FONT_BACKGROUND_ID 4007
+#define LIB_OPT_FONT_FILE_ID       4008
+#define LIB_OPT_FONT_EMBEDDED_ID   4009
 
 #define LIB_OPT_WIDTH_ID           5001
 #define LIB_OPT_HEIGHT_ID          5002

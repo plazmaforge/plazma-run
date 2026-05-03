@@ -70,6 +70,7 @@ int main(int argc, char* argv[]) {
     const char* font_style      = NULL;
     const char* font_weight     = NULL;
     const char* font_size       = NULL;
+    const char* font_file       = NULL;
 
     bool flag_encoding          = false;
     bool flag_title             = false;
@@ -78,18 +79,22 @@ int main(int argc, char* argv[]) {
     bool flag_font_style        = false;
     bool flag_font_weight       = false;
     bool flag_font_size         = false;
+    bool flag_font_file         = false;
+    bool flag_font_embedded     = false;
     bool flag_unicode           = false;
 
     static lib_option long_options[] = {
-        {LIB_OPT_ENCODING,    optional_argument, 0, LIB_OPT_ENCODING_ID},
-        {LIB_OPT_TITLE,       optional_argument, 0, LIB_OPT_TITLE_ID},
-        {LIB_OPT_MARGIN,      optional_argument, 0, LIB_OPT_MARGIN_ID},
-        {LIB_OPT_FONT_NAME,   optional_argument, 0, LIB_OPT_FONT_NAME_ID},
-        {LIB_OPT_FONT_STYLE,  optional_argument, 0, LIB_OPT_FONT_STYLE_ID},
-        {LIB_OPT_FONT_WEIGHT, optional_argument, 0, LIB_OPT_FONT_WEIGHT_ID},
-        {LIB_OPT_FONT_SIZE,   optional_argument, 0, LIB_OPT_FONT_SIZE_ID},
-        {LIB_OPT_UNICODE,     no_argument, 0, LIB_OPT_UNICODE_ID},
-        {NULL,                0,                 0, 0 }
+        {LIB_OPT_ENCODING,      optional_argument, 0, LIB_OPT_ENCODING_ID},
+        {LIB_OPT_TITLE,         optional_argument, 0, LIB_OPT_TITLE_ID},
+        {LIB_OPT_MARGIN,        optional_argument, 0, LIB_OPT_MARGIN_ID},
+        {LIB_OPT_FONT_NAME,     optional_argument, 0, LIB_OPT_FONT_NAME_ID},
+        {LIB_OPT_FONT_STYLE,    optional_argument, 0, LIB_OPT_FONT_STYLE_ID},
+        {LIB_OPT_FONT_WEIGHT,   optional_argument, 0, LIB_OPT_FONT_WEIGHT_ID},
+        {LIB_OPT_FONT_SIZE,     optional_argument, 0, LIB_OPT_FONT_SIZE_ID},
+        {LIB_OPT_FONT_FILE,     optional_argument, 0, LIB_OPT_FONT_FILE_ID},
+        {LIB_OPT_FONT_EMBEDDED, no_argument,       0, LIB_OPT_FONT_EMBEDDED_ID},
+        {LIB_OPT_UNICODE,       no_argument,       0, LIB_OPT_UNICODE_ID},
+        {NULL,                  0,                 0, 0 }
     };
 
     while ((opt = lib_getopt_long(argc, argv, "s:o:", long_options, &long_ind)) != -1) {
@@ -102,35 +107,41 @@ int main(int argc, char* argv[]) {
         case 'o':
             out_file_name = optarg;
             break;
-        case LIB_OPT_CHARSET_ID:     // encoding
+        case LIB_OPT_CHARSET_ID:       // encoding
             flag_encoding = true;
             encoding = optarg;
             break;
-        case LIB_OPT_TITLE_ID:       // title
+        case LIB_OPT_TITLE_ID:         // title
             flag_title = true;
             title = optarg;
             break;
-        case LIB_OPT_MARGIN_ID:      // margin
+        case LIB_OPT_MARGIN_ID:        // margin
             flag_margin = true;
             margin = optarg;
             break;
-        case LIB_OPT_FONT_NAME_ID:   // font-name
+        case LIB_OPT_FONT_NAME_ID:     // font-name
             flag_font_name = true;
             font_name = optarg;
             break;
-        case LIB_OPT_FONT_STYLE_ID:  // font-style
+        case LIB_OPT_FONT_STYLE_ID:    // font-style
             flag_font_style = true;
             font_style = optarg;
             break;
-        case LIB_OPT_FONT_WEIGHT_ID: // font-weight
+        case LIB_OPT_FONT_WEIGHT_ID:   // font-weight
             flag_font_weight = true;
             font_weight = optarg;
             break;
-        case LIB_OPT_FONT_SIZE_ID:   // font-size
+        case LIB_OPT_FONT_SIZE_ID:     // font-size
             flag_font_size = true;
             font_size = optarg;
             break;
-        case LIB_OPT_UNICODE_ID:     // unicode
+        case LIB_OPT_FONT_FILE_ID:     // font-file
+            flag_font_file = true;
+            font_file = optarg;
+            break;
+        case LIB_OPT_FONT_EMBEDDED_ID: // font-embedded
+            flag_font_embedded = true;
+        case LIB_OPT_UNICODE_ID:       // unicode
             flag_unicode = true;
             break;
         case '?':
@@ -219,6 +230,8 @@ int main(int argc, char* argv[]) {
         config.font = &font;
         lib_doc_font_init(&font, font_name, font_style, font_weight, font_size);
     }
+    config.font_file_name = font_file;
+    config.use_embedded = flag_font_embedded;
     config.use_unicode = flag_unicode;
 
     config.out_file_name = out_file_name;
