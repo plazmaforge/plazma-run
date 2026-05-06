@@ -1977,6 +1977,10 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         //len += fprintf(ctx->out, "%d 0 obj << /Length %d 0 R >> stream\n", ref, (ref + 1));
         len += fprintf(ctx->out, "%d 0 obj << /Length %d 0 R >> stream\n", ref, next_ref);
 
+        // Set offset and reset current len before output stream data
+        offset  += len;
+        len = 0;
+
         len += fprintf(ctx->out, "/CIDInit/ProcSet findresource begin\n");
         len += fprintf(ctx->out, "12 dict begin\n");
         len += fprintf(ctx->out, "begincmap\n");
@@ -1997,7 +2001,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         lib_pdf_char_t e;
         for (int i = cmap->start; i < cmap->size; i++) {
             e = cmap->buf[i];
-            fprintf(ctx->out, "<%02X> <%04X>\n", e.idx, e.ucode);
+            len += fprintf(ctx->out, "<%02X> <%04X>\n", e.idx, e.ucode);
         }
         //>>>
 
@@ -2006,6 +2010,8 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         len += fprintf(ctx->out, "CMapName currentdict /CMap defineresource pop\n");
         len += fprintf(ctx->out, "end\n");
         len += fprintf(ctx->out, "end\n");
+
+        // Set CMap len
         cmap_len = len;
 
         len += fprintf(ctx->out, "endstream\n");
