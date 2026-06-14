@@ -3,7 +3,7 @@
 #include <string.h>
 
 #define LIB_PDF_DEBUG    1
-//#define LIB_PDF_DEBUG_LL 1
+#define LIB_PDF_DEBUG_LL 1
 #define LIB_PDF_ERROR    1
 
 #ifdef WIN32
@@ -116,6 +116,8 @@ static const int times_cp1251[] = {
 typedef struct run_pdf_config_t {
     RUN_DOC_CONFIG
     bool use_unicode;
+    bool use_cmap;
+    bool use_cmap_predef;
     bool use_internal;
     bool use_embedded;
     const char* font_file_name;
@@ -127,6 +129,8 @@ typedef struct run_pdf_config_t {
 typedef struct run_pdf_context_t {
     RUN_DOC_CONTEXT
     bool use_unicode;
+    bool use_cmap;
+    bool use_cmap_predef;
     bool use_internal;
     bool use_embedded;
     const char* font_file_name;
@@ -239,10 +243,12 @@ static int lib_pdf_init(run_pdf_config_t* cnf) {
     if (!cnf) {
         return 1;
     }
-    cnf->use_unicode    = false;
-    cnf->use_internal   = false;
-    cnf->use_embedded   = false;
-    cnf->font_file_name = NULL;
+    cnf->use_unicode     = false;
+    cnf->use_cmap        = false;
+    cnf->use_cmap_predef = false;
+    cnf->use_internal    = false;
+    cnf->use_embedded    = false;
+    cnf->font_file_name  = NULL;
     return lib_doc_config_init((run_doc_config_t*) cnf);
 }
 
@@ -265,24 +271,27 @@ static int lib_pdf_ctx_init(run_pdf_config_t* cnf, run_pdf_context_t* ctx) {
     }
 
     // config -> context
-    ctx->charset        = cnf->charset;
-    ctx->encoding       = cnf->encoding;
-    ctx->encoding_id    = cnf->encoding_id;
-    ctx->title          = cnf->title;
-    ctx->margin         = cnf->margin;
-    ctx->font           = cnf->font;
-    ctx->data           = NULL;
-    ctx->size           = 0;
+    ctx->charset         = cnf->charset;
+    ctx->encoding        = cnf->encoding;
+    ctx->encoding_id     = cnf->encoding_id;
+    ctx->title           = cnf->title;
+    ctx->margin          = cnf->margin;
+    ctx->font            = cnf->font;
+    ctx->data            = NULL;
+    ctx->size            = 0;
 
-    ctx->use_unicode    = cnf->use_unicode;
-    ctx->use_embedded   = cnf->use_embedded;
-    ctx->font_file_name = cnf->font_file_name;
+    ctx->use_unicode     = cnf->use_unicode;
+    ctx->use_cmap        = cnf->use_cmap;
+    ctx->use_cmap_predef = cnf->use_cmap_predef;
 
-    ctx->out_file_name  = cnf->out_file_name;
-    ctx->out            = cnf->out;
+    ctx->use_embedded    = cnf->use_embedded;
+    ctx->font_file_name  = cnf->font_file_name;
 
-    ctx->use_internal   = false;
-    ctx->font_widths    = NULL;
+    ctx->out_file_name   = cnf->out_file_name;
+    ctx->out             = cnf->out;
+
+    ctx->use_internal    = false;
+    ctx->font_widths     = NULL;
 
     return lib_pdf_prepare(ctx);
 }
@@ -451,33 +460,68 @@ static int _cmap_def_width() {
 }
 
 static int _cmap_get_width(run_pdf_context_t* ctx, lib_pdf_cmap_t* cmap, lib_pdf_char_t* c) {
-    
+
     #ifdef LIB_PDF_DEBUG_LL
-    fprintf(stderr, "_get_width: internal=%d, icode=%d, ucode=%d\n", ctx->use_internal, c->icode, c->ucode);
+    fprintf(stderr, "-> get_width\n");
+    #endif
+
+    int width = 0;
+
+    if (c == NULL) {
+
+        #ifdef LIB_PDF_DEBUG_LL
+        fprintf(stderr, "<- get_width: char is NULL, return %d\n", width);
+        #endif
+
+        return width;
+    }
+
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, "   get_width: internal=%d, icode=%d, ucode=%d\n", ctx->use_internal, c->icode, c->ucode);
     #endif
 
     const int* font_widths = ctx->font_widths;
     if (font_widths == NULL) {
-        return _cmap_def_width();
+
+        width = _cmap_def_width();
+        #ifdef LIB_PDF_DEBUG_LL
+        fprintf(stderr, "<- get_width: font_widths is NULL, return %d\n", width);
+        #endif
+
+        return width;
     }
 
     if (ctx->use_internal) {
-        // use_internal = true: by icode [0..255]
+
+       // use_internal = true: by icode [0..255]
         for (int i = 0; i < 256; i++) {
             if (i == c->icode) {
-                return font_widths[i];
+                width = font_widths[i];
+                #ifdef LIB_PDF_DEBUG_LL
+                fprintf(stderr, "<- get_width: font_widths found, return %d\n", width);
+                #endif
+                return width;
             }
         }
     } else {
         // use_internal = false: by ucode [0..65535]
         for (int i = 0; i < 65536; i++) {
             if (i == c->ucode) {
-                return font_widths[i];
+                width = font_widths[i];
+                #ifdef LIB_PDF_DEBUG_LL
+                fprintf(stderr, "<- get_width: font_widths found, return %d\n", width);
+                #endif
+                return width;
             }
         }
     }
 
-    return _cmap_def_width();
+    width = _cmap_def_width();
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, "<- get_width: font_widths not found, return %d\n", width);
+    #endif
+
+    return width;
 }
 
 /**
@@ -635,7 +679,26 @@ static int _print_ucode(run_pdf_context_t* ctx, uint32_t ucode, bool out_mode) {
 }
 
 static int _line_add(lib_pdf_line_t* line, lib_pdf_char_t* p, int font_size) {
+
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, ">> line_add: start\n");
+    #endif
+
     if (!line) {
+
+        #ifdef LIB_PDF_DEBUG_LL
+        fprintf(stderr, ">> line_add: line: Null pointer error\n");
+        #endif
+
+        return 1;
+    }
+
+    if (!p) {
+
+        #ifdef LIB_PDF_DEBUG_LL
+        fprintf(stderr, ">> line_add: char: Null pointer error\n");
+        #endif
+
         return 1;
     }
 
@@ -648,6 +711,10 @@ static int _line_add(lib_pdf_line_t* line, lib_pdf_char_t* p, int font_size) {
     line->len++;
     line->width += width;
 
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, ">> line_add: end\n");
+    #endif
+
     return 0;
 }
 
@@ -655,7 +722,17 @@ static int _line_add(lib_pdf_line_t* line, lib_pdf_char_t* p, int font_size) {
  * Flush line to output
  */
 static int _line_flush(run_pdf_context_t* ctx, lib_pdf_line_t* line, bool out_mode) {
+
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, ">> line_flush: start\n");
+    #endif
+
     if (!line) {
+
+        #ifdef LIB_PDF_DEBUG_LL
+        fprintf(stderr, ">> line_flush: line: Null pointer error\n");
+        #endif
+
         return 0;
     }
     int size = line->len;
@@ -675,15 +752,34 @@ static int _line_flush(run_pdf_context_t* ctx, lib_pdf_line_t* line, bool out_mo
     line->width = 0;
     line->len = 0;
 
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, ">> line_flush: end\n");
+    #endif
+
     return len;
 }
 
 // SHIFT
 static int _line_shift(lib_pdf_line_t* line) {
+
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, ">> line_shift: start\n");
+    #endif
+
     if (!line) {
+
+        #ifdef LIB_PDF_DEBUG_LL
+        fprintf(stderr, ">> line_shift: line: Null pointer error\n");
+        #endif
+
         return 1;
     }
     if (line->len2 <= 0 || line->pos2 < 0) {
+
+        #ifdef LIB_PDF_DEBUG_LL
+        fprintf(stderr, ">> line_shift: No shift\n");
+        #endif
+
         return 0;
     }
 
@@ -699,10 +795,19 @@ static int _line_shift(lib_pdf_line_t* line) {
     line->pos2 = -1;
     line->len2 = 0;
 
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, ">> line_shift: end\n");
+    #endif
+
     return 0;
 }
 
 static int _line_break(lib_pdf_line_t* line) {
+    
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, ">> line_break: start\n");
+    #endif
+
     if (!line) {
         return 1;
     }
@@ -719,6 +824,10 @@ static int _line_break(lib_pdf_line_t* line) {
     //line_width = e.width;
     line->width = 0;
     //line->flush = true;
+
+    #ifdef LIB_PDF_DEBUG_LL
+    fprintf(stderr, ">> line_break: end\n");
+    #endif
 
     return 0;
 }
@@ -1007,13 +1116,18 @@ ssize_t _getline(char** line, size_t* cap, FILE* file) {
 static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) {
 
     #ifdef LIB_PDF_DEBUG
-    fprintf(stderr,">> font_widths_init_ext\n");
+    fprintf(stderr,">> font_widths_init_ext: start\n");
     #endif
 
     if (!font_name) {
         #ifdef LIB_PDF_ERROR
         fprintf(stderr, "Font name is empty\n");
         #endif
+
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr,">> font_widths_init_ext: ERROR\n");
+        #endif
+
         return 1;
     }
 
@@ -1041,6 +1155,11 @@ static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) 
     int* font_widths = (int*) malloc(65536 * sizeof(int));
     if (font_widths == NULL) {
         free(file_name);
+
+        #ifdef LIB_PDF_ERROR
+        fprintf(stderr,"Out of memory: font_widths\n");
+        #endif
+
         return 1;
     }
 
@@ -1080,6 +1199,12 @@ static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) 
 
     fclose(file);
     free(file_name);
+
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr,">> font_widths_init_ext: count=65536\n");
+    fprintf(stderr,">> font_widths_init_ext: end\n");
+    #endif
+
     return 0;
 }
 
@@ -1089,7 +1214,7 @@ static int _font_widths_init_ext(run_pdf_context_t* ctx, const char* font_name) 
 static int _font_widths_init_int(run_pdf_context_t* ctx, const char* font_name) {
     
     #ifdef LIB_PDF_DEBUG
-    fprintf(stderr,">> font_widths_init_int\n");
+    fprintf(stderr,">> font_widths_init_int: start\n");
     #endif
 
     ctx->font_widths = NULL;
@@ -1116,9 +1241,14 @@ static int _font_widths_init_int(run_pdf_context_t* ctx, const char* font_name) 
     if (ctx->font_widths != NULL) {
         #ifdef LIB_PDF_DEBUG
         fprintf(stderr, "Found font: %s\n", font_name);
+        fprintf(stderr,">> font_widths_init_int: end\n");
         #endif
         return 0;
     }
+
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr,">> font_widths_init_int: ERROR\n");
+    #endif
 
     return 1;
 }
@@ -1128,15 +1258,18 @@ static int _font_widths_init(run_pdf_context_t* ctx, const char* font_name) {
 }
 
 static int lib_pdf_font_widths_init(run_pdf_context_t* ctx, const char* font_name) {
+
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr, "\n");
+    fprintf(stderr,">> pdf_font_widths_init: start\n");
+    #endif
+
     ctx->font_widths = NULL;
 
     if (font_name == NULL) {
         return 1;
     }
 
-    #ifdef LIB_PDF_DEBUG
-    fprintf(stderr,">> lib_pdf_font_widths_init\n");
-    #endif
     ctx->use_internal = false;
 
     int err = _font_widths_init(ctx, font_name);
@@ -1155,15 +1288,24 @@ static int lib_pdf_font_widths_init(run_pdf_context_t* ctx, const char* font_nam
     //    _font_widths_init_int(ctx, font_name);
     //}
 
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr,">> pdf_font_widths_init: end\n");
+    #endif
+
     return err;
 } 
 
 int lib_pdf_body(run_pdf_context_t* ctx) {
+
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr, ">> pdf_body: start\n");
+    #endif
+
     bool debug = false;
     const char* pdf_version  = "1.5";
     const char* pdf_encoding = "WinAnsiEncoding";
     const char* font_name    = "Helvetica";
-    const char* font_subtype = "Type1";
+    const char* font_subtype = "TrueType"; //"Type1";
     int font_size            = lib_to_pt(LIB_PDF_FONT_SIZE);
 
     int len            = 0;
@@ -1203,8 +1345,17 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     char* font_data            = NULL;
     size_t font_data_size      = 0;
-    
+
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr, ">> Processing font file: start\n");
+    #endif
+
     if (font_file_name == NULL) {
+
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, ">> font file      : NULL\n");
+        #endif
+
         if (use_embedded) {
             fprintf(stderr, "Error loading font file: NULL\n");
             if (use_resolver) {
@@ -1214,22 +1365,55 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                 return 1;
             }
         }
+
     } else {
+
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, ">> font file      : %s\n", font_file_name);
+        #endif
+
         if (use_force_embedded) {
+
+            #ifdef LIB_PDF_DEBUG
+            fprintf(stderr, ">> Force embedded\n");
+            #endif
+
             use_embedded = true;
         }
         if (use_embedded) {
+
+            #ifdef LIB_PDF_DEBUG
+            fprintf(stderr, ">> Reading font file: start\n");
+            #endif
+
             int errval = lib_io_read_all_bytes(font_file_name, &font_data, &font_data_size);
             if (errval != 0) {
+                    
                 fprintf(stderr, "Error loading font file: %s\n", font_file_name);
                 if (use_resolver) {
                     // Try generate PDF without font file
+                    #ifdef LIB_PDF_DEBUG
+                    fprintf(stderr, ">> Try use resolver\n");
+                    #endif
+
                     use_embedded = false;
                 } else {
                     return 1;
                 }
+            } else {
+                #ifdef LIB_PDF_DEBUG
+                fprintf(stderr, ">> Reading font file: end\n");
+                #endif
             }
         }
+    }
+
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr, ">> Processing font file: end\n");
+    #endif
+
+    if (use_unicode) {
+        use_font_descriptor = true;
     }
 
     if (use_embedded) {
@@ -1239,6 +1423,12 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     lib_unimap_t unimap;
     if (use_unicode) {
+
+
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, ">> Processing unicode: start\n");
+        #endif
+
         if (encoding_id <= 0) {
             fprintf(stderr, "Encoding %s is not supported\n", encoding);
             return 1;
@@ -1250,10 +1440,20 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         fprintf(stderr, ">> unimap.start   : %d\n", unimap.start);
         fprintf(stderr, ">> unimap.len     : %d\n", unimap.len);
         #endif
+
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, ">> Processing unicode: end\n");
+        #endif
+
     }
     
 
     if (ctx->use_style) {
+
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, ">> Processing style: start\n");
+        #endif
+
         if (ctx->use_margin) {
             margin = lib_to_pt(ctx->margin);
             margin_left    = margin;
@@ -1280,6 +1480,11 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                 line_offset = font_size * 1.5;
             }
         }
+
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, ">> Processing style: end\n");
+        #endif
+
     }
 
     lib_pdf_font_widths_init(ctx, ctx->font->name /*font_name*/);
@@ -1314,15 +1519,19 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     int pages[MAX_PAGE];
     int xrefs[MAX_XREF];
 
-    // Streams
+    // Define
     int page_len;
-    bool break_line;
-    bool break_line_force;
-    bool new_line;
-    bool new_page;
-    //char c;
+    bool break_line;        // Break line flag      : '\n', '\n\r'
+    bool break_line_force;  // Break line forse flag: when (line_width > body_width)
+    bool new_line;          // Start new line flag
+    bool new_page;          // Start new page flag
 
-    // Calculate
+    bool use_break_line;    // Use break line       : when (line_width > body_width)
+    bool use_cmap;          // Use CMap
+    bool use_predef;        // Use CMap predef mode
+    bool use_widths;        // Use CMap widths
+
+    // Init
     page_len   = 0;
     page       = 1;
     line       = 1;
@@ -1346,9 +1555,13 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     int seq             = 0; // sequence of char
     char* data = ctx->data;
 
-    bool use_predef     = use_unicode;
-    bool use_break_line = true;
-    bool use_cmap       = use_unicode || use_break_line;
+    use_break_line = true;
+    use_cmap       = use_unicode || use_break_line;
+    use_predef     = use_unicode;
+
+    //if (ctx->use_cmap) {
+        use_cmap = true;
+    //}
 
     int body_width = content_width * 1000; // width in 1/1000 pt
 
@@ -1363,10 +1576,18 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     if (use_cmap) {
 
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, ">> Processing CMap: start\n");
+        #endif
+
         cmap = _cmap_new(256);
         cmap->use_predef = use_predef;
         
         if (use_predef) {
+
+            #ifdef LIB_PDF_DEBUG
+            fprintf(stderr, ">> Processing CMap: predef = yes\n");
+            #endif
 
             // Initialize predefined map (ASCII)
             if (debug) {
@@ -1375,7 +1596,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             
             cmap->start  = 0;
             cmap->size   = _cmap_predef(ctx, cmap);
+
+
         } else {
+
+            #ifdef LIB_PDF_DEBUG
+            fprintf(stderr, ">> Processing CMap: predef = no\n");
+            #endif
+
             lib_pdf_char_t e;
             cmap->start  = 1;
             cmap->size   = 1;
@@ -1385,7 +1613,12 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
             e.idx       = 0;
             e.is_predef = false;
             cmap->buf[0] = e;
+
         }
+
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, ">> Processing CMap: end\n");
+        #endif
     }
 
     if (debug) {
@@ -1405,6 +1638,14 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     bool success = false;
                 
     // Preprocessing
+
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr, "\n");
+    fprintf(stderr, ">> Preprocessing data: start\n");
+    #endif
+
+    int break_line_count = 0;
+
     while (i < ctx->size) {
 
         icode = _u8(*data); // TODO: For one byte only 
@@ -1445,7 +1686,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                 success = cmap_found;
 
                 #ifdef LIB_PDF_DEBUG_LL
-                    fprintf(stderr, ">> PRE: _cmap_find_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
+                fprintf(stderr, ">> PRE: _cmap_find_ucode: ucode=%d [%s]\n", ucode, (cmap_found ? "+" : " "));
                 #endif
 
                 if (!cmap_found) {
@@ -1459,6 +1700,15 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                 }
             } else {
                 success = true;
+
+                lib_pdf_char_t z;
+                p = &z;
+                p->icode = icode;
+                p->ucode = ucode;
+                p->width = _cmap_get_width(ctx, NULL, p);
+                p->idx   = 0;
+                p->is_predef = false;
+
             }
 
             if (!success) {
@@ -1467,12 +1717,18 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
             //>>
             if (use_break_line) {
+                break_line_count++;
+
+                #ifdef LIB_PDF_DEBUG_LL
+                fprintf(stderr, ">> Processing break line (%d): start\n", break_line_count);
+                #endif
 
                 _line_add(line_buf, p, font_size);
                 line_buf->flush = false;
 
                 // Break Line Algo
                 if (line_buf->width >= body_width) {
+                    //>>
                     _line_break(line_buf);
                     line_buf->flush = true;
                     break_line = true;
@@ -1487,7 +1743,11 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
                     // SHIFT
                     _line_shift(line_buf);
                 }
-                        
+
+                #ifdef LIB_PDF_DEBUG_LL
+                fprintf(stderr, ">> Processing break line (%d): end\n", break_line_count);
+                #endif
+
             } else {
                 len += (use_unicode ?  _print_idx(ctx, p->idx, false) : _print_ucode(ctx, ucode, false));
             }
@@ -1538,6 +1798,12 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     //>>
     if (use_break_line) {
+
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, "\n");
+        fprintf(stderr, ">> Preprocessing data: try last flush\n");
+        #endif
+
         // FORCE FLUSH
         len += _line_flush(ctx, line_buf, false);
         line_buf->flush = false;
@@ -1546,6 +1812,10 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         _line_shift(line_buf);
     }
     //>>
+
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr, ">> Preprocessing data: end\n");
+    #endif
 
     if (debug) {
         fprintf(stderr, "\n");
@@ -1649,6 +1919,12 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     data       = ctx->data;
 
     // Output
+
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr, "\n");
+    fprintf(stderr, ">> Writing data: start\n");
+    #endif
+
     while (i < ctx->size) {
 
         icode = _u8(*data);
@@ -1701,6 +1977,15 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
             } else {
                 success = true;
+
+                lib_pdf_char_t z;
+                p = &z;
+                p->icode = icode;
+                p->ucode = ucode;
+                p->width = _cmap_get_width(ctx, NULL, p);
+                p->idx   = 0;
+                p->is_predef = false;
+
             }
 
             if (!success) {
@@ -1803,6 +2088,12 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
 
     //>>
     if (use_break_line) {
+
+        #ifdef LIB_PDF_DEBUG
+        fprintf(stderr, "\n");
+        fprintf(stderr, ">> Writing data: try last flush\n");
+        #endif
+
         // FORCE FLUSH
         len += _line_flush(ctx, line_buf, true);
         line_buf->flush = false;
@@ -1812,6 +2103,7 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     }
     //>>
 
+
     // >>> Stream: end
     len += fprintf(ctx->out, use_unicode ? "> Tj\n" : ") Tj\n");
     len += fprintf(ctx->out, "%s", BUF_ET);
@@ -1819,6 +2111,10 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     offset  += len;
     xrefs[ref] = offset;
     // >>>
+
+    #ifdef LIB_PDF_DEBUG
+    fprintf(stderr, ">> Writing data: end\n");
+    #endif
 
     /*
       q 0 0 0 rg
@@ -1892,28 +2188,38 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     // Type: Font
     ref++; // 5-Font
     len = 0;
+
     //len += fprintf(ctx->out, "%d 0 obj << /Type /Font /Subtype /%s /BaseFont /%s /Encoding /%s", ref, font_subtype, font_name, pdf_encoding);
     //len += fprintf(ctx->out, "%d 0 obj << /Type /Font /Subtype /%s /BaseFont /%s ", ref, font_subtype, font_name);
+
     len += fprintf(ctx->out, "%d 0 obj << /Type /Font /BaseFont /%s", ref, font_name);
+    len += fprintf(ctx->out, " /Subtype /%s", font_subtype);
+
+    next_ref = ref;
+    if (use_font_descriptor) {
+        next_ref++; // move to FontDescriptor
+        len += fprintf(ctx->out, " /FontDescriptor %d 0 R", next_ref);
+    }
 
     // ToUnicode
-    if (use_unicode) {
+    if (use_unicode && use_cmap) {
 
         //len += fprintf(ctx->out, " /Subtype /%s", "Type0");
         //len += fprintf(ctx->out, " /Subtype /%s", "Type1");
         //len += fprintf(ctx->out, " /Subtype /%s", "TrueType");
         //len += fprintf(ctx->out, " /Encoding /%s", "Identity-H");
 
-        next_ref = ref;
-        if (use_font_descriptor) {
-            next_ref++; // move to FontDescriptor
-            len += fprintf(ctx->out, " /FontDescriptor %d 0 R", next_ref);
-        }
+        //next_ref = ref;
+        //if (use_font_descriptor) {
+        //    next_ref++; // move to FontDescriptor
+        //    len += fprintf(ctx->out, " /FontDescriptor %d 0 R", next_ref);
+        //}
+
+        //if (use_cmap) {
 
         next_ref++; // move to ToUnicode
         len += fprintf(ctx->out, " /FirstChar 0");
         len += fprintf(ctx->out, " /LastChar %d", (cmap->size - 1));
-        //len += fprintf(ctx->out, " /ToUnicode %d 0 R", (ref + 1));
         len += fprintf(ctx->out, " /ToUnicode %d 0 R", (next_ref));
 
         //>>>
@@ -1926,8 +2232,10 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
         len += fprintf(ctx->out, "]");
         //>>>
 
+        //}
+
     } else {
-        len += fprintf(ctx->out, " /Subtype /%s", font_subtype);
+        //len += fprintf(ctx->out, " /Subtype /%s", font_subtype);
         len += fprintf(ctx->out, " /Encoding /%s", pdf_encoding);
     }
 
@@ -1968,13 +2276,12 @@ int lib_pdf_body(run_pdf_context_t* ctx) {
     }
 
     // Type: CMap
-    if (use_unicode) {
+    if (use_unicode && use_cmap) {
         ref++; // 6|7-CMap
         len = 0;
         int cmap_len = 0;
         next_ref = ref;
         next_ref++;
-        //len += fprintf(ctx->out, "%d 0 obj << /Length %d 0 R >> stream\n", ref, (ref + 1));
         len += fprintf(ctx->out, "%d 0 obj << /Length %d 0 R >> stream\n", ref, next_ref);
 
         // Set offset and reset current len before output stream data
